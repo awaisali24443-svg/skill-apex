@@ -1,9 +1,7 @@
-
-import { GoogleGenAI, Type } from "https://aistudiocdn.com/@google/genai@^1.28.0";
+import { generateQuiz } from '../../geminiService.js';
 
 // --- Constants ---
 const NUM_QUESTIONS = 5;
-const API_KEY = process.env.API_KEY;
 
 // --- State ---
 let quizData = null;
@@ -18,50 +16,6 @@ const views = {
 };
 const quizContainer = document.getElementById('quiz-container');
 
-// --- Gemini API Service ---
-async function generateQuiz(topic) {
-    if (!API_KEY) {
-        throw new Error("API_KEY environment variable is not set.");
-    }
-    const ai = new GoogleGenAI({ apiKey: API_KEY });
-
-    const quizSchema = {
-        type: Type.ARRAY,
-        items: {
-            type: Type.OBJECT,
-            properties: {
-                question: { type: Type.STRING },
-                options: { type: Type.ARRAY, items: { type: Type.STRING } },
-                correctAnswerIndex: { type: Type.INTEGER },
-                explanation: { type: Type.STRING }
-            },
-            required: ['question', 'options', 'correctAnswerIndex', 'explanation'],
-        }
-    };
-
-    const prompt = `Generate a fun and challenging quiz with ${NUM_QUESTIONS} multiple-choice questions about "${topic}". Each question must have exactly 4 options. Provide a brief explanation for each correct answer.`;
-
-    try {
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: quizSchema,
-            },
-        });
-        const jsonText = response.text.trim();
-        const data = JSON.parse(jsonText);
-        if (!Array.isArray(data) || data.length === 0) {
-            throw new Error("Invalid quiz data format from API.");
-        }
-        return data;
-    } catch (error) {
-        console.error("Error generating quiz with Gemini:", error);
-        throw new Error("Failed to generate quiz. The topic might be too specific or there was a network issue. Please try another topic.");
-    }
-}
-
 // --- UI Rendering ---
 
 function updateView(currentView) {
@@ -75,21 +29,26 @@ function updateView(currentView) {
 function renderQuiz() {
     const question = quizData[currentQuestionIndex];
     const optionsHtml = question.options.map((option, index) =>
-        `<button data-option-index="${index}" class="quiz-option">${option}</button>`
+        `<button data-option-index="${index}" class="quiz-option">
+            <span class="option-text">${option}</span>
+            <span class="option-icon"></span>
+        </button>`
     ).join('');
 
     views.quiz.innerHTML = `
-        <div class="progress-bar-container">
-            <div class="progress-bar">
-                <div class="progress-bar-inner" style="width: ${((currentQuestionIndex + 1) / NUM_QUESTIONS) * 100}%"></div>
+        <div id="question-content" class="fade-in">
+            <div class="progress-bar-container">
+                <div class="progress-bar">
+                    <div class="progress-bar-inner" style="width: ${((currentQuestionIndex + 1) / NUM_QUESTIONS) * 100}%"></div>
+                </div>
             </div>
+            <div class="question-header">
+                <span>Question ${currentQuestionIndex + 1} / ${NUM_QUESTIONS}</span>
+            </div>
+            <h3 class="question-text">${question.question}</h3>
+            <div class="options-grid">${optionsHtml}</div>
+            <div id="quiz-feedback"></div>
         </div>
-        <div class="question-header">
-            <span>Question ${currentQuestionIndex + 1} / ${NUM_QUESTIONS}</span>
-        </div>
-        <h3 class="question-text">${question.question}</h3>
-        <div class="options-grid">${optionsHtml}</div>
-        <div id="quiz-feedback"></div>
     `;
 
     document.querySelectorAll('.quiz-option').forEach(button => {
@@ -104,17 +63,26 @@ function renderResults() {
     const scorePercentage = Math.round((score / quizData.length) * 100);
 
     const getResultColor = () => {
-        if (scorePercentage >= 80) return 'score-green';
-        if (scorePercentage >= 50) return 'score-yellow';
-        return 'score-red';
+        if (scorePercentage >= 80) return 'var(--color-success)';
+        if (scorePercentage >= 50) return 'var(--color-warning)';
+        return 'var(--color-danger)';
     };
+    
+    const strokeColor = getResultColor();
+    const circumference = 2 * Math.PI * 54; // 2 * pi * radius
+    const strokeDashoffset = circumference - (scorePercentage / 100) * circumference;
 
     const questionsReviewHtml = quizData.map((question, index) => {
         const userAnswer = userAnswers[index];
+        const isCorrect = userAnswer === question.correctAnswerIndex;
+        
         const optionsHtml = question.options.map((option, optIndex) => {
             let itemClass = '';
-            if (optIndex === question.correctAnswerIndex) itemClass = 'review-correct';
-            else if (optIndex === userAnswer) itemClass = 'review-incorrect';
+            if (optIndex === question.correctAnswerIndex) {
+                itemClass = 'review-correct';
+            } else if (optIndex === userAnswer) {
+                itemClass = 'review-incorrect';
+            }
             return `<div class="review-option ${itemClass}">${option}</div>`;
         }).join('');
         
@@ -122,31 +90,48 @@ function renderResults() {
             <div class="review-item">
                 <h4 class="review-question">${index + 1}. ${question.question}</h4>
                 <div class="review-options">${optionsHtml}</div>
-                <p class="review-explanation"><strong>Explanation:</strong> ${question.explanation}</p>
+                ${!isCorrect ? `<p class="review-explanation"><strong>Explanation:</strong> ${question.explanation}</p>` : ''}
             </div>
         `;
     }).join('');
 
     views.results.innerHTML = `
-        <h2 class="results-title">Quiz Complete!</h2>
-        <p class="results-score ${getResultColor()}">${score} / ${quizData.length}</p>
-        <p class="results-summary">That's ${scorePercentage}%!</p>
-        <div class="review-container">${questionsReviewHtml}</div>
-        <button id="restart-btn" class="btn btn-primary">Try Another Quiz</button>
+        <div class="fade-in">
+            <h2 class="results-title">Quiz Complete!</h2>
+            <div class="score-container">
+                <svg class="score-circle" viewBox="0 0 120 120">
+                    <circle class="score-circle-bg" cx="60" cy="60" r="54" />
+                    <circle 
+                        class="score-circle-fg" 
+                        cx="60" 
+                        cy="60" 
+                        r="54" 
+                        stroke="${strokeColor}"
+                        stroke-width="12"
+                        stroke-dasharray="${circumference}"
+                        stroke-dashoffset="${strokeDashoffset}"
+                    />
+                </svg>
+                <div class="score-text" style="color:${strokeColor}">${scorePercentage}%</div>
+            </div>
+            <p class="results-summary">You answered ${score} out of ${quizData.length} questions correctly.</p>
+            <div class="review-container">${questionsReviewHtml}</div>
+            <button id="restart-btn" class="btn btn-primary">Try Another Quiz</button>
+        </div>
     `;
 
     document.getElementById('restart-btn').addEventListener('click', () => {
-        window.location.hash = '#guest';
+        window.location.hash = '#optional-quiz';
     });
 }
 
 function renderError(message) {
     if (quizContainer) {
         quizContainer.innerHTML = `
-            <div style="text-align: center;">
+            <div class="fade-in" style="text-align: center;">
                 <h2 style="color:var(--color-danger); margin-bottom: 1rem;">Oops! Something went wrong.</h2>
                 <p style="color:var(--color-text-muted); margin-bottom: 2rem;">${message}</p>
-                <a href="#guest" class="btn btn-primary">Try a Different Topic</a>
+                <a href="#optional-quiz" class="btn btn-primary">Try a Different Topic</a>
             </div>
         `;
     }
@@ -161,17 +146,28 @@ function handleAnswerSelect(e) {
 
     const question = quizData[currentQuestionIndex];
     const correctIndex = question.correctAnswerIndex;
+    const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+    const crossIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
 
     document.querySelectorAll('.quiz-option').forEach((button, index) => {
         button.disabled = true;
-        if (index === correctIndex) button.classList.add('correct');
-        else if (index === selectedAnswerIndex) button.classList.add('incorrect');
+        const iconContainer = button.querySelector('.option-icon');
+        
+        if (index === correctIndex) {
+            button.classList.add('correct');
+            iconContainer.innerHTML = checkIcon;
+        } else if (index === selectedAnswerIndex) {
+            button.classList.add('incorrect');
+            iconContainer.innerHTML = crossIcon;
+        } else {
+            button.classList.add('faded');
+        }
     });
 
     const feedbackDiv = document.getElementById('quiz-feedback');
     const isLastQuestion = currentQuestionIndex === quizData.length - 1;
     feedbackDiv.innerHTML = `
-        <button id="next-btn" class="btn btn-primary">
+        <button id="next-btn" class="btn btn-primary fade-in">
             ${isLastQuestion ? 'Finish Quiz' : 'Next Question'}
         </button>
     `;
@@ -179,13 +175,19 @@ function handleAnswerSelect(e) {
 }
 
 function handleNext() {
-    if (currentQuestionIndex < quizData.length - 1) {
-        currentQuestionIndex++;
-        renderQuiz();
-    } else {
-        updateView('results');
-        renderResults();
-    }
+    const questionContent = document.getElementById('question-content');
+    questionContent.classList.remove('fade-in');
+    questionContent.classList.add('fade-out');
+
+    setTimeout(() => {
+        if (currentQuestionIndex < quizData.length - 1) {
+            currentQuestionIndex++;
+            renderQuiz();
+        } else {
+            updateView('results');
+            renderResults();
+        }
+    }, 300); // Match animation duration
 }
 
 // --- Initialization ---
@@ -200,7 +202,7 @@ async function initMainModule() {
 
     try {
         updateView('loading');
-        const data = await generateQuiz(topic);
+        const data = await generateQuiz(topic, NUM_QUESTIONS);
         quizData = data;
         userAnswers = new Array(data.length).fill(null);
         currentQuestionIndex = 0;
@@ -213,5 +215,3 @@ async function initMainModule() {
 
 // Start the main quiz module
 initMainModule();
-
-    

@@ -73,6 +73,10 @@ a:hover {
     justify-content: center;
 }
 
+.container.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
 /* Header */
 .site-header {
     background-color: var(--color-bg-light);
@@ -205,8 +209,10 @@ a:hover {
     border-radius: 12px;
     box-shadow: var(--shadow-lg);
     width: 100%;
-    transition: background-color 300ms ease-in-out, box-shadow 300ms ease-in-out;
+    border: 1px solid var(--color-border);
+    transition: background-color 300ms ease-in-out, box-shadow 300ms ease-in-out, border-color 300ms ease-in-out;
 }
+
 
 /* Scrollbar */
 ::-webkit-scrollbar {
@@ -223,8 +229,13 @@ a:hover {
     background: #777;
 }
 
-/* Background Animation */
+/* Animations */
 @keyframes drift {
     0% { background-position: 0 0; }
     100% { background-position: -600px -600px; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }

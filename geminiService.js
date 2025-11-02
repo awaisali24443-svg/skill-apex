@@ -20,7 +20,7 @@ const quizSchema = {
           items: {
             type: Type.STRING,
           },
-          description: 'An array of 4 possible answers.'
+          description: 'An array of exactly 4 possible answers.'
         },
         correctAnswerIndex: {
           type: Type.INTEGER,
@@ -35,8 +35,14 @@ const quizSchema = {
     }
 };
 
+/**
+ * Generates a quiz on a given topic using the Gemini API.
+ * @param {string} topic - The topic for the quiz.
+ * @param {number} numQuestions - The number of questions to generate.
+ * @returns {Promise<Array<object>>} - A promise that resolves to the quiz data.
+ */
 export const generateQuiz = async (topic, numQuestions) => {
-    const prompt = `Generate a quiz with ${numQuestions} multiple-choice questions about "${topic}". Each question should have 4 options. Provide a brief explanation for each correct answer.`;
+    const prompt = `Generate a fun and challenging quiz with ${numQuestions} multiple-choice questions about "${topic}". Each question must have exactly 4 options. Provide a brief explanation for each correct answer.`;
     
     try {
         const response = await ai.models.generateContent({
@@ -59,6 +65,6 @@ export const generateQuiz = async (topic, numQuestions) => {
 
     } catch (error) {
         console.error("Error generating quiz with Gemini:", error);
-        throw new Error("Failed to generate quiz. Please check the topic and try again.");
+        throw new Error("Failed to generate quiz. The topic might be too specific or there was a network issue. Please try again.");
     }
 };

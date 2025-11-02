@@ -20,6 +20,7 @@ const routes = {
 
 async function loadModule(moduleName) {
     if (!rootContainer) return;
+    rootContainer.classList.remove('fade-in');
 
     try {
         // Fetch HTML content of the module
@@ -27,6 +28,8 @@ async function loadModule(moduleName) {
         if (!response.ok) throw new Error(`Module ${moduleName} not found.`);
         const html = await response.text();
         rootContainer.innerHTML = html;
+        rootContainer.classList.add('fade-in');
+
 
         // Remove old module script if it exists
         const oldScript = document.getElementById('module-script');
