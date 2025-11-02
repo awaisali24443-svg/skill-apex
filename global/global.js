@@ -1,4 +1,3 @@
-
 /*
     GLOBAL SCRIPT
     This file handles routing, theme switching, and loading shared components.
@@ -108,8 +107,12 @@ async function init() {
     
     // Initial route load
     handleRouteChange();
+
+    // Keep the instance alive with a ping
+    setInterval(() => {
+        fetch('/').catch(err => console.error('Ping failed:', err));
+    }, 4 * 60 * 1000); // 4 minutes
 }
 
 // Start the application
 init();
-    
