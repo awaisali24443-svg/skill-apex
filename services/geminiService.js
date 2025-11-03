@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { NUM_QUESTIONS } from "../constants.js";
+import { NUM_QUESTIONS } from '../constants.js';
 
 if (!window.process?.env?.API_KEY) {
     throw new Error("API_KEY environment variable is not set. Ensure config.js is loaded.");
@@ -36,6 +36,11 @@ const quizSchema = {
     }
 };
 
+/**
+ * Generates a quiz on a given topic using the Gemini API.
+ * @param {string} topic - The topic for the quiz.
+ * @returns {Promise<Array<object>>} - A promise that resolves to the quiz data.
+ */
 export const generateQuiz = async (topic) => {
     const prompt = `Generate a quiz with ${NUM_QUESTIONS} multiple-choice questions about "${topic}". Each question should have 4 options. Provide a brief explanation for each correct answer.`;
     
@@ -63,7 +68,7 @@ export const generateQuiz = async (topic) => {
 
     } catch (error) {
         console.error("Error generating quiz with Gemini:", error);
-        if (error.message.includes('API key not valid')) {
+        if (error instanceof Error && error.message.includes('API key not valid')) {
              throw new Error("The API key is invalid. Please check your configuration.");
         }
         throw new Error("Failed to generate quiz. The topic might be too specific or there was a network issue. Please try again.");
