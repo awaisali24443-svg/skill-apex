@@ -1,17 +1,17 @@
 :root {
     --color-primary: #f472b6; /* Pink */
     --color-secondary: #60a5fa; /* Blue */
-    --color-bg: #fef3c7; /* Light Orange/Yellow */
-    --color-bg-light: #ffffff;
-    --color-text: #3730a3; /* Deep Indigo for contrast */
-    --color-text-muted: #be185d; /* Muted pink */
-    --color-border: #fbcfe8; /* Light pink border */
+    --color-bg: #2d0b2d;
+    --color-bg-light: #4e1445;
+    --color-text: #fef3c7;
+    --color-text-muted: #fbcfe8;
+    --color-border: #86198f;
     --color-success: #34d399;
     --color-danger: #f87171;
     --color-warning: #f59e0b;
     --color-glow: rgba(244, 114, 182, 0.2);
 
-    --bg-image: linear-gradient(160deg, #fbcfe8, #dbeafe, #fef3c7);
+    --bg-image: linear-gradient(160deg, #86198f, #be185d, #2d0b2d);
     --bg-size: 400% 400%;
     --bg-animation: backgroundShift 15s ease infinite;
 }
