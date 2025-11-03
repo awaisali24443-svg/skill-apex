@@ -5,14 +5,11 @@
     max-width: 600px;
 }
 
-.welcome-title {
-    font-size: 3rem;
-    font-weight: 800;
-    margin-bottom: 1rem;
-    background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 15px var(--color-glow);
+.welcome-logo {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto 1rem;
+    display: block;
 }
 
 .welcome-subtitle {
