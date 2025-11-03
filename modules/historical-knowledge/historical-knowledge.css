@@ -1,0 +1,50 @@
+.historical-quiz-container {
+    width: 100%;
+    animation: fadeIn 0.5s ease-in-out;
+    text-align: center;
+}
+
+.historical-quiz-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+
+.historical-quiz-subtitle {
+    font-size: 1.1rem;
+    color: var(--color-text-muted);
+    margin-bottom: 2.5rem;
+}
+
+.topic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    text-align: left;
+}
+
+.topic-card {
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.topic-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px -5px var(--color-glow);
+    border-color: var(--color-primary);
+}
+
+.topic-card h3 {
+    font-size: 1.25rem;
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
+}
+
+.topic-card p {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+}

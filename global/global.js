@@ -15,6 +15,7 @@ const routes = {
     '#quiz': 'main', // AI Quiz Generator module
     '#optional-quiz': 'optional-quiz-generator',
     '#programming-quiz': 'programming-quiz',
+    '#historical-knowledge': 'historical-knowledge',
     '#loading': 'loading'
 };
 
