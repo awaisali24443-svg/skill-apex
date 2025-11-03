@@ -11,7 +11,7 @@ const routes = {
     '': 'welcome', // Default route
     '#welcome': 'welcome',
     '#login': 'login',
-    '#home': 'home',
+    '#home': 'main-home',
     '#quiz': 'main', // AI Quiz Generator module
     '#optional-quiz': 'optional-quiz-generator',
     '#programming-quiz': 'programming-quiz',
