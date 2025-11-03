@@ -1,6 +1,5 @@
 import { generateQuiz } from '../../services/geminiService.js';
-
-const NUM_QUESTIONS = 5;
+import { NUM_QUESTIONS } from '../../constants.js';
 
 // --- State ---
 let quizData = null;
@@ -94,7 +93,7 @@ function renderResults() {
                     <circle class="score-circle-bg" cx="60" cy="60" r="54" />
                     <circle class="score-circle-fg" cx="60" cy="60" r="54" stroke="${strokeColor}" stroke-width="12" stroke-dasharray="${circumference}" style="stroke-dashoffset: ${strokeDashoffset}" />
                 </svg>
-                <div class="score-text" style="color:${strokeColor}">${score}%</div>
+                <div class="score-text" style="color:${strokeColor}">${scorePercentage}%</div>
             </div>
             <p class="results-summary">You answered ${score} out of ${quizData.length} questions correctly.</p>
             <div class="review-container">${questionsReviewHtml}</div>
