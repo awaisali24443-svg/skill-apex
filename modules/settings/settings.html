@@ -1,0 +1,35 @@
+<div class="settings-container has-back-button">
+    <a href="#home" class="back-button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Back to Dashboard
+    </a>
+    <h1 class="settings-title">Settings</h1>
+    <p class="settings-subtitle">Customize the application to your liking.</p>
+
+    <div class="settings-section">
+        <h2>Appearance</h2>
+        <p class="section-description">Choose a theme that fits your style.</p>
+        <div id="theme-grid" class="theme-grid">
+            <!-- Theme swatches will be populated by JS -->
+        </div>
+    </div>
+
+    <div class="settings-section">
+        <h2>Data Management</h2>
+        <p class="section-description">Manage your quiz history and progress.</p>
+        <div class="danger-zone">
+            <div>
+                <strong>Reset All Progress</strong>
+                <p>This will permanently delete all your quiz scores and reset all topics back to Level 1. This action cannot be undone.</p>
+            </div>
+            <button id="reset-progress-btn" class="btn-danger">Reset Progress</button>
+        </div>
+    </div>
+    
+    <div class="settings-section about-section">
+        <h2>About</h2>
+        <p><strong>Knowledge Tester</strong></p>
+        <p>Version <span id="app-version">1.0.0</span></p>
+        <p class="powered-by">Powered by the Gemini API</p>
+    </div>
+</div>

@@ -1,63 +1,80 @@
 import { initCard, cleanup } from '../../services/threeManager.js';
 import * as progressService from '../../services/progressService.js';
-import { MAX_LEVEL } from '../../constants.js';
+import { NUM_QUESTIONS, MAX_LEVEL } from '../../constants.js';
+import { playSound } from '../../services/soundService.js';
 
 console.log("Programming Quiz module loaded.");
 
-cleanup();
-
-const topicGrid = document.querySelector('.topic-grid');
-const topicCards = document.querySelectorAll('.topic-card');
-
-const getLevelDescriptor = (level) => {
-    const numericLevel = parseInt(level, 10);
-    if (numericLevel >= MAX_LEVEL) return 'Master';
-    if (numericLevel > 45) return 'Legend';
-    if (numericLevel > 35) return 'Expert';
-    if (numericLevel > 25) return 'Advanced';
-    if (numericLevel > 15) return 'Intermediate';
-    if (numericLevel > 5) return 'Beginner';
-    return 'Noob';
+const levelDescriptors = {
+    1: "Noob", 10: "Beginner", 20: "Intermediate", 
+    30: "Advanced", 40: "Expert", 50: "Master"
 };
 
-topicCards.forEach(card => {
-    // Initialize 3D visuals
-    try {
-        initCard(card);
-    } catch (error) {
-        console.error("Failed to initialize 3D card for topic:", card.dataset.topic, error);
-        const canvas = card.querySelector('.topic-canvas');
-        if (canvas) canvas.style.display = 'none';
+function getLevelDescriptor(level) {
+    const keys = Object.keys(levelDescriptors).map(Number).sort((a, b) => b - a);
+    for (const key of keys) {
+        if (level >= key) {
+            return levelDescriptors[key];
+        }
     }
+    return "Noob";
+}
 
-    // Update UI with progress
+function handleTopicSelect(event) {
+    const card = event.currentTarget;
     const topic = card.dataset.topic;
+    if (!topic) return;
+
+    playSound('start');
+
     const level = progressService.getCurrentLevel(topic);
     const descriptor = getLevelDescriptor(level);
 
-    const levelDisplayEl = card.querySelector('.level-display');
-    const levelDescriptorEl = card.querySelector('.level-descriptor');
-    if(levelDisplayEl) levelDisplayEl.textContent = `Level ${level}`;
-    if(levelDescriptorEl) levelDescriptorEl.textContent = descriptor;
-    card.setAttribute('aria-label', `Start ${topic} Quiz, Level ${level}`);
-});
+    // Store context for the quiz and results page
+    const quizContext = {
+        topicName: topic,
+        level: level,
+        returnHash: '#programming-quiz'
+    };
+    sessionStorage.setItem('quizContext', JSON.stringify(quizContext));
 
-if (topicGrid) {
-    topicGrid.addEventListener('click', (e) => {
-        const card = e.target.closest('.topic-card');
-        if (card) {
-            const topic = card.dataset.topic;
-            const level = progressService.getCurrentLevel(topic);
-            
-            const prompt = `Generate a quiz on the ${topic} programming language. The difficulty should be level ${level} out of ${MAX_LEVEL}, where level 1 is for an absolute beginner (noob) and level ${MAX_LEVEL} is for a world-class expert. Adjust the complexity, depth, and obscurity of the questions accordingly.`;
-            
-            sessionStorage.setItem('quizTopicPrompt', prompt);
-            sessionStorage.setItem('quizTopicName', topic);
-            sessionStorage.setItem('quizLevel', level);
-            sessionStorage.setItem('quizReturnHash', '#programming-quiz');
-            sessionStorage.setItem('quizCategory', 'programming');
-            
-            window.location.hash = '#loading';
-        }
+    // Create a more detailed prompt for the AI
+    const prompt = `Generate a quiz with ${NUM_QUESTIONS} multiple-choice questions about the programming language "${topic}". The difficulty should be for an expert at Level ${level} out of ${MAX_LEVEL} (${descriptor} level). The questions should be highly specific and technical, suitable for someone with deep experience.`;
+    sessionStorage.setItem('quizTopicPrompt', prompt);
+    sessionStorage.setItem('quizTopicName', topic); // For loading messages
+
+    // Navigate to loading screen
+    window.location.hash = '#loading';
+}
+
+
+function initializeTopicCards() {
+    // Clean up any previous 3D scenes before creating new ones
+    cleanup();
+    
+    const topicCards = document.querySelectorAll('.topic-card');
+    topicCards.forEach(card => {
+        const topic = card.dataset.topic;
+        const level = progressService.getCurrentLevel(topic);
+        const descriptor = getLevelDescriptor(level);
+
+        const levelDisplay = card.querySelector('.level-display');
+        const levelDescriptorEl = card.querySelector('.level-descriptor');
+        
+        if (levelDisplay) levelDisplay.textContent = `Level ${level}`;
+        if (levelDescriptorEl) levelDescriptorEl.textContent = descriptor;
+        
+        card.addEventListener('click', handleTopicSelect);
+        card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                handleTopicSelect(e);
+            }
+        });
+
+        // Initialize 3D scene
+        initCard(card);
     });
 }
+
+// Initial setup
+initializeTopicCards();

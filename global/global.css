@@ -69,7 +69,7 @@ body {
     -webkit-backdrop-filter: blur(5px);
     padding: 1rem 2rem;
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; /* Align logo left, settings right */
     align-items: center;
     border-bottom: 1px solid var(--color-border);
 }
@@ -81,62 +81,23 @@ body {
     text-decoration: none;
 }
 
-/* Theme Changer */
-.theme-changer {
-    position: relative;
-}
-
-#theme-changer-btn {
-    background-color: var(--color-bg-light);
+.settings-link {
     color: var(--color-text-muted);
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    padding: 0.5rem;
-    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease-in-out;
 }
 
-#theme-changer-btn:hover {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 5px var(--color-glow);
+.settings-link:hover {
     color: var(--color-primary);
+    transform: rotate(45deg);
 }
 
-#theme-changer-btn svg {
-    width: 22px;
-    height: 22px;
+.settings-link svg {
+    width: 26px;
+    height: 26px;
 }
-
-.theme-options {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    width: 200px;
-    background-color: var(--color-bg-light);
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
-    box-shadow: var(--shadow-lg);
-    z-index: 1000;
-    overflow: hidden;
-    animation: fadeIn 0.2s ease-out;
-}
-
-.theme-option {
-    padding: 0.75rem 1rem;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    font-size: 0.9rem;
-}
-
-.theme-option:hover {
-    background-color: var(--color-glow);
-    color: var(--color-primary);
-    padding-left: 1.25rem;
-}
-
 
 /* Footer */
 .site-footer {

@@ -16,7 +16,9 @@ const routes = {
     '#optional-quiz': 'optional-quiz-generator',
     '#programming-quiz': 'programming-quiz',
     '#historical-knowledge': 'historical-knowledge',
-    '#loading': 'loading'
+    '#loading': 'loading',
+    '#screen': 'screen',
+    '#settings': 'settings' // New route for the settings screen
 };
 
 async function loadModule(moduleName) {
@@ -73,61 +75,12 @@ function handleRouteChange() {
     loadModule(moduleName);
 }
 
-// --- Theme Switcher ---
 function setTheme(themeName) {
     const themeLink = document.getElementById('theme-link');
     if (themeLink) {
         themeLink.href = `/themes/${themeName}.css`;
         localStorage.setItem('theme', themeName);
     }
-}
-
-function setupThemeSwitcher() {
-    const changerBtn = document.getElementById('theme-changer-btn');
-    const optionsContainer = document.getElementById('theme-options');
-    
-    if (!changerBtn || !optionsContainer) return;
-
-    const themes = [
-        { value: 'google-ai-studio', text: 'AI Studio' },
-        { value: 'carbon-mist', text: 'Carbon Mist' },
-        { value: 'neon-pulse', text: 'Neon Pulse' },
-        { value: 'aurora-dawn', text: 'Aurora Dawn' },
-        { value: 'space-alloy', text: 'Space Alloy' },
-        { value: 'techno-breeze', text: 'Techno Breeze' },
-        { value: 'midnight-glass', text: 'Midnight Glass' },
-        { value: 'quantum-fade', text: 'Quantum Fade' },
-        { value: 'ocean-core', text: 'Ocean Core' },
-        { value: 'cyber-royale', text: 'Cyber Royale' },
-        { value: 'digital-ice', text: 'Digital Ice' },
-        { value: 'royal-ember', text: 'Royal Ember' },
-        { value: 'quantum-edge', text: 'Quantum Edge' },
-    ];
-
-    optionsContainer.innerHTML = themes.map(theme => 
-        `<div class="theme-option" data-theme="${theme.value}">${theme.text}</div>`
-    ).join('');
-
-    changerBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        optionsContainer.classList.toggle('hidden');
-    });
-    
-    optionsContainer.addEventListener('click', (e) => {
-        const target = e.target.closest('.theme-option');
-        if (target) {
-            const theme = target.dataset.theme;
-            setTheme(theme);
-            optionsContainer.classList.add('hidden');
-        }
-    });
-
-    // Close dropdown if clicking outside
-    document.addEventListener('click', (e) => {
-        if (!optionsContainer.contains(e.target) && !changerBtn.contains(e.target)) {
-            optionsContainer.classList.add('hidden');
-        }
-    });
 }
 
 async function loadHeader() {
@@ -138,7 +91,6 @@ async function loadHeader() {
         
         const savedTheme = localStorage.getItem('theme') || 'carbon-mist';
         setTheme(savedTheme);
-        setupThemeSwitcher();
 
     } catch (error) {
         console.error('Error loading header:', error);

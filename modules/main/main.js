@@ -1,84 +1,71 @@
 import { generateQuiz } from '../welcome/services/geminiService.js';
-import { NUM_QUESTIONS, UNLOCK_SCORE, MAX_LEVEL } from '../../constants.js';
-import * as quizStateService from '../../services/quizStateService.js';
+import * as quizState from '../../services/quizStateService.js';
 import * as progressService from '../../services/progressService.js';
+import { NUM_QUESTIONS, UNLOCK_SCORE, MAX_LEVEL } from '../../constants.js';
+import { playSound } from '../../services/soundService.js';
 
-// --- State ---
+// --- Game State ---
+const GameView = {
+    RESUME_PROMPT: 'RESUME_PROMPT',
+    TOPIC_SELECTION: 'TOPIC_SELECTION',
+    QUIZ: 'QUIZ',
+    RESULTS: 'RESULTS'
+};
+
+let currentView = GameView.TOPIC_SELECTION;
 let quizData = null;
 let userAnswers = [];
 let currentQuestionIndex = 0;
+let quizContext = {}; // Will hold topicName, level, returnHash
 
 // --- DOM Elements ---
-const views = {
-    topicSelector: document.getElementById('topic-selector-view'),
-    loading: document.getElementById('loading-view'),
-    quiz: document.getElementById('quiz-view'),
-    results: document.getElementById('results-view'),
-    resumePrompt: document.getElementById('resume-prompt-view'),
-};
-const topicForm = document.getElementById('topic-form');
-const topicInput = document.getElementById('topic-input');
-const errorMessage = document.getElementById('error-message');
-const resumeBtn = document.getElementById('resume-btn');
-const startNewBtn = document.getElementById('start-new-btn');
+const views = {};
 
-
-// --- Functions ---
-
-function updateView(currentViewKey) {
-    Object.entries(views).forEach(([key, view]) => {
-        if (view) view.classList.toggle('hidden', key !== currentViewKey);
-    });
+// --- Helper Functions ---
+function getLevelDescriptor(level) {
+    const descriptors = { 1: "Noob", 10: "Beginner", 20: "Intermediate", 30: "Advanced", 40: "Expert", 50: "Master" };
+    const keys = Object.keys(descriptors).map(Number).sort((a, b) => b - a);
+    for (const key of keys) {
+        if (level >= key) return descriptors[key];
+    }
+    return "Noob";
 }
 
-function saveCurrentState() {
-    if (!quizData) return;
-    const state = {
-        quizData,
-        userAnswers,
-        currentQuestionIndex
-    };
-    quizStateService.saveQuizState(state);
-}
-
-function startSpecificQuiz(topic, level, returnHash, category) {
-    let prompt = '';
-    // Reconstruct the prompt based on the category
-    if (category === 'programming') {
-        prompt = `Generate a quiz on the ${topic} programming language. The difficulty should be level ${level} out of ${MAX_LEVEL}, where level 1 is for an absolute beginner (noob) and level ${MAX_LEVEL} is for a world-class expert. Adjust the complexity, depth, and obscurity of the questions accordingly.`;
-    } else if (category === 'history') {
-        prompt = `Generate a quiz on the key events, figures, and concepts of ${topic}. The difficulty should be level ${level} out of ${MAX_LEVEL}, where level 1 is for an absolute beginner (noob) and level ${MAX_LEVEL} is for a world-class expert. Adjust the complexity, depth, and obscurity of the questions accordingly.`;
+function updateView() {
+    Object.values(views).forEach(view => view?.classList.add('hidden'));
+    const viewElement = views[currentView];
+    if (viewElement) {
+        viewElement.classList.remove('hidden');
     } else {
-         // Generic prompt for other categories
-         prompt = `Generate a quiz on ${topic} at difficulty level ${level}/${MAX_LEVEL}.`;
+        console.error(`View element for state "${currentView}" not found.`);
+    }
+}
+
+// --- Render Functions ---
+function renderQuiz() {
+    if (!quizData || !quizData[currentQuestionIndex]) {
+        handleError("Quiz data is missing or invalid.");
+        return;
     }
 
-    sessionStorage.setItem('quizTopicPrompt', prompt);
-    sessionStorage.setItem('quizTopicName', topic);
-    sessionStorage.setItem('quizLevel', level);
-    sessionStorage.setItem('quizReturnHash', returnHash);
-    sessionStorage.setItem('quizCategory', category);
-    
-    window.location.hash = '#loading';
-}
-
-
-function renderQuiz() {
     const question = quizData[currentQuestionIndex];
-    const optionsHtml = question.options.map((option, index) =>
-        `<button data-option-index="${index}" class="quiz-option">${option}</button>`
-    ).join('');
+    const optionsHtml = question.options.map((option, index) => `
+        <button data-option-index="${index}" class="quiz-option">
+            ${option}
+        </button>
+    `).join('');
 
-    views.quiz.innerHTML = `
-        <div id="question-content" style="animation: fadeIn 0.5s ease;">
-            <div class="progress-bar">
-                <div class="progress-bar-inner" style="width: ${((currentQuestionIndex + 1) / NUM_QUESTIONS) * 100}%"></div>
-            </div>
-            <p class="question-header">Question ${currentQuestionIndex + 1} of ${NUM_QUESTIONS}</p>
-            <h3 class="question-text">${question.question}</h3>
-            <div class="options-grid">${optionsHtml}</div>
-            <div id="quiz-feedback"></div>
+    views.QUIZ.innerHTML = `
+        <div class="progress-bar">
+            <div class="progress-bar-inner" style="width: ${((currentQuestionIndex + 1) / quizData.length) * 100}%"></div>
         </div>
+        <div class="question-header">
+            <span>Question ${currentQuestionIndex + 1} / ${quizData.length}</span>
+            <span>${quizContext.topicName || ''} - Level ${quizContext.level || ''}</span>
+        </div>
+        <h2 class="question-text">${question.question}</h2>
+        <div class="options-grid">${optionsHtml}</div>
+        <div id="quiz-feedback"></div>
     `;
 
     document.querySelectorAll('.quiz-option').forEach(button => {
@@ -87,209 +74,252 @@ function renderQuiz() {
 }
 
 function renderResults() {
-    const score = userAnswers.reduce((acc, answer, index) =>
-        (answer === quizData[index].correctAnswerIndex ? acc + 1 : acc), 0
-    );
+    playSound('complete');
+    const score = userAnswers.reduce((acc, answer, index) => 
+        (answer === quizData[index].correctAnswerIndex ? acc + 1 : acc), 0);
+    
+    progressService.recordQuizResult(score, quizData.length);
+
     const scorePercentage = Math.round((score / quizData.length) * 100);
+    
+    // Level Progression Logic
+    const didPass = score >= UNLOCK_SCORE;
+    const isMaxLevel = quizContext.level >= MAX_LEVEL;
+    let feedbackHtml = '';
+    let actionsHtml = '';
 
-    // Retrieve quiz context for progression logic
-    const topicName = sessionStorage.getItem('quizTopicName');
-    const level = parseInt(sessionStorage.getItem('quizLevel'), 10);
-    const returnHash = sessionStorage.getItem('quizReturnHash');
-    const category = sessionStorage.getItem('quizCategory');
-
-    let resultsMessage = '';
-    let actionButtonsHtml = '';
-
-    if (score >= UNLOCK_SCORE) {
-        const isMaxLevel = level >= MAX_LEVEL;
-        resultsMessage = isMaxLevel 
-            ? `<p class="results-feedback success">Mastery! You've completed all levels for ${topicName}!</p>`
-            : `<p class="results-feedback success">Congratulations! You've unlocked Level ${level + 1}.</p>`;
-
+    if (didPass) {
         if (!isMaxLevel) {
-            progressService.unlockNextLevel(topicName, MAX_LEVEL);
-            actionButtonsHtml = `<button id="next-level-btn" class="btn btn-primary">Play Level ${level + 1}</button>`;
+            const newLevel = quizContext.level + 1;
+            feedbackHtml = `
+                <div class="results-feedback success">
+                    <strong>Level ${quizContext.level} Passed!</strong> You've unlocked Level ${newLevel}.
+                </div>`;
+            actionsHtml = `<button id="next-level-btn" class="btn btn-primary">Play Next Level</button>`;
+            progressService.unlockNextLevel(quizContext.topicName, MAX_LEVEL);
+        } else {
+            feedbackHtml = `
+                <div class="results-feedback success">
+                    <strong>Congratulations!</strong> You've mastered ${quizContext.topicName} by completing the final level!
+                </div>`;
         }
     } else {
-        resultsMessage = `<p class="results-feedback failure">Almost there! You need a score of ${UNLOCK_SCORE} or more to unlock the next level.</p>`;
-        actionButtonsHtml = `<button id="retry-level-btn" class="btn btn-primary">Retry Level ${level}</button>`;
+        feedbackHtml = `
+            <div class="results-feedback failure">
+                <strong>Nice try!</strong> You need a score of at least ${UNLOCK_SCORE} to unlock the next level.
+            </div>`;
+        actionsHtml = `<button id="retry-level-btn" class="btn btn-primary">Retry Level ${quizContext.level}</button>`;
     }
-    actionButtonsHtml += `<a href="${returnHash}" class="btn btn-secondary">Back to Topics</a>`;
 
-
-    const getResultColor = () => {
-        if (scorePercentage >= 80) return 'var(--color-success)';
-        if (scorePercentage >= 50) return 'var(--color-warning)';
-        return 'var(--color-danger)';
-    };
-    
-    const strokeColor = getResultColor();
-    const circumference = 2 * Math.PI * 54;
-    const strokeDashoffset = circumference - (scorePercentage / 100) * circumference;
-
-    const questionsReviewHtml = quizData.map((question, index) => {
-        const userAnswer = userAnswers[index];
-        const isCorrect = userAnswer === question.correctAnswerIndex;
-        
-        const optionsHtml = question.options.map((option, optIndex) => {
-            let itemClass = '';
-            if (optIndex === question.correctAnswerIndex) itemClass = 'review-correct';
-            else if (optIndex === userAnswer) itemClass = 'review-incorrect';
-            return `<div class="review-option ${itemClass}">${option}</div>`;
-        }).join('');
-        
+    const reviewHtml = quizData.map((q, index) => {
+        const userAnswerIndex = userAnswers[index];
+        const isCorrect = userAnswerIndex === q.correctAnswerIndex;
         return `
             <div class="review-item">
-                <h4 class="review-question">${index + 1}. ${question.question}</h4>
-                <div class="review-options">${optionsHtml}</div>
-                ${!isCorrect ? `<p class="review-explanation"><strong>Explanation:</strong> ${question.explanation}</p>` : ''}
+                <p class="review-question">${index + 1}. ${q.question}</p>
+                <div class="review-options">
+                    ${q.options.map((opt, i) => `
+                        <div class="review-option ${i === q.correctAnswerIndex ? 'review-correct' : (i === userAnswerIndex ? 'review-incorrect' : '')}">
+                            ${opt}
+                        </div>
+                    `).join('')}
+                </div>
+                ${!isCorrect ? `<div class="review-explanation"><strong>Explanation:</strong> ${q.explanation}</div>` : ''}
             </div>
         `;
     }).join('');
 
-    views.results.innerHTML = `
-        <div style="animation: fadeIn 0.5s ease;">
-            <h2 class="results-title">Quiz Complete!</h2>
-            <div class="score-container">
-                <svg class="score-circle" viewBox="0 0 120 120">
-                    <circle class="score-circle-bg" cx="60" cy="60" r="54" />
-                    <circle class="score-circle-fg" cx="60" cy="60" r="54" stroke="${strokeColor}" stroke-width="12" stroke-dasharray="${circumference}" style="stroke-dashoffset: ${strokeDashoffset}" />
-                </svg>
-                <div class="score-text" style="color:${strokeColor}">${scorePercentage}%</div>
-            </div>
-            <p class="results-summary">You answered ${score} out of ${quizData.length} questions correctly.</p>
-            ${resultsMessage}
-            <div class="results-actions">${actionButtonsHtml}</div>
-            <div class="review-container" style="margin-top: 2rem;">${questionsReviewHtml}</div>
+    const circumference = 2 * Math.PI * 54; // r=54 for a 120px circle with 6px stroke
+    const strokeDashoffset = circumference - (scorePercentage / 100) * circumference;
+
+    views.RESULTS.innerHTML = `
+        <h2 class="results-title">Quiz Complete!</h2>
+        <div class="score-container">
+            <svg class="score-circle" width="120" height="120" viewBox="0 0 120 120">
+                <circle class="score-circle-bg" cx="60" cy="60" r="54" stroke-width="12"></circle>
+                <circle class="score-circle-fg" cx="60" cy="60" r="54" stroke-width="12"
+                    stroke="url(#score-gradient)"
+                    stroke-dasharray="${circumference}"
+                    stroke-dashoffset="${strokeDashoffset}">
+                </circle>
+                <defs>
+                    <linearGradient id="score-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="${scorePercentage < 50 ? 'var(--color-warning)' : 'var(--color-secondary)'}" />
+                        <stop offset="100%" stop-color="${scorePercentage < 50 ? 'var(--color-danger)' : 'var(--color-primary)'}" />
+                    </linearGradient>
+                </defs>
+            </svg>
+            <div class="score-text">${score}/${quizData.length}</div>
         </div>
+        <p class="results-summary">You scored ${scorePercentage}%</p>
+        ${feedbackHtml}
+        <div class="results-actions">
+            ${actionsHtml}
+            <button id="back-to-topics-btn" class="btn btn-secondary">Back to Topics</button>
+        </div>
+        <div class="review-container">${reviewHtml}</div>
     `;
-    
-    // Add event listeners for new buttons
-    document.getElementById('next-level-btn')?.addEventListener('click', () => {
-        startSpecificQuiz(topicName, level + 1, returnHash, category);
-    });
-    document.getElementById('retry-level-btn')?.addEventListener('click', () => {
-        startSpecificQuiz(topicName, level, returnHash, category);
-    });
+
+    document.getElementById('back-to-topics-btn')?.addEventListener('click', handleBackToTopics);
+    document.getElementById('next-level-btn')?.addEventListener('click', handleNextLevel);
+    document.getElementById('retry-level-btn')?.addEventListener('click', handleRetryLevel);
 }
 
 
 // --- Event Handlers ---
-
-function handleStartQuiz(e) {
-    e.preventDefault();
-    const topic = topicInput.value.trim();
-    if (!topic) return;
-
-    sessionStorage.setItem('quizTopicPrompt', `Generate a quiz with ${NUM_QUESTIONS} multiple-choice questions about "${topic}".`);
-    sessionStorage.setItem('quizTopicName', topic); // Generic topic name
-    sessionStorage.setItem('quizLevel', 1); // Default to level 1
-    sessionStorage.setItem('quizReturnHash', '#quiz'); // Return to the generic quiz page
-    sessionStorage.setItem('quizCategory', 'generic');
-    
-    window.location.hash = '#loading';
-}
-
 function handleAnswerSelect(e) {
     const selectedButton = e.currentTarget;
     const selectedAnswerIndex = parseInt(selectedButton.dataset.optionIndex, 10);
     userAnswers[currentQuestionIndex] = selectedAnswerIndex;
-    saveCurrentState();
 
     const question = quizData[currentQuestionIndex];
-    const correctIndex = question.correctAnswerIndex;
+    const isCorrect = selectedAnswerIndex === question.correctAnswerIndex;
+    playSound(isCorrect ? 'correct' : 'incorrect');
 
-    document.querySelectorAll('.quiz-option').forEach((button, index) => {
+    document.querySelectorAll('.quiz-option').forEach(button => {
         button.disabled = true;
-        if (index === correctIndex) button.classList.add('correct');
-        else if (index === selectedAnswerIndex) button.classList.add('incorrect');
-        else button.classList.add('faded');
+        const index = parseInt(button.dataset.optionIndex, 10);
+        if (index === question.correctAnswerIndex) {
+            button.classList.add('correct');
+        } else if (index === selectedAnswerIndex) {
+            button.classList.add('incorrect');
+        } else {
+            button.classList.add('faded');
+        }
     });
 
-    // Automatically proceed to the next question after a delay
-    setTimeout(handleNext, 1800);
+    const isLastQuestion = currentQuestionIndex === quizData.length - 1;
+    document.getElementById('quiz-feedback').innerHTML = `
+        <button id="next-btn" class="btn btn-primary">${isLastQuestion ? 'Finish Quiz' : 'Next Question'}</button>
+    `;
+    document.getElementById('next-btn').addEventListener('click', handleNext);
+
+    quizState.saveQuizState({ quizData, userAnswers, currentQuestionIndex, quizContext });
 }
 
 function handleNext() {
     if (currentQuestionIndex < quizData.length - 1) {
         currentQuestionIndex++;
-        saveCurrentState();
         renderQuiz();
     } else {
-        quizStateService.clearQuizState();
-        updateView('results');
+        currentView = GameView.RESULTS;
+        updateView();
         renderResults();
+        quizState.clearQuizState();
     }
 }
 
-function handleRestart() {
-    quizStateService.clearQuizState();
-    quizData = null;
-    userAnswers = [];
-    currentQuestionIndex = 0;
-    if (topicInput) topicInput.value = '';
-    if (errorMessage) errorMessage.textContent = '';
-    updateView('topicSelector');
+function handleBackToTopics() {
+    window.location.hash = quizContext.returnHash || '#home';
 }
 
-function handleResume() {
-    const savedState = quizStateService.loadQuizState();
-    if (savedState) {
-        quizData = savedState.quizData;
-        userAnswers = savedState.userAnswers;
-        currentQuestionIndex = savedState.currentQuestionIndex;
-        updateView('quiz');
+function handleRetryLevel() {
+    startQuiz(quizContext.topicName, quizContext.level);
+}
+
+function handleNextLevel() {
+    startQuiz(quizContext.topicName, quizContext.level + 1);
+}
+
+function startQuiz(topicName, level) {
+    const descriptor = getLevelDescriptor(level);
+    const context = {
+        topicName,
+        level,
+        returnHash: quizContext.returnHash || '#home'
+    };
+    sessionStorage.setItem('quizContext', JSON.stringify(context));
+    
+    const prompt = `Generate a quiz with ${NUM_QUESTIONS} multiple-choice questions about "${topicName}". The difficulty should be for an expert at Level ${level} out of ${MAX_LEVEL} (${descriptor} level).`;
+    sessionStorage.setItem('quizTopicPrompt', prompt);
+    sessionStorage.setItem('quizTopicName', topicName);
+    
+    window.location.hash = '#loading';
+}
+
+
+function handleError(message, shouldClearState = false) {
+    console.error(message);
+    const errorElement = views.TOPIC_SELECTION?.querySelector('.error-text');
+    if(errorElement) errorElement.textContent = message;
+    
+    currentView = GameView.TOPIC_SELECTION;
+    updateView();
+    
+    if (shouldClearState) {
+        quizState.clearQuizState();
+        sessionStorage.removeItem('quizError');
+    }
+}
+
+async function startNewQuiz() {
+    const error = sessionStorage.getItem('quizError');
+    if (error) {
+        handleError(error, true);
+        return;
+    }
+    
+    const dataString = sessionStorage.getItem('generatedQuizData');
+    if (!dataString) {
+        // This can happen if the user reloads on the quiz page.
+        // We direct them back to their topic selection.
+        const storedContextString = sessionStorage.getItem('quizContext');
+        const storedContext = storedContextString ? JSON.parse(storedContextString) : null;
+        if(storedContext && storedContext.returnHash) {
+            window.location.hash = storedContext.returnHash;
+        } else {
+            window.location.hash = '#home';
+        }
+        return;
+    }
+    
+    try {
+        quizData = JSON.parse(dataString);
+        userAnswers = new Array(quizData.length).fill(null);
+        currentQuestionIndex = 0;
+        
+        const contextString = sessionStorage.getItem('quizContext');
+        if (!contextString) throw new Error("Quiz context is missing.");
+        quizContext = JSON.parse(contextString);
+
+        currentView = GameView.QUIZ;
+        updateView();
         renderQuiz();
+
+        // Save initial state for resuming
+        quizState.saveQuizState({ quizData, userAnswers, currentQuestionIndex, quizContext });
+
+        // Clean up session storage
+        sessionStorage.removeItem('generatedQuizData');
+        sessionStorage.removeItem('quizError');
+
+    } catch (err) {
+        handleError("Failed to start the quiz. The quiz data was invalid.", true);
     }
 }
-
 
 // --- Initialization ---
 function init() {
-    if (topicForm) {
-        topicForm.addEventListener('submit', handleStartQuiz);
-    }
-    if (resumeBtn && startNewBtn) {
-        resumeBtn.addEventListener('click', handleResume);
-        startNewBtn.addEventListener('click', handleRestart);
-    }
-
-    const quizDataString = sessionStorage.getItem('generatedQuizData');
-    const errorString = sessionStorage.getItem('quizError');
-
-    if (quizDataString) {
-        sessionStorage.removeItem('generatedQuizData');
-        try {
-            const data = JSON.parse(quizDataString);
-            quizData = data;
-            userAnswers = new Array(data.length).fill(null);
-            currentQuestionIndex = 0;
-            saveCurrentState();
-            updateView('quiz');
-            renderQuiz();
-        } catch (e) {
-            console.error("Failed to parse quiz data:", e);
-            if (errorMessage) errorMessage.textContent = "There was an error loading the quiz data.";
-            updateView('topicSelector');
-        }
-    } else if (errorString) {
-        const returnHash = sessionStorage.getItem('quizReturnHash') || '#quiz';
-        sessionStorage.removeItem('quizError');
-        // If we are on the #quiz page, show the error. Otherwise, just go back.
-        if(window.location.hash === '#quiz' && errorMessage) {
-            errorMessage.textContent = errorString;
-            updateView('topicSelector');
-        } else {
-            window.location.hash = returnHash;
-        }
-
-    } else if (quizStateService.hasSavedState()) {
-        updateView('resumePrompt');
-    }
-    else {
-        updateView('topicSelector');
+    // Cache view elements
+    views.RESUME_PROMPT = document.getElementById('resume-prompt-view');
+    views.TOPIC_SELECTION = document.getElementById('topic-selector-view');
+    views.QUIZ = document.getElementById('quiz-view');
+    views.RESULTS = document.getElementById('results-view');
+    
+    if (quizState.hasSavedState()) {
+        const saved = quizState.loadQuizState();
+        quizData = saved.quizData;
+        userAnswers = saved.userAnswers;
+        currentQuestionIndex = saved.currentQuestionIndex;
+        quizContext = saved.quizContext;
+        
+        currentView = GameView.QUIZ;
+        updateView();
+        renderQuiz();
+    } else {
+        startNewQuiz();
     }
 }
 
+// Run initialization logic
 init();
