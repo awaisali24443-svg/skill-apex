@@ -19,6 +19,34 @@
 #topic-form #generate-quiz-btn { width: 100%; padding: 0.9rem; }
 .error-text { color: var(--color-danger); min-height: 1.2em; margin-bottom: 1rem; }
 
+/* Resume Prompt */
+#resume-prompt-view {
+    text-align: center;
+    width: 100%;
+    max-width: 500px;
+    animation: fadeIn 0.5s ease;
+}
+#resume-prompt-view h2 { margin-bottom: 0.5rem; }
+.resume-actions {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.btn-secondary {
+    background: transparent;
+    color: var(--color-text);
+    border: 2px solid var(--color-border);
+}
+.btn-secondary:hover:not(:disabled) {
+    border-color: var(--color-primary);
+    background-color: var(--color-glow);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+
 /* Animations */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-10px); }

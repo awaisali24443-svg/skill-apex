@@ -1,5 +1,6 @@
 import { generateQuiz } from '../../services/geminiService.js';
 import { NUM_QUESTIONS } from '../../constants.js';
+import * as quizStateService from '../../services/quizStateService.js';
 
 // --- State ---
 let quizData = null;
@@ -12,11 +13,14 @@ const views = {
     loading: document.getElementById('loading-view'),
     quiz: document.getElementById('quiz-view'),
     results: document.getElementById('results-view'),
+    resumePrompt: document.getElementById('resume-prompt-view'),
 };
 const topicForm = document.getElementById('topic-form');
 const topicInput = document.getElementById('topic-input');
-const generateQuizBtn = document.getElementById('generate-quiz-btn');
 const errorMessage = document.getElementById('error-message');
+const resumeBtn = document.getElementById('resume-btn');
+const startNewBtn = document.getElementById('start-new-btn');
+
 
 // --- Functions ---
 
@@ -24,6 +28,16 @@ function updateView(currentViewKey) {
     Object.entries(views).forEach(([key, view]) => {
         if (view) view.classList.toggle('hidden', key !== currentViewKey);
     });
+}
+
+function saveCurrentState() {
+    if (!quizData) return;
+    const state = {
+        quizData,
+        userAnswers,
+        currentQuestionIndex
+    };
+    quizStateService.saveQuizState(state);
 }
 
 function renderQuiz() {
@@ -120,6 +134,7 @@ function handleAnswerSelect(e) {
     const selectedButton = e.currentTarget;
     const selectedAnswerIndex = parseInt(selectedButton.dataset.optionIndex, 10);
     userAnswers[currentQuestionIndex] = selectedAnswerIndex;
+    saveCurrentState();
 
     const question = quizData[currentQuestionIndex];
     const correctIndex = question.correctAnswerIndex;
@@ -143,26 +158,45 @@ function handleAnswerSelect(e) {
 function handleNext() {
     if (currentQuestionIndex < quizData.length - 1) {
         currentQuestionIndex++;
+        saveCurrentState();
         renderQuiz();
     } else {
+        quizStateService.clearQuizState();
         updateView('results');
         renderResults();
     }
 }
 
 function handleRestart() {
+    quizStateService.clearQuizState();
     quizData = null;
     userAnswers = [];
     currentQuestionIndex = 0;
-    topicInput.value = '';
-    errorMessage.textContent = '';
+    if (topicInput) topicInput.value = '';
+    if (errorMessage) errorMessage.textContent = '';
     updateView('topicSelector');
 }
+
+function handleResume() {
+    const savedState = quizStateService.loadQuizState();
+    if (savedState) {
+        quizData = savedState.quizData;
+        userAnswers = savedState.userAnswers;
+        currentQuestionIndex = savedState.currentQuestionIndex;
+        updateView('quiz');
+        renderQuiz();
+    }
+}
+
 
 // --- Initialization ---
 function init() {
     if (topicForm) {
         topicForm.addEventListener('submit', handleStartQuiz);
+    }
+    if (resumeBtn && startNewBtn) {
+        resumeBtn.addEventListener('click', handleResume);
+        startNewBtn.addEventListener('click', handleRestart);
     }
 
     const quizDataString = sessionStorage.getItem('generatedQuizData');
@@ -175,18 +209,22 @@ function init() {
             quizData = data;
             userAnswers = new Array(data.length).fill(null);
             currentQuestionIndex = 0;
+            saveCurrentState();
             updateView('quiz');
             renderQuiz();
         } catch (e) {
             console.error("Failed to parse quiz data:", e);
-            errorMessage.textContent = "There was an error loading the quiz data.";
+            if (errorMessage) errorMessage.textContent = "There was an error loading the quiz data.";
             updateView('topicSelector');
         }
     } else if (errorString) {
         sessionStorage.removeItem('quizError');
-        errorMessage.textContent = errorString;
+        if (errorMessage) errorMessage.textContent = errorString;
         updateView('topicSelector');
-    } else {
+    } else if (quizStateService.hasSavedState()) {
+        updateView('resumePrompt');
+    }
+    else {
         updateView('topicSelector');
     }
 }
