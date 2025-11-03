@@ -1,6 +1,7 @@
 import { generateQuiz } from '../welcome/services/geminiService.js';
-import { NUM_QUESTIONS } from '../../constants.js';
+import { NUM_QUESTIONS, UNLOCK_SCORE, MAX_LEVEL } from '../../constants.js';
 import * as quizStateService from '../../services/quizStateService.js';
+import * as progressService from '../../services/progressService.js';
 
 // --- State ---
 let quizData = null;
@@ -40,6 +41,28 @@ function saveCurrentState() {
     quizStateService.saveQuizState(state);
 }
 
+function startSpecificQuiz(topic, level, returnHash, category) {
+    let prompt = '';
+    // Reconstruct the prompt based on the category
+    if (category === 'programming') {
+        prompt = `Generate a quiz on the ${topic} programming language. The difficulty should be level ${level} out of ${MAX_LEVEL}, where level 1 is for an absolute beginner (noob) and level ${MAX_LEVEL} is for a world-class expert. Adjust the complexity, depth, and obscurity of the questions accordingly.`;
+    } else if (category === 'history') {
+        prompt = `Generate a quiz on the key events, figures, and concepts of ${topic}. The difficulty should be level ${level} out of ${MAX_LEVEL}, where level 1 is for an absolute beginner (noob) and level ${MAX_LEVEL} is for a world-class expert. Adjust the complexity, depth, and obscurity of the questions accordingly.`;
+    } else {
+         // Generic prompt for other categories
+         prompt = `Generate a quiz on ${topic} at difficulty level ${level}/${MAX_LEVEL}.`;
+    }
+
+    sessionStorage.setItem('quizTopicPrompt', prompt);
+    sessionStorage.setItem('quizTopicName', topic);
+    sessionStorage.setItem('quizLevel', level);
+    sessionStorage.setItem('quizReturnHash', returnHash);
+    sessionStorage.setItem('quizCategory', category);
+    
+    window.location.hash = '#loading';
+}
+
+
 function renderQuiz() {
     const question = quizData[currentQuestionIndex];
     const optionsHtml = question.options.map((option, index) =>
@@ -68,6 +91,32 @@ function renderResults() {
         (answer === quizData[index].correctAnswerIndex ? acc + 1 : acc), 0
     );
     const scorePercentage = Math.round((score / quizData.length) * 100);
+
+    // Retrieve quiz context for progression logic
+    const topicName = sessionStorage.getItem('quizTopicName');
+    const level = parseInt(sessionStorage.getItem('quizLevel'), 10);
+    const returnHash = sessionStorage.getItem('quizReturnHash');
+    const category = sessionStorage.getItem('quizCategory');
+
+    let resultsMessage = '';
+    let actionButtonsHtml = '';
+
+    if (score >= UNLOCK_SCORE) {
+        const isMaxLevel = level >= MAX_LEVEL;
+        resultsMessage = isMaxLevel 
+            ? `<p class="results-feedback success">Mastery! You've completed all levels for ${topicName}!</p>`
+            : `<p class="results-feedback success">Congratulations! You've unlocked Level ${level + 1}.</p>`;
+
+        if (!isMaxLevel) {
+            progressService.unlockNextLevel(topicName, MAX_LEVEL);
+            actionButtonsHtml = `<button id="next-level-btn" class="btn btn-primary">Play Level ${level + 1}</button>`;
+        }
+    } else {
+        resultsMessage = `<p class="results-feedback failure">Almost there! You need a score of ${UNLOCK_SCORE} or more to unlock the next level.</p>`;
+        actionButtonsHtml = `<button id="retry-level-btn" class="btn btn-primary">Retry Level ${level}</button>`;
+    }
+    actionButtonsHtml += `<a href="${returnHash}" class="btn btn-secondary">Back to Topics</a>`;
+
 
     const getResultColor = () => {
         if (scorePercentage >= 80) return 'var(--color-success)';
@@ -110,12 +159,19 @@ function renderResults() {
                 <div class="score-text" style="color:${strokeColor}">${scorePercentage}%</div>
             </div>
             <p class="results-summary">You answered ${score} out of ${quizData.length} questions correctly.</p>
-            <div class="review-container">${questionsReviewHtml}</div>
-            <button id="restart-btn" class="btn btn-primary">Try Another Quiz</button>
+            ${resultsMessage}
+            <div class="results-actions">${actionButtonsHtml}</div>
+            <div class="review-container" style="margin-top: 2rem;">${questionsReviewHtml}</div>
         </div>
     `;
-
-    document.getElementById('restart-btn').addEventListener('click', handleRestart);
+    
+    // Add event listeners for new buttons
+    document.getElementById('next-level-btn')?.addEventListener('click', () => {
+        startSpecificQuiz(topicName, level + 1, returnHash, category);
+    });
+    document.getElementById('retry-level-btn')?.addEventListener('click', () => {
+        startSpecificQuiz(topicName, level, returnHash, category);
+    });
 }
 
 
@@ -126,7 +182,12 @@ function handleStartQuiz(e) {
     const topic = topicInput.value.trim();
     if (!topic) return;
 
-    sessionStorage.setItem('quizTopic', topic);
+    sessionStorage.setItem('quizTopicPrompt', `Generate a quiz with ${NUM_QUESTIONS} multiple-choice questions about "${topic}".`);
+    sessionStorage.setItem('quizTopicName', topic); // Generic topic name
+    sessionStorage.setItem('quizLevel', 1); // Default to level 1
+    sessionStorage.setItem('quizReturnHash', '#quiz'); // Return to the generic quiz page
+    sessionStorage.setItem('quizCategory', 'generic');
+    
     window.location.hash = '#loading';
 }
 
@@ -213,9 +274,16 @@ function init() {
             updateView('topicSelector');
         }
     } else if (errorString) {
+        const returnHash = sessionStorage.getItem('quizReturnHash') || '#quiz';
         sessionStorage.removeItem('quizError');
-        if (errorMessage) errorMessage.textContent = errorString;
-        updateView('topicSelector');
+        // If we are on the #quiz page, show the error. Otherwise, just go back.
+        if(window.location.hash === '#quiz' && errorMessage) {
+            errorMessage.textContent = errorString;
+            updateView('topicSelector');
+        } else {
+            window.location.hash = returnHash;
+        }
+
     } else if (quizStateService.hasSavedState()) {
         updateView('resumePrompt');
     }

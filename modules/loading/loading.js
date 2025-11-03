@@ -30,24 +30,26 @@ async function startQuizGeneration() {
         }, 300);
     }, 2000); // Change message every 2 seconds
 
-    const topic = sessionStorage.getItem('quizTopic');
+    const topic = sessionStorage.getItem('quizTopicPrompt'); // Use the full, detailed prompt
+    const returnHash = sessionStorage.getItem('quizReturnHash') || '#quiz';
+
     if (!topic) {
-        console.error("No topic found for quiz generation.");
+        console.error("No topic prompt found for quiz generation.");
         sessionStorage.setItem('quizError', 'Something went wrong. Please select a topic again.');
-        window.location.hash = '#quiz'; // Go back to the main quiz page
+        window.location.hash = returnHash; 
         return;
     }
 
     try {
         const quizData = await generateQuiz(topic);
         sessionStorage.setItem('generatedQuizData', JSON.stringify(quizData));
-        sessionStorage.removeItem('quizTopic'); // Clean up
+        sessionStorage.removeItem('quizTopicPrompt'); // Clean up
         window.location.hash = '#quiz';
     } catch (error) {
         console.error("Failed to generate quiz:", error);
         sessionStorage.setItem('quizError', error.message || 'Failed to generate the quiz. Please try another topic.');
-        sessionStorage.removeItem('quizTopic');
-        window.location.hash = '#quiz';
+        sessionStorage.removeItem('quizTopicPrompt');
+        window.location.hash = returnHash;
     }
 }
 
