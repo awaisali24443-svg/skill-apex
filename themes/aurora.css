@@ -1,0 +1,25 @@
+:root {
+    --color-primary: #a78bfa;
+    --color-secondary: #22d3ee;
+    --color-bg: #1e1b4b;
+    --color-bg-light: #312e81;
+    --color-text: #e0e7ff;
+    --color-text-muted: #a5b4fc;
+    --color-border: #4338ca;
+    --color-success: #4ade80;
+    --color-danger: #f87171;
+    --color-warning: #facc15;
+
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+
+    --bg-image: linear-gradient(-45deg, #1e1b4b, #312e81, #4c1d95, #22d3ee);
+    --bg-size: 400% 400%;
+    --bg-animation: backgroundShift 20s ease infinite;
+}
+
+.card {
+    background-color: rgba(30, 27, 75, 0.8);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}

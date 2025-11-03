@@ -1,0 +1,31 @@
+:root {
+    --color-primary: #f000b8;
+    --color-secondary: #00f7ff;
+    --color-bg: #1a001a;
+    --color-bg-light: rgba(255, 255, 255, 0.05);
+    --color-text: #f0f0f0;
+    --color-text-muted: #a0a0a0;
+    --color-border: rgba(240, 0, 184, 0.5);
+    --color-success: #00ff41;
+    --color-danger: #ff0051;
+    --color-warning: #fff000;
+
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+
+    --bg-image: linear-gradient(135deg, #1a001a 0%, #3d003d 100%);
+    --bg-size: 100% 100%;
+    --bg-animation: none;
+}
+
+.card {
+    background-color: var(--color-bg-light);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 0 20px rgba(240, 0, 184, 0.2);
+}
+
+h1, h2, h3, .logo {
+    text-shadow: 0 0 3px var(--color-primary), 0 0 5px var(--color-secondary);
+}

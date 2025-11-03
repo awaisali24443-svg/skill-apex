@@ -1,0 +1,19 @@
+:root {
+    --color-primary: #22d3ee;
+    --color-secondary: #0e7490;
+    --color-bg: #0c243b;
+    --color-bg-light: #1e3a52;
+    --color-text: #e0f2fe;
+    --color-text-muted: #a5f3fc;
+    --color-border: #3b5a77;
+    --color-success: #4ade80;
+    --color-danger: #f87171;
+    --color-warning: #facc15;
+
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+
+    --bg-image: linear-gradient(to bottom, #0c243b, #1e3a52);
+    --bg-size: 100% 100%;
+    --bg-animation: none;
+}
