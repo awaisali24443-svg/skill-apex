@@ -76,7 +76,7 @@ function setTheme(themeName) {
 function setupThemeSwitcher() {
     const themeSelector = document.getElementById('theme-selector');
     if (themeSelector) {
-        const savedTheme = localStorage.getItem('theme') || 'carbon-mist';
+        const savedTheme = localStorage.getItem('theme') || 'google-ai-studio';
         themeSelector.value = savedTheme;
         setTheme(savedTheme);
 
@@ -101,7 +101,7 @@ async function init() {
         yearSpan.textContent = new Date().getFullYear();
     }
 
-    const savedTheme = localStorage.getItem('theme') || 'carbon-mist';
+    const savedTheme = localStorage.getItem('theme') || 'google-ai-studio';
     setTheme(savedTheme);
 
     window.addEventListener('hashchange', handleRouteChange);

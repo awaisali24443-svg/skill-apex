@@ -1,4 +1,4 @@
-import { generateQuiz } from '../../services/geminiService.js';
+import { generateQuiz } from '../welcome/services/geminiService.js';
 import { NUM_QUESTIONS } from '../../constants.js';
 import * as quizStateService from '../../services/quizStateService.js';
 

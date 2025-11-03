@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { NUM_QUESTIONS } from '../constants.js';
+import { NUM_QUESTIONS } from '../../../constants.js';
 
 if (!window.process?.env?.API_KEY) {
     throw new Error("API_KEY environment variable is not set. Ensure config.js is loaded.");
