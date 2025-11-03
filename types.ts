@@ -6,3 +6,13 @@ export interface Question {
 }
 
 export type QuizData = Question[];
+
+declare global {
+  interface Window {
+      process: {
+          env: {
+              API_KEY: string;
+          }
+      }
+  }
+}

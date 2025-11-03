@@ -1,12 +1,11 @@
 import { GoogleGenAI, Type } from "@google/genai";
+import { NUM_QUESTIONS } from "../constants.js";
 
-if (!process.env.API_KEY) {
+if (!window.process?.env?.API_KEY) {
     throw new Error("API_KEY environment variable is not set. Ensure config.js is loaded.");
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
-const NUM_QUESTIONS = 5;
+const ai = new GoogleGenAI({ apiKey: window.process.env.API_KEY });
 
 const quizSchema = {
     type: Type.ARRAY,
@@ -50,7 +49,10 @@ export const generateQuiz = async (topic) => {
             },
         });
 
-        const jsonText = response.text.trim();
+        const jsonText = response.text?.trim();
+        if (!jsonText) {
+            throw new Error("Invalid (empty) quiz data received from API.");
+        }
         const quizData = JSON.parse(jsonText);
 
         if (!Array.isArray(quizData) || quizData.length === 0) {
