@@ -14,7 +14,7 @@ function getAudioContext() {
 }
 
 // A simple sound player using the Web Audio API
-function playTone(frequency, duration, type = 'sine') {
+function playTone(frequency, duration, type = 'sine', volume = 0.1, decay = true) {
     const context = getAudioContext();
     if (!context) return; // AudioContext not supported or failed to initialize
 
@@ -28,10 +28,11 @@ function playTone(frequency, duration, type = 'sine') {
         oscillator.type = type;
         oscillator.frequency.setValueAtTime(frequency, context.currentTime);
         
-        // Use a small gain to avoid being too loud
-        gainNode.gain.setValueAtTime(0.1, context.currentTime); 
-        // Fade out smoothly
-        gainNode.gain.exponentialRampToValueAtTime(0.00001, context.currentTime + duration / 1000);
+        gainNode.gain.setValueAtTime(volume, context.currentTime); 
+        
+        if (decay) {
+            gainNode.gain.exponentialRampToValueAtTime(0.00001, context.currentTime + duration / 1000);
+        }
 
         oscillator.start(context.currentTime);
         oscillator.stop(context.currentTime + duration / 1000);
@@ -50,6 +51,7 @@ const sounds = {
         setTimeout(() => playTone(783.99, 150, 'sine'), 300); // G5
     },
     'select': () => playTone(800, 50, 'triangle'),
+    'click': () => playTone(900, 80, 'triangle', 0.05), // Soft, futuristic "ping"
 };
 
 /**

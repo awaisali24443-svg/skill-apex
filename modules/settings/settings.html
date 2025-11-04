@@ -1,35 +1,78 @@
-<div class="settings-container has-back-button">
+<div class="settings-container card glass-card has-back-button">
     <a href="#home" class="back-button">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         Back to Dashboard
     </a>
-    <h1 class="settings-title">Settings</h1>
-    <p class="settings-subtitle">Customize the application to your liking.</p>
-
-    <div class="settings-section">
-        <h2>Appearance</h2>
-        <p class="section-description">Choose a theme that fits your style.</p>
-        <div id="theme-grid" class="theme-grid">
-            <!-- Theme swatches will be populated by JS -->
-        </div>
-    </div>
-
-    <div class="settings-section">
-        <h2>Data Management</h2>
-        <p class="section-description">Manage your quiz history and progress.</p>
-        <div class="danger-zone">
-            <div>
-                <strong>Reset All Progress</strong>
-                <p>This will permanently delete all your quiz scores and reset all topics back to Level 1. This action cannot be undone.</p>
+    <h1 class="settings-title">Profile & Settings</h1>
+    
+    <!-- Profile Section -->
+    <div class="settings-section profile-section">
+        <div class="profile-header">
+            <div class="profile-picture-wrapper">
+                <img id="profile-picture" src="https://avatar.iran.liara.run/public/boy" alt="User profile picture">
+                <button id="edit-picture-btn" class="edit-picture-btn" aria-label="Edit profile picture">✏️</button>
             </div>
-            <button id="reset-progress-btn" class="btn-danger">Reset Progress</button>
+            <div class="profile-info">
+                <input type="text" id="display-name" class="profile-input" placeholder="Your Name">
+                <textarea id="profile-bio" class="profile-input" placeholder="Your bio or field of interest..."></textarea>
+                <button id="save-profile-btn" class="btn btn-primary">Save Profile</button>
+            </div>
         </div>
     </div>
     
-    <div class="settings-section about-section">
-        <h2>About</h2>
-        <p><strong>Knowledge Tester</strong></p>
-        <p>Version <span id="app-version">1.0.0</span></p>
-        <p class="powered-by">Powered by the Gemini API</p>
+    <!-- Quick Actions -->
+    <div class="settings-section">
+        <h2>Quick Actions</h2>
+        <div class="quick-actions-grid">
+            <a href="#optional-quiz" class="quick-action-card">
+                <span class="quick-action-icon">🧠</span>
+                <span>Forge a Quiz</span>
+            </a>
+            <a href="#programming-quiz" class="quick-action-card">
+                <span class="quick-action-icon">📚</span>
+                <span>Explore Topics</span>
+            </a>
+            <a href="#screen" class="quick-action-card">
+                 <span class="quick-action-icon">📈</span>
+                <span>View Progress</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Accessibility Section -->
+    <div class="settings-section">
+        <h2>Accessibility</h2>
+        <p class="section-description">Customize your viewing experience.</p>
+        <div class="accessibility-options">
+            <div class="option-toggle">
+                <label for="large-text-toggle">Larger Text</label>
+                <input type="checkbox" id="large-text-toggle" class="toggle-switch">
+            </div>
+            <div class="option-toggle">
+                <label for="high-contrast-toggle">Increased Contrast</label>
+                <input type="checkbox" id="high-contrast-toggle" class="toggle-switch">
+            </div>
+             <div class="option-toggle">
+                <label for="dyslexia-font-toggle">Dyslexia-Friendly Font</label>
+                <input type="checkbox" id="dyslexia-font-toggle" class="toggle-switch">
+            </div>
+            <div class="option-toggle">
+                <label for="reduce-motion-toggle">Reduce Motion</label>
+                <input type="checkbox" id="reduce-motion-toggle" class="toggle-switch">
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Management Section -->
+    <div class="settings-section">
+        <h2>Data Management</h2>
+        <p class="section-description">Manage your quiz history and progress. All data is stored locally in your browser.</p>
+        <div class="danger-zone">
+            <div>
+                <strong>Reset All Progress & Data</strong>
+                <p>This will permanently delete your profile, scores, and reset all topics back to Level 1. This action cannot be undone.</p>
+            </div>
+            <button id="reset-progress-btn" class="btn-danger">Reset All</button>
+        </div>
     </div>
 </div>

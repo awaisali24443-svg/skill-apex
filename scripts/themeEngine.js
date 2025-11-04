@@ -4,7 +4,7 @@ export const themes = [
     { id: 'solar-flare', name: 'Solar Flare', colors: ['#FFD700', '#FF4500'] },
     { id: 'neural-frost', name: 'Neural Frost', colors: ['#E0EFFF', '#B2FEFA'] },
     { id: 'emerald-circuit', name: 'Emerald Circuit', colors: ['#00FF7F', '#373B44'] },
-    { id: 'obsidian-matrix', name: 'Obsidian Matrix', colors: ['#39FF14', '#000000'] },
+    { id: 'obsidian-matrix', name: 'Obsidian Matrix', colors: ['#000000', '#39FF14'] },
     { id: 'prism-halo', name: 'Prism Halo', colors: ['#FF00FF', '#00FFFF'] },
     { id: 'crimson-core', name: 'Crimson Core', colors: ['#DC143C', '#4F4F4F'] },
     { id: 'eclipse-void', name: 'Eclipse Void', colors: ['#FFD700', '#2C3E50'] },
@@ -14,7 +14,7 @@ export const themes = [
 const themeLink = document.getElementById('theme-link');
 const body = document.body;
 
-function applyTheme(themeId) {
+function applyTheme(themeId, fromAI = false) {
     if (!themeLink) {
         console.error("Theme link element with id 'theme-link' not found!");
         return;
@@ -25,28 +25,46 @@ function applyTheme(themeId) {
         themeId = 'quantum-blue'; // Fallback to a default
     }
 
-    // Add a class to the body to pause CSS transitions during the switch
     body.classList.add('theme-transitioning');
     
     themeLink.href = `/themes/theme-${themeId}.css`;
 
     localStorage.setItem('selected-theme', themeId);
+    
+    if (window.showToast) {
+        const message = fromAI 
+            ? `🎨 AI suggests ${selectedTheme.name} for this time of day!`
+            : `🎨 Switched to ${selectedTheme.name}`;
+        window.showToast(message);
+    }
 
-    // Remove the transition-pausing class after the new stylesheet has loaded
+
     themeLink.onload = () => {
-        // A small timeout ensures the browser has rendered the new styles
         setTimeout(() => {
             body.classList.remove('theme-transitioning');
         }, 50);
     };
 }
 
+function aiSuggestTheme() {
+    const hour = new Date().getHours();
+    let themeId = 'cyber-aurora'; // Default (evening)
+
+    if (hour >= 5 && hour < 12) { // Morning
+        themeId = 'celestial-white';
+    } else if (hour >= 18 || hour < 5) { // Night
+        themeId = 'obsidian-matrix';
+    }
+    
+    applyTheme(themeId, true);
+    return themeId;
+}
+
 function initTheme() {
     const savedTheme = localStorage.getItem('selected-theme');
-    // If a theme is saved in localStorage, apply it. Otherwise, the HTML default is used.
     if (savedTheme) {
         applyTheme(savedTheme);
     }
 }
 
-export { applyTheme, initTheme };
+export { applyTheme, initTheme, aiSuggestTheme };

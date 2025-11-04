@@ -23,8 +23,6 @@ function handleTopicSelect(event) {
     const card = event.currentTarget;
     const topic = card.dataset.topic;
     if (!topic) return;
-
-    playSound('start');
     
     const level = progressService.getCurrentLevel(topic);
     const descriptor = getLevelDescriptor(level);
@@ -47,16 +45,16 @@ function handleTopicSelect(event) {
 }
 
 function initializeTopicCards() {
-    const topicCards = document.querySelectorAll('.topic-card');
+    const topicCards = document.querySelectorAll('.topic-card-flipper');
     topicCards.forEach(card => {
         const topic = card.dataset.topic;
         const level = progressService.getCurrentLevel(topic);
         const descriptor = getLevelDescriptor(level);
 
-        const levelDisplay = card.querySelector('.level-display');
+        const levelDisplays = card.querySelectorAll('.level-display');
         const levelDescriptorEl = card.querySelector('.level-descriptor');
         
-        if (levelDisplay) levelDisplay.textContent = `Level ${level}`;
+        levelDisplays.forEach(el => el.textContent = `Level ${level}`);
         if (levelDescriptorEl) levelDescriptorEl.textContent = descriptor;
         
         card.addEventListener('click', handleTopicSelect);

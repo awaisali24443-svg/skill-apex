@@ -1,4 +1,4 @@
-import { themes, applyTheme, initTheme } from './themeEngine.js';
+import { themes, applyTheme, initTheme, aiSuggestTheme } from './themeEngine.js';
 
 function createSwitcher() {
     const switcherHTML = `
@@ -16,6 +16,7 @@ function createSwitcher() {
                         </div>
                     `).join('')}
                 </div>
+                 <button id="ai-suggest-theme-btn" class="btn btn-secondary">AI Suggests ✨</button>
             </div>
         </div>
     `;
@@ -25,13 +26,17 @@ function createSwitcher() {
     const panel = document.getElementById('theme-switcher-panel');
     const container = document.getElementById('theme-switcher-container');
     const options = document.querySelectorAll('.theme-option');
+    const aiSuggestBtn = document.getElementById('ai-suggest-theme-btn');
+    const themeLink = document.getElementById('theme-link');
+    
+    let originalThemeHref = themeLink.href;
 
     toggleBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         panel.classList.toggle('hidden');
+        originalThemeHref = themeLink.href; // Store current theme when opening
     });
 
-    // Close panel if clicking outside of it
     document.addEventListener('click', (e) => {
         if (!container.contains(e.target)) {
             panel.classList.add('hidden');
@@ -39,19 +44,32 @@ function createSwitcher() {
     });
 
     options.forEach(option => {
-        const selectTheme = () => {
-             const themeId = option.dataset.themeId;
+        const themeId = option.dataset.themeId;
+        
+        option.addEventListener('click', () => {
             applyTheme(themeId);
-            // Optionally close panel on selection
-            // panel.classList.add('hidden');
-        };
+        });
 
-        option.addEventListener('click', selectTheme);
         option.addEventListener('keydown', (e) => {
             if(e.key === 'Enter' || e.key === ' ') {
-                selectTheme();
+                applyTheme(themeId);
             }
         });
+
+        // Hover preview
+        option.addEventListener('mouseenter', () => {
+            if(themeLink) themeLink.href = `/themes/theme-${themeId}.css`;
+        });
+    });
+
+    // Restore original theme on mouseleave if no selection was made
+    panel.addEventListener('mouseleave', () => {
+        const currentThemeId = localStorage.getItem('selected-theme') || 'quantum-blue';
+        if(themeLink) themeLink.href = `/themes/theme-${currentThemeId}.css`;
+    });
+
+    aiSuggestBtn.addEventListener('click', () => {
+        aiSuggestTheme();
     });
 }
 

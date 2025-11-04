@@ -1,4 +1,3 @@
-import { initCard, cleanup } from '../../services/threeManager.js';
 import * as progressService from '../../services/progressService.js';
 import { NUM_QUESTIONS, MAX_LEVEL } from '../../constants.js';
 import { playSound } from '../../services/soundService.js';
@@ -25,8 +24,6 @@ function handleTopicSelect(event) {
     const topic = card.dataset.topic;
     if (!topic) return;
 
-    playSound('start');
-
     const level = progressService.getCurrentLevel(topic);
     const descriptor = getLevelDescriptor(level);
 
@@ -49,19 +46,16 @@ function handleTopicSelect(event) {
 
 
 function initializeTopicCards() {
-    // Clean up any previous 3D scenes before creating new ones
-    cleanup();
-    
-    const topicCards = document.querySelectorAll('.topic-card');
+    const topicCards = document.querySelectorAll('.topic-card-flipper');
     topicCards.forEach(card => {
         const topic = card.dataset.topic;
         const level = progressService.getCurrentLevel(topic);
         const descriptor = getLevelDescriptor(level);
 
-        const levelDisplay = card.querySelector('.level-display');
+        const levelDisplays = card.querySelectorAll('.level-display');
         const levelDescriptorEl = card.querySelector('.level-descriptor');
         
-        if (levelDisplay) levelDisplay.textContent = `Level ${level}`;
+        levelDisplays.forEach(el => el.textContent = `Level ${level}`);
         if (levelDescriptorEl) levelDescriptorEl.textContent = descriptor;
         
         card.addEventListener('click', handleTopicSelect);
@@ -70,9 +64,6 @@ function initializeTopicCards() {
                 handleTopicSelect(e);
             }
         });
-
-        // Initialize 3D scene
-        initCard(card);
     });
 }
 

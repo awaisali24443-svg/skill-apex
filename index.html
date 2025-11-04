@@ -11,24 +11,62 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="/global/global.css">
+    <link rel="stylesheet" href="/global/accessibility.css">
     <link rel="stylesheet" href="/themes/theme-quantum-blue.css" id="theme-link">
 
     <link rel="preconnect" href="https://aistudiocdn.com">
     <script type="importmap">
     {
       "imports": {
-        "@google/genai": "https://aistudiocdn.com/@google/genai@^1.28.0",
-        "three": "https://unpkg.com/three@0.164.1/build/three.module.js"
+        "@google/genai": "https://aistudiocdn.com/@google/genai@^1.28.0"
       }
     }
     </script>
 </head>
 <body>
+    <!-- UI Effects -->
+    <div id="cursor-aura"></div>
+    <div id="toast-container"></div>
+
+    <!-- Onboarding Overlay -->
+    <div id="onboarding-overlay" class="hidden">
+        <div class="onboarding-card">
+            <h2>Welcome to Knowledge Tester</h2>
+            <p class="onboarding-subtitle">Your AI companion for learning everything from science to space.</p>
+            <div class="onboarding-steps">
+                <div class="step">
+                    <div class="step-icon">📚</div>
+                    <h3>1. Pick Your Topic</h3>
+                    <p>Choose from curated lists or generate a quiz on any subject imaginable.</p>
+                </div>
+                <div class="step">
+                    <div class="step-icon">🎨</div>
+                    <h3>2. Choose Your Theme</h3>
+                    <p>Personalize your learning environment with a variety of cinematic themes.</p>
+                </div>
+                <div class="step">
+                    <div class="step-icon">🚀</div>
+                    <h3>3. Start Exploring</h3>
+                    <p>Test your knowledge, unlock levels, and track your progress.</p>
+                </div>
+            </div>
+            <button id="onboarding-skip-btn" class="btn btn-primary">Start Learning</button>
+        </div>
+    </div>
+
     <header id="header-container"></header>
     <main id="root-container"></main>
     <footer class="site-footer">
         <p>&copy; <span id="year"></span> Knowledge Tester. All rights reserved.</p>
     </footer>
+
+     <!-- Floating Assistant -->
+    <div id="assistant-container">
+        <button id="assistant-toggle" aria-label="Open AI Assistant">💡</button>
+        <div id="assistant-bubble" class="hidden">
+            <p id="assistant-tip">Try switching to Quantum Blue for a techy vibe.</p>
+        </div>
+    </div>
 
     <!-- Dynamically generated config to provide API key -->
     <script src="/config.js"></script>

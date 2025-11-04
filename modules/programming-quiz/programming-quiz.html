@@ -6,70 +6,124 @@
     <h1 class="programming-quiz-title">Programming Quizzes</h1>
     <p class="programming-quiz-subtitle">Select a language to test your expertise and unlock new levels.</p>
     <div class="topic-grid">
-        <div class="topic-card" data-topic="Python" role="button" tabindex="0" aria-label="Start Python Quiz">
-            <canvas class="topic-canvas"></canvas>
-            <div class="topic-card-content">
-                <h3>Python</h3>
-                <p>Data science, web dev, scripting</p>
-            </div>
-            <div class="level-info">
-                <span class="level-display">Level 1</span>
-                <span class="level-descriptor">Noob</span>
-            </div>
-        </div>
-        <div class="topic-card" data-topic="JavaScript" role="button" tabindex="0" aria-label="Start JavaScript Quiz">
-            <canvas class="topic-canvas"></canvas>
-            <div class="topic-card-content">
-                <h3>JavaScript</h3>
-                <p>The language of the web</p>
-            </div>
-            <div class="level-info">
-                <span class="level-display">Level 1</span>
-                <span class="level-descriptor">Noob</span>
+        <div class="topic-card-flipper" data-topic="Python" role="button" tabindex="0">
+            <div class="topic-card-inner">
+                <div class="topic-card topic-card-front">
+                    <div class="topic-icon">🐍</div>
+                    <h3>Python</h3>
+                    <p>Data science, web dev, scripting</p>
+                    <div class="level-info">
+                        <span class="level-display">Level 1</span>
+                    </div>
+                </div>
+                <div class="topic-card topic-card-back">
+                    <h3>Python</h3>
+                    <div class="level-info">
+                        <span class="level-display">Level 1</span>
+                        <span class="level-descriptor">Noob</span>
+                    </div>
+                    <span class="start-quiz-link">Start Quiz &rarr;</span>
+                </div>
             </div>
         </div>
-        <div class="topic-card" data-topic="Java" role="button" tabindex="0" aria-label="Start Java Quiz">
-            <canvas class="topic-canvas"></canvas>
-            <div class="topic-card-content">
-                <h3>Java</h3>
-                <p>Enterprise-level applications</p>
-            </div>
-            <div class="level-info">
-                <span class="level-display">Level 1</span>
-                <span class="level-descriptor">Noob</span>
-            </div>
-        </div>
-        <div class="topic-card" data-topic="SQL" role="button" tabindex="0" aria-label="Start SQL Quiz">
-            <canvas class="topic-canvas"></canvas>
-            <div class="topic-card-content">
-                <h3>SQL</h3>
-                <p>Database management</p>
-            </div>
-            <div class="level-info">
-                <span class="level-display">Level 1</span>
-                <span class="level-descriptor">Noob</span>
+        <div class="topic-card-flipper" data-topic="JavaScript" role="button" tabindex="0">
+             <div class="topic-card-inner">
+                <div class="topic-card topic-card-front">
+                    <div class="topic-icon">🟨</div>
+                    <h3>JavaScript</h3>
+                    <p>The language of the web</p>
+                    <div class="level-info">
+                        <span class="level-display">Level 1</span>
+                    </div>
+                </div>
+                <div class="topic-card topic-card-back">
+                    <h3>JavaScript</h3>
+                    <div class="level-info">
+                        <span class="level-display">Level 1</span>
+                        <span class="level-descriptor">Noob</span>
+                    </div>
+                    <span class="start-quiz-link">Start Quiz &rarr;</span>
+                </div>
             </div>
         </div>
-        <div class="topic-card" data-topic="TypeScript" role="button" tabindex="0" aria-label="Start TypeScript Quiz">
-            <canvas class="topic-canvas"></canvas>
-            <div class="topic-card-content">
-                <h3>TypeScript</h3>
-                <p>JavaScript with static types</p>
-            </div>
-            <div class="level-info">
-                <span class="level-display">Level 1</span>
-                <span class="level-descriptor">Noob</span>
+        <div class="topic-card-flipper" data-topic="Java" role="button" tabindex="0">
+             <div class="topic-card-inner">
+                <div class="topic-card topic-card-front">
+                    <div class="topic-icon">☕</div>
+                    <h3>Java</h3>
+                    <p>Enterprise-level applications</p>
+                    <div class="level-info">
+                        <span class="level-display">Level 1</span>
+                    </div>
+                </div>
+                <div class="topic-card topic-card-back">
+                    <h3>Java</h3>
+                    <div class="level-info">
+                        <span class="level-display">Level 1</span>
+                        <span class="level-descriptor">Noob</span>
+                    </div>
+                    <span class="start-quiz-link">Start Quiz &rarr;</span>
+                </div>
             </div>
         </div>
-        <div class="topic-card" data-topic="C++" role="button" tabindex="0" aria-label="Start C++ Quiz">
-            <canvas class="topic-canvas"></canvas>
-            <div class="topic-card-content">
-                <h3>C++</h3>
-                <p>Performance-critical systems</p>
+        <div class="topic-card-flipper" data-topic="SQL" role="button" tabindex="0">
+             <div class="topic-card-inner">
+                <div class="topic-card topic-card-front">
+                    <div class="topic-icon">🗃️</div>
+                    <h3>SQL</h3>
+                    <p>Database management</p>
+                    <div class="level-info">
+                        <span class="level-display">Level 1</span>
+                    </div>
+                </div>
+                <div class="topic-card topic-card-back">
+                    <h3>SQL</h3>
+                    <div class="level-info">
+                        <span class="level-display">Level 1</span>
+                        <span class="level-descriptor">Noob</span>
+                    </div>
+                    <span class="start-quiz-link">Start Quiz &rarr;</span>
+                </div>
             </div>
-            <div class="level-info">
-                <span class="level-display">Level 1</span>
-                <span class="level-descriptor">Noob</span>
+        </div>
+        <div class="topic-card-flipper" data-topic="TypeScript" role="button" tabindex="0">
+             <div class="topic-card-inner">
+                <div class="topic-card topic-card-front">
+                    <div class="topic-icon">🟦</div>
+                    <h3>TypeScript</h3>
+                    <p>JavaScript with static types</p>
+                    <div class="level-info">
+                        <span class="level-display">Level 1</span>
+                    </div>
+                </div>
+                <div class="topic-card topic-card-back">
+                    <h3>TypeScript</h3>
+                    <div class="level-info">
+                        <span class="level-display">Level 1</span>
+                        <span class="level-descriptor">Noob</span>
+                    </div>
+                    <span class="start-quiz-link">Start Quiz &rarr;</span>
+                </div>
+            </div>
+        </div>
+        <div class="topic-card-flipper" data-topic="C++" role="button" tabindex="0">
+            <div class="topic-card-inner">
+                <div class="topic-card topic-card-front">
+                    <div class="topic-icon">⚙️</div>
+                    <h3>C++</h3>
+                    <p>Performance-critical systems</p>
+                    <div class="level-info">
+                        <span class="level-display">Level 1</span>
+                    </div>
+                </div>
+                <div class="topic-card topic-card-back">
+                    <h3>C++</h3>
+                    <div class="level-info">
+                        <span class="level-display">Level 1</span>
+                        <span class="level-descriptor">Noob</span>
+                    </div>
+                    <span class="start-quiz-link">Start Quiz &rarr;</span>
+                </div>
             </div>
         </div>
     </div>

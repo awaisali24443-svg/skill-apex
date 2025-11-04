@@ -23,58 +23,74 @@
     text-align: left;
 }
 
-.topic-card {
-    background-color: var(--color-bg);
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    transition: all 0.3s ease;
+/* 3D Flip Card Styles */
+.topic-card-flipper {
+    background-color: transparent;
+    aspect-ratio: 4 / 5;
+    perspective: 1000px;
     cursor: pointer;
-    overflow: hidden;
+}
+.topic-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+.topic-card-flipper:hover .topic-card-inner,
+.topic-card-flipper:focus .topic-card-inner {
+    transform: rotateY(180deg);
+}
+.topic-card {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    padding: 1.5rem 1.5rem 0;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background-color: var(--color-bg);
+    transition: all 0.3s ease;
+}
+.topic-card-front {
     background-image: 
         url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800"%3E%3Cfilter id="a"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" stitchTiles="stitch"/%3E%3Crect width="100%" height="100%" filter="url(%23a)" opacity="0.04"/%3E%3C/svg%3E'),
         linear-gradient(175deg, rgba(203, 196, 179, 0.08) 0%, rgba(203, 196, 179, 0.02) 100%);
 }
-
-.topic-card:hover {
-    transform: translateY(-5px) scale(1.03);
-    box-shadow: 0 10px 20px -5px var(--color-glow);
+.topic-card-flipper:hover .topic-card-front {
     border-color: var(--color-primary);
+    box-shadow: 0 0 15px var(--color-glow);
 }
-
-.topic-card-content {
-    padding: 0;
-    flex-grow: 1;
+.topic-card-back {
+    transform: rotateY(180deg);
+    border-color: var(--color-primary);
+    justify-content: space-around;
 }
-
+.topic-icon { font-size: 3rem; margin-bottom: 1rem; }
 .topic-card h3 {
     font-size: 1.25rem;
-    color: var(--color-primary);
+    color: var(--color-text);
     margin-bottom: 0.5rem;
 }
-
 .topic-card p {
     color: var(--color-text-muted);
     font-size: 0.95rem;
 }
-
 .level-info {
-    padding: 1rem 0;
-    margin-top: 1.5rem;
-    border-top: 1px solid var(--color-border);
+    margin-top: 1rem;
     text-align: center;
 }
-
 .level-display {
     font-size: 1.1rem;
     color: var(--color-text);
     font-weight: 700;
-    margin-right: 0.5rem;
 }
-
 .level-descriptor {
     display: inline-block;
     padding: 0.1rem 0.5rem;
@@ -83,4 +99,8 @@
     background-color: var(--color-bg-light);
     color: var(--color-primary);
     font-weight: 500;
+}
+.start-quiz-link {
+    font-weight: 600;
+    color: var(--color-primary);
 }
