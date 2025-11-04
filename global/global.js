@@ -11,22 +11,27 @@ const routes = {
     '': 'welcome', // Default route
     '#welcome': 'welcome',
     '#login': 'login',
-    '#home': 'main-home',
-    '#quiz': 'main', // AI Quiz Generator module
+    '#home': 'home', // Replaced main-home
     '#optional-quiz': 'optional-quiz-generator',
     '#programming-quiz': 'programming-quiz',
     '#historical-knowledge': 'historical-knowledge',
     '#loading': 'loading',
+    '#quiz': 'quiz', // New quiz module
+    '#results': 'results', // New results module
     '#screen': 'screen',
-    '#settings': 'settings' // New route for the settings screen
+    '#settings': 'settings'
 };
 
+let isNavigating = false;
+
 async function loadModule(moduleName) {
-    if (!rootContainer) return;
-    rootContainer.style.opacity = '0';
+    if (!rootContainer || isNavigating) return;
+    isNavigating = true;
+
+    rootContainer.classList.add('module-exit');
     
     // Wait for fade out
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(resolve => setTimeout(resolve, 300));
 
     try {
         const response = await fetch(`/modules/${moduleName}/${moduleName}.html`);
@@ -34,6 +39,8 @@ async function loadModule(moduleName) {
         
         const html = await response.text();
         rootContainer.innerHTML = html;
+        rootContainer.classList.remove('module-exit');
+        rootContainer.classList.add('module-enter');
 
         // Clean up old module-specific assets
         document.getElementById('module-style')?.remove();
@@ -45,13 +52,16 @@ async function loadModule(moduleName) {
         style.rel = 'stylesheet';
         style.href = `/modules/${moduleName}/${moduleName}.css`;
         
-        // Wait for styles to load before showing content to prevent FOUC
         style.onload = () => {
-            rootContainer.style.opacity = '1';
+             setTimeout(() => {
+                rootContainer.classList.remove('module-enter');
+                isNavigating = false;
+            }, 300);
         };
         style.onerror = () => {
             console.error(`Failed to load stylesheet for ${moduleName}.`);
-            rootContainer.style.opacity = '1'; // Show content anyway
+            rootContainer.classList.remove('module-enter');
+            isNavigating = false;
         };
         
         document.head.appendChild(style);
@@ -65,7 +75,8 @@ async function loadModule(moduleName) {
     } catch (error) {
         console.error('Error loading module:', error);
         rootContainer.innerHTML = `<div class="card" style="text-align:center;"><h2 style="color:var(--color-danger);">Error: Could not load page.</h2><p>${error.message}</p></div>`;
-        rootContainer.style.opacity = '1';
+        rootContainer.classList.remove('module-exit', 'module-enter');
+        isNavigating = false;
     }
 }
 

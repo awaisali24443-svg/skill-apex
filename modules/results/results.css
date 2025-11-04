@@ -1,0 +1,144 @@
+#results-container { 
+    width: 100%; 
+    text-align: center; 
+    animation: popIn 0.5s ease-out;
+}
+
+.results-title { 
+    font-size: 2rem; 
+    margin-bottom: 0.5rem; 
+}
+
+.score-container { 
+    position: relative; 
+    width: 150px; 
+    height: 150px; 
+    margin: 1rem auto; 
+}
+
+.score-circle { 
+    width: 100%; 
+    height: 100%; 
+    transform: rotate(-90deg); 
+}
+
+.score-circle-bg { 
+    fill: none; 
+    stroke: var(--color-border); 
+    stroke-width: 12; 
+}
+
+.score-circle-fg { 
+    fill: none; 
+    stroke-linecap: round; 
+    transition: stroke-dashoffset 1s ease-out; 
+    stroke-dashoffset: 850; /* Start with a high value to be animated in */
+}
+
+.score-text { 
+    position: absolute; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    font-size: 2.5rem; 
+    font-weight: 800; 
+}
+
+.results-summary { 
+    font-size: 1.2rem; 
+    color: var(--color-text-muted); 
+    margin-bottom: 1rem; 
+}
+
+.review-container { 
+    max-height: 400px; 
+    overflow-y: auto; 
+    text-align: left; 
+    padding-right: 1rem; 
+    margin: 2rem 0;
+    border-top: 1px solid var(--color-border);
+    padding-top: 1rem;
+}
+
+.review-item { 
+    border-bottom: 1px solid var(--color-border); 
+    padding-bottom: 1.5rem; 
+    margin-bottom: 1.5rem; 
+    opacity: 0;
+    animation: popIn 0.5s ease-out forwards;
+}
+
+.review-item:last-child { 
+    border-bottom: none; 
+}
+
+.review-question { 
+    font-weight: 700; 
+    margin-bottom: 1rem; 
+}
+
+.review-option { 
+    padding: 0.75rem; 
+    border-radius: 6px; 
+    margin-bottom: 0.5rem; 
+    border: 1px solid var(--color-border); 
+    background-color: color-mix(in srgb, var(--color-border) 20%, transparent); 
+}
+
+.review-correct { 
+    background-color: color-mix(in srgb, var(--color-success) 15%, transparent); 
+    border-color: color-mix(in srgb, var(--color-success) 40%, transparent); 
+}
+
+.review-incorrect { 
+    background-color: color-mix(in srgb, var(--color-danger) 15%, transparent); 
+    border-color: color-mix(in srgb, var(--color-danger) 40%, transparent); 
+}
+
+.review-explanation { 
+    margin-top: 1rem; 
+    padding: 0.75rem; 
+    background-color: color-mix(in srgb, var(--color-warning) 10%, transparent); 
+    border-left: 3px solid var(--color-warning); 
+    border-radius: 6px; 
+    font-size: 0.9rem; 
+}
+
+/* Level Progression Feedback */
+.results-feedback {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 2rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    animation: popIn 0.5s 0.8s ease-out forwards;
+    opacity: 0;
+}
+.results-feedback.success {
+    background-color: color-mix(in srgb, var(--color-success) 15%, transparent);
+    color: var(--color-success);
+}
+.results-feedback.failure {
+    background-color: color-mix(in srgb, var(--color-danger) 15%, transparent);
+    color: var(--color-danger);
+}
+.results-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    animation: popIn 0.5s 1s ease-out forwards;
+    opacity: 0;
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--color-text);
+    border: 2px solid var(--color-border);
+}
+.btn-secondary:hover:not(:disabled) {
+    border-color: var(--color-primary);
+    background-color: var(--color-glow);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
