@@ -1,0 +1,26 @@
+:root {
+    --color-primary: #FF00FF; /* Magenta */
+    --color-secondary: #00FFFF; /* Cyan */
+    --color-bg: #111827;
+    --color-bg-light: #1F2937;
+    --color-text: #F9FAFB;
+    --color-text-muted: #D1D5DB;
+    --color-border: #4B5563;
+    --color-success: #34D399;
+    --color-danger: #F87171;
+    --color-warning: #FBBF24;
+    --color-glow: rgba(255, 0, 255, 0.3);
+
+    --bg-image: linear-gradient(135deg, #FF00FF20, #00FFFF20, #FFFF0020);
+    --bg-size: 400% 400%;
+    --bg-animation: backgroundShift 10s ease infinite;
+}
+
+.card, #theme-switcher-panel {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid transparent;
+    border-image: linear-gradient(to bottom right, var(--color-primary), var(--color-secondary)) 1;
+    box-shadow: 0 0 30px rgba(0,0,0,0.2), 0 0 15px var(--color-glow);
+}

@@ -48,12 +48,16 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    transition: background-color 0.4s ease-in-out, color 0.4s ease-in-out;
+    transition: background-color 0.6s ease, color 0.6s ease;
     background-image: var(--bg-image);
     background-size: var(--bg-size);
     animation: var(--bg-animation);
     overflow-x: hidden;
     position: relative;
+}
+
+body.theme-transitioning * {
+    transition: none !important; /* Pause transitions during theme switch to prevent flashes */
 }
 
 /* Layout */
@@ -90,6 +94,7 @@ body {
     justify-content: space-between; /* Align logo left, settings right */
     align-items: center;
     border-bottom: 1px solid var(--color-border);
+    transition: border-color 0.5s ease;
 }
 
 .site-header .logo {
@@ -133,6 +138,7 @@ body {
     color: var(--color-text-muted);
     font-size: 0.9rem;
     border-top: 1px solid var(--color-border);
+    transition: border-color 0.5s ease;
 }
 
 /* Forms & Buttons */
@@ -140,7 +146,7 @@ body {
     display: inline-block;
     border: none;
     padding: 0.75rem 1.5rem;
-    border-radius: 8px;
+    border-radius: 99px; /* More modern rounded pill shape */
     font-weight: 700;
     font-size: 1rem;
     cursor: pointer;
@@ -148,22 +154,22 @@ body {
     transition: all 0.2s ease;
     transform: translateY(0);
     text-decoration: none;
+    border: 2px solid transparent;
 }
 
 .btn-primary {
     background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
     color: white;
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 0 15px -5px var(--color-glow);
 }
 
 .btn-primary:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 0 25px -5px var(--color-glow);
 }
 
 .btn:active:not(:disabled) {
     transform: translateY(0px) scale(0.98);
-    box-shadow: var(--shadow-md);
 }
 
 .btn:disabled {
@@ -176,7 +182,7 @@ body {
 .form-control {
     width: 100%;
     padding: 0.75rem 1rem;
-    background-color: var(--color-bg);
+    background-color: transparent; /* Changed for better theming */
     border: 2px solid var(--color-border);
     border-radius: 8px;
     color: var(--color-text);
@@ -194,12 +200,13 @@ body {
 .card {
     background-color: var(--color-bg-light);
     padding: 2rem;
-    border-radius: 12px;
+    border-radius: 16px; /* Increased for a softer look */
     box-shadow: var(--shadow-lg);
     width: 100%;
     border: 1px solid var(--color-border);
-    transition: all 0.4s ease-in-out;
+    transition: all 0.5s ease;
     position: relative;
+    overflow: hidden; /* For inner glow effects */
 }
 
 .card.has-back-button {
@@ -253,6 +260,102 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: #777;
 }
+
+
+/* --- Theme Switcher --- */
+#theme-switcher-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+#theme-switcher-toggle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--color-bg-light);
+    border: 2px solid var(--color-border);
+    color: var(--color-text);
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-lg);
+}
+#theme-switcher-toggle:hover {
+    transform: scale(1.1) rotate(45deg);
+    border-color: var(--color-primary);
+}
+
+#theme-switcher-panel {
+    position: absolute;
+    bottom: 65px;
+    right: 0;
+    width: 280px;
+    padding: 1.5rem;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--color-bg-light) 70%, transparent);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+    opacity: 1;
+    transform-origin: bottom right;
+    animation: popIn 0.3s ease-out;
+}
+
+#theme-switcher-panel.hidden {
+    display: none;
+}
+
+#theme-switcher-panel h3 {
+    text-align: center;
+    margin-bottom: 1rem;
+    color: var(--color-text);
+}
+
+#theme-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    max-height: 40vh;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.theme-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.theme-option:hover {
+    background-color: var(--color-glow);
+    border-color: var(--color-primary);
+}
+
+.theme-option .theme-preview {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 2px solid var(--color-border);
+}
+
+.theme-option span {
+    font-weight: 500;
+    color: var(--color-text);
+    white-space: nowrap;
+}
+
 
 /* Animations */
 @keyframes backgroundShift {

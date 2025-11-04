@@ -1,0 +1,33 @@
+@keyframes solar-pulse {
+    0%, 100% { box-shadow: 0 0 20px var(--color-glow); }
+    50% { box-shadow: 0 0 35px var(--color-glow); }
+}
+
+:root {
+    --color-primary: #FFD700; /* Gold */
+    --color-secondary: #FF8C00; /* DarkOrange */
+    --color-bg: #000000;
+    --color-bg-light: #121212;
+    --color-text: #FFFFFF;
+    --color-text-muted: #AAAAAA;
+    --color-border: #444444;
+    --color-success: #9ACD32;
+    --color-danger: #FF6347;
+    --color-warning: #FFD700;
+    --color-glow: rgba(255, 140, 0, 0.4);
+
+    --bg-image: 
+        radial-gradient(ellipse at center, rgba(255, 215, 0, 0.1) 0%, transparent 70%),
+        linear-gradient(to bottom, #000000, #101010);
+    --bg-size: 100% 100%;
+    --bg-animation: none;
+}
+
+.btn-primary {
+    animation: solar-pulse 4s ease-in-out infinite;
+}
+
+.card {
+    border: 1px solid var(--color-border);
+    box-shadow: inset 0 0 20px rgba(255, 215, 0, 0.1);
+}

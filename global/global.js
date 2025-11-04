@@ -2,6 +2,7 @@
     GLOBAL SCRIPT
     This file handles routing, theme switching, and loading shared components.
 */
+import '/scripts/themeSwitcher.js'; // Initializes the entire theme system
 
 const rootContainer = document.getElementById('root-container');
 const headerContainer = document.getElementById('header-container');
@@ -86,23 +87,11 @@ function handleRouteChange() {
     loadModule(moduleName);
 }
 
-function setTheme(themeName) {
-    const themeLink = document.getElementById('theme-link');
-    if (themeLink) {
-        themeLink.href = `/themes/${themeName}.css`;
-        localStorage.setItem('theme', themeName);
-    }
-}
-
 async function loadHeader() {
     try {
         const response = await fetch('/global/header.html');
         if (!response.ok) throw new Error('Header template not found.');
         headerContainer.innerHTML = await response.text();
-        
-        const savedTheme = localStorage.getItem('theme') || 'carbon-mist';
-        setTheme(savedTheme);
-
     } catch (error) {
         console.error('Error loading header:', error);
         headerContainer.innerHTML = '<p style="color:red; text-align:center;">Error loading header</p>';

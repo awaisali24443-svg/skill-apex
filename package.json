@@ -1,6 +1,6 @@
 {
   "name": "knowledge-tester-rebuilt",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "An interactive quiz application that generates custom quizzes on any topic using the power of the Gemini API.",
   "main": "server.js",
   "scripts": {

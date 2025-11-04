@@ -1,0 +1,30 @@
+:root {
+    --color-primary: #00BFFF; /* DeepSkyBlue */
+    --color-secondary: #87CEEB; /* SkyBlue */
+    --color-bg: #E0EFFF; /* AliceBlue-like */
+    --color-bg-light: #FFFFFF;
+    --color-text: #283E51;
+    --color-text-muted: #566D7E;
+    --color-border: #BCCCDC;
+    --color-success: #2E8B57;
+    --color-danger: #E94B3C;
+    --color-warning: #F4A261;
+    --color-glow: rgba(0, 191, 255, 0.25);
+
+    --bg-image: 
+        radial-gradient(ellipse at top, rgba(178, 254, 250, 0.5) 0%, transparent 60%),
+        linear-gradient(to bottom, #E0EFFF, #B2FEFA);
+    --bg-size: 100% 100%;
+    --bg-animation: none;
+}
+
+body {
+    background-color: #E0EFFF !important;
+}
+
+.card {
+     background-color: rgba(255, 255, 255, 0.6);
+     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+}
