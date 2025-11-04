@@ -43,7 +43,7 @@ if (topicForm) {
         
         playSound('start');
 
-        const prompt = `Generate a quiz with ${NUM_QUESTIONS} multiple-choice questions about "${topic}". The difficulty should be ${selectedDifficulty}.`;
+        const prompt = `Generate a quiz with ${NUM_QUESTIONS} multiple-choice questions about "${topic}". The difficulty should be ${selectedDifficulty}. Ensure all questions are unique and cover different aspects of the topic.`;
         
         const quizContext = {
             topicName: topic,
