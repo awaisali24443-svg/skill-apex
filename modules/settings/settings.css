@@ -80,6 +80,23 @@
 .quick-action-card:hover { transform: translateY(-5px); border-color: var(--color-primary); }
 .quick-action-icon { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
 
+/* General Settings */
+.settings-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding-top: 1rem;
+}
+.settings-item label {
+    font-weight: 500;
+    flex-shrink: 0;
+}
+.settings-item .form-control {
+    max-width: 220px;
+}
+
+
 /* Accessibility */
 .accessibility-options { display: flex; flex-direction: column; gap: 1rem; }
 .option-toggle { display: flex; justify-content: space-between; align-items: center; }

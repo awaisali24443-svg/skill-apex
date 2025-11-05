@@ -308,7 +308,7 @@ body.theme-transitioning * {
 /* Toast Notifications */
 #toast-container {
     position: fixed;
-    bottom: 85px; /* Adjusted to sit above the new theme switcher */
+    bottom: 20px;
     right: 20px;
     z-index: 2000;
     display: flex;
@@ -357,32 +357,6 @@ body.theme-transitioning * {
 .step-icon { font-size: 2rem; margin-bottom: 0.5rem; }
 #onboarding-skip-btn { padding: 0.8rem 2.5rem; }
 
-/* Floating Assistant */
-#assistant-container { position: fixed; bottom: 20px; left: 20px; z-index: 1000; }
-#assistant-toggle {
-    width: 50px; height: 50px;
-    border-radius: 50%;
-    background-color: var(--color-primary);
-    color: white;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    box-shadow: var(--shadow-lg);
-    transition: transform 0.2s ease;
-}
-#assistant-toggle:hover { transform: scale(1.1); }
-#assistant-bubble {
-    position: absolute;
-    bottom: 60px; left: 0;
-    width: 250px;
-    padding: 1rem;
-    background-color: var(--color-bg-light);
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    box-shadow: var(--shadow-lg);
-    animation: popIn 0.3s ease-out;
-}
-
 /* Motivational Hint */
 .motivational-hint {
     text-align: center;
@@ -393,99 +367,6 @@ body.theme-transitioning * {
     animation: fadeIn 0.5s 0.2s ease-out forwards;
     min-height: 24px;
 }
-
-/* --- Theme Switcher --- */
-#theme-switcher-container {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 1001;
-}
-
-#theme-switcher-toggle {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background-color: var(--color-bg-light);
-    color: var(--color-text);
-    border: 1px solid var(--color-border);
-    font-size: 1.5rem;
-    cursor: pointer;
-    box-shadow: var(--shadow-lg);
-    transition: transform 0.2s ease, background-color 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#theme-switcher-toggle:hover {
-    transform: scale(1.1);
-    background-color: var(--color-bg);
-}
-
-#theme-switcher-panel {
-    position: absolute;
-    bottom: 65px;
-    right: 0;
-    width: 280px;
-    background-color: var(--color-bg-light);
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    box-shadow: var(--shadow-lg);
-    padding: 1rem;
-    animation: popIn 0.3s ease-out;
-}
-
-#theme-switcher-panel h3 {
-    margin-bottom: 1rem;
-    text-align: center;
-    color: var(--color-text-muted);
-    font-size: 1rem;
-}
-
-#theme-options {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-}
-
-.theme-option {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.5rem;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    font-size: 0.9rem;
-}
-
-.theme-option:hover {
-    background-color: var(--color-glow);
-}
-
-.theme-preview {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    border: 1px solid var(--color-border);
-    flex-shrink: 0;
-}
-
-#ai-suggest-theme-btn {
-    width: 100%;
-    margin-top: 0.5rem;
-    background: transparent;
-    border: 1px solid var(--color-border);
-    padding: 0.5rem;
-    font-size: 0.9rem;
-}
-#ai-suggest-theme-btn:hover {
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-}
-
 
 /* Animations */
 @keyframes backgroundShift {

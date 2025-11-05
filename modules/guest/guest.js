@@ -1,4 +1,0 @@
-/*
-    DEPRECATED: This module has been superseded by the 'optional-quiz-generator' module.
-    This file can be safely deleted from the project.
-*/

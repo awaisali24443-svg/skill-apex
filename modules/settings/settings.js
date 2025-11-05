@@ -10,6 +10,10 @@ const profilePictureImg = document.getElementById('profile-picture');
 const editPictureBtn = document.getElementById('edit-picture-btn');
 const resetProgressBtn = document.getElementById('reset-progress-btn');
 
+// Theme Selector
+const themeSelector = document.getElementById('theme-selector');
+const themes = ['dark', 'light', 'cyber'];
+
 // General Toggles
 const soundToggle = document.getElementById('sound-toggle');
 
@@ -112,6 +116,7 @@ function handleResetProgress() {
         localStorage.removeItem('userProfile');
         localStorage.removeItem('accessibilitySettings');
         localStorage.removeItem('generalSettings');
+        localStorage.removeItem('selectedTheme');
         // Do not remove onboarding status
         alert("Your progress and profile have been reset. The page will now reload.");
         window.location.reload();
@@ -123,6 +128,27 @@ function init() {
     loadProfile();
     loadGeneralSettings();
     loadAccessibilitySettings();
+
+    // Load and set saved theme
+    const savedTheme = localStorage.getItem('selectedTheme');
+    if (savedTheme && themes.includes(savedTheme)) {
+      document.body.setAttribute('data-theme', savedTheme);
+      themeSelector.value = savedTheme;
+    } else {
+      // Default to light theme if nothing is saved or the saved theme is invalid
+      document.body.setAttribute('data-theme', 'light');
+      localStorage.setItem('selectedTheme', 'light');
+      themeSelector.value = 'light';
+    }
+
+    // Add theme change listener
+    themeSelector?.addEventListener('change', (e) => {
+      const selectedTheme = e.target.value;
+      if (themes.includes(selectedTheme)) {
+          document.body.setAttribute('data-theme', selectedTheme);
+          localStorage.setItem('selectedTheme', selectedTheme);
+      }
+    });
 
     saveProfileBtn?.addEventListener('click', saveProfile);
     editPictureBtn?.addEventListener('click', editProfilePicture);

@@ -2,7 +2,6 @@
     GLOBAL SCRIPT
     This file handles routing, theme switching, and loading shared components.
 */
-import '/scripts/themeSwitcher.js'; // Initializes the entire theme system
 import { playSound } from '/services/soundService.js';
 
 const rootContainer = document.getElementById('root-container');
@@ -63,34 +62,6 @@ function initOnboarding() {
     skipBtn.addEventListener('click', () => {
         overlay.classList.add('hidden');
         localStorage.setItem('knowledgeTesterOnboarded', 'true');
-    });
-}
-
-function initAssistant() {
-    const toggle = document.getElementById('assistant-toggle');
-    const bubble = document.getElementById('assistant-bubble');
-    const tipEl = document.getElementById('assistant-tip');
-    if (!toggle || !bubble || !tipEl) return;
-
-    const tips = [
-        "Try switching to the 'Neon Pulse' theme for a techy vibe.",
-        "Need ideas? Any topic you enter in the 'AI Quiz Forge' will work!",
-        "Check your profile to see your unlocked levels and stats.",
-        "You can change themes from the settings page or the floating palette.",
-        "Challenge yourself with a 'Hard' difficulty quiz for more points."
-    ];
-
-    toggle.addEventListener('click', () => {
-        const isHidden = bubble.classList.toggle('hidden');
-        if (!isHidden) {
-            tipEl.textContent = tips[Math.floor(Math.random() * tips.length)];
-        }
-    });
-     // Close bubble if clicking outside of it
-    document.addEventListener('click', (e) => {
-        if (!toggle.contains(e.target) && !bubble.contains(e.target)) {
-            bubble.classList.add('hidden');
-        }
     });
 }
 
@@ -225,7 +196,6 @@ function init() {
     initCursorAura();
     initGlobalSounds();
     initOnboarding();
-    initAssistant();
     initAccessibility();
     
     window.addEventListener('hashchange', handleRouteChange);
