@@ -36,11 +36,12 @@ const quizSchema = {
 };
 
 /**
- * Generates a quiz using a pre-constructed prompt.
+ * Generates a quiz using a pre-constructed prompt and optional system instruction.
  * @param {string} prompt - The full prompt for the Gemini API.
+ * @param {string} [systemInstruction] - An optional instruction to set the AI's persona.
  * @returns {Promise<Array<object>>} - A promise that resolves to the quiz data.
  */
-export const generateQuiz = async (prompt) => {
+export const generateQuiz = async (prompt, systemInstruction) => {
     try {
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
@@ -48,6 +49,7 @@ export const generateQuiz = async (prompt) => {
             config: {
               responseMimeType: "application/json",
               responseSchema: quizSchema,
+              systemInstruction: systemInstruction || "You are a helpful and engaging quiz creator."
             },
         });
 

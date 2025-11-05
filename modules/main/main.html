@@ -1,34 +1,5 @@
-<div id="quiz-container" class="card">
-    <!-- Resume Prompt View -->
-    <div id="resume-prompt-view" class="hidden">
-        <h2>Welcome Back!</h2>
-        <p class="subtitle">You have a quiz in progress. Would you like to resume?</p>
-        <div class="resume-actions">
-            <button id="resume-btn" class="btn btn-primary">Resume Quiz</button>
-            <button id="start-new-btn" class="btn btn-secondary">Start a New Quiz</button>
-        </div>
-    </div>
-
-    <!-- Topic Selection View -->
-    <div id="topic-selector-view">
-        <h2>AI Quiz Generator</h2>
-        <p class="subtitle">What would you like to be quizzed on today?</p>
-        <form id="topic-form">
-            <input id="topic-input" type="text" class="form-control" placeholder="e.g., The History of Python" required />
-            <p id="error-message" class="error-text"></p>
-            <button id="generate-quiz-btn" type="submit" class="btn btn-primary">
-                Generate Quiz
-            </button>
-        </form>
-    </div>
-
-    <!-- Quiz View -->
-    <div id="quiz-view" class="hidden">
-        <!-- Quiz content will be injected here -->
-    </div>
-
-    <!-- Results View -->
-    <div id="results-view" class="hidden">
-        <!-- Results content will be injected here -->
-    </div>
-</div>
+<!--
+    DEPRECATED: This module contained old, monolithic quiz logic.
+    This functionality has been split into the dedicated 'quiz' and 'results' modules.
+    This file can be safely deleted from the project.
+-->
