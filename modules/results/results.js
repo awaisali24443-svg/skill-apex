@@ -107,6 +107,7 @@ function renderResults() {
         ${feedbackHtml}
         <div class="results-actions">
             ${actionsHtml}
+            <button id="retry-quiz-btn" class="btn btn-secondary">Retry Quiz</button>
             <button id="back-to-topics-btn" class="btn btn-secondary">Back to Topics</button>
         </div>
         <div class="review-container">${reviewHtml}</div>
@@ -123,10 +124,24 @@ function renderResults() {
     document.getElementById('back-to-topics-btn')?.addEventListener('click', handleBackToTopics);
     document.getElementById('next-level-btn')?.addEventListener('click', handleNextLevel);
     document.getElementById('retry-level-btn')?.addEventListener('click', handleRetryLevel);
+    document.getElementById('retry-quiz-btn')?.addEventListener('click', handleRetryQuiz);
 }
 
 function handleBackToTopics() {
     window.location.hash = quizContext.returnHash || '#home';
+}
+
+function handleRetryQuiz() {
+    // quizData and quizContext are available from the module scope, set during init()
+    if (quizData && quizContext) {
+        sessionStorage.setItem('generatedQuizData', JSON.stringify(quizData));
+        sessionStorage.setItem('quizContext', JSON.stringify(quizContext));
+        window.location.hash = '#quiz';
+    } else {
+        console.error("Could not retry quiz, data is missing.");
+        window.showToast("Error: Could not reload quiz data.", "error");
+        window.location.hash = quizContext.returnHash || '#home';
+    }
 }
 
 function handleRetryLevel() {

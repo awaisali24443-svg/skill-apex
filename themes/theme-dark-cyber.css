@@ -1,0 +1,65 @@
+/*
+    THEME STYLES
+    This file consolidates all professional themes for the application.
+    The active theme is controlled by the `data-theme` attribute on the body tag.
+*/
+
+/* 1. Light Professional Theme (Default) */
+body[data-theme="light"] {
+  --color-primary: #3b82f6; /* accent */
+  --color-secondary: #14b8a6;
+  --color-bg: #ffffff; /* background */
+  --color-bg-light: #f2f2f2; /* card-bg */
+  --color-text: #111111; /* text */
+  --color-text-muted: #6b7280;
+  --color-border: #e5e7eb;
+  --color-glow: color-mix(in srgb, var(--color-primary) 20%, transparent);
+
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.07);
+
+  --bg-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  --bg-size: 100% 100%;
+  --bg-animation: none;
+}
+
+/* 2. Dark Professional Theme */
+body[data-theme="dark"] {
+  --color-primary: #0077ff; /* accent */
+  --color-secondary: #2dd4bf;
+  --color-bg: #0a0a0a; /* background */
+  --color-bg-light: #141414; /* card-bg */
+  --color-text: #e6e6e6; /* text */
+  --color-text-muted: #888888;
+  --color-border: #2a2a2a;
+  --color-glow: color-mix(in srgb, var(--color-primary) 30%, transparent);
+
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.15), 0 2px 4px -2px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.15), 0 4px 6px -4px rgba(0, 0, 0, 0.15);
+
+  --bg-image: linear-gradient(-45deg, #0a0a0a, #141414, #0a0a0a);
+  --bg-size: 400% 400%;
+  --bg-animation: backgroundShift 20s ease infinite;
+}
+
+/* 3. Cyber Neon Theme */
+body[data-theme="cyber"] {
+  --color-primary: #ff007f; /* accent (pink) */
+  --color-secondary: #00ffff; /* secondary-accent (cyan) */
+  --color-bg: #0d0f1a; /* background */
+  --color-bg-light: #12142a; /* card-bg */
+  --color-text: #e3f2fd; /* text */
+  --color-text-muted: #8c9bb6;
+  --color-border: #2c3a5e;
+  --color-glow: color-mix(in srgb, var(--color-primary) 35%, transparent);
+
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+
+  --bg-image: 
+    radial-gradient(ellipse at bottom, rgba(0, 255, 255, 0.08), transparent 60%),
+    radial-gradient(ellipse at top, rgba(255, 0, 127, 0.08), transparent 70%),
+    linear-gradient(160deg, #0d0f1a 0%, #12142a 100%);
+  --bg-size: 100% 100%;
+  --bg-animation: none;
+}

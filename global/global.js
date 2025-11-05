@@ -1,6 +1,6 @@
 /*
     GLOBAL SCRIPT
-    This file handles routing, theme switching, and loading shared components.
+    This file handles routing and loading shared components.
 */
 import { playSound } from '/services/soundService.js';
 
