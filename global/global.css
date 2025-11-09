@@ -217,10 +217,32 @@ body.theme-transitioning * {
     box-shadow: 0 0 15px -5px var(--color-glow);
 }
 
+.btn-secondary {
+    background: transparent;
+    color: var(--color-text);
+    border: 2px solid var(--color-border);
+}
+
+.btn-danger {
+    background: var(--color-danger);
+    color: white;
+    box-shadow: 0 0 15px -5px color-mix(in srgb, var(--color-danger) 20%, transparent);
+}
+
 .btn:hover:not(:disabled) {
     transform: scale(1.05);
     box-shadow: 0 0 25px -5px var(--color-glow);
 }
+
+.btn-secondary:hover:not(:disabled) {
+    border-color: var(--color-primary);
+    background-color: var(--color-glow);
+}
+.btn-danger:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--color-danger) 85%, #000);
+    box-shadow: 0 0 25px -5px color-mix(in srgb, var(--color-danger) 30%, transparent);
+}
+
 
 .btn:active:not(:disabled) {
     transform: scale(0.98);
@@ -356,6 +378,39 @@ body.theme-transitioning * {
 .onboarding-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; }
 .step-icon { font-size: 2rem; margin-bottom: 0.5rem; }
 #onboarding-skip-btn { padding: 0.8rem 2.5rem; }
+
+/* Confirmation Modal */
+#modal-container {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0,0,0,0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 4000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    animation: fadeIn 0.3s ease-out;
+}
+#modal-card {
+    max-width: 450px;
+    text-align: center;
+    animation: popIn 0.3s ease-out;
+}
+#modal-card p {
+    color: var(--color-text-muted);
+    margin: 0.5rem 0 1.5rem;
+}
+#modal-input-container {
+    margin: 1rem 0 1.5rem;
+}
+#modal-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
 
 /* Motivational Hint */
 .motivational-hint {

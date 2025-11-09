@@ -73,6 +73,90 @@ function initAccessibility() {
     if (settings.reduceMotion) document.body.classList.add('reduce-motion');
 }
 
+// --- Confirmation Modal ---
+const modalContainer = document.getElementById('modal-container');
+const modalTitle = document.getElementById('modal-title');
+const modalText = document.getElementById('modal-text');
+const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+const modalCancelBtn = document.getElementById('modal-cancel-btn');
+const modalInputContainer = document.getElementById('modal-input-container');
+const modalInput = document.getElementById('modal-input');
+
+function showConfirmationModal({
+    title,
+    text,
+    confirmText = 'Confirm',
+    cancelText = 'Cancel',
+    isAlert = false,
+    isPrompt = false,
+    promptValue = ''
+}) {
+    return new Promise((resolve) => {
+        if (!modalContainer || !modalTitle || !modalText || !modalConfirmBtn || !modalCancelBtn || !modalInputContainer || !modalInput) {
+            console.error("Modal elements not found!");
+            resolve(isPrompt ? null : false);
+            return;
+        }
+
+        modalTitle.textContent = title;
+        modalText.textContent = text;
+        modalConfirmBtn.textContent = confirmText;
+        modalCancelBtn.textContent = cancelText;
+
+        if (isAlert) {
+            modalCancelBtn.classList.add('hidden');
+            modalConfirmBtn.className = 'btn btn-primary';
+        } else {
+            modalCancelBtn.classList.remove('hidden');
+            modalConfirmBtn.className = isPrompt ? 'btn btn-primary' : 'btn btn-danger';
+        }
+
+        if (isPrompt) {
+            modalInputContainer.classList.remove('hidden');
+            modalInput.value = promptValue;
+        } else {
+            modalInputContainer.classList.add('hidden');
+        }
+
+        modalContainer.classList.remove('hidden');
+
+        let confirmHandler, cancelHandler, keydownHandler;
+
+        const cleanup = (value) => {
+            modalContainer.classList.add('hidden');
+            modalConfirmBtn.removeEventListener('click', confirmHandler);
+            modalCancelBtn.removeEventListener('click', cancelHandler);
+            document.removeEventListener('keydown', keydownHandler);
+
+            if (isPrompt) {
+                resolve(value ? modalInput.value : null);
+            } else {
+                resolve(value);
+            }
+        };
+
+        confirmHandler = () => cleanup(true);
+        cancelHandler = () => cleanup(false);
+        keydownHandler = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                confirmHandler();
+            } else if (e.key === 'Escape') {
+                cancelHandler();
+            }
+        };
+
+        modalConfirmBtn.addEventListener('click', confirmHandler);
+        modalCancelBtn.addEventListener('click', cancelHandler);
+        document.addEventListener('keydown', keydownHandler);
+
+        if (isPrompt) {
+            setTimeout(() => modalInput.focus(), 50);
+        }
+    });
+}
+window.showConfirmationModal = showConfirmationModal;
+
 
 // --- Routing ---
 

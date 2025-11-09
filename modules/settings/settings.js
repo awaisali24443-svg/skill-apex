@@ -41,9 +41,17 @@ function saveProfile() {
     window.showToast('✅ Profile saved successfully!');
 }
 
-function editProfilePicture() {
-    const newUrl = prompt("Enter a new image URL for your profile picture:", profilePictureImg.src);
-    if (newUrl) {
+async function editProfilePicture() {
+    const newUrl = await window.showConfirmationModal({
+        title: "Edit Profile Picture",
+        text: "Enter a new image URL for your profile picture:",
+        confirmText: "Save",
+        cancelText: "Cancel",
+        isPrompt: true,
+        promptValue: profilePictureImg.src
+    });
+
+    if (newUrl) { // prompt returns the new value, or null on cancel
         profilePictureImg.src = newUrl;
     }
 }
@@ -109,8 +117,14 @@ function handleAccessibilityChange(e) {
 
 
 // --- Data Management ---
-function handleResetProgress() {
-    const isConfirmed = window.confirm("Are you sure you want to reset ALL your progress and profile data? This action cannot be undone.");
+async function handleResetProgress() {
+    const isConfirmed = await window.showConfirmationModal({
+        title: "Confirm Data Reset",
+        text: "Are you sure you want to reset ALL your progress and profile data? This action cannot be undone.",
+        confirmText: "Reset All",
+        cancelText: "Cancel"
+    });
+
     if (isConfirmed) {
         progressService.resetProgress();
         localStorage.removeItem('userProfile');
@@ -118,7 +132,14 @@ function handleResetProgress() {
         localStorage.removeItem('generalSettings');
         localStorage.removeItem('selectedTheme');
         // Do not remove onboarding status
-        alert("Your progress and profile have been reset. The page will now reload.");
+
+        await window.showConfirmationModal({
+            title: "Data Reset",
+            text: "Your progress and profile have been reset. The page will now reload.",
+            confirmText: "OK",
+            isAlert: true
+        });
+
         window.location.reload();
     }
 }
