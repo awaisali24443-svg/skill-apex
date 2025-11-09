@@ -8,6 +8,8 @@ let quizContext = {};
 
 let autoAdvanceTimer = null;
 let countdownInterval = null;
+let isTimerPaused = false;
+let countdownValue = 3;
 
 const quizContainer = document.getElementById('quiz-container');
 
@@ -95,33 +97,89 @@ function handleAnswerSelect(e) {
 
     const isLastQuestion = currentQuestionIndex === quizData.length - 1;
     const feedbackContainer = document.getElementById('quiz-feedback');
+    
+    let timerControls = '';
+    if (!isLastQuestion) {
+        timerControls = `
+            <button id="timer-control-btn" class="timer-control-btn" aria-label="Pause auto-advance">❚❚</button>
+            <span class="countdown"></span>
+        `;
+    }
+
     feedbackContainer.innerHTML = `
         <button id="next-btn" class="btn btn-primary">${isLastQuestion ? 'Finish Quiz' : 'Next Question'}</button>
+        ${timerControls}
     `;
     
     const nextBtn = document.getElementById('next-btn');
     nextBtn.addEventListener('click', handleNext);
+    document.getElementById('timer-control-btn')?.addEventListener('click', toggleTimer);
 
-    // Auto-advance logic, not for last question
     if (!isLastQuestion) {
-        let countdown = 3;
-        const countdownSpan = document.createElement('span');
-        countdownSpan.className = 'countdown';
-        nextBtn.appendChild(countdownSpan);
-
-        const updateCountdown = () => {
-            countdownSpan.textContent = `(${countdown})`;
-            countdown--;
-        };
-        updateCountdown();
-
-        countdownInterval = setInterval(updateCountdown, 1000);
-        autoAdvanceTimer = setTimeout(handleNext, 3000);
+        startAutoAdvance();
     }
-
 
     quizState.saveQuizState({ quizData, userAnswers, currentQuestionIndex, quizContext });
 }
+
+function startAutoAdvance() {
+    clearTimeout(autoAdvanceTimer);
+    clearInterval(countdownInterval);
+    
+    isTimerPaused = false;
+    countdownValue = 3;
+    
+    const countdownSpan = document.querySelector('.countdown');
+    const timerBtn = document.getElementById('timer-control-btn');
+    
+    if (!countdownSpan || !timerBtn) return;
+
+    timerBtn.innerHTML = '❚❚';
+    timerBtn.setAttribute('aria-label', 'Pause auto-advance');
+    
+    const updateCountdown = () => {
+        if(countdownValue < 0) return;
+        countdownSpan.textContent = `(${countdownValue})`;
+        countdownValue--;
+    };
+    
+    updateCountdown(); // Initial display
+    countdownInterval = setInterval(updateCountdown, 1000);
+    autoAdvanceTimer = setTimeout(handleNext, 3000);
+}
+
+function toggleTimer() {
+    const timerBtn = document.getElementById('timer-control-btn');
+    if (!timerBtn) return;
+
+    isTimerPaused = !isTimerPaused;
+
+    if (isTimerPaused) {
+        clearTimeout(autoAdvanceTimer);
+        clearInterval(countdownInterval);
+        timerBtn.innerHTML = '▶';
+        timerBtn.setAttribute('aria-label', 'Resume auto-advance');
+    } else { // Resuming
+        timerBtn.innerHTML = '❚❚';
+        timerBtn.setAttribute('aria-label', 'Pause auto-advance');
+        
+        if (countdownValue < 0) countdownValue = 0;
+
+        autoAdvanceTimer = setTimeout(handleNext, countdownValue * 1000);
+        
+        const countdownSpan = document.querySelector('.countdown');
+        if (countdownSpan) {
+             const updateCountdown = () => {
+                if(countdownValue < 0) return;
+                countdownSpan.textContent = `(${countdownValue})`;
+                countdownValue--;
+            };
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 1000);
+        }
+    }
+}
+
 
 function handleNext() {
     clearTimeout(autoAdvanceTimer);
@@ -149,7 +207,6 @@ function handleError(message, shouldClearState = false) {
 }
 
 function init() {
-    // **IMPROVEMENT**: Simplified, single entry point. Always load from the robust state service.
     const savedState = quizState.loadQuizState();
 
     if (savedState) {
@@ -166,7 +223,6 @@ function init() {
     document.addEventListener('keydown', handleKeyPress);
 }
 
-// Cleanup listener when navigating away
 window.addEventListener('hashchange', () => {
     document.removeEventListener('keydown', handleKeyPress);
     clearTimeout(autoAdvanceTimer);

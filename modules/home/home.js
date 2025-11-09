@@ -36,9 +36,18 @@ function handleSurpriseMe(e) {
     window.location.hash = '#loading';
 }
 
+function personalizeDashboard() {
+    const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+    const subtitleEl = document.querySelector('.main-home-subtitle');
+    if (profile.name && subtitleEl) {
+        subtitleEl.textContent = `Ready to test your knowledge, ${profile.name}? Create a new quiz or level up your skills.`;
+    }
+}
+
 const surpriseMeCard = document.getElementById('surprise-me-card');
 if (surpriseMeCard) {
     surpriseMeCard.addEventListener('click', handleSurpriseMe);
 }
 
 animateFeatureCards();
+personalizeDashboard();

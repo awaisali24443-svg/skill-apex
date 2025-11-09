@@ -1,6 +1,7 @@
 import * as progressService from '../../services/progressService.js';
 import { UNLOCK_SCORE, MAX_LEVEL, NUM_QUESTIONS } from '../../constants.js';
 import { playSound } from '../../services/soundService.js';
+import * as quizState from '../../services/quizStateService.js';
 
 let quizData = null;
 let userAnswers = [];
@@ -59,15 +60,10 @@ function renderResults() {
     const scorePercentage = Math.round((score / quizData.length) * 100);
     
     let feedbackHtml = '';
-    let actionsHtml = '';
+    let primaryActionHtml = '';
+    let secondaryActionsHtml = '';
 
-    if (quizContext.isLeveled === false) {
-        if (scorePercentage >= 80) feedbackHtml = `<div class="results-feedback success"><strong>Great job!</strong> A fantastic score.</div>`;
-        else if (scorePercentage >= 50) feedbackHtml = `<div class="results-feedback"><strong>Good effort!</strong> Keep practicing.</div>`;
-        else feedbackHtml = `<div class="results-feedback failure"><strong>Keep trying!</strong> Every quiz is a learning opportunity.</div>`;
-        
-        actionsHtml = `<button id="retry-level-btn" class="btn btn-primary">New Quiz (Same Topic)</button>`;
-    } else {
+    if (quizContext.isLeveled) {
         const didPass = score >= UNLOCK_SCORE;
         const isMaxLevel = quizContext.level >= MAX_LEVEL;
 
@@ -76,16 +72,30 @@ function renderResults() {
                 triggerConfetti();
                 const newLevel = quizContext.level + 1;
                 feedbackHtml = `<div class="results-feedback success"><strong>Level ${quizContext.level} Passed!</strong> You've unlocked Level ${newLevel}.</div>`;
-                actionsHtml = `<button id="next-level-btn" class="btn btn-primary">New Quiz (Next Level)</button>`;
+                primaryActionHtml = `<button id="next-level-btn" class="btn btn-primary">New Quiz (Next Level)</button>`;
                 progressService.unlockNextLevel(quizContext.topicName, MAX_LEVEL);
             } else {
                 feedbackHtml = `<div class="results-feedback success"><strong>Congratulations!</strong> You've mastered ${quizContext.topicName} by completing the final level!</div>`;
             }
         } else {
             feedbackHtml = `<div class="results-feedback failure"><strong>Nice try!</strong> You need a score of at least ${UNLOCK_SCORE} to unlock the next level.</div>`;
-            actionsHtml = `<button id="retry-level-btn" class="btn btn-primary">New Quiz (Retry Level)</button>`;
+            primaryActionHtml = `<button id="retry-level-btn" class="btn btn-primary">New Quiz (Retry Level)</button>`;
         }
+    } else { // Non-leveled quiz
+        if (scorePercentage >= 80) feedbackHtml = `<div class="results-feedback success"><strong>Great job!</strong> A fantastic score.</div>`;
+        else if (scorePercentage >= 50) feedbackHtml = `<div class="results-feedback"><strong>Good effort!</strong> Keep practicing.</div>`;
+        else feedbackHtml = `<div class="results-feedback failure"><strong>Keep trying!</strong> Every quiz is a learning opportunity.</div>`;
+        
+        primaryActionHtml = `<button id="retry-level-btn" class="btn btn-primary">New Quiz (Same Topic)</button>`;
     }
+
+    // Add secondary actions
+    const incorrectAnswers = quizData.filter((q, index) => userAnswers[index] !== q.correctAnswerIndex);
+    if (incorrectAnswers.length > 0) {
+        secondaryActionsHtml += `<button id="retry-missed-btn" class="btn btn-secondary">Retry Missed (${incorrectAnswers.length})</button>`;
+    }
+    secondaryActionsHtml += `<button id="retry-quiz-btn" class="btn btn-secondary">Retry Same Questions</button>`;
+    secondaryActionsHtml += `<button id="back-to-topics-btn" class="btn btn-secondary">Back to Topics</button>`;
 
     const reviewHtml = quizData.map((q, index) => {
         const userAnswerIndex = userAnswers[index];
@@ -120,9 +130,8 @@ function renderResults() {
         <p class="results-summary">You scored ${scorePercentage}%</p>
         ${feedbackHtml}
         <div class="results-actions">
-            ${actionsHtml}
-            <button id="retry-quiz-btn" class="btn btn-secondary">Retry Same Questions</button>
-            <button id="back-to-topics-btn" class="btn btn-secondary">Back to Topics</button>
+            ${primaryActionHtml}
+            ${secondaryActionsHtml}
         </div>
         <div class="review-container">${reviewHtml}</div>
     `;
@@ -138,9 +147,9 @@ function renderResults() {
     document.getElementById('next-level-btn')?.addEventListener('click', () => handleNextLevel());
     document.getElementById('retry-level-btn')?.addEventListener('click', () => handleRetryLevel());
     document.getElementById('retry-quiz-btn')?.addEventListener('click', handleRetrySameQuiz);
+    document.getElementById('retry-missed-btn')?.addEventListener('click', () => handleRetryMissed(incorrectAnswers));
 }
 
-// **IMPROVEMENT**: Centralized helper function to start any new quiz
 function _startNewQuiz(topicName, level, returnHash, promptOverride = null) {
     let prompt;
     let newQuizContext;
@@ -160,7 +169,6 @@ function _startNewQuiz(topicName, level, returnHash, promptOverride = null) {
 }
 
 function handleRetrySameQuiz() {
-    // This action bypasses generation, so it uses the robust quizStateService directly
     if (quizData && quizContext) {
         quizState.startNewQuizState(quizData, quizContext);
         window.location.hash = '#quiz';
@@ -168,6 +176,17 @@ function handleRetrySameQuiz() {
         window.showToast("Error: Could not reload quiz data.", "error");
         window.location.hash = quizContext.returnHash || '#home';
     }
+}
+
+function handleRetryMissed(missedQuestions) {
+    playSound('start');
+    const reviewContext = {
+        ...quizContext,
+        topicName: `${quizContext.topicName} (Review)`,
+        isLeveled: false, // Review quizzes don't affect levels
+    };
+    quizState.startNewQuizState(missedQuestions, reviewContext);
+    window.location.hash = '#quiz';
 }
 
 function handleRetryLevel() {
