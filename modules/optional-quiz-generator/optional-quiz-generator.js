@@ -1,99 +1,84 @@
 import { NUM_QUESTIONS } from '../../constants.js';
 import { playSound } from '../../services/soundService.js';
 import { startQuizFlow } from '../../services/navigationService.js';
-import { SceneManager } from '../../services/threeManager.js';
+import { initModuleScene, cleanupModuleScene } from '../../services/moduleHelper.js';
 
 let sceneManager;
-
-console.log("Optional Quiz Generator module loaded.");
-
-const topicForm = document.getElementById('topic-form');
-const topicInput = document.getElementById('topic-input');
-const generateQuizBtn = document.getElementById('generate-quiz-btn');
-const studyGuideBtn = document.getElementById('study-guide-btn');
-const difficultyButtonsContainer = document.querySelector('.difficulty-buttons');
+let form;
 
 let selectedDifficulty = 'Medium'; // Default
 
-if (topicForm) {
-    const updateButtonState = () => {
-        const isDisabled = !topicInput.value.trim();
-        if (generateQuizBtn) generateQuizBtn.disabled = isDisabled;
-        if (studyGuideBtn) studyGuideBtn.disabled = isDisabled;
+const updateButtonState = () => {
+    const topicInput = document.getElementById('topic-input');
+    const generateQuizBtn = document.getElementById('generate-quiz-btn');
+    const studyGuideBtn = document.getElementById('study-guide-btn');
+    const isDisabled = !topicInput.value.trim();
+    if (generateQuizBtn) generateQuizBtn.disabled = isDisabled;
+    if (studyGuideBtn) studyGuideBtn.disabled = isDisabled;
+};
+
+const handleDifficultySelect = (e) => {
+    const target = e.target.closest('.difficulty-btn');
+    if (!target) return;
+    const container = e.currentTarget;
+    container.querySelector('.active')?.classList.remove('active');
+    target.classList.add('active');
+    selectedDifficulty = target.dataset.difficulty;
+};
+
+const handleStudyGuide = async () => {
+    const topic = document.getElementById('topic-input').value.trim();
+    if (!topic) return;
+    playSound('start');
+
+    const prompt = `Generate a concise study guide about "${topic}". The guide should be easy to understand for a beginner, using clear headings, bullet points, and bold text for key terms.`;
+    const quizContext = {
+        topicName: topic,
+        isLeveled: false,
+        prompt: prompt,
+        returnHash: '#custom-quiz',
+        generationType: 'study'
     };
 
-    updateButtonState(); // Initial state
+    sessionStorage.setItem('quizContext', JSON.stringify(quizContext));
+    window.location.hash = '#loading';
+};
 
-    if (topicInput) {
-        topicInput.addEventListener('input', updateButtonState);
-    }
+const handleQuizSubmit = async (e) => {
+    e.preventDefault();
+    const topic = document.getElementById('topic-input').value.trim();
+    if (!topic) return;
+    playSound('start');
 
-    if (difficultyButtonsContainer) {
-        difficultyButtonsContainer.addEventListener('click', (e) => {
-            const target = e.target.closest('.difficulty-btn');
-            if (!target) return;
+    const prompt = `Generate a quiz with ${NUM_QUESTIONS} multiple-choice questions about "${topic}". The difficulty should be ${selectedDifficulty}.`;
+    const quizContext = {
+        topicName: topic,
+        isLeveled: false,
+        prompt: prompt,
+        returnHash: '#home', // Return to home after a custom quiz
+        generationType: 'quiz'
+    };
+    await startQuizFlow(quizContext);
+};
 
-            // Update active state
-            difficultyButtonsContainer.querySelector('.active')?.classList.remove('active');
-            target.classList.add('active');
-
-            selectedDifficulty = target.dataset.difficulty;
-        });
-    }
-
-    studyGuideBtn?.addEventListener('click', async () => {
-        const topic = topicInput.value.trim();
-        if (!topic) return;
-
-        playSound('start');
-
-        const prompt = `Generate a concise study guide about "${topic}". The guide should be easy to understand for a beginner, using clear headings, bullet points, and bold text for key terms.`;
-        const quizContext = {
-            topicName: topic,
-            isLeveled: false,
-            prompt: prompt,
-            returnHash: '#optional-quiz',
-            generationType: 'study'
-        };
-
-        sessionStorage.setItem('quizContext', JSON.stringify(quizContext));
-        window.location.hash = '#loading';
-    });
-
-    topicForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const topic = topicInput.value.trim();
-        if (!topic) return;
-        
-        playSound('start');
-
-        const prompt = `Generate a quiz with ${NUM_QUESTIONS} multiple-choice questions about "${topic}". The difficulty should be ${selectedDifficulty}.`;
-        
-        const quizContext = {
-            topicName: topic,
-            isLeveled: false, // Flag this as a non-leveled quiz
-            prompt: prompt, // Store the prompt for retries
-            returnHash: '#optional-quiz',
-            generationType: 'quiz'
-        };
-        
-        await startQuizFlow(quizContext);
-    });
-}
-
-function init() {
-    const canvas = document.querySelector('.background-canvas');
-    if (canvas && window.THREE) {
-        sceneManager = new SceneManager(canvas);
-        sceneManager.init('dataStream');
+export function init() {
+    sceneManager = initModuleScene('.background-canvas', 'dataStream');
+    form = document.getElementById('topic-form');
+    if (form) {
+        updateButtonState();
+        document.getElementById('topic-input')?.addEventListener('input', updateButtonState);
+        document.querySelector('.difficulty-buttons')?.addEventListener('click', handleDifficultySelect);
+        document.getElementById('study-guide-btn')?.addEventListener('click', handleStudyGuide);
+        form.addEventListener('submit', handleQuizSubmit);
     }
 }
 
-window.addEventListener('hashchange', () => {
-    if (sceneManager) {
-        sceneManager.destroy();
-        sceneManager = null;
+export function cleanup() {
+    sceneManager = cleanupModuleScene(sceneManager);
+    if (form) {
+        document.getElementById('topic-input')?.removeEventListener('input', updateButtonState);
+        document.querySelector('.difficulty-buttons')?.removeEventListener('click', handleDifficultySelect);
+        document.getElementById('study-guide-btn')?.removeEventListener('click', handleStudyGuide);
+        form.removeEventListener('submit', handleQuizSubmit);
     }
-}, { once: true });
-
-init();
+}

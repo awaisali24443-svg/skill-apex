@@ -7,19 +7,22 @@
     <h1 class="progress-title">My Progress</h1>
     <p class="progress-subtitle">Review your stats and track your journey to mastery across all topics.</p>
 
-    <div id="progress-content" class="hidden">
+    <div id="progress-content">
         <div class="overall-stats">
             <div class="stat-card">
-                <h3 id="total-quizzes">0</h3>
+                <h3 id="total-quizzes"></h3>
                 <p>Quizzes Taken</p>
+                <div class="skeleton-h3"></div>
             </div>
             <div class="stat-card">
-                <h3 id="average-score">0%</h3>
+                <h3 id="average-score"></h3>
                 <p>Average Score</p>
+                <div class="skeleton-h3"></div>
             </div>
             <div class="stat-card">
-                <h3 id="levels-unlocked">0</h3>
+                <h3 id="levels-unlocked"></h3>
                 <p>Total Levels Unlocked</p>
+                <div class="skeleton-h3"></div>
             </div>
         </div>
 
@@ -34,10 +37,5 @@
         <div id="progress-list-container" class="progress-categories">
             <!-- Dynamically populated progress will be inserted here -->
         </div>
-    </div>
-    
-    <div id="progress-loading" class="loading-overlay">
-        <div class="spinner"></div>
-        <p>Loading Your Progress...</p>
     </div>
 </div>

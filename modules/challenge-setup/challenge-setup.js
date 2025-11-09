@@ -4,8 +4,6 @@ import { initModuleScene, cleanupModuleScene } from '../../services/moduleHelper
 
 let sceneManager;
 
-const startBtn = document.getElementById('start-challenge-btn');
-
 async function handleStartChallenge() {
     playSound('start');
 
@@ -24,25 +22,12 @@ async function handleStartChallenge() {
     await startQuizFlow(quizContext);
 }
 
-function init() {
-    if (startBtn) {
-        startBtn.addEventListener('click', handleStartChallenge);
-    }
+export function init() {
+    document.getElementById('start-challenge-btn')?.addEventListener('click', handleStartChallenge);
     sceneManager = initModuleScene('.background-canvas', 'dataStream');
 }
 
-function cleanup() {
+export function cleanup() {
     sceneManager = cleanupModuleScene(sceneManager);
+    // No need to remove listener as the whole module is replaced
 }
-
-// Use MutationObserver for robust cleanup
-const observer = new MutationObserver((mutationsList, obs) => {
-    if (!document.querySelector('.challenge-container')) {
-        cleanup();
-        obs.disconnect();
-    }
-});
-observer.observe(document.getElementById('root-container'), { childList: true, subtree: true });
-
-
-init();

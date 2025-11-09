@@ -1,4 +1,3 @@
-
 import * as quizState from '../../services/quizStateService.js';
 import { playSound } from '../../services/soundService.js';
 import { initModuleScene, cleanupModuleScene } from '../../services/moduleHelper.js';
@@ -6,19 +5,15 @@ import { initModuleScene, cleanupModuleScene } from '../../services/moduleHelper
 let sceneManager;
 let state = null;
 let challengeTimer;
-
-const quizContainer = document.getElementById('quiz-container');
+let quizContainer;
 
 function renderQuizUI() {
-    if (!state) return;
+    if (!state || !quizContainer) return;
     const { quizData, currentQuestionIndex } = state;
     const question = quizData[currentQuestionIndex];
-    const progress = ((currentQuestionIndex + 1) / quizData.length) * 100;
+    const progress = ((currentQuestionIndex) / quizData.length) * 100;
 
-    let timerHTML = '';
-    if (state.quizContext.isChallenge) {
-        timerHTML = `<div id="challenge-timer" class="challenge-timer">90s</div>`;
-    }
+    let timerHTML = state.quizContext.isChallenge ? `<div id="challenge-timer" class="challenge-timer">90s</div>` : '';
 
     quizContainer.innerHTML = `
         <div class="quiz-header">
@@ -32,9 +27,7 @@ function renderQuizUI() {
         <div class="quiz-body">
             <h2 class="quiz-question">${question.question}</h2>
             <div class="quiz-options">
-                ${question.options.map((option, index) => `
-                    <button class="quiz-option-btn" data-index="${index}">${option}</button>
-                `).join('')}
+                ${question.options.map((option, index) => `<button class="quiz-option-btn" data-index="${index}">${option}</button>`).join('')}
             </div>
             <div id="quiz-feedback" class="quiz-feedback hidden">
                 <p id="feedback-explanation"></p>
@@ -43,107 +36,114 @@ function renderQuizUI() {
         </div>
     `;
     
-    document.querySelectorAll('.quiz-option-btn').forEach(btn => {
-        btn.addEventListener('click', handleAnswerSelection);
-    });
+    document.querySelectorAll('.quiz-option-btn').forEach(btn => btn.addEventListener('click', handleAnswerSelection));
+    if (state.quizContext.isChallenge) {
+        startChallengeTimer();
+    }
 }
 
 function handleAnswerSelection(e) {
+    if (e.target.disabled) return;
     const selectedIndex = parseInt(e.target.dataset.index, 10);
     state.userAnswers[state.currentQuestionIndex] = selectedIndex;
-    quizState.saveQuizState(state); // Save progress
+    quizState.saveQuizState(state);
 
     const question = state.quizData[state.currentQuestionIndex];
     const isCorrect = selectedIndex === question.correctAnswerIndex;
-
     playSound(isCorrect ? 'correct' : 'incorrect');
 
-    // Show feedback
     document.querySelectorAll('.quiz-option-btn').forEach((btn, index) => {
         btn.disabled = true;
-        if (index === question.correctAnswerIndex) {
-            btn.classList.add('correct');
-        } else if (index === selectedIndex) {
-            btn.classList.add('incorrect');
-        }
+        if (index === question.correctAnswerIndex) btn.classList.add('correct');
+        else if (index === selectedIndex) btn.classList.add('incorrect');
     });
 
     const feedbackEl = document.getElementById('quiz-feedback');
     document.getElementById('feedback-explanation').textContent = question.explanation;
     feedbackEl.classList.remove('hidden');
     
-    document.getElementById('next-question-btn').focus();
-    document.getElementById('next-question-btn').addEventListener('click', advanceQuiz, { once: true });
+    const nextBtn = document.getElementById('next-question-btn');
+    nextBtn.focus();
+    nextBtn.addEventListener('click', advanceQuiz, { once: true });
 }
 
 function advanceQuiz() {
     if (state.currentQuestionIndex < state.quizData.length - 1) {
         state.currentQuestionIndex++;
         quizState.saveQuizState(state);
-        renderQuizUI();
+        renderNextQuestion();
     } else {
-        // End of quiz
         endQuiz();
     }
 }
 
+function renderNextQuestion() {
+    const { quizData, currentQuestionIndex } = state;
+    const question = quizData[currentQuestionIndex];
+    const progress = ((currentQuestionIndex) / quizData.length) * 100;
+    
+    document.querySelector('.quiz-progress-bar').style.width = `${progress}%`;
+    document.querySelector('.quiz-progress-text').textContent = `Question ${currentQuestionIndex + 1} of ${quizData.length}`;
+    
+    const quizBody = document.querySelector('.quiz-body');
+    quizBody.innerHTML = `
+        <h2 class="quiz-question">${question.question}</h2>
+        <div class="quiz-options">
+            ${question.options.map((option, index) => `<button class="quiz-option-btn" data-index="${index}">${option}</button>`).join('')}
+        </div>
+        <div id="quiz-feedback" class="quiz-feedback hidden">
+            <p id="feedback-explanation"></p>
+            <button id="next-question-btn" class="btn btn-primary">Next</button>
+        </div>
+    `;
+    
+    document.querySelectorAll('.quiz-option-btn').forEach(btn => btn.addEventListener('click', handleAnswerSelection));
+}
+
+
 function endQuiz() {
     if (challengeTimer) clearInterval(challengeTimer);
-    window.location.hash = '#results';
+    if (state.quizContext.isChallenge) {
+        window.location.hash = '#challenge-results';
+    } else {
+        window.location.hash = '#results';
+    }
 }
 
 function startChallengeTimer() {
     let timeLeft = 90;
     const timerEl = document.getElementById('challenge-timer');
+    if (!timerEl) return;
     
     challengeTimer = setInterval(() => {
         timeLeft--;
         if (timerEl) {
             timerEl.textContent = `${timeLeft}s`;
-            if (timeLeft <= 10) {
-                timerEl.classList.add('low-time');
-            }
+            if (timeLeft <= 10) timerEl.classList.add('low-time');
         }
         if (timeLeft <= 0) {
             clearInterval(challengeTimer);
-            window.showToast("Time's up!", 'error');
+            window.showToast("Time's up!", "error");
             endQuiz();
         }
     }, 1000);
 }
 
-function init() {
+export function init() {
+    quizContainer = document.getElementById('quiz-container');
     state = quizState.loadQuizState();
     if (!state) {
         window.showToast("No active quiz found. Starting over.", "error");
         window.location.hash = '#home';
         return;
     }
-
     renderQuizUI();
-    
-    if (state.quizContext.isChallenge) {
-        startChallengeTimer();
-    }
-
     sceneManager = initModuleScene('.background-canvas', 'abstractHub');
 }
 
-function cleanup() {
+export function cleanup() {
     if (challengeTimer) clearInterval(challengeTimer);
     sceneManager = cleanupModuleScene(sceneManager);
+    quizContainer = null;
+    state = null;
 }
-
-// Use a more robust cleanup method for SPAs
-const observer = new MutationObserver((mutationsList, obs) => {
-    // If the quiz container is no longer in the DOM or is empty, clean up.
-    const container = document.getElementById('quiz-container');
-    if (!container || !container.hasChildNodes()) {
-        cleanup();
-        obs.disconnect(); // Stop observing once cleaned up
-    }
-});
-observer.observe(document.getElementById('root-container'), { childList: true, subtree: true });
-
-
-init();

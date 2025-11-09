@@ -12,9 +12,8 @@ function startCountdown() {
         const now = new Date();
         const endOfWeek = new Date(now);
         
-        // End of Sunday
-        endOfWeek.setDate(now.getDate() - now.getDay() + 7);
-        endOfWeek.setHours(23, 59, 59, 999);
+        endOfWeek.setUTCDate(now.getUTCDate() - now.getUTCDay() + 7);
+        endOfWeek.setUTCHours(23, 59, 59, 999);
 
         const diff = endOfWeek - now;
 
@@ -28,9 +27,13 @@ function startCountdown() {
 }
 
 async function renderLeaderboard() {
-    const leaderboardData = await getLeaderboardData();
     const tbody = document.getElementById('leaderboard-body');
     if (!tbody) return;
+
+    const leaderboardData = await getLeaderboardData();
+    
+    // Clear skeleton
+    tbody.innerHTML = '';
 
     if (leaderboardData.length === 0) {
         tbody.innerHTML = '<tr><td colspan="3">Leaderboard is empty. Be the first!</td></tr>';
@@ -65,33 +68,14 @@ async function renderLeaderboard() {
     tbody.innerHTML = html;
 }
 
-
-async function init() {
-    await renderLeaderboard();
+export async function init() {
+    renderLeaderboard();
     startCountdown();
     
-    const canvas = document.querySelector('.background-canvas');
-    if (canvas && window.THREE) {
-        sceneManager = new SceneManager(canvas);
-        sceneManager.init('calmGeometric');
-    }
+    sceneManager = initModuleScene('.background-canvas', 'calmGeometric');
 }
 
-function cleanup() {
+export function cleanup() {
     if (countdownInterval) clearInterval(countdownInterval);
-    if (sceneManager) {
-        sceneManager.destroy();
-        sceneManager = null;
-    }
+    sceneManager = cleanupModuleScene(sceneManager);
 }
-
-// Use MutationObserver for robust cleanup
-const observer = new MutationObserver((mutationsList, obs) => {
-    if (!document.getElementById('leaderboard-body')) {
-        cleanup();
-        obs.disconnect();
-    }
-});
-observer.observe(document.getElementById('root-container'), { childList: true, subtree: true });
-
-init();

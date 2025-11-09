@@ -9,27 +9,8 @@ let currentGuideContent = '';
 let flashcards = [];
 let currentFlashcardIndex = 0;
 
-// DOM Elements
-const topicTitleEl = document.getElementById('study-topic-title');
-const contentEl = document.getElementById('study-content');
-const startQuizBtn = document.getElementById('start-quiz-btn');
-const backBtn = document.getElementById('back-btn');
-
-// Study Tools Elements
-const studyToolsSection = document.getElementById('study-tools-section');
-const genFlashcardsBtn = document.getElementById('generate-flashcards-btn');
-
-// Flashcard Modal Elements
-const flashcardModal = document.getElementById('flashcard-modal-overlay');
-const flashcardFlipper = document.getElementById('flashcard-flipper');
-const flashcardFront = document.getElementById('flashcard-front');
-const flashcardBack = document.getElementById('flashcard-back');
-const flashcardCounter = document.getElementById('flashcard-counter');
-const flashcardPrevBtn = document.getElementById('flashcard-prev-btn');
-const flashcardNextBtn = document.getElementById('flashcard-next-btn');
-const flashcardCloseBtn = document.getElementById('flashcard-close-btn');
-
 async function streamStudyGuide() {
+    const contentEl = document.getElementById('study-content');
     contentEl.innerHTML = ''; // Clear placeholder
     
     try {
@@ -40,10 +21,9 @@ async function streamStudyGuide() {
             contentEl.innerHTML = marked.parse(accumulatedText);
         }
         currentGuideContent = accumulatedText; // Store final content
-        startQuizBtn.disabled = false;
-        studyToolsSection.classList.remove('hidden'); // Show study tools
+        document.getElementById('start-quiz-btn').disabled = false;
+        document.getElementById('study-tools-section').classList.remove('hidden');
     } catch (error) {
-        console.error("Error streaming study guide:", error);
         contentEl.innerHTML = `<p style="color:var(--color-danger)">Failed to generate study guide. Please try again.</p>`;
     }
 }
@@ -55,6 +35,7 @@ function handleStartQuiz() {
 }
 
 async function handleGenerateFlashcards() {
+    const genFlashcardsBtn = document.getElementById('generate-flashcards-btn');
     genFlashcardsBtn.classList.add('loading');
     genFlashcardsBtn.disabled = true;
 
@@ -68,7 +49,6 @@ async function handleGenerateFlashcards() {
             window.showToast("Could not generate flashcards from this guide.", "error");
         }
     } catch (error) {
-        console.error("Error generating flashcards:", error);
         window.showToast("An error occurred while creating flashcards.", "error");
     } finally {
         genFlashcardsBtn.classList.remove('loading');
@@ -78,27 +58,27 @@ async function handleGenerateFlashcards() {
 
 function showFlashcardModal() {
     renderCurrentFlashcard();
-    flashcardModal.classList.remove('hidden');
+    document.getElementById('flashcard-modal-overlay').classList.remove('hidden');
 }
 
 function hideFlashcardModal() {
-    flashcardModal.classList.add('hidden');
-    flashcardFlipper.classList.remove('flipped');
+    document.getElementById('flashcard-modal-overlay').classList.add('hidden');
+    document.getElementById('flashcard-flipper').classList.remove('flipped');
 }
 
 function renderCurrentFlashcard() {
     const card = flashcards[currentFlashcardIndex];
-    flashcardFront.textContent = card.term;
-    flashcardBack.textContent = card.definition;
-    flashcardFlipper.classList.remove('flipped');
+    document.getElementById('flashcard-front').textContent = card.term;
+    document.getElementById('flashcard-back').textContent = card.definition;
+    document.getElementById('flashcard-flipper').classList.remove('flipped');
     
-    flashcardCounter.textContent = `${currentFlashcardIndex + 1} / ${flashcards.length}`;
-    flashcardPrevBtn.disabled = currentFlashcardIndex === 0;
-    flashcardNextBtn.disabled = currentFlashcardIndex === flashcards.length - 1;
+    document.getElementById('flashcard-counter').textContent = `${currentFlashcardIndex + 1} / ${flashcards.length}`;
+    document.getElementById('flashcard-prev-btn').disabled = currentFlashcardIndex === 0;
+    document.getElementById('flashcard-next-btn').disabled = currentFlashcardIndex === flashcards.length - 1;
 }
 
 function flipCard() {
-    flashcardFlipper.classList.toggle('flipped');
+    document.getElementById('flashcard-flipper').classList.toggle('flipped');
 }
 
 function nextCard() {
@@ -116,7 +96,7 @@ function prevCard() {
 }
 
 
-function init() {
+export function init() {
     const contextString = sessionStorage.getItem('quizContext');
     if (!contextString) {
         window.showToast("No study topic selected.", "error");
@@ -125,33 +105,24 @@ function init() {
     }
     quizContext = JSON.parse(contextString);
 
-    topicTitleEl.textContent = `Study Guide: ${quizContext.topicName}`;
-    backBtn.href = quizContext.returnHash || '#home';
+    document.getElementById('study-topic-title').textContent = `Study Guide: ${quizContext.topicName}`;
+    document.getElementById('back-btn').href = quizContext.returnHash || '#home';
 
     streamStudyGuide();
 
-    startQuizBtn.addEventListener('click', handleStartQuiz);
-    genFlashcardsBtn.addEventListener('click', handleGenerateFlashcards);
-
-    // Flashcard event listeners
-    flashcardCloseBtn.addEventListener('click', hideFlashcardModal);
-    flashcardFlipper.addEventListener('click', flipCard);
-    flashcardNextBtn.addEventListener('click', nextCard);
-    flashcardPrevBtn.addEventListener('click', prevCard);
+    document.getElementById('start-quiz-btn').addEventListener('click', handleStartQuiz);
+    document.getElementById('generate-flashcards-btn').addEventListener('click', handleGenerateFlashcards);
+    document.getElementById('flashcard-close-btn').addEventListener('click', hideFlashcardModal);
+    document.getElementById('flashcard-flipper').addEventListener('click', flipCard);
+    document.getElementById('flashcard-next-btn').addEventListener('click', nextCard);
+    document.getElementById('flashcard-prev-btn').addEventListener('click', prevCard);
 
     sceneManager = initModuleScene('.background-canvas', 'atomicStructure');
 }
 
-function cleanup() {
+export function cleanup() {
     sceneManager = cleanupModuleScene(sceneManager);
+    quizContext = null;
+    currentGuideContent = '';
+    flashcards = [];
 }
-
-const observer = new MutationObserver((mutationsList, obs) => {
-    if (!document.querySelector('.study-container')) {
-        cleanup();
-        obs.disconnect();
-    }
-});
-observer.observe(document.getElementById('root-container'), { childList: true, subtree: true });
-
-init();

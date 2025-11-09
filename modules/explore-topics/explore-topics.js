@@ -1,22 +1,10 @@
-import { SceneManager } from '../../services/threeManager.js';
+import { initModuleScene, cleanupModuleScene } from '../../services/moduleHelper.js';
 let sceneManager;
 
-console.log("Explore Topics module loaded.");
-
-function init() {
-    const canvas = document.querySelector('.background-canvas');
-    if (canvas && window.THREE) {
-        sceneManager = new SceneManager(canvas);
-        sceneManager.init('atomicStructure');
-    }
+export function init() {
+    sceneManager = initModuleScene('.background-canvas', 'atomicStructure');
 }
 
-window.addEventListener('hashchange', () => {
-    if (sceneManager) {
-        sceneManager.destroy();
-        sceneManager = null;
-    }
-}, { once: true });
-
-
-init();
+export function cleanup() {
+    sceneManager = cleanupModuleScene(sceneManager);
+}

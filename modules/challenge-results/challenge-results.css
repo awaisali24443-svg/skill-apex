@@ -1,0 +1,54 @@
+.challenge-results-container {
+    width: 100%;
+    text-align: center;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+#results-content {
+    animation: popIn 0.5s 0.2s ease-out backwards;
+}
+
+.results-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    color: var(--color-primary);
+}
+
+.final-score {
+    font-size: 5rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.score-label {
+    font-size: 1.2rem;
+    color: var(--color-text-muted);
+    margin-bottom: 2rem;
+}
+
+.high-score-section {
+    margin-bottom: 2.5rem;
+}
+
+.new-high-score-banner {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-secondary);
+    animation: glow-pulse 2s infinite;
+}
+@keyframes glow-pulse {
+    50% { text-shadow: 0 0 15px var(--color-secondary), 0 0 30px var(--color-secondary); }
+}
+
+.high-score-comparison {
+    font-size: 1.1rem;
+}
+
+.results-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}

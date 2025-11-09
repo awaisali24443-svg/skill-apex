@@ -52,6 +52,30 @@ const flashcardSchema = {
     }
 };
 
+const learningPathSchema = {
+    type: Type.OBJECT,
+    properties: {
+        title: {
+            type: Type.STRING,
+            description: 'A concise and engaging title for the learning path based on the user\'s goal.'
+        },
+        steps: {
+            type: Type.ARRAY,
+            items: {
+                type: Type.OBJECT,
+                properties: {
+                    title: { type: Type.STRING, description: 'The title of this specific learning step.' },
+                    description: { type: Type.STRING, description: 'A brief, one-sentence description of what this step covers.' }
+                },
+                required: ['title', 'description']
+            },
+            description: 'An array of 5 to 7 learning steps, starting from the basics and progressing logically.'
+        }
+    },
+    required: ['title', 'steps']
+};
+
+
 /**
  * Generates a quiz based on a given prompt using the Gemini API.
  * @param {string} prompt - The prompt detailing the quiz requirements.
@@ -75,7 +99,6 @@ export async function generateQuiz(prompt) {
         const jsonText = response.text.trim();
         const quizData = JSON.parse(jsonText);
 
-        // Validate the received data structure
         if (!Array.isArray(quizData) || quizData.length === 0) {
             throw new Error("Generated quiz data is not a valid array.");
         }
@@ -176,4 +199,33 @@ Generate the flashcards in the required JSON format.`;
  */
 export function generateNemesisQuiz(topicName, missedConcepts) {
     return `Generate a targeted quiz with 5 multiple-choice questions about "${topicName}". Focus specifically on these tricky concepts that the user has struggled with before: ${missedConcepts}. The questions should test understanding of these specific areas to help the user improve.`;
+}
+
+/**
+ * Generates a structured learning path based on a user's goal.
+ * @param {string} goal - The user's learning objective.
+ * @returns {Promise<object>} A promise that resolves to the learning path data.
+ */
+export async function generateLearningPath(goal) {
+    const ai = getAI();
+    const prompt = `A user wants to achieve the following goal: "${goal}". Generate a structured learning path with 5-7 logical steps to help them achieve this. Each step should have a clear title and a short description. The path should start with fundamental concepts and progressively build up to more advanced topics.`;
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: learningPathSchema,
+            },
+        });
+        const jsonText = response.text.trim();
+        const pathData = JSON.parse(jsonText);
+        if (!pathData.title || !Array.isArray(pathData.steps) || pathData.steps.length === 0) {
+            throw new Error("Invalid learning path format received from AI.");
+        }
+        return pathData;
+    } catch (error) {
+        console.error("Error generating learning path with Gemini:", error);
+        throw new Error("Failed to generate a learning path. The AI might be busy or the topic is too complex. Please try a different goal.");
+    }
 }

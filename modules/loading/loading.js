@@ -4,15 +4,7 @@ import { initModuleScene, cleanupModuleScene } from '../../services/moduleHelper
 
 let sceneManager;
 let quizContext = null;
-
-// DOM Elements
-const spinnerWrapper = document.getElementById('spinner-wrapper');
-const errorContainer = document.getElementById('error-container');
-const loadingText = document.getElementById('loading-text');
-const loadingTopicTitle = document.getElementById('loading-topic-title');
-const tryAgainBtn = document.getElementById('try-again-btn');
-const goBackBtn = document.getElementById('go-back-btn');
-const errorDetails = document.getElementById('error-details');
+let messageInterval;
 
 const loadingMessages = [
     "Consulting the digital oracle...",
@@ -23,28 +15,27 @@ const loadingMessages = [
     "Forging questions in the digital anvil...",
 ];
 
-let messageInterval;
-
 function showLoadingState(context) {
-    spinnerWrapper.classList.remove('hidden');
-    errorContainer.classList.add('hidden');
+    document.getElementById('spinner-wrapper').classList.remove('hidden');
+    document.getElementById('error-container').classList.add('hidden');
     
     const titleAction = context.generationType === 'study' ? 'Crafting Study Guide' : 'Forging Quiz';
-    loadingTopicTitle.textContent = `${titleAction} on ${context.topicName}`;
+    document.getElementById('loading-topic-title').textContent = `${titleAction} on ${context.topicName}`;
     
+    const loadingTextEl = document.getElementById('loading-text');
     let messageIndex = 0;
-    loadingText.textContent = loadingMessages[messageIndex];
+    loadingTextEl.textContent = loadingMessages[messageIndex];
     messageInterval = setInterval(() => {
         messageIndex = (messageIndex + 1) % loadingMessages.length;
-        loadingText.textContent = loadingMessages[messageIndex];
+        loadingTextEl.textContent = loadingMessages[messageIndex];
     }, 2500);
 }
 
 function showErrorState(message) {
     clearInterval(messageInterval);
-    spinnerWrapper.classList.add('hidden');
-    errorContainer.classList.remove('hidden');
-    errorDetails.textContent = message;
+    document.getElementById('spinner-wrapper').classList.add('hidden');
+    document.getElementById('error-container').classList.remove('hidden');
+    document.getElementById('error-details').textContent = message;
 }
 
 async function generateContent() {
@@ -52,12 +43,9 @@ async function generateContent() {
     
     try {
         if (quizContext.generationType === 'study') {
-            // Study guide generation is streamed directly on the study page.
-            // This loading module just needs to pass the context and navigate.
             sessionStorage.setItem('quizContext', JSON.stringify(quizContext));
             window.location.hash = '#study';
         } else {
-            // It's a quiz generation
             const quizData = await generateQuiz(quizContext.prompt);
             quizState.startNewQuizState(quizData, quizContext);
             window.location.hash = '#quiz';
@@ -74,35 +62,24 @@ function handleGoBack() {
     window.location.hash = quizContext?.returnHash || '#home';
 }
 
-function init() {
+export function init() {
     const contextString = sessionStorage.getItem('quizContext');
     if (!contextString) {
         showErrorState("No quiz context found. Please start a new quiz.");
-        goBackBtn.removeEventListener('click', handleGoBack);
-        goBackBtn.addEventListener('click', () => window.location.hash = '#home');
+        document.getElementById('go-back-btn').addEventListener('click', () => window.location.hash = '#home', { once: true });
         return;
     }
     quizContext = JSON.parse(contextString);
 
-    tryAgainBtn.addEventListener('click', generateContent);
-    goBackBtn.addEventListener('click', handleGoBack);
+    document.getElementById('try-again-btn').addEventListener('click', generateContent);
+    document.getElementById('go-back-btn').addEventListener('click', handleGoBack);
 
     generateContent();
     sceneManager = initModuleScene('.background-canvas', 'dataStream');
 }
 
-function cleanup() {
+export function cleanup() {
     clearInterval(messageInterval);
     sceneManager = cleanupModuleScene(sceneManager);
+    quizContext = null;
 }
-
-// Use MutationObserver for robust cleanup
-const observer = new MutationObserver((mutationsList, obs) => {
-    if (!document.querySelector('.loading-container')) {
-        cleanup();
-        obs.disconnect();
-    }
-});
-observer.observe(document.getElementById('root-container'), { childList: true, subtree: true });
-
-init();

@@ -53,7 +53,7 @@
 
     <!-- UI Effects & Overlays -->
     <div id="cursor-aura"></div>
-    <div id="toast-container"></div>
+    <div id="toast-container" aria-live="polite"></div>
 
     <!-- Modals -->
     <!-- Welcome Modal -->
@@ -112,6 +112,7 @@
     <!-- App Configuration & Initialization -->
     <script src="/config.js"></script>
     <script src="/firebase-config.js"></script>
+    <script type="module" src="/services/uiService.js"></script>
     <script type="module" src="/global/global.js"></script>
 
 </body>

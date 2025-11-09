@@ -25,6 +25,8 @@ export async function signUp(email, password, username) {
         username: username,
         email: email,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        bio: '', // Initialize bio
+        pictureURL: `https://avatar.iran.liara.run/public/boy?username=${username}`, // Initialize default picture
         // Initialize progress directly inside the user document
         xp: 0,
         weeklyXP: 0,

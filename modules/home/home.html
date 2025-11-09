@@ -31,6 +31,11 @@
                 <h3>Topic Universe</h3>
                 <p>Explore subjects and level up.</p>
             </a>
+            <a href="#custom-quiz" class="quick-action-card">
+                <span class="quick-action-icon">🔥</span>
+                <h3>Quick Quiz</h3>
+                <p>Generate a quiz on any topic.</p>
+            </a>
             <a href="#challenge-setup" class="quick-action-card">
                 <span class="quick-action-icon">🧪</span>
                 <h3>Challenge Mode</h3>
@@ -44,11 +49,33 @@
         </div>
     </div>
 
+    <!-- AI Learning Planner -->
+    <div class="home-section">
+        <h2>AI Learning Planner</h2>
+        <div class="card planner-card">
+            <p>Define a goal, and our AI will forge a step-by-step learning path for you.</p>
+            <form id="learning-path-form">
+                <input type="text" id="learning-goal-input" class="form-control" placeholder="e.g., Master the fundamentals of web development" required>
+                <button type="submit" id="generate-path-btn" class="btn btn-secondary">
+                    <span class="btn-text">Generate Path</span>
+                    <div class="spinner hidden"></div>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Your Learning Paths -->
+    <div class="home-section">
+        <h2>Your Learning Paths</h2>
+        <div id="learning-paths-list">
+            <div class="mission-placeholder">You have no active learning paths.</div>
+        </div>
+    </div>
+
     <!-- Daily Missions -->
     <div id="missions-section" class="home-section">
         <h2>Daily Missions</h2>
         <div id="missions-list" class="missions-list">
-            <!-- Missions will be injected here -->
             <div class="mission-placeholder">Loading missions...</div>
         </div>
     </div>

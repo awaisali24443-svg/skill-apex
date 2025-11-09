@@ -1,68 +1,33 @@
 import * as progressService from '../../services/progressService.js';
-import { SceneManager } from '../../services/threeManager.js';
+import { initModuleScene, cleanupModuleScene } from '../../services/moduleHelper.js';
 import { logOut } from '../../services/authService.js';
+import { ACCESSIBILITY_SETTINGS_KEY, GENERAL_SETTINGS_KEY, SELECTED_THEME_KEY } from '../../constants.js';
 
 let sceneManager;
 let initialProfileState = { username: '', bio: '' };
-
-// --- DOM Elements ---
-const usernameInput = document.getElementById('username');
-const profileBioInput = document.getElementById('profile-bio');
-const saveProfileBtn = document.getElementById('save-profile-btn');
-const profilePictureImg = document.getElementById('profile-picture');
-const editPictureBtn = document.getElementById('edit-picture-btn');
-const resetProgressBtn = document.getElementById('reset-progress-btn');
-const goProBtn = document.getElementById('go-pro-btn');
-
-// Theme Selector
-const themeSelector = document.getElementById('theme-selector');
 const themes = ['dark', 'light', 'cyber'];
 
-// General Toggles
-const soundToggle = document.getElementById('sound-toggle');
-
-// Accessibility Toggles
-const largeTextToggle = document.getElementById('large-text-toggle');
-const highContrastToggle = document.getElementById('high-contrast-toggle');
-const dyslexiaFontToggle = document.getElementById('dyslexia-font-toggle');
-const reduceMotionToggle = document.getElementById('reduce-motion-toggle');
-
-// --- Profile Management ---
-function checkProfileChanges() {
+// --- Event Handlers ---
+const checkProfileChanges = () => {
+    const usernameInput = document.getElementById('username');
+    const profileBioInput = document.getElementById('profile-bio');
+    const saveProfileBtn = document.getElementById('save-profile-btn');
     const hasChanged = usernameInput.value !== initialProfileState.username || profileBioInput.value !== initialProfileState.bio;
     saveProfileBtn.disabled = !hasChanged;
-}
+};
 
-async function loadProfile() {
-    const progress = await progressService.getProgress();
-    if (progress) {
-        initialProfileState.username = progress.username || '';
-        initialProfileState.bio = progress.bio || '';
-        usernameInput.value = initialProfileState.username;
-        profileBioInput.value = initialProfileState.bio;
-        profilePictureImg.src = progress.pictureURL || 'https://avatar.iran.liara.run/public/boy';
-    }
-    usernameInput.disabled = false;
-    profileBioInput.disabled = false;
-    
-    // Initially, the save button should be disabled as no changes have been made.
-    saveProfileBtn.disabled = true;
-
-    // Add listeners to check for changes
-    usernameInput.addEventListener('input', checkProfileChanges);
-    profileBioInput.addEventListener('input', checkProfileChanges);
-}
-
-function setSaveLoading(isLoading) {
+const saveProfile = async () => {
+    const usernameInput = document.getElementById('username');
+    const profileBioInput = document.getElementById('profile-bio');
+    const profilePictureImg = document.getElementById('profile-picture');
+    const saveProfileBtn = document.getElementById('save-profile-btn');
     const btnText = saveProfileBtn.querySelector('.btn-text');
     const spinner = saveProfileBtn.querySelector('.spinner');
-    saveProfileBtn.disabled = isLoading;
-    btnText.classList.toggle('hidden', isLoading);
-    spinner.classList.toggle('hidden', !isLoading);
-}
 
-async function saveProfile() {
-    setSaveLoading(true);
+    saveProfileBtn.disabled = true;
+    btnText.classList.add('hidden');
+    spinner.classList.remove('hidden');
+
     const profileData = {
         username: usernameInput.value.trim(),
         bio: profileBioInput.value.trim(),
@@ -70,21 +35,22 @@ async function saveProfile() {
     };
     try {
         await progressService.updateUserProfile(profileData);
-        // Update the initial state to the new saved state
         initialProfileState.username = profileData.username;
         initialProfileState.bio = profileData.bio;
         window.showToast('✅ Profile saved successfully!');
-        await window.updateHeaderStats(); // To reflect potential username change
+        await window.updateHeaderStats();
     } catch (error) {
         window.showToast('❌ Failed to save profile.', 'error');
     } finally {
-        setSaveLoading(false);
-        // After attempting to save, disable the button again
-        saveProfileBtn.disabled = true;
+        btnText.classList.remove('hidden');
+        spinner.classList.add('hidden');
+        saveProfileBtn.disabled = true; // Still disabled as there are no new changes
     }
-}
+};
 
-async function editProfilePicture() {
+const editProfilePicture = async () => {
+    const profilePictureImg = document.getElementById('profile-picture');
+    const saveProfileBtn = document.getElementById('save-profile-btn');
     const newUrl = await window.showConfirmationModal({
         title: "Edit Profile Picture",
         text: "Enter a new image URL for your profile picture:",
@@ -95,43 +61,21 @@ async function editProfilePicture() {
 
     if (newUrl) {
         profilePictureImg.src = newUrl;
-        // Since this is a change, enable the save button
         saveProfileBtn.disabled = false; 
     }
-}
+};
 
-// --- General Settings ---
-function loadGeneralSettings() {
-    const settings = JSON.parse(localStorage.getItem('generalSettings') || '{}');
-    soundToggle.checked = settings.soundEnabled ?? true; // Default to true if not set
-}
-
-function handleGeneralSettingsChange(e) {
+const handleGeneralSettingsChange = (e) => {
     const { id, checked } = e.target;
-    const settings = JSON.parse(localStorage.getItem('generalSettings') || '{}');
+    const settings = JSON.parse(localStorage.getItem(GENERAL_SETTINGS_KEY) || '{}');
+    if (id === 'sound-toggle') settings.soundEnabled = checked;
+    localStorage.setItem(GENERAL_SETTINGS_KEY, JSON.stringify(settings));
+};
 
-    if (id === 'sound-toggle') {
-        settings.soundEnabled = checked;
-    }
-
-    localStorage.setItem('generalSettings', JSON.stringify(settings));
-}
-
-
-// --- Accessibility ---
-function loadAccessibilitySettings() {
-    const settings = JSON.parse(localStorage.getItem('accessibilitySettings') || '{}');
-    largeTextToggle.checked = settings.largeText || false;
-    highContrastToggle.checked = settings.highContrast || false;
-    dyslexiaFontToggle.checked = settings.dyslexiaFont || false;
-    reduceMotionToggle.checked = settings.reduceMotion || false;
-}
-
-function handleAccessibilityChange(e) {
+const handleAccessibilityChange = (e) => {
     const { id, checked } = e.target;
-    const settings = JSON.parse(localStorage.getItem('accessibilitySettings') || '{}');
-    let bodyClass = '';
-    let settingKey = '';
+    const settings = JSON.parse(localStorage.getItem(ACCESSIBILITY_SETTINGS_KEY) || '{}');
+    let bodyClass = '', settingKey = '';
 
     switch (id) {
         case 'large-text-toggle': bodyClass = 'large-text'; settingKey = 'largeText'; break;
@@ -143,16 +87,14 @@ function handleAccessibilityChange(e) {
     if (bodyClass) {
         document.body.classList.toggle(bodyClass, checked);
         settings[settingKey] = checked;
-        localStorage.setItem('accessibilitySettings', JSON.stringify(settings));
+        localStorage.setItem(ACCESSIBILITY_SETTINGS_KEY, JSON.stringify(settings));
     }
-}
+};
 
-
-// --- Data Management ---
-async function handleResetProgress() {
+const handleResetProgress = async () => {
     const isConfirmed = await window.showConfirmationModal({
         title: "Confirm Data Reset",
-        text: "Are you sure you want to reset ALL your progress? This will reset your XP, levels, and achievements, but will not delete your account. This action cannot be undone.",
+        text: "Are you sure? This will permanently delete your scores and reset all topics back to Level 1. This action cannot be undone.",
         confirmText: "Reset Progress",
     });
 
@@ -160,9 +102,7 @@ async function handleResetProgress() {
         try {
             await progressService.resetUserProgress();
             await window.showConfirmationModal({
-                title: "Progress Reset",
-                text: "Your progress has been reset. You will now be logged out.",
-                isAlert: true
+                title: "Progress Reset", text: "Your progress has been reset. You will now be logged out.", isAlert: true
             });
             await logOut();
             window.location.hash = '#login';
@@ -170,66 +110,87 @@ async function handleResetProgress() {
             window.showToast("An error occurred while resetting progress.", "error");
         }
     }
-}
+};
 
-async function handleGoPro() {
+const handleGoPro = async () => {
     await window.showConfirmationModal({
-        title: "Feature Coming Soon!",
-        text: "Pro features are currently in development. Thank you for your interest!",
-        isAlert: true
+        title: "Feature Coming Soon!", text: "Pro features are currently in development. Thank you for your interest!", isAlert: true
     });
-}
+};
 
-// --- Initialization ---
-async function init() {
-    await loadProfile();
-    loadGeneralSettings();
-    loadAccessibilitySettings();
+const handleThemeChange = (e) => {
+    const selectedTheme = e.target.value;
+    document.body.classList.add('theme-transitioning');
+    document.documentElement.setAttribute('data-theme', selectedTheme);
+    localStorage.setItem(SELECTED_THEME_KEY, selectedTheme);
+    setTimeout(() => document.body.classList.remove('theme-transitioning'), 150);
+};
 
-    const savedTheme = localStorage.getItem('selectedTheme') || 'light';
+// --- Lifecycle Functions ---
+async function loadData() {
+    // Profile
+    const progress = await progressService.getProgress();
+    if (progress) {
+        initialProfileState.username = progress.username || '';
+        initialProfileState.bio = progress.bio || '';
+        document.getElementById('username').value = initialProfileState.username;
+        document.getElementById('profile-bio').value = initialProfileState.bio;
+        document.getElementById('profile-picture').src = progress.pictureURL || 'https://avatar.iran.liara.run/public/boy';
+    }
+    document.getElementById('username').disabled = false;
+    document.getElementById('profile-bio').disabled = false;
+    document.getElementById('save-profile-btn').disabled = true;
+
+    // General Settings
+    const generalSettings = JSON.parse(localStorage.getItem(GENERAL_SETTINGS_KEY) || '{}');
+    document.getElementById('sound-toggle').checked = generalSettings.soundEnabled ?? true;
+
+    // Accessibility Settings
+    const accessibilitySettings = JSON.parse(localStorage.getItem(ACCESSIBILITY_SETTINGS_KEY) || '{}');
+    document.getElementById('large-text-toggle').checked = accessibilitySettings.largeText || false;
+    document.getElementById('high-contrast-toggle').checked = accessibilitySettings.highContrast || false;
+    document.getElementById('dyslexia-font-toggle').checked = accessibilitySettings.dyslexiaFont || false;
+    document.getElementById('reduce-motion-toggle').checked = accessibilitySettings.reduceMotion || false;
+
+    // Theme
+    const savedTheme = localStorage.getItem(SELECTED_THEME_KEY) || 'light';
     if (themes.includes(savedTheme)) {
-      themeSelector.value = savedTheme;
-    }
-
-    themeSelector?.addEventListener('change', (e) => {
-      const selectedTheme = e.target.value;
-      document.body.classList.add('theme-transitioning');
-      document.documentElement.setAttribute('data-theme', selectedTheme);
-      localStorage.setItem('selectedTheme', selectedTheme);
-      setTimeout(() => document.body.classList.remove('theme-transitioning'), 150);
-    });
-
-    saveProfileBtn?.addEventListener('click', saveProfile);
-    editPictureBtn?.addEventListener('click', editProfilePicture);
-    resetProgressBtn?.addEventListener('click', handleResetProgress);
-    goProBtn?.addEventListener('click', handleGoPro);
-    
-    soundToggle?.addEventListener('change', handleGeneralSettingsChange);
-    largeTextToggle?.addEventListener('change', handleAccessibilityChange);
-    highContrastToggle?.addEventListener('change', handleAccessibilityChange);
-    dyslexiaFontToggle?.addEventListener('change', handleAccessibilityChange);
-    reduceMotionToggle?.addEventListener('change', handleAccessibilityChange);
-
-    const canvas = document.querySelector('.background-canvas');
-    if (canvas && window.THREE) {
-        sceneManager = new SceneManager(canvas);
-        sceneManager.init('calmGeometric');
+      document.getElementById('theme-selector').value = savedTheme;
     }
 }
 
-function cleanup() {
-    if (sceneManager) {
-        sceneManager.destroy();
-        sceneManager = null;
-    }
+export function init() {
+    loadData();
+    sceneManager = initModuleScene('.background-canvas', 'calmGeometric');
+
+    // Add all event listeners
+    document.getElementById('username')?.addEventListener('input', checkProfileChanges);
+    document.getElementById('profile-bio')?.addEventListener('input', checkProfileChanges);
+    document.getElementById('save-profile-btn')?.addEventListener('click', saveProfile);
+    document.getElementById('edit-picture-btn')?.addEventListener('click', editProfilePicture);
+    document.getElementById('reset-progress-btn')?.addEventListener('click', handleResetProgress);
+    document.getElementById('go-pro-btn')?.addEventListener('click', handleGoPro);
+    document.getElementById('theme-selector')?.addEventListener('change', handleThemeChange);
+    document.getElementById('sound-toggle')?.addEventListener('change', handleGeneralSettingsChange);
+    document.getElementById('large-text-toggle')?.addEventListener('change', handleAccessibilityChange);
+    document.getElementById('high-contrast-toggle')?.addEventListener('change', handleAccessibilityChange);
+    document.getElementById('dyslexia-font-toggle')?.addEventListener('change', handleAccessibilityChange);
+    document.getElementById('reduce-motion-toggle')?.addEventListener('change', handleAccessibilityChange);
 }
 
-const observer = new MutationObserver((mutationsList, obs) => {
-    if (!document.querySelector('.settings-container')) {
-        cleanup();
-        obs.disconnect();
-    }
-});
-observer.observe(document.getElementById('root-container'), { childList: true, subtree: true });
-
-init();
+export function cleanup() {
+    sceneManager = cleanupModuleScene(sceneManager);
+    // Remove all event listeners
+    document.getElementById('username')?.removeEventListener('input', checkProfileChanges);
+    document.getElementById('profile-bio')?.removeEventListener('input', checkProfileChanges);
+    document.getElementById('save-profile-btn')?.removeEventListener('click', saveProfile);
+    document.getElementById('edit-picture-btn')?.removeEventListener('click', editProfilePicture);
+    document.getElementById('reset-progress-btn')?.removeEventListener('click', handleResetProgress);
+    document.getElementById('go-pro-btn')?.removeEventListener('click', handleGoPro);
+    document.getElementById('theme-selector')?.removeEventListener('change', handleThemeChange);
+    document.getElementById('sound-toggle')?.removeEventListener('change', handleGeneralSettingsChange);
+    document.getElementById('large-text-toggle')?.removeEventListener('change', handleAccessibilityChange);
+    document.getElementById('high-contrast-toggle')?.removeEventListener('change', handleAccessibilityChange);
+    document.getElementById('dyslexia-font-toggle')?.removeEventListener('change', handleAccessibilityChange);
+    document.getElementById('reduce-motion-toggle')?.removeEventListener('change', handleAccessibilityChange);
+}

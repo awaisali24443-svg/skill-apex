@@ -1,7 +1,7 @@
 import * as progressService from '../../services/progressService.js';
 import { MAX_LEVEL } from '../../constants.js';
 import { categoryData } from '../../services/topicService.js';
-import { SceneManager } from '../../services/threeManager.js';
+import { initModuleScene, cleanupModuleScene } from '../../services/moduleHelper.js';
 import { ALL_ACHIEVEMENTS } from '../../services/achievementService.js';
 import { generateNemesisQuiz } from '../../services/geminiService.js';
 import { startQuizFlow } from '../../services/navigationService.js';
@@ -41,7 +41,6 @@ async function handleNemesisQuiz(e) {
         return;
     }
     
-    // Create a concise list of unique concepts
     const concepts = [...new Set(missedConcepts.map(c => c.split('.')[0]))].slice(0, 5).join(', ');
     const prompt = generateNemesisQuiz(topicName, concepts);
     
@@ -56,21 +55,19 @@ async function handleNemesisQuiz(e) {
     await startQuizFlow(quizContext);
 }
 
-
 async function renderProgress() {
     const progress = await progressService.getProgress();
+    const statCards = document.querySelectorAll('.stat-card');
+
     if (!progress) {
-        // Handle case where progress is not available
-        document.getElementById('progress-loading').innerHTML = '<p>Could not load progress.</p>';
+        statCards.forEach(card => card.innerHTML = '<p>Error</p>');
         return;
     }
 
     const { achievements, history, levels } = progress;
-
     renderAchievements(achievements || []);
 
-    // Calculate and Render Overall Stats
-    const totalQuizzes = Object.values(history || {}).reduce((sum, item) => sum + item.correct + item.incorrect, 0) / 5; // Assuming 5 questions per quiz
+    const totalQuizzes = Object.values(history || {}).reduce((sum, item) => sum + item.correct + item.incorrect, 0) / 5;
     const totalCorrect = Object.values(history || {}).reduce((sum, item) => sum + item.correct, 0);
     const totalPossibleScore = totalQuizzes * 5;
     const avg = totalPossibleScore > 0 ? Math.round((totalCorrect / totalPossibleScore) * 100) : 0;
@@ -79,8 +76,8 @@ async function renderProgress() {
     document.getElementById('total-quizzes').textContent = Math.floor(totalQuizzes);
     document.getElementById('average-score').textContent = `${avg}%`;
     document.getElementById('levels-unlocked').textContent = totalLevelsUnlocked;
+    statCards.forEach(card => card.classList.add('loaded'));
 
-    // Render Topic-specific Progress
     const progressListContainer = document.getElementById('progress-list-container');
     let allProgressHtml = '';
 
@@ -112,7 +109,6 @@ async function renderProgress() {
 function createProgressItemHtml(topic, level, history) {
     const percentage = ((level - 1) / (MAX_LEVEL - 1)) * 100;
     const incorrectCount = history?.incorrect || 0;
-
     const nemesisButtonHtml = incorrectCount >= 3 ? 
         `<button class="nemesis-quiz-btn" data-topic="${topic}">⚡ Nemesis Quiz</button>` : '';
 
@@ -132,37 +128,11 @@ function createProgressItemHtml(topic, level, history) {
     `;
 }
 
-async function init() {
-    const loadingEl = document.getElementById('progress-loading');
-    const contentEl = document.getElementById('progress-content');
-    
-    await renderProgress();
-    
-    loadingEl.classList.add('hidden');
-    contentEl.classList.remove('hidden');
-
-    const canvas = document.querySelector('.background-canvas');
-    if (canvas && window.THREE) {
-        sceneManager = new SceneManager(canvas);
-        sceneManager.init('calmGeometric');
-    }
+export async function init() {
+    renderProgress();
+    sceneManager = initModuleScene('.background-canvas', 'calmGeometric');
 }
 
-function cleanup() {
-     if (sceneManager) {
-        sceneManager.destroy();
-        sceneManager = null;
-    }
+export function cleanup() {
+    sceneManager = cleanupModuleScene(sceneManager);
 }
-
-// Use MutationObserver for robust cleanup
-const observer = new MutationObserver((mutationsList, obs) => {
-    if (!document.querySelector('.progress-container')) {
-        cleanup();
-        obs.disconnect();
-    }
-});
-observer.observe(document.getElementById('root-container'), { childList: true, subtree: true });
-
-
-init();
