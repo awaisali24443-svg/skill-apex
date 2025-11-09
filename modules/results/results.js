@@ -196,7 +196,7 @@ async function renderStandardResults(score) {
                 aiCoachContainer.innerHTML = `<div class="ai-coach-content"><strong>🤖 AI Coach:</strong> <span>${insight}</span></div>`;
             } catch (error) {
                 console.error('AI Coach error:', error);
-                aiCoachContainer.classList.add('hidden');
+                aiCoachContainer.innerHTML = `<div class="ai-coach-content">🤖 AI Coach is unavailable at this time.</div>`;
             }
         })();
     }

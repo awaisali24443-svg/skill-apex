@@ -1,6 +1,6 @@
 // sw.js - Service Worker for PWA capabilities
 
-const CACHE_NAME = 'knowledge-tester-v2.3.0'; // Version bump for new features
+const CACHE_NAME = 'knowledge-tester-v2.6.0'; // Version bump for new features and cleanup
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
