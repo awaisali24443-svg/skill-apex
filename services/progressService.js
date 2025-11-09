@@ -1,4 +1,28 @@
 const PROGRESS_KEY = 'knowledgeTesterUserProgress';
+const MAX_MISSED_CONCEPTS_PER_TOPIC = 20; // Cap to prevent excessive localStorage usage
+
+// --- GAMIFICATION: Leveling Curve ---
+const getXPForLevel = (level) => {
+    if (level <= 1) return 0;
+    return Math.floor(100 * Math.pow(level - 1, 1.5));
+};
+
+export const calculateLevelInfo = (totalXP) => {
+    let level = 1;
+    while (totalXP >= getXPForLevel(level + 1)) {
+        level++;
+    }
+    const xpForCurrentLevel = getXPForLevel(level);
+    const xpForNextLevel = getXPForLevel(level + 1);
+    
+    const currentXPInLevel = totalXP - xpForCurrentLevel;
+    const nextLevelXPInLevel = xpForNextLevel - xpForCurrentLevel;
+    const percentage = nextLevelXPInLevel > 0 ? (currentXPInLevel / nextLevelXPInLevel) * 100 : 100;
+
+    return { level, currentXP: currentXPInLevel, nextLevelXP: nextLevelXPInLevel, percentage };
+};
+// --- END GAMIFICATION ---
+
 
 const getDefaultProgress = () => ({
     stats: {
@@ -9,38 +33,31 @@ const getDefaultProgress = () => ({
         lastQuizDate: null,
         challengeHighScore: 0,
     },
-    levels: {}
+    levels: {}, // Per-topic levels
+    history: {}, // Detailed per-topic history for AI Tutor and Nemesis Quizzes
+    achievements: [], // Array of unlocked achievement IDs
 });
 
-/**
- * Checks if two dates are on the same day, ignoring time.
- * @param {Date} date1
- * @param {Date} date2
- * @returns {boolean}
- */
 const isSameDay = (date1, date2) => {
     return date1.getFullYear() === date2.getFullYear() &&
            date1.getMonth() === date2.getMonth() &&
            date1.getDate() === date2.getDate();
 };
 
-/**
- * Loads the entire user progress object from localStorage.
- * @returns {object} The user's progress object, or a default object if none exists.
- */
 export const getProgress = () => {
     try {
         const progressString = localStorage.getItem(PROGRESS_KEY);
         if (progressString) {
-            // Merge saved progress with default structure to handle future updates
             const savedProgress = JSON.parse(progressString);
             const defaultStructure = getDefaultProgress();
+            // Deep merge to ensure new properties are added to existing save files
             const progress = {
                 stats: { ...defaultStructure.stats, ...savedProgress.stats },
-                levels: { ...defaultStructure.levels, ...savedProgress.levels }
+                levels: { ...defaultStructure.levels, ...savedProgress.levels },
+                history: { ...defaultStructure.history, ...savedProgress.history },
+                achievements: savedProgress.achievements || [],
             };
             
-            // Check and reset streak if necessary
             if (progress.stats.lastQuizDate) {
                 const today = new Date();
                 const lastDate = new Date(progress.stats.lastQuizDate);
@@ -48,7 +65,7 @@ export const getProgress = () => {
                 yesterday.setDate(today.getDate() - 1);
 
                 if (!isSameDay(today, lastDate) && !isSameDay(yesterday, lastDate)) {
-                    progress.stats.streak = 0; // Reset streak if not today or yesterday
+                    progress.stats.streak = 0;
                 }
             }
             return progress;
@@ -60,10 +77,6 @@ export const getProgress = () => {
     }
 };
 
-/**
- * Saves the entire user progress object to localStorage.
- * @param {object} progress - The progress object to save.
- */
 export const saveProgress = (progress) => {
     try {
         localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
@@ -72,72 +85,77 @@ export const saveProgress = (progress) => {
     }
 };
 
-/**
- * Gets the current unlocked level for a specific topic.
- * @param {string} topic - The topic to check.
- * @returns {number} The current level, defaulting to 1.
- */
 export const getCurrentLevel = (topic) => {
     const progress = getProgress();
     return progress.levels[topic] || 1;
 };
 
-/**
- * Increments the level for a given topic if it's below the max level.
- * @param {string} topic - The topic to unlock the next level for.
- * @param {number} maxLevel - The maximum level allowed.
- */
 export const unlockNextLevel = (topic, maxLevel = 50) => {
     const progress = getProgress();
     const currentLevel = progress.levels[topic] || 1;
     if (currentLevel < maxLevel) {
         progress.levels[topic] = currentLevel + 1;
-        progress.stats.xp += 100; // Bonus XP for leveling up
+        progress.stats.xp += 100; // Bonus XP for topic leveling up
         saveProgress(progress);
     }
 };
 
-/**
- * Records the result of a completed quiz, updating stats, XP, and streak.
- * @param {number} score - The number of correct answers.
- * @param {number} numQuestions - The total number of questions in the quiz.
- * @param {number} xpGained - The amount of XP earned from the quiz.
- */
-export const recordQuizResult = (score, numQuestions, xpGained) => {
+export const recordQuizResult = (topic, score, quizData, userAnswers, xpGained) => {
     const progress = getProgress();
     const today = new Date();
     const lastDate = progress.stats.lastQuizDate ? new Date(progress.stats.lastQuizDate) : null;
     
-    // Update Streak
+    // --- Update Streak ---
     if (lastDate) {
         if (!isSameDay(today, lastDate)) {
              const yesterday = new Date();
              yesterday.setDate(today.getDate() - 1);
              if (isSameDay(yesterday, lastDate)) {
-                 progress.stats.streak += 1; // Continued streak
+                 progress.stats.streak += 1;
              } else {
-                 progress.stats.streak = 1; // Reset streak
+                 progress.stats.streak = 1;
              }
         }
     } else {
-        progress.stats.streak = 1; // First quiz
+        progress.stats.streak = 1;
     }
 
+    // --- Update Core Stats ---
     progress.stats.lastQuizDate = today.toISOString();
-    
-    // Update other stats
     progress.stats.totalQuizzes += 1;
     progress.stats.totalCorrect += score;
     progress.stats.xp += xpGained;
+
+    // --- Update Topic History for AI Tutor & Nemesis Quizzes ---
+    if (topic && quizData) {
+        if (!progress.history[topic]) {
+            progress.history[topic] = { correct: 0, incorrect: 0, missedConcepts: [] };
+        }
+        progress.history[topic].correct += score;
+        progress.history[topic].incorrect += (quizData.length - score);
+
+        // Store concepts from incorrect answers
+        for(let i=0; i < quizData.length; i++) {
+            if (userAnswers[i] !== quizData[i].correctAnswerIndex) {
+                // Add the explanation, which usually contains the core concept
+                progress.history[topic].missedConcepts.push(quizData[i].explanation);
+            }
+        }
+        // Trim the array to prevent it from getting too large
+        if (progress.history[topic].missedConcepts.length > MAX_MISSED_CONCEPTS_PER_TOPIC) {
+            progress.history[topic].missedConcepts.splice(0, progress.history[topic].missedConcepts.length - MAX_MISSED_CONCEPTS_PER_TOPIC);
+        }
+    }
     
     saveProgress(progress);
+    return progress; // Return the updated progress for achievement checks
 };
 
-/**
- * Updates the high score for Challenge Mode if the new score is higher.
- * @param {number} newScore - The score from the completed challenge.
- * @returns {boolean} - True if the high score was updated, false otherwise.
- */
+export const getTopicHistory = (topic) => {
+    const progress = getProgress();
+    return progress.history[topic] || { correct: 0, incorrect: 0, missedConcepts: [] };
+};
+
 export const updateChallengeHighScore = (newScore) => {
     const progress = getProgress();
     if (newScore > progress.stats.challengeHighScore) {
@@ -148,10 +166,16 @@ export const updateChallengeHighScore = (newScore) => {
     return false;
 };
 
+export const unlockAchievement = (achievementId) => {
+    const progress = getProgress();
+    if (!progress.achievements.includes(achievementId)) {
+        progress.achievements.push(achievementId);
+        saveProgress(progress);
+        return true; 
+    }
+    return false;
+};
 
-/**
- * Resets all user progress, including stats and levels.
- */
 export const resetProgress = () => {
     try {
         localStorage.removeItem(PROGRESS_KEY);

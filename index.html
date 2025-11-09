@@ -34,6 +34,7 @@
     }
     </script>
     <!-- 3D Library -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" as="script">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
@@ -81,6 +82,21 @@
             </div>
         </div>
     </div>
+
+    <!-- Level Up Modal -->
+    <div id="level-up-container" class="hidden">
+        <div id="level-up-card">
+            <div class="level-up-title">LEVEL UP!</div>
+            <div class="level-up-badge">
+                <span id="level-up-number"></span>
+            </div>
+            <div class="level-up-rewards">
+                <p>New Theme Unlocked: [Theme Name]</p>
+            </div>
+            <button id="level-up-continue-btn" class="btn btn-primary">Continue</button>
+        </div>
+    </div>
+
 
     <header id="header-container"></header>
     <main id="root-container"></main>

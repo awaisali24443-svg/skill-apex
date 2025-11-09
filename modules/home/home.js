@@ -1,116 +1,69 @@
-import { categoryData } from '../../services/topicService.js';
 import { NUM_QUESTIONS } from '../../constants.js';
 import { playSound } from '../../services/soundService.js';
 import { startQuizFlow } from '../../services/navigationService.js';
-import { getProgress } from '../../services/progressService.js';
-import { SceneManager } from '../../services/threeManager.js';
+import { getProgress, calculateLevelInfo } from '../../services/progressService.js';
+import { getActiveMissions } from '../../services/missionService.js';
+import { StellarMap } from '../../services/stellarMap.js';
 
-let cardListeners = [];
-let sceneManager;
+let stellarMap;
 
-function animateFeatureCards() {
-    const featureCards = document.querySelectorAll('.feature-card');
-    featureCards.forEach((card, index) => {
-        card.style.animation = `popIn 0.5s ease-out ${index * 0.1}s forwards`;
-        card.style.opacity = '0';
-    });
-}
-
-function apply3DTiltEffect(card) {
-    const handleMouseMove = (e) => {
-        const { left, top, width, height } = card.getBoundingClientRect();
-        const x = e.clientX - left;
-        const y = e.clientY - top;
-
-        const rotateX = -1 * ((height / 2 - y) / (height / 2)) * 8; // Max rotation 8 degrees
-        const rotateY = ((width / 2 - x) / (width / 2)) * 8;
-
-        card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
-    };
-
-    const handleMouseLeave = () => {
-        card.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
-    };
-
-    card.addEventListener('mousemove', handleMouseMove);
-    card.addEventListener('mouseleave', handleMouseLeave);
+function displayDailyMissions() {
+    const container = document.getElementById('daily-missions-container');
+    if (!container) return;
+    const missions = getActiveMissions();
     
-    cardListeners.push({ element: card, move: handleMouseMove, leave: handleMouseLeave });
-}
-
-function cleanupEffects() {
-    cardListeners.forEach(({ element, move, leave }) => {
-        element.removeEventListener('mousemove', move);
-        element.removeEventListener('mouseleave', leave);
-    });
-    cardListeners = [];
-    if (sceneManager) {
-        sceneManager.destroy();
-        sceneManager = null;
-    }
-}
-
-
-async function handleSurpriseMe(e) {
-    e.preventDefault();
-    playSound('start');
-
-    // Flatten all topics from all categories into a single array
-    const allTopics = Object.values(categoryData).flatMap(category => category.topics);
-    const randomTopic = allTopics[Math.floor(Math.random() * allTopics.length)];
-    const topicName = randomTopic.name;
-
-    const prompt = `Generate a quiz with ${NUM_QUESTIONS} multiple-choice questions about "${topicName}". The difficulty should be Medium.`;
+    let html = missions.map(mission => `
+        <div class="mission-card ${mission.isComplete ? 'completed' : ''}">
+            <p class="mission-title">${mission.description}</p>
+            <p class="mission-reward">+${mission.reward} XP</p>
+        </div>
+    `).join('');
     
-    const quizContext = {
-        topicName: topicName,
-        isLeveled: false,
-        prompt: prompt,
-        returnHash: '#home'
-    };
-    
-    await startQuizFlow(quizContext, prompt);
+    container.innerHTML = html;
 }
 
-function personalizeDashboard() {
+function updatePlayerStats() {
     const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
-    const { stats } = getProgress();
-    const subtitleEl = document.querySelector('.main-home-subtitle');
+    const progress = getProgress();
+    const { level, currentXP, nextLevelXP, percentage } = calculateLevelInfo(progress.stats.xp);
     
-    if (subtitleEl) {
-        let greeting = `Ready to test your knowledge, ${profile.name || 'friend'}?`;
-        if (stats.streak > 0) {
-            greeting += ` You're on a ${stats.streak}-day streak, keep it up!`;
-        }
-        subtitleEl.textContent = greeting;
+    document.getElementById('player-name').textContent = `Agent, ${profile.name || 'Welcome Back'}`;
+    document.getElementById('player-level').textContent = `LVL ${level}`;
+    document.getElementById('xp-progress-text').textContent = `${currentXP.toLocaleString()} / ${nextLevelXP.toLocaleString()} XP`;
+    document.getElementById('xp-progress-bar').style.width = `${percentage}%`;
+}
+
+
+function cleanup() {
+    if (stellarMap) {
+        stellarMap.destroy();
+        stellarMap = null;
     }
 }
 
 function init() {
-    console.log("Home module (Dashboard) loaded.");
+    updatePlayerStats();
+    displayDailyMissions();
     
-    document.querySelectorAll('.feature-card').forEach(apply3DTiltEffect);
-    
-    const surpriseMeCard = document.getElementById('surprise-me-card');
-    if (surpriseMeCard) {
-        surpriseMeCard.addEventListener('click', handleSurpriseMe);
-    }
-    
-    animateFeatureCards();
-    personalizeDashboard();
-
-    const canvas = document.querySelector('.background-canvas');
-    if (canvas && window.THREE) {
-        sceneManager = new SceneManager(canvas);
-        sceneManager.init('abstractHub');
-    }
+    // Defer scene initialization to improve perceived performance
+    setTimeout(() => {
+        const canvas = document.getElementById('stellar-map-canvas');
+        if (canvas && window.THREE) {
+            stellarMap = new StellarMap(canvas);
+            stellarMap.init();
+        }
+    }, 100);
 }
 
-window.addEventListener('hashchange', () => {
-    if (window.location.hash !== '#home') {
-        cleanupEffects();
+const observer = new MutationObserver((mutationsList, obs) => {
+    for(const mutation of mutationsList) {
+        if (mutation.type === 'childList' && !document.querySelector('.mission-control-container')) {
+            cleanup();
+            obs.disconnect();
+            return;
+        }
     }
-}, { once: true });
-
+});
+observer.observe(document.getElementById('root-container'), { childList: true });
 
 init();

@@ -9,6 +9,7 @@ export class SceneManager {
     #sceneType;
     #canvas;
     #clock;
+    #mouse = new THREE.Vector2();
 
     constructor(canvas) {
         if (!canvas) {
@@ -24,6 +25,7 @@ export class SceneManager {
             primary: new THREE.Color(style.getPropertyValue('--color-primary').trim() || '#3b82f6'),
             secondary: new THREE.Color(style.getPropertyValue('--color-secondary').trim() || '#14b8a6'),
             text: new THREE.Color(style.getPropertyValue('--color-text').trim() || '#111111'),
+            bg: new THREE.Color(style.getPropertyValue('--color-bg').trim() || '#ffffff'),
         };
     }
 
@@ -49,14 +51,23 @@ export class SceneManager {
             case 'dataStream': this.#createDataStream(); break;
             case 'atomicStructure': this.#createAtomicStructure(); break;
             case 'calmGeometric': this.#createCalmGeometric(); break;
+            // New Thematic Scenes
+            case 'nebula': this.#createNebulaScene(); break;
+            case 'microscopic': this.#createMicroscopicScene(); break;
             default: console.warn(`Unknown scene type: ${this.#sceneType}`);
         }
         
         window.addEventListener('resize', this.#onResize);
+        document.addEventListener('mousemove', this.#onMouseMove);
         this.#onResize();
 
         this.#animate();
     }
+    
+    #onMouseMove = (event) => {
+        this.#mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        this.#mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    };
 
     #onResize = () => {
         if (!this.#renderer) return;
@@ -102,18 +113,25 @@ export class SceneManager {
     #createAbstractHub() {
         const colors = this.#getThemeColors();
         const group = new THREE.Group();
-        const geometry = new THREE.TorusKnotGeometry(1, 0.2, 100, 16);
+        const geometry = new THREE.IcosahedronGeometry(1, 1);
         const material = new THREE.MeshStandardMaterial({ 
             color: colors.primary, 
-            roughness: 0.4, 
-            metalness: 0.8 
+            roughness: 0.2, 
+            metalness: 0.9,
+            emissive: colors.primary,
+            emissiveIntensity: 0.1
         });
         
-        const mainKnot = new THREE.Mesh(geometry, material);
-        group.add(mainKnot);
+        const mainShape = new THREE.Mesh(geometry, material);
+        group.add(mainShape);
+
+        const wireframeGeo = new THREE.IcosahedronGeometry(1.01, 1);
+        const wireframeMat = new THREE.MeshBasicMaterial({ color: colors.secondary, wireframe: true, transparent: true, opacity: 0.3 });
+        const wireframe = new THREE.Mesh(wireframeGeo, wireframeMat);
+        group.add(wireframe);
 
         for(let i=0; i < 5; i++) {
-            const torusGeo = new THREE.TorusGeometry(2 + i * 0.5, 0.05, 16, 100);
+            const torusGeo = new THREE.TorusGeometry(2 + i * 0.5, 0.03, 16, 100);
             const torusMat = new THREE.MeshBasicMaterial({ color: i % 2 === 0 ? colors.primary : colors.secondary, transparent: true, opacity: 0.5 });
             const torus = new THREE.Mesh(torusGeo, torusMat);
             torus.rotation.x = Math.random() * Math.PI;
@@ -121,7 +139,7 @@ export class SceneManager {
             group.add(torus);
         }
         
-        const light = new THREE.DirectionalLight(0xffffff, 1);
+        const light = new THREE.DirectionalLight(0xffffff, 1.5);
         light.position.set(5, 5, 5);
         this.#scene.add(light, new THREE.AmbientLight(0xffffff, 0.5));
 
@@ -131,7 +149,7 @@ export class SceneManager {
     
     #createDataStream() {
         const colors = this.#getThemeColors();
-        const particleCount = 2000;
+        const particleCount = 4000;
         const positions = new Float32Array(particleCount * 3);
         this.#objects.velocities = new Float32Array(particleCount);
 
@@ -139,16 +157,16 @@ export class SceneManager {
             positions[i * 3] = Math.random() * 20 - 10;
             positions[i * 3 + 1] = Math.random() * 20 - 10;
             positions[i * 3 + 2] = Math.random() * 20 - 10;
-            this.#objects.velocities[i] = 0.5 + Math.random();
+            this.#objects.velocities[i] = 1 + Math.random() * 2;
         }
 
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         const material = new THREE.PointsMaterial({
-            size: 0.05,
+            size: 0.03,
             color: colors.secondary,
             transparent: true,
-            opacity: 0.7,
+            opacity: 0.8,
             blending: THREE.AdditiveBlending,
         });
 
@@ -206,6 +224,33 @@ export class SceneManager {
         this.#scene.add(light);
     }
 
+    #createNebulaScene() {
+        this.#scene.fog = new THREE.FogExp2(this.#getThemeColors().bg, 0.1);
+        this.#createParticleGalaxy(10000, 0.02); // Denser stars
+    }
+
+    #createMicroscopicScene() {
+        const colors = this.#getThemeColors();
+        const group = new THREE.Group();
+        for (let i = 0; i < 50; i++) {
+            const geometry = new THREE.SphereGeometry(Math.random() * 0.5 + 0.1, 16, 16);
+            const material = new THREE.MeshStandardMaterial({
+                color: Math.random() > 0.5 ? colors.primary : colors.secondary,
+                transparent: true,
+                opacity: 0.6,
+                roughness: 0.4
+            });
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set((Math.random() - 0.5) * 15, (Math.random() - 0.5) * 15, (Math.random() - 0.5) * 15);
+            mesh.userData.velocity = new THREE.Vector3((Math.random() - 0.5) * 0.1, (Math.random() - 0.5) * 0.1, (Math.random() - 0.5) * 0.1);
+            group.add(mesh);
+        }
+        this.#objects.cells = group;
+        this.#scene.add(group);
+        this.#scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+    }
+
+
     #animate = () => {
         if (!this.#renderer) return;
         this.#animationFrameId = window.requestAnimationFrame(this.#animate);
@@ -213,15 +258,26 @@ export class SceneManager {
         const elapsedTime = this.#clock.getElapsedTime();
         const delta = this.#clock.getDelta();
 
+        // Parallax effect
+        this.#camera.position.x += (this.#mouse.x * 0.5 - this.#camera.position.x) * .05;
+        this.#camera.position.y += (-this.#mouse.y * 0.5 - this.#camera.position.y) * .05;
+        this.#camera.lookAt(this.#scene.position);
+
+
         switch (this.#sceneType) {
             case 'particleGalaxy':
-                if (this.#objects.particles) this.#objects.particles.rotation.y = elapsedTime * 0.1;
-                break;
-            case 'subtleParticles':
+            case 'nebula':
                 if (this.#objects.particles) this.#objects.particles.rotation.y = elapsedTime * 0.05;
                 break;
+            case 'subtleParticles':
+                if (this.#objects.particles) this.#objects.particles.rotation.y = elapsedTime * 0.03;
+                break;
             case 'abstractHub':
-                if(this.#objects.hub) this.#objects.hub.rotation.y += delta * 0.2;
+                if(this.#objects.hub) {
+                    this.#objects.hub.rotation.y += delta * 0.2;
+                    this.#objects.hub.rotation.x += delta * 0.1;
+                    this.#objects.hub.children[0].material.emissiveIntensity = Math.sin(elapsedTime * 2) * 0.2 + 0.2;
+                }
                 break;
             case 'dataStream':
                 if(this.#objects.particles) {
@@ -249,6 +305,16 @@ export class SceneManager {
                     this.#objects.shape.rotation.x += delta * 0.1;
                 }
                 break;
+            case 'microscopic':
+                if(this.#objects.cells) {
+                    this.#objects.cells.children.forEach(cell => {
+                        cell.position.add(cell.userData.velocity);
+                        if(Math.abs(cell.position.x) > 8) cell.userData.velocity.x *= -1;
+                        if(Math.abs(cell.position.y) > 8) cell.userData.velocity.y *= -1;
+                        if(Math.abs(cell.position.z) > 8) cell.userData.velocity.z *= -1;
+                    });
+                }
+                break;
         }
 
         this.#renderer.render(this.#scene, this.#camera);
@@ -259,6 +325,7 @@ export class SceneManager {
             window.cancelAnimationFrame(this.#animationFrameId);
         }
         window.removeEventListener('resize', this.#onResize);
+        document.removeEventListener('mousemove', this.#onMouseMove);
         
         if (this.#scene) {
             this.#scene.traverse(object => {

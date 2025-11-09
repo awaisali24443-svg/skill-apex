@@ -1,42 +1,46 @@
-<div class="main-home-container card">
-    <canvas class="background-canvas"></canvas>
-    <h1 class="main-home-title">Dashboard</h1>
-    <p class="main-home-subtitle">Ready to test your knowledge? Create a new quiz or level up your skills.</p>
-    <div class="home-features">
-        <a href="#optional-quiz" class="feature-card">
-            <div class="feature-card-content">
-                <h3>🧠 AI Quiz Forge</h3>
-                <p>Type any topic and get an instant quiz built by AI — challenge your knowledge!</p>
+<div class="mission-control-container card glass-card">
+    <!-- Note: The background canvas is now managed by the Stellar Map -->
+
+    <!-- Player Stats Section -->
+    <div class="player-stats-card">
+        <div class="player-info">
+            <h1 id="player-name">Agent, Welcome Back</h1>
+            <div id="player-level" class="level-badge">LVL 1</div>
+        </div>
+        <div class="xp-info">
+            <span id="xp-progress-text">0 / 100 XP</span>
+            <div class="xp-bar-container">
+                <div id="xp-progress-bar" class="xp-bar" style="width: 0%;"></div>
             </div>
-            <span class="feature-card-link">Start Forging &rarr;</span>
-        </a>
-        <a href="#explore-topics" class="feature-card">
-            <div class="feature-card-content">
-                <h3>🌎 Explore Topics</h3>
-                <p>Pick from multiple fields of knowledge and level up your skills.</p>
+        </div>
+    </div>
+    
+    <!-- Daily Missions Section -->
+    <div class="home-section">
+        <h2 class="section-title">🚀 Daily Missions</h2>
+        <div id="daily-missions-container" class="missions-grid">
+            <!-- Daily missions will be injected here -->
+        </div>
+    </div>
+
+    <!-- Stellar Map Navigation Section -->
+    <div class="home-section stellar-map-section">
+        <h2 class="section-title">🌌 Topic Universe</h2>
+        <div id="stellar-map-container">
+            <canvas id="stellar-map-canvas"></canvas>
+            <div id="stellar-map-info-panel" class="hidden">
+                <h3 id="info-panel-title">Topic</h3>
+                <div id="info-panel-level" class="level-badge">LVL 1</div>
+                <p id="info-panel-desc">Description</p>
+                <div class="info-panel-actions">
+                    <button id="info-panel-study-btn" class="btn btn-secondary">Briefing</button>
+                    <button id="info-panel-quiz-btn" class="btn btn-primary">Launch</button>
+                </div>
             </div>
-            <span class="feature-card-link">Choose a Topic &rarr;</span>
-        </a>
-        <a href="#" id="surprise-me-card" class="feature-card">
-            <div class="feature-card-content">
-                <h3>🎲 Surprise Me!</h3>
-                <p>Don't know what to choose? Let fate decide and get a random quiz.</p>
+            <div id="stellar-map-loading" class="stellar-map-overlay">
+                <div class="spinner"></div>
+                <p>Calibrating Star Chart...</p>
             </div>
-            <span class="feature-card-link">Start Learning &rarr;</span>
-        </a>
-        <a href="#screen" class="feature-card">
-            <div class="feature-card-content">
-                <h3>📈 View My Progress</h3>
-                <p>Track your scores and review your unlocked levels across all topics.</p>
-            </div>
-            <span class="feature-card-link">View Stats &rarr;</span>
-        </a>
-        <a href="#challenge-setup" class="feature-card">
-            <div class="feature-card-content">
-                <h3>🧪 Challenge Mode</h3>
-                <p>Race against time with mixed questions from all fields!</p>
-            </div>
-            <span class="feature-card-link">Start Challenge &rarr;</span>
-        </a>
+        </div>
     </div>
 </div>

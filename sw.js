@@ -1,6 +1,6 @@
 // sw.js - Service Worker for PWA capabilities
 
-const CACHE_NAME = 'knowledge-tester-v1.1.0'; // Version from package.json
+const CACHE_NAME = 'knowledge-tester-v1.3.0'; // Updated version for new features
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -16,26 +16,16 @@ const ASSETS_TO_CACHE = [
     '/services/topicService.js',
     '/services/navigationService.js',
     '/services/threeManager.js',
+    '/services/stellarMap.js', // New
+    '/services/achievementService.js', // New
     '/constants.js',
     '/manifest.json',
     '/icon.svg',
 
-    // Modules
-    '/modules/welcome/welcome.html',
-    '/modules/welcome/welcome.css',
-    '/modules/welcome/welcome.js',
+    // Core Modules
     '/modules/home/home.html',
     '/modules/home/home.css',
     '/modules/home/home.js',
-    '/modules/explore-topics/explore-topics.html',
-    '/modules/explore-topics/explore-topics.css',
-    '/modules/explore-topics/explore-topics.js',
-    '/modules/topic-list/topic-list.html',
-    '/modules/topic-list/topic-list.css',
-    '/modules/topic-list/topic-list.js',
-    '/modules/optional-quiz-generator/optional-quiz-generator.html',
-    '/modules/optional-quiz-generator/optional-quiz-generator.css',
-    '/modules/optional-quiz-generator/optional-quiz-generator.js',
     '/modules/challenge-setup/challenge-setup.html',
     '/modules/challenge-setup/challenge-setup.css',
     '/modules/challenge-setup/challenge-setup.js',
@@ -121,7 +111,12 @@ self.addEventListener('fetch', (event) => {
             // Not in cache, fetch from network
             return fetch(event.request).then((fetchResponse) => {
                 // If the request is valid, cache it for future use
-                if (!fetchResponse || fetchResponse.status !== 200 || fetchResponse.type !== 'basic' || event.request.method !== 'GET') {
+                if (!fetchResponse || fetchResponse.status !== 200 || event.request.method !== 'GET') {
+                    return fetchResponse;
+                }
+
+                // Don't cache the API key config script
+                if (event.request.url.includes('/config.js')) {
                     return fetchResponse;
                 }
 

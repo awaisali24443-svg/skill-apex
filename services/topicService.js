@@ -2,44 +2,48 @@
  * topicService.js
  * 
  * This service acts as a single source of truth for all quiz topic and category data.
- * By centralizing this configuration, we ensure consistency across different modules
- * (like topic selection and progress tracking) and make it easy to add or modify content.
+ * It now includes 3D coordinates for the stellar map visualization.
  */
 
 export const categoryData = {
     programming: {
         title: "Programming Quizzes",
-        categoryTitle: "Programming Languages", // Title used on the progress screen
-        subtitle: "Select a language to test your expertise and unlock new levels.",
-        returnHash: '#topics/programming',
+        categoryTitle: "Programming",
+        subtitle: "Code, algorithms, and logic.",
+        icon: "💻",
+        pos: { x: -15, y: 5, z: -10 }, // Position in 3D space
         topics: [
-            { name: "Python", icon: "🐍", description: "Data science, web dev, scripting" },
-            { name: "JavaScript", icon: "🟨", description: "The language of the web" },
-            { name: "Java", icon: "☕", description: "Enterprise-level applications" },
-            { name: "SQL", icon: "🗃️", description: "Database management" },
-            { name: "TypeScript", icon: "🟦", description: "JavaScript with static types" },
-            { name: "C++", icon: "⚙️", description: "Performance-critical systems" },
+            { name: "Python", icon: "🐍", description: "Data science, web dev", pos: { x: -1, y: 2, z: 0 } },
+            { name: "JavaScript", icon: "🟨", description: "The language of the web", pos: { x: 2, y: 1, z: 1 } },
+            { name: "Java", icon: "☕", description: "Enterprise applications", pos: { x: 0, y: -1, z: 2 } },
+            { name: "SQL", icon: "🗃️", description: "Database management", pos: { x: 3, y: -2, z: -1 } },
+            { name: "TypeScript", icon: "🟦", description: "JS with static types", pos: { x: 1, y: 3, z: -2 } },
+            { name: "C++", icon: "⚙️", description: "Performance-critical", pos: { x: -3, y: -1, z: 0 } },
         ]
     },
     science: {
         title: "Science Quizzes",
         categoryTitle: "Science",
-        subtitle: "Explore the wonders of the natural world and human ingenuity.",
-        returnHash: '#topics/science',
+        subtitle: "Biology, chemistry, and inventions.",
+        icon: "🔬",
+        pos: { x: 15, y: 0, z: -5 },
         topics: [
-            { name: "Biology", icon: "🧬", description: "The study of life and living organisms" },
-            { name: "Chemistry", icon: "🧪", description: "Matter, atoms, and reactions" },
-            { name: "Science Inventions", icon: "💡", description: "Discoveries that changed the world" },
+            { name: "Biology", icon: "🧬", description: "The study of life", pos: { x: 1, y: 2, z: 0 } },
+            { name: "Chemistry", icon: "🧪", description: "Matter and reactions", pos: { x: -2, y: 0, z: 1 } },
+            { name: "Physics", icon: "⚛️", description: "Forces, energy, motion", pos: { x: 2, y: -1, z: -2 } },
+            { name: "Science Inventions", icon: "💡", description: "World-changing discoveries", pos: { x: 0, y: -2, z: 2 } },
         ]
     },
     technology: {
         title: "Technology Quizzes",
         categoryTitle: "Technology",
-        subtitle: "Explore the innovations that shape our world and the cosmos.",
-        returnHash: '#topics/technology',
+        subtitle: "AI, space, and modern tech.",
+        icon: "🚀",
+        pos: { x: 0, y: -10, z: 0 },
         topics: [
-            { name: "AI and Technology", icon: "🤖", description: "The cutting-edge of innovation" },
-            { name: "Space and Astronomy", icon: "🔭", description: "The final frontier and its wonders" },
+            { name: "AI and Technology", icon: "🤖", description: "The cutting-edge", pos: { x: -2, y: 1, z: 0 } },
+            { name: "Space and Astronomy", icon: "🔭", description: "The final frontier", pos: { x: 2, y: 0, z: -1 } },
+            { name: "Cybersecurity", icon: "🛡️", description: "Protecting digital assets", pos: { x: 0, y: -2, z: 1 } },
         ]
     }
 };

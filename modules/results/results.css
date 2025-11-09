@@ -44,6 +44,34 @@
     font-weight: 800; 
 }
 
+/* XP Breakdown */
+.xp-breakdown {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0 1.5rem;
+    text-align: left;
+}
+.xp-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    font-size: 1.1rem;
+    opacity: 0;
+    animation: popIn 0.5s ease-out forwards;
+}
+.xp-item.total {
+    font-weight: 700;
+    color: var(--color-primary);
+    border-top: 1px solid var(--color-border);
+    margin-top: 0.5rem;
+}
+.xp-value {
+    font-weight: 700;
+}
+
+
 /* Challenge Mode High Score */
 .challenge-high-score {
     background-color: var(--color-bg-light);
@@ -121,6 +149,21 @@
     font-size: 0.9rem; 
 }
 
+/* AI Insight */
+.ai-insight {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background-color: color-mix(in srgb, var(--color-secondary) 10%, transparent);
+    border-left: 3px solid var(--color-secondary);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+.ai-insight strong {
+    color: var(--color-secondary);
+}
+
+
 /* Level Progression Feedback */
 .results-feedback {
     font-size: 1.1rem;
@@ -148,17 +191,25 @@
     opacity: 0;
 }
 
-.btn-secondary {
+.btn-secondary, .btn-challenge {
     background: transparent;
     color: var(--color-text);
     border: 2px solid var(--color-border);
 }
-.btn-secondary:hover:not(:disabled) {
+.btn-secondary:hover:not(:disabled), .btn-challenge:hover:not(:disabled) {
     border-color: var(--color-primary);
     background-color: var(--color-glow);
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
 }
+.btn-challenge {
+    border-color: var(--color-secondary);
+    color: var(--color-secondary);
+}
+.btn-challenge:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--color-secondary) 20%, transparent);
+}
+
 
 /* Confetti Styles */
 #confetti-container {

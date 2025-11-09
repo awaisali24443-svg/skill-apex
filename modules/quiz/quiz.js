@@ -250,6 +250,20 @@ function handleError(message, shouldClearState = false) {
     window.location.hash = '#home';
 }
 
+function getSceneTypeForTopic(topicName) {
+    const lowerTopic = topicName.toLowerCase();
+    if (lowerTopic.includes('space') || lowerTopic.includes('astronomy')) {
+        return 'nebula';
+    }
+    if (lowerTopic.includes('biology') || lowerTopic.includes('chemistry')) {
+        return 'microscopic';
+    }
+    if (lowerTopic.includes('ai') || lowerTopic.includes('programming') || lowerTopic.includes('technology')) {
+        return 'dataStream';
+    }
+    return 'subtleParticles'; // Default
+}
+
 function init() {
     const savedState = quizState.loadQuizState();
 
@@ -275,7 +289,8 @@ function init() {
     const canvas = document.querySelector('.background-canvas');
     if (canvas && window.THREE) {
         sceneManager = new SceneManager(canvas);
-        sceneManager.init('subtleParticles');
+        const sceneType = getSceneTypeForTopic(quizContext.topicName);
+        sceneManager.init(sceneType);
     }
 }
 

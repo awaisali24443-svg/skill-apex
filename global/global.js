@@ -3,7 +3,7 @@
     This file handles routing and loading shared components.
 */
 import { playSound } from '/services/soundService.js';
-import { getProgress } from '/services/progressService.js';
+import { getProgress, calculateLevelInfo } from '/services/progressService.js';
 
 const rootContainer = document.getElementById('root-container');
 const headerContainer = document.getElementById('header-container');
@@ -15,7 +15,7 @@ function initCursorAura() {
     const aura = document.getElementById('cursor-aura');
     if (!aura) return;
     document.addEventListener('mousemove', e => {
-        aura.style.transform = `translate(${e.clientX - 15}px, ${e.clientY - 15}px)`;
+        aura.style.transform = `translate(${e.clientX - 15}px, e.clientY - 15}px)`;
     });
 }
 
@@ -44,7 +44,7 @@ window.showToast = showToast;
 
 function initGlobalSounds() {
     document.addEventListener('click', (e) => {
-        if (e.target.closest('button, a.btn, .feature-card, .topic-card, .theme-option, .nav-link, .quick-action-card, .toggle-switch')) {
+        if (e.target.closest('button, a.btn, .feature-card, .topic-card, .theme-option, .nav-link, .quick-action-card, .toggle-switch, .category-sector-card')) {
             playSound('click');
         }
     });
@@ -77,10 +77,11 @@ function initAccessibility() {
 // --- Header Stats UI ---
 function updateHeaderStats() {
     const progress = getProgress();
-    const xpEl = document.getElementById('header-xp');
+    const { level } = calculateLevelInfo(progress.stats.xp);
+    const levelEl = document.getElementById('header-level');
     const streakEl = document.getElementById('header-streak');
     
-    if (xpEl) xpEl.textContent = progress.stats.xp.toLocaleString();
+    if (levelEl) levelEl.textContent = `LVL ${level}`;
     if (streakEl) streakEl.textContent = `🔥 ${progress.stats.streak}`;
 }
 window.updateHeaderStats = updateHeaderStats;
@@ -170,17 +171,33 @@ function showConfirmationModal({
 }
 window.showConfirmationModal = showConfirmationModal;
 
+// --- Level Up Modal ---
+function showLevelUpModal(newLevel) {
+    const container = document.getElementById('level-up-container');
+    const levelNumber = document.getElementById('level-up-number');
+    const continueBtn = document.getElementById('level-up-continue-btn');
+    if (!container || !levelNumber || !continueBtn) return;
+    
+    playSound('complete'); // Play a celebratory sound
+    levelNumber.textContent = newLevel;
+    container.classList.remove('hidden');
+
+    const closeHandler = () => {
+        container.classList.add('hidden');
+        continueBtn.removeEventListener('click', closeHandler);
+    };
+
+    continueBtn.addEventListener('click', closeHandler);
+}
+window.showLevelUpModal = showLevelUpModal;
 
 // --- Routing ---
 
 const staticRoutes = {
-    '': 'welcome', // Default route
-    '#welcome': 'welcome',
+    '': 'home', // Default route
+    '#home': 'home',
     '#login': 'login',
     '#signup': 'signup',
-    '#home': 'home',
-    '#explore-topics': 'explore-topics',
-    '#optional-quiz': 'optional-quiz-generator',
     '#challenge-setup': 'challenge-setup',
     '#loading': 'loading',
     '#quiz': 'quiz',
@@ -249,17 +266,11 @@ async function loadModule(moduleName, context = {}) {
 }
 
 function handleRouteChange() {
-    const hash = window.location.hash || '#welcome';
+    const hash = window.location.hash || '#home';
 
-    // Handle dynamic routes first
-    if (hash.startsWith('#topics/')) {
-        const category = hash.split('/')[1];
-        loadModule('topic-list', { category });
-    } else {
-        // Handle static routes
-        const moduleName = staticRoutes[hash] || 'welcome';
-        loadModule(moduleName);
-    }
+    // Handle static routes
+    const moduleName = staticRoutes[hash] || 'home';
+    loadModule(moduleName);
 
     // Update active nav link
     const navLinks = document.querySelectorAll('.nav-link');
