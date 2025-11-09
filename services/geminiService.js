@@ -47,6 +47,50 @@ const handleApiError = (error) => {
     throw new Error("Failed to generate content. The topic might be too specific or there was a network issue. Please try again.");
 };
 
+const aiCoachSchema = {
+    type: Type.OBJECT,
+    properties: {
+        title: { type: Type.STRING },
+        message: { type: Type.STRING },
+        action: {
+            type: Type.OBJECT,
+            properties: {
+                type: { type: Type.STRING, description: "Either 'quiz' or 'study'" },
+                label: { type: Type.STRING, description: "The text for the action button, e.g., 'Take a Refresher Quiz'" },
+                topic: { type: Type.STRING, description: "The topic for the action" }
+            },
+            required: ['type', 'label', 'topic']
+        }
+    },
+    required: ['title', 'message', 'action']
+};
+
+export const generateAICoachSuggestion = async (topicName, username) => {
+    const prompt = `As an AI Coach for a quiz app, the user '${username}' is struggling with the topic "${topicName}". Generate a short, encouraging message for their dashboard. Suggest a specific action: either a refresher quiz or a study session on this topic. Provide a title, a message, and the action details in the requested JSON format.`;
+    const systemInstruction = `You are a friendly, encouraging AI Coach. Your goal is to help users improve without making them feel discouraged. Keep your message concise and positive.`;
+    
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: aiCoachSchema,
+                systemInstruction: systemInstruction,
+            },
+        });
+
+        try {
+            return JSON.parse(response.text.trim());
+        } catch (parseError) {
+             console.error("Failed to parse AI Coach JSON response:", response.text, parseError);
+            throw new Error("The AI Coach returned an invalid response.");
+        }
+    } catch (error) {
+        handleApiError(error);
+    }
+};
+
 export const generateQuiz = async (prompt, systemInstruction, performanceHistory = null) => {
     if (performanceHistory && performanceHistory.recentCorrectPercentage > -1) {
         let difficultyHint = '';

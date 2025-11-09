@@ -38,6 +38,36 @@ const isSameDay = (date1, date2) => {
            date1.getDate() === date2.getDate();
 };
 
+/**
+ * Finds the user's weakest topic based on quiz history.
+ * A weak topic has at least 5 questions answered and the lowest correct ratio.
+ * @param {object} progress - The user's progress object.
+ * @returns {string|null} The name of the weakest topic, or null if none is found.
+ */
+export function findWeakestTopic(progress) {
+    if (!progress || !progress.history) {
+        return null;
+    }
+
+    let weakestTopic = null;
+    let lowestRatio = 1.1; // Start above 1.0
+
+    for (const topic in progress.history) {
+        const { correct, incorrect } = progress.history[topic];
+        const total = correct + incorrect;
+
+        if (total >= 5) { // Must have at least 5 attempts
+            const ratio = correct / total;
+            if (ratio < lowestRatio) {
+                lowestRatio = ratio;
+                weakestTopic = topic;
+            }
+        }
+    }
+
+    return weakestTopic;
+}
+
 
 /**
  * Fetches the complete progress document for the current user from Firestore.
