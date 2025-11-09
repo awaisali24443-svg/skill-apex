@@ -1,0 +1,60 @@
+.study-container {
+    width: 100%;
+    animation: fadeIn 0.5s ease-in-out;
+    text-align: left;
+}
+
+.study-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.study-content {
+    line-height: 1.7;
+    color: var(--color-text);
+    margin-bottom: 2.5rem;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 1rem; /* For scrollbar spacing */
+}
+
+/* Basic Markdown Styling */
+.study-content h2, .study-content h3 {
+    font-weight: 700;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--color-primary);
+}
+.study-content h2 { font-size: 1.5rem; }
+.study-content h3 { font-size: 1.3rem; }
+
+.study-content p {
+    margin-bottom: 1rem;
+}
+
+.study-content ul {
+    list-style-type: disc;
+    padding-left: 20px;
+    margin-bottom: 1rem;
+}
+
+.study-content li {
+    margin-bottom: 0.5rem;
+}
+
+.study-content strong {
+    font-weight: 700;
+    color: var(--color-secondary);
+}
+
+.study-content em {
+    font-style: italic;
+}
+
+.study-actions {
+    text-align: center;
+    border-top: 1px solid var(--color-border);
+    padding-top: 2rem;
+}

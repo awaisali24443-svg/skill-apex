@@ -56,6 +56,9 @@ const ASSETS_TO_CACHE = [
     '/modules/signup/signup.html',
     '/modules/signup/signup.css',
     '/modules/signup/signup.js',
+    '/modules/study/study.html',
+    '/modules/study/study.css',
+    '/modules/study/study.js',
 
     // Fonts CSS
     'https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;700;800&family=Orbitron:wght@700;800&display=swap'

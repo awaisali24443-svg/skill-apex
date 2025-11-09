@@ -55,7 +55,11 @@ function renderResults() {
     const score = userAnswers.reduce((acc, answer, index) => 
         (answer === quizData[index].correctAnswerIndex ? acc + 1 : acc), 0);
     
-    progressService.recordQuizResult(score, quizData.length);
+    // --- GAMIFICATION UPDATE ---
+    const xpGained = score * 10; // 10 XP per correct answer
+    progressService.recordQuizResult(score, quizData.length, xpGained);
+    window.updateHeaderStats(); // Refresh the header UI
+    // --- END GAMIFICATION ---
 
     const scorePercentage = Math.round((score / quizData.length) * 100);
     
@@ -113,7 +117,7 @@ function renderResults() {
     const strokeDashoffset = circumference - (scorePercentage / 100) * circumference;
 
     resultsContainer.innerHTML = `
-        <h2 class="results-title">Quiz Complete!</h2>
+        <h2 class="results-title">Quiz Complete! (+${xpGained} XP)</h2>
         <div class="score-container">
             <svg class="score-circle" width="120" height="120" viewBox="0 0 120 120">
                 <circle class="score-circle-bg" cx="60" cy="60" r="54"></circle>

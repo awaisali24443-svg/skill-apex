@@ -7,21 +7,22 @@ console.log("Optional Quiz Generator module loaded.");
 const topicForm = document.getElementById('topic-form');
 const topicInput = document.getElementById('topic-input');
 const generateQuizBtn = document.getElementById('generate-quiz-btn');
+const studyGuideBtn = document.getElementById('study-guide-btn');
 const difficultyButtonsContainer = document.querySelector('.difficulty-buttons');
 
 let selectedDifficulty = 'Medium'; // Default
 
 if (topicForm) {
-    if (generateQuizBtn) {
-        generateQuizBtn.disabled = !topicInput.value.trim();
-    }
+    const updateButtonState = () => {
+        const isDisabled = !topicInput.value.trim();
+        if (generateQuizBtn) generateQuizBtn.disabled = isDisabled;
+        if (studyGuideBtn) studyGuideBtn.disabled = isDisabled;
+    };
+
+    updateButtonState(); // Initial state
 
     if (topicInput) {
-        topicInput.addEventListener('input', () => {
-            if (generateQuizBtn) {
-                generateQuizBtn.disabled = !topicInput.value.trim();
-            }
-        });
+        topicInput.addEventListener('input', updateButtonState);
     }
 
     if (difficultyButtonsContainer) {
@@ -37,6 +38,25 @@ if (topicForm) {
         });
     }
 
+    studyGuideBtn?.addEventListener('click', async () => {
+        const topic = topicInput.value.trim();
+        if (!topic) return;
+
+        playSound('start');
+
+        const prompt = `Generate a concise study guide about "${topic}". The guide should be easy to understand for a beginner, using clear headings, bullet points, and bold text for key terms.`;
+        const quizContext = {
+            topicName: topic,
+            isLeveled: false,
+            prompt: prompt,
+            returnHash: '#optional-quiz',
+            generationType: 'study'
+        };
+
+        sessionStorage.setItem('quizContext', JSON.stringify(quizContext));
+        window.location.hash = '#loading';
+    });
+
     topicForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const topic = topicInput.value.trim();
@@ -50,9 +70,10 @@ if (topicForm) {
             topicName: topic,
             isLeveled: false, // Flag this as a non-leveled quiz
             prompt: prompt, // Store the prompt for retries
-            returnHash: '#optional-quiz'
+            returnHash: '#optional-quiz',
+            generationType: 'quiz'
         };
         
-        await startQuizFlow(quizContext, prompt);
+        await startQuizFlow(quizContext);
     });
 }

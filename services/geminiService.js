@@ -73,3 +73,34 @@ export const generateQuiz = async (prompt, systemInstruction) => {
         throw new Error("Failed to generate quiz. The topic might be too specific or there was a network issue. Please try again.");
     }
 };
+
+/**
+ * Generates a text-based study guide in Markdown format.
+ * @param {string} prompt - The full prompt for the Gemini API.
+ * @param {string} [systemInstruction] - An optional instruction to set the AI's persona.
+ * @returns {Promise<string>} - A promise that resolves to the Markdown content.
+ */
+export const generateStudyGuide = async (prompt, systemInstruction) => {
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                systemInstruction: systemInstruction || "You are a helpful and concise study guide creator."
+            },
+        });
+
+        const textContent = response.text?.trim();
+        if (!textContent) {
+            throw new Error("Invalid (empty) study guide received from API.");
+        }
+        return textContent;
+
+    } catch (error) {
+        console.error("Error generating study guide with Gemini:", error);
+        if (error instanceof Error && error.message.includes('API key not valid')) {
+             throw new Error("The API key is invalid. Please check your configuration.");
+        }
+        throw new Error("Failed to generate study guide. The topic might be too specific or there was a network issue. Please try again.");
+    }
+};

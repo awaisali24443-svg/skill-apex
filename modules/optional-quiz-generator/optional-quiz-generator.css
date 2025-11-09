@@ -108,6 +108,18 @@
     text-align: center;
 }
 
+.action-buttons-container {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+.action-buttons-container .btn {
+    flex: 1;
+    max-width: 200px;
+}
+
 @keyframes fadeIn {
     from { opacity: 0; transform: scale(0.95); }
     to { opacity: 1; transform: scale(1); }

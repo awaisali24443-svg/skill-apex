@@ -18,10 +18,10 @@ function getLevelDescriptor(level) {
     return "Noob";
 }
 
-async function handleTopicSelect(event) {
-    const card = event.currentTarget;
-    const topic = card.dataset.topic;
-    const returnHash = card.dataset.returnHash;
+async function handleStartQuiz(event) {
+    const button = event.currentTarget;
+    const topic = button.dataset.topic;
+    const returnHash = button.dataset.returnHash;
     if (!topic) return;
 
     const level = progressService.getCurrentLevel(topic);
@@ -34,17 +34,37 @@ async function handleTopicSelect(event) {
         level: level, 
         returnHash: returnHash,
         isLeveled: true,
-        prompt: prompt
+        prompt: prompt,
+        generationType: 'quiz'
     };
 
-    await startQuizFlow(quizContext, prompt);
+    await startQuizFlow(quizContext);
+}
+
+function handleStartStudyGuide(event) {
+    const button = event.currentTarget;
+    const topic = button.dataset.topic;
+    const returnHash = button.dataset.returnHash;
+    if (!topic) return;
+
+    const prompt = `Generate a concise study guide about "${topic}". The guide should be easy to understand for a beginner, using clear headings, bullet points, and bold text for key terms.`;
+    const quizContext = {
+        topicName: topic,
+        level: progressService.getCurrentLevel(topic), // Pass level for context
+        returnHash: returnHash,
+        isLeveled: true,
+        prompt: prompt,
+        generationType: 'study'
+    };
+    
+    sessionStorage.setItem('quizContext', JSON.stringify(quizContext));
+    window.location.hash = '#loading';
 }
 
 function renderTopicCards(category) {
     const data = categoryData[category];
     if (!data) {
         console.error(`Category "${category}" not found.`);
-        // Optionally, render an error message in the UI
         document.getElementById('topic-grid').innerHTML = `<p>Invalid category selected.</p>`;
         return;
     }
@@ -57,7 +77,7 @@ function renderTopicCards(category) {
         const level = progressService.getCurrentLevel(topic.name);
         const descriptor = getLevelDescriptor(level);
         return `
-        <div class="topic-card-flipper" data-topic="${topic.name}" data-return-hash="${data.returnHash}" role="button" tabindex="0">
+        <div class="topic-card-flipper" role="group" aria-label="${topic.name}">
             <div class="topic-card-inner">
                 <div class="topic-card topic-card-front">
                     <div class="topic-icon">${topic.icon}</div>
@@ -68,24 +88,25 @@ function renderTopicCards(category) {
                     </div>
                 </div>
                 <div class="topic-card topic-card-back">
-                    <h3>${topic.name}</h3>
                     <div class="level-info">
-                        <span class="level-display">Level ${level}</span>
+                        <span class="level-display">${topic.name} - Level ${level}</span>
                         <span class="level-descriptor">${descriptor}</span>
                     </div>
-                    <span class="start-quiz-link">Start Quiz &rarr;</span>
+                    <div class="topic-card-back-actions">
+                        <button class="btn btn-secondary study-guide-btn" data-topic="${topic.name}" data-return-hash="${data.returnHash}">Study Guide</button>
+                        <button class="btn btn-primary start-quiz-btn" data-topic="${topic.name}" data-return-hash="${data.returnHash}">Start Quiz</button>
+                    </div>
                 </div>
             </div>
         </div>
     `;
     }).join('');
 
-    const topicCards = document.querySelectorAll('.topic-card-flipper');
-    topicCards.forEach(card => {
-        card.addEventListener('click', handleTopicSelect);
-        card.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') handleTopicSelect(e);
-        });
+    document.querySelectorAll('.start-quiz-btn').forEach(button => {
+        button.addEventListener('click', handleStartQuiz);
+    });
+    document.querySelectorAll('.study-guide-btn').forEach(button => {
+        button.addEventListener('click', handleStartStudyGuide);
     });
 }
 
@@ -98,7 +119,6 @@ function init() {
         console.error("No category provided to topic-list module.");
         document.getElementById('topic-grid').innerHTML = `<p>Error: No category was selected. Please go back.</p>`;
     }
-    sessionStorage.removeItem('moduleContext'); // Clean up
 }
 
 init();

@@ -9,6 +9,7 @@ const saveProfileBtn = document.getElementById('save-profile-btn');
 const profilePictureImg = document.getElementById('profile-picture');
 const editPictureBtn = document.getElementById('edit-picture-btn');
 const resetProgressBtn = document.getElementById('reset-progress-btn');
+const goProBtn = document.getElementById('go-pro-btn');
 
 // Theme Selector
 const themeSelector = document.getElementById('theme-selector');
@@ -144,6 +145,15 @@ async function handleResetProgress() {
     }
 }
 
+async function handleGoPro() {
+    await window.showConfirmationModal({
+        title: "Feature Coming Soon!",
+        text: "Pro features are currently in development. Thank you for your interest!",
+        confirmText: "Got it!",
+        isAlert: true
+    });
+}
+
 // --- Initialization ---
 function init() {
     loadProfile();
@@ -177,6 +187,7 @@ function init() {
     saveProfileBtn?.addEventListener('click', saveProfile);
     editPictureBtn?.addEventListener('click', editProfilePicture);
     resetProgressBtn?.addEventListener('click', handleResetProgress);
+    goProBtn?.addEventListener('click', handleGoPro);
     
     soundToggle?.addEventListener('change', handleGeneralSettingsChange);
     largeTextToggle?.addEventListener('change', handleAccessibilityChange);

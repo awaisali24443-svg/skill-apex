@@ -166,9 +166,35 @@ body.theme-transitioning * {
 
 .nav-hamburger { display: none; } /* Hidden on desktop */
 
+.header-user-stats {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-left: auto;
+    margin-right: 1.5rem;
+}
+.stat-item {
+    background: var(--color-bg-light);
+    color: var(--color-text-muted);
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: 1px solid var(--color-border);
+}
+.stat-item span {
+    color: var(--color-primary);
+    font-weight: 700;
+}
+.stat-item #header-streak {
+    color: var(--color-warning);
+}
+
+
 /* Mobile Navigation */
 @media (max-width: 768px) {
     .site-nav { padding: 0 1rem; }
+    .header-user-stats { display: none; } /* Hide stats on mobile header */
     .nav-links {
         position: fixed;
         top: 70px; right: -100%;

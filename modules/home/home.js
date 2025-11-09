@@ -2,6 +2,7 @@ import { categoryData } from '../../services/topicService.js';
 import { NUM_QUESTIONS } from '../../constants.js';
 import { playSound } from '../../services/soundService.js';
 import { startQuizFlow } from '../../services/navigationService.js';
+import { getProgress } from '../../services/progressService.js';
 
 console.log("Home module (Dashboard) loaded.");
 
@@ -36,9 +37,15 @@ async function handleSurpriseMe(e) {
 
 function personalizeDashboard() {
     const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+    const { stats } = getProgress();
     const subtitleEl = document.querySelector('.main-home-subtitle');
-    if (profile.name && subtitleEl) {
-        subtitleEl.textContent = `Ready to test your knowledge, ${profile.name}? Create a new quiz or level up your skills.`;
+    
+    if (subtitleEl) {
+        let greeting = `Ready to test your knowledge, ${profile.name || 'friend'}?`;
+        if (stats.streak > 0) {
+            greeting += ` You're on a ${stats.streak}-day streak, keep it up!`;
+        }
+        subtitleEl.textContent = greeting;
     }
 }
 

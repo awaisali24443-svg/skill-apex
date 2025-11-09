@@ -3,6 +3,7 @@
     This file handles routing and loading shared components.
 */
 import { playSound } from '/services/soundService.js';
+import { getProgress } from '/services/progressService.js';
 
 const rootContainer = document.getElementById('root-container');
 const headerContainer = document.getElementById('header-container');
@@ -72,6 +73,18 @@ function initAccessibility() {
     if (settings.dyslexiaFont) document.body.classList.add('dyslexia-font');
     if (settings.reduceMotion) document.body.classList.add('reduce-motion');
 }
+
+// --- Header Stats UI ---
+function updateHeaderStats() {
+    const progress = getProgress();
+    const xpEl = document.getElementById('header-xp');
+    const streakEl = document.getElementById('header-streak');
+    
+    if (xpEl) xpEl.textContent = progress.stats.xp.toLocaleString();
+    if (streakEl) streakEl.textContent = `🔥 ${progress.stats.streak}`;
+}
+window.updateHeaderStats = updateHeaderStats;
+
 
 // --- Confirmation Modal ---
 const modalContainer = document.getElementById('modal-container');
@@ -172,7 +185,8 @@ const staticRoutes = {
     '#quiz': 'quiz',
     '#results': 'results',
     '#screen': 'screen',
-    '#settings': 'settings'
+    '#settings': 'settings',
+    '#study': 'study'
 };
 
 let isNavigating = false;
@@ -258,6 +272,8 @@ async function loadHeader() {
         const response = await fetch('/global/header.html');
         if (!response.ok) throw new Error('Header template not found.');
         headerContainer.innerHTML = await response.text();
+        
+        updateHeaderStats(); // Initial load of stats
         
         // Init navbar logic
         const hamburger = document.querySelector('.nav-hamburger');

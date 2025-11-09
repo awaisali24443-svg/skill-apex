@@ -28,7 +28,6 @@
     background-color: transparent;
     aspect-ratio: 4 / 5;
     perspective: 1000px;
-    cursor: pointer;
 }
 .topic-card-inner {
     position: relative;
@@ -39,7 +38,7 @@
     transform-style: preserve-3d;
 }
 .topic-card-flipper:hover .topic-card-inner,
-.topic-card-flipper:focus .topic-card-inner {
+.topic-card-flipper:focus-within .topic-card-inner {
     transform: rotateY(180deg);
 }
 .topic-card {
@@ -65,7 +64,7 @@
 .topic-card-back {
     transform: rotateY(180deg);
     border-color: var(--color-primary);
-    justify-content: space-around;
+    justify-content: space-between;
 }
 .topic-icon { font-size: 3rem; margin-bottom: 1rem; }
 .topic-card h3 {
@@ -78,7 +77,6 @@
     font-size: 0.95rem;
 }
 .level-info {
-    margin-top: 1rem;
     text-align: center;
 }
 .level-display {
@@ -94,8 +92,16 @@
     background-color: var(--color-bg-light);
     color: var(--color-primary);
     font-weight: 500;
+    margin-top: 0.25rem;
 }
-.start-quiz-link {
-    font-weight: 600;
-    color: var(--color-primary);
+.topic-card-back-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+}
+.topic-card-back .btn {
+    width: 100%;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
 }

@@ -1,6 +1,6 @@
 <div id="topic-selector-view" class="card">
     <h2 class="guest-title">AI Quiz Forge 🔥</h2>
-    <p class="guest-subtitle">Type any topic — forge an intelligent quiz instantly.</p>
+    <p class="guest-subtitle">Type any topic — forge an intelligent quiz or a study guide instantly.</p>
     <form id="topic-form">
         <div class="topic-input-container">
             <input id="topic-input" type="text" placeholder="e.g., The Science of Black Holes" required/>
@@ -8,7 +8,7 @@
         </div>
         
         <div class="difficulty-options">
-            <label class="difficulty-label">Select Difficulty:</label>
+            <label class="difficulty-label">Select Difficulty (for Quiz):</label>
             <div class="difficulty-buttons">
                 <button type="button" class="difficulty-btn" data-difficulty="Easy">Easy</button>
                 <button type="button" class="difficulty-btn active" data-difficulty="Medium">Medium</button>
@@ -17,8 +17,13 @@
         </div>
         
         <p id="error-message" class="error-message"></p>
-        <button id="generate-quiz-btn" type="submit" class="btn btn-primary">
-            Forge Quiz
-        </button>
+        <div class="action-buttons-container">
+            <button id="study-guide-btn" type="button" class="btn btn-secondary">
+                Study Guide
+            </button>
+            <button id="generate-quiz-btn" type="submit" class="btn btn-primary">
+                Forge Quiz
+            </button>
+        </div>
     </form>
 </div>

@@ -3,10 +3,9 @@ import * as quizState from './quizStateService.js';
 /**
  * Handles the logic for starting a new quiz, including checking for an active session.
  * This centralized function prevents accidental overwriting of in-progress quizzes.
- * @param {object} quizContext - The context for the new quiz (topic, level, etc.).
- * @param {string} prompt - The prompt to be used for generating the quiz.
+ * @param {object} quizContext - The context for the new quiz (topic, level, prompt etc.).
  */
-export async function startQuizFlow(quizContext, prompt) {
+export async function startQuizFlow(quizContext) {
     if (quizState.hasSavedState()) {
         const isConfirmed = await window.showConfirmationModal({
             title: 'Quiz in Progress',
@@ -24,6 +23,5 @@ export async function startQuizFlow(quizContext, prompt) {
     quizState.clearQuizState();
     
     sessionStorage.setItem('quizContext', JSON.stringify(quizContext));
-    sessionStorage.setItem('quizTopicPrompt', prompt);
     window.location.hash = '#loading';
 }
