@@ -43,7 +43,7 @@ async function handleNemesisQuiz(e) {
     
     // Create a concise list of unique concepts
     const concepts = [...new Set(missedConcepts.map(c => c.split('.')[0]))].slice(0, 5).join(', ');
-    const prompt = await generateNemesisQuiz(topicName, concepts);
+    const prompt = generateNemesisQuiz(topicName, concepts);
     
     const quizContext = {
         topicName: `Nemesis: ${topicName}`,

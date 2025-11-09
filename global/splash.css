@@ -1,1 +1,78 @@
-full contents of global/splash.css
+/* --- Splash Screen --- */
+#splash-screen {
+    position: fixed;
+    inset: 0;
+    background-color: var(--color-bg);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.8s ease-out;
+}
+
+#splash-screen.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.splash-content {
+    text-align: center;
+    animation: fadeInSplash 1.5s ease-out forwards;
+}
+
+@keyframes fadeInSplash {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.splash-logo {
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 2rem;
+}
+
+.splash-logo-text {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 800;
+    font-size: 24px;
+    fill: none;
+    stroke: url(#splash-logo-gradient);
+    stroke-width: 0.5;
+    letter-spacing: 2px;
+    stroke-dasharray: 1200;
+    stroke-dashoffset: 1200;
+    animation: text-draw 4s ease-in-out forwards;
+}
+
+@keyframes text-draw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+.splash-loader {
+    width: 120px;
+    height: 4px;
+    background-color: var(--color-border);
+    border-radius: 2px;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+}
+
+.splash-loader::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 40%;
+    background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+    animation: loadingBar 4s ease-in-out forwards;
+    opacity: 0;
+}
+
+@keyframes loadingBar {
+    0% { transform: translateX(-150%); opacity: 1; }
+    100% { transform: translateX(300%); opacity: 1;}
+}

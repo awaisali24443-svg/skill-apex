@@ -1,1 +1,118 @@
-full contents of index.html
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Tester</title>
+
+    <!-- PWA & SEO -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#ff007f">
+    <meta name="description" content="An interactive quiz application that generates custom quizzes on any topic using the power of the Gemini API.">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;700;800&family=Orbitron:wght@700;800&family=Open+Dyslexic&display=swap">
+    <link rel="stylesheet" href="/global/global.css">
+    <link rel="stylesheet" href="/themes/theme-dark-cyber.css"> <!-- Consolidates themes -->
+    <link rel="stylesheet" href="/global/accessibility.css">
+    <link rel="stylesheet" href="/global/splash.css">
+
+    <!-- Import Map for ES Modules -->
+    <script type="importmap">
+    {
+      "imports": {
+        "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.0"
+      }
+    }
+    </script>
+</head>
+<body class="loading-splash">
+
+    <!-- Splash Screen -->
+    <div id="splash-screen">
+        <div class="splash-content">
+            <svg class="splash-logo" viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg">
+                 <defs>
+                    <linearGradient id="splash-logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#2dd4bf" />
+                        <stop offset="100%" stop-color="#0077ff" />
+                    </linearGradient>
+                </defs>
+                <text class="splash-logo-text" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle">
+                    KNOWLEDGE TESTER
+                </text>
+            </svg>
+            <div class="splash-loader"></div>
+        </div>
+    </div>
+
+    <!-- Main App Structure -->
+    <header id="header-container"></header>
+    <main id="root-container"></main>
+
+    <!-- UI Effects & Overlays -->
+    <div id="cursor-aura"></div>
+    <div id="toast-container"></div>
+
+    <!-- Modals -->
+    <!-- Welcome Modal -->
+    <div id="welcome-modal-overlay" class="hidden">
+        <div class="welcome-modal-card card">
+            <h2>🎉 Welcome to Knowledge Tester!</h2>
+            <p>You've successfully created your account. We're excited to have you on board.</p>
+            <p>Start your journey by exploring topics on the home screen, or jump right into a custom quiz.</p>
+            <button id="welcome-modal-close-btn" class="btn btn-primary">Let's Go!</button>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="modal-container" class="hidden">
+        <div id="modal-card" class="card">
+            <h3 id="modal-title">Confirmation</h3>
+            <p id="modal-text">Are you sure?</p>
+            <div id="modal-input-container" class="hidden">
+                <input type="text" id="modal-input" class="form-control">
+            </div>
+            <div id="modal-actions">
+                <button id="modal-cancel-btn" class="btn btn-secondary">Cancel</button>
+                <button id="modal-confirm-btn" class="btn btn-danger">Confirm</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Level Up Modal -->
+    <div id="level-up-container" class="hidden">
+        <div id="level-up-card" class="card glass-card">
+            <h2 class="level-up-title">LEVEL UP!</h2>
+            <div class="level-up-badge">
+                <span id="level-up-number">2</span>
+            </div>
+            <div class="level-up-rewards">
+                <p>New features unlocked!</p>
+            </div>
+            <button id="level-up-continue-btn" class="btn btn-primary">Continue</button>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <p>&copy; <span id="year"></span> Knowledge Tester. All rights reserved.</p>
+    </footer>
+
+    <!-- Scripts -->
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <!-- 3D Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.161.0/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+
+    <!-- App Configuration & Initialization -->
+    <script src="/config.js"></script>
+    <script src="/firebase-config.js"></script>
+    <script type="module" src="/global/global.js"></script>
+
+</body>
+</html>
