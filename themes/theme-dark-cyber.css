@@ -1,50 +1,55 @@
-/*
-    THEME STYLES
-    This file consolidates all professional themes for the application.
-    The active theme is controlled by the `data-theme` attribute on the :root (html) tag.
-*/
+/* themes/theme-dark-cyber.css */
 
-/* 1. Light Professional Theme (Default) */
-:root, :root[data-theme="light"] {
-  --color-primary: #3b82f6; /* accent */
-  --color-secondary: #14b8a6;
-  --color-bg: #ffffff; /* background */
-  --color-bg-light: #f2f2f2; /* card-bg */
-  --color-text: #111111; /* text */
-  --color-text-muted: #6b7280;
-  --color-border: #e5e7eb;
-  --color-glow: color-mix(in srgb, var(--color-primary) 20%, transparent);
-
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.07);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.07);
+/* --- Light Professional Theme --- */
+[data-theme="light"] {
+    --color-primary: #3b82f6; /* Blue 500 */
+    --color-secondary: #14b8a6; /* Teal 500 */
+    --color-bg: #ffffff;
+    --color-bg-light: #f3f4f6; /* Gray 100 */
+    --color-text: #111827; /* Gray 900 */
+    --color-text-muted: #6b7280; /* Gray 500 */
+    --color-border: #e5e7eb; /* Gray 200 */
+    --color-success: #22c55e; /* Green 500 */
+    --color-danger: #ef4444; /* Red 500 */
+    --color-warning: #f59e0b; /* Amber 500 */
+    --color-glow: rgba(59, 130, 246, 0.15);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.07);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.07);
 }
 
-/* 2. Dark Professional Theme */
-:root[data-theme="dark"] {
-  --color-primary: #0077ff; /* accent */
-  --color-secondary: #2dd4bf;
-  --color-bg: #0a0a0a; /* background */
-  --color-bg-light: #141414; /* card-bg */
-  --color-text: #e6e6e6; /* text */
-  --color-text-muted: #888888;
-  --color-border: #2a2a2a;
-  --color-glow: color-mix(in srgb, var(--color-primary) 30%, transparent);
-
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.15), 0 2px 4px -2px rgba(0, 0, 0, 0.15);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.15), 0 4px 6px -4px rgba(0, 0, 0, 0.15);
+/* --- Dark Professional Theme --- */
+[data-theme="dark"] {
+    --color-primary: #60a5fa; /* Blue 400 */
+    --color-secondary: #2dd4bf; /* Teal 400 */
+    --color-bg: #1f2937; /* Gray 800 */
+    --color-bg-light: #374151; /* Gray 700 */
+    --color-text: #f9fafb; /* Gray 50 */
+    --color-text-muted: #9ca3af; /* Gray 400 */
+    --color-border: #4b5563; /* Gray 600 */
+    --color-success: #4ade80; /* Green 400 */
+    --color-danger: #f87171; /* Red 400 */
+    --color-warning: #fbbf24; /* Amber 400 */
+    --color-glow: rgba(96, 165, 250, 0.15);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.15), 0 2px 4px -2px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.15), 0 4px 6px -4px rgba(0, 0, 0, 0.15);
 }
 
-/* 3. Cyber Neon Theme */
-:root[data-theme="cyber"] {
-  --color-primary: #ff007f; /* accent (pink) */
-  --color-secondary: #00ffff; /* secondary-accent (cyan) */
-  --color-bg: #0d0f1a; /* background */
-  --color-bg-light: #12142a; /* card-bg */
-  --color-text: #e3f2fd; /* text */
-  --color-text-muted: #8c9bb6;
-  --color-border: #2c3a5e;
-  --color-glow: color-mix(in srgb, var(--color-primary) 35%, transparent);
-
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+/* --- Cyber Neon Theme --- */
+[data-theme="cyber"] {
+    --color-primary: #ff007f; /* Neon Pink */
+    --color-secondary: #00ffff; /* Neon Cyan */
+    --color-bg: #0d0f1a; /* Very Dark Blue */
+    --color-bg-light: #1a1c2d; /* Darker Blue */
+    --color-text: #e0e0e0; /* Light Gray */
+    --color-text-muted: #8c8c8c; /* Muted Gray */
+    --color-border: #3c3c5c; /* Purple-ish Border */
+    --color-success: #00ff00; /* Neon Green */
+    --color-danger: #ff3333; /* Neon Red */
+    --color-warning: #ffff00; /* Neon Yellow */
+    --color-glow: rgba(255, 0, 127, 0.3);
+    --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 5px 20px rgba(0, 0, 0, 0.4);
+}
+[data-theme="cyber"] .btn-primary {
+    text-shadow: 0 0 5px var(--color-primary), 0 0 10px var(--color-primary);
 }
