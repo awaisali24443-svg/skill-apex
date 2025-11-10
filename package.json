@@ -1,18 +1,17 @@
 {
   "name": "knowledge-tester-rebuilt",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "An interactive quiz application that generates custom quizzes on any topic using the power of the Gemini API.",
-  "main": "server.js",
+  "main": "index.html",
   "scripts": {
-    "start": "node server.js",
+    "start": "echo 'This is a static application. Serve the files from a web server.' && exit 1",
     "build": "echo 'No build step defined' && exit 0"
   },
   "engines": {
     "node": "22.x"
   },
   "dependencies": {
-    "@google/genai": "^0.14.0",
-    "express": "^4.18.2"
+    "@google/genai": "^0.14.0"
   },
   "devDependencies": {},
   "keywords": [],

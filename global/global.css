@@ -257,7 +257,9 @@ body.loading-splash .site-footer {
 
 /* Forms & Buttons */
 .btn {
-    display: inline-block;
+    display: inline-flex; /* Use flexbox for centering */
+    justify-content: center;
+    align-items: center;
     border: none;
     padding: 0.75rem 1.5rem;
     border-radius: 99px; /* More modern rounded pill shape */
@@ -269,6 +271,7 @@ body.loading-splash .site-footer {
     transform: scale(1);
     text-decoration: none;
     border: 2px solid transparent;
+    min-height: 48px; /* Ensure consistent height */
 }
 
 .btn-primary {
@@ -315,6 +318,21 @@ body.loading-splash .site-footer {
     transform: none;
     box-shadow: none;
 }
+
+.btn .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: rotation 0.8s linear infinite;
+}
+
+.btn-secondary .spinner {
+    border-color: var(--color-text-muted);
+    border-top-color: var(--color-text);
+}
+
 
 .form-control {
     width: 100%;

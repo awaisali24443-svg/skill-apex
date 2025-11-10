@@ -2,6 +2,7 @@ import * as auth from '../../services/authService.js';
 import * as progress from '../../services/progressService.js';
 import * as missions from '../../services/missionService.js';
 import * as learning from '../../services/learningPathService.js';
+import { generateLearningPath } from '../../services/geminiService.js';
 import { StellarMap } from '../../services/stellarMap.js';
 import { startQuizFlow } from '../../services/navigationService.js';
 import { categoryData } from '../../services/topicService.js';
@@ -93,9 +94,41 @@ function startRecommendedQuiz(topicName, customTitle = null) {
     startQuizFlow(quizContext);
 }
 
+async function handleLearningPathSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const input = form.querySelector('#learning-goal-input');
+    const button = form.querySelector('button[type="submit"]');
+    const goal = input.value.trim();
+
+    if (!goal) {
+        showToast('Please enter a learning goal.', 'error');
+        return;
+    }
+    
+    const originalContent = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<div class="spinner"></div>';
+
+    try {
+        const pathData = await generateLearningPath(goal);
+        await learning.saveLearningPath(pathData);
+        showToast('New learning path created!', 'success');
+        input.value = '';
+        await renderLearningPaths();
+    } catch (error) {
+        console.error('Failed to generate learning path:', error);
+        showToast(error.message, 'error');
+    } finally {
+        button.disabled = false;
+        button.innerHTML = originalContent;
+    }
+}
+
 export async function init() {
     await renderDashboard();
     document.getElementById('random-challenge-btn')?.addEventListener('click', handleRandomChallenge);
+    document.getElementById('learning-path-form')?.addEventListener('submit', handleLearningPathSubmit);
 
     const canvas = document.getElementById('stellar-map-canvas');
     const loadingOverlay = document.getElementById('stellar-map-loading');
