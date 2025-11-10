@@ -11,6 +11,34 @@ import { NUM_QUESTIONS, MAX_LEVEL } from '../../constants.js';
 
 let stellarMap;
 
+// A map to store promises for scripts that are loading or have loaded.
+// This prevents trying to load the same script multiple times.
+const scriptLoadPromises = new Map();
+
+/**
+ * Dynamically loads a script and returns a promise that resolves when it's loaded.
+ * Caches the promise to avoid reloading the same script.
+ * @param {string} src The URL of the script to load.
+ * @returns {Promise<void>}
+ */
+function loadScript(src) {
+    if (scriptLoadPromises.has(src)) {
+        return scriptLoadPromises.get(src);
+    }
+
+    const promise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error(`Script load failed for ${src}`));
+        document.head.appendChild(script);
+    });
+
+    scriptLoadPromises.set(src, promise);
+    return promise;
+}
+
+
 async function renderDashboard() {
     const user = auth.getCurrentUser();
     const userProgress = await progress.getProgress();
@@ -142,30 +170,28 @@ function startRecommendedStudy(topicName) {
 }
 
 export async function init() {
+    // Render the static parts of the dashboard immediately for a fast user experience.
     await renderDashboard();
-    
     document.getElementById('random-challenge-btn')?.addEventListener('click', handleRandomChallenge);
 
+    // Now, progressively enhance with the 3D map.
     const canvas = document.getElementById('stellar-map-canvas');
     const loadingOverlay = document.getElementById('stellar-map-loading');
 
-    // Robust check for all dependencies before attempting initialization
-    if (!canvas || !window.THREE || !window.THREE.OrbitControls) {
-        console.warn("Stellar map dependencies not met. THREE.js or OrbitControls might be missing or blocked.");
+    try {
+        // Explicitly load dependencies in the correct order.
+        await loadScript('/libs/three.min.js');
+        await loadScript('/libs/OrbitControls.min.js');
+
+        // Now that scripts are guaranteed to be loaded, initialize the map.
+        stellarMap = new StellarMap(canvas);
+        await stellarMap.init(); // This method handles its own internal loading state
+
+    } catch(error) {
+        console.error("Failed to load 3D map dependencies or initialize StellarMap:", error);
         if (canvas) canvas.style.display = 'none';
         if (loadingOverlay) {
             loadingOverlay.innerHTML = `<p style="color:var(--color-warning); text-align:center;">3D map component failed to load.<br>The dashboard remains fully functional.</p>`;
-        }
-    } else {
-        // Safety net to catch any unexpected errors during map setup
-        try {
-            stellarMap = new StellarMap(canvas);
-            await stellarMap.init(); // This method handles its own internal loading state
-        } catch(e) {
-            console.error("Critical error during StellarMap initialization in home.js:", e);
-            if (loadingOverlay) {
-                loadingOverlay.innerHTML = `<p style="color:var(--color-danger); text-align:center;">A critical error occurred while loading the 3D map.</p>`;
-            }
         }
     }
     

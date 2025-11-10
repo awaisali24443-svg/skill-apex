@@ -11,6 +11,33 @@ let sceneManager;
 let performanceChart, masteryChart;
 let eventListeners = [];
 
+// A map to store promises for scripts that are loading or have loaded.
+const scriptLoadPromises = new Map();
+
+/**
+ * Dynamically loads a script and returns a promise that resolves when it's loaded.
+ * Caches the promise to avoid reloading the same script.
+ * @param {string} src The URL of the script to load.
+ * @returns {Promise<void>}
+ */
+function loadScript(src) {
+    if (scriptLoadPromises.has(src)) {
+        return scriptLoadPromises.get(src);
+    }
+
+    const promise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error(`Script load failed for ${src}`));
+        document.head.appendChild(script);
+    });
+
+    scriptLoadPromises.set(src, promise);
+    return promise;
+}
+
+
 function renderAchievements(unlockedAchievements) {
     const grid = document.getElementById('achievements-grid');
     if (!grid) return;
@@ -91,12 +118,7 @@ function renderWeakestConcepts(history) {
 function renderPerformanceChart(history) {
     const ctx = document.getElementById('performance-chart')?.getContext('2d');
     if (!ctx) return;
-    if (!window.Chart) {
-        console.warn("Chart.js not loaded, cannot render performance chart.");
-        ctx.canvas.parentElement.innerHTML = '<p style="text-align:center; color: var(--color-text-muted);">Chart could not be loaded.</p>';
-        return;
-    }
-
+    
     const last30Days = Array.from({ length: 30 }, (_, i) => {
         const d = new Date();
         d.setDate(d.getDate() - i);
@@ -144,11 +166,6 @@ function renderPerformanceChart(history) {
 function renderMasteryChart(levels) {
     const ctx = document.getElementById('mastery-chart')?.getContext('2d');
     if (!ctx) return;
-    if (!window.Chart) {
-        console.warn("Chart.js not loaded, cannot render mastery chart.");
-        ctx.canvas.parentElement.innerHTML = '<p style="text-align:center; color: var(--color-text-muted);">Chart could not be loaded.</p>';
-        return;
-    }
 
     const categoryLevels = {};
     for (const categoryKey in categoryData) {
@@ -195,8 +212,19 @@ async function renderProgress() {
         
         renderAchievements(achievements);
         renderWeakestConcepts(history);
-        renderPerformanceChart(history);
-        renderMasteryChart(levels);
+
+        // Load chart script and then render both charts
+        try {
+            await loadScript('/libs/chart.min.js');
+            renderPerformanceChart(history);
+            renderMasteryChart(levels);
+        } catch (e) {
+            console.error("Chart.js failed to load.", e);
+            const pChartContainer = document.getElementById('performance-chart')?.parentElement;
+            if (pChartContainer) pChartContainer.innerHTML = '<p style="text-align:center;color:var(--color-text-muted);">Chart failed to load.</p>';
+            const mChartContainer = document.getElementById('mastery-chart')?.parentElement;
+            if (mChartContainer) mChartContainer.innerHTML = '<p style="text-align:center;color:var(--color-text-muted);">Chart failed to load.</p>';
+        }
 
     } catch (error) {
         console.error("Error rendering progress:", error);

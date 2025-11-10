@@ -62,7 +62,7 @@ export class StellarMap {
             dirLight.position.set(5, 5, 5);
             this.#scene.add(dirLight);
 
-            // Controls - dependency now checked in home.js, so we can assume it exists.
+            // Controls - Its existence is now guaranteed by the home module.
             this.#controls = new THREE.OrbitControls(this.#camera, this.#renderer.domElement);
             this.#controls.enableDamping = true;
             this.#controls.enablePan = false;
@@ -88,7 +88,6 @@ export class StellarMap {
             console.error("StellarMap initialization failed:", error);
             if (this.#loadingOverlay) {
                 this.#loadingOverlay.innerHTML = `<p style="color:var(--color-danger); text-align:center;">3D map failed to load.<br>The dashboard is still available.</p>`;
-                // The loading overlay is left visible to show the error.
             }
         }
     }
