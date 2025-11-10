@@ -1,0 +1,1 @@
+full contents of modules/library/library.js
