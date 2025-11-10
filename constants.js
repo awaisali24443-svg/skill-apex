@@ -22,7 +22,7 @@ export const ROUTES = {
     'challenge-setup': { module: 'challenge-setup' },
     'challenge-results': { module: 'challenge-results' },
     'leaderboard': { module: 'leaderboard' },
-    'progress': { module: 'screen' },
+    'progress': { module: 'progress' },
     'settings': { module: 'settings' },
     'learning-path': { module: 'learning-path' },
     'library': { module: 'library' },

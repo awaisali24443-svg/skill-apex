@@ -10,6 +10,7 @@ import { initUIEffects, showToast, showWelcomeModal } from '../services/uiServic
 let currentModule = null;
 let currentUser = null;
 let userProgress = null;
+let headerHTMLTemplate = ''; // Cache for the header template
 
 // --- SPLASH SCREEN MANAGEMENT ---
 function hideSplashScreen() {
@@ -25,12 +26,12 @@ async function updateHeaderUI(user, progress) {
     const headerContainer = document.getElementById('header-container');
     if (!headerContainer) return;
 
-    // Fetch the header template if it's not already loaded
-    if (!headerContainer.innerHTML.trim()) {
+    // Fetch the header template only if it hasn't been fetched before
+    if (!headerHTMLTemplate) {
         try {
             const response = await fetch('/global/header.html');
             if (response.ok) {
-                headerContainer.innerHTML = await response.text();
+                headerHTMLTemplate = await response.text();
             } else {
                  console.error('Failed to load header HTML.');
                  return;
@@ -40,6 +41,8 @@ async function updateHeaderUI(user, progress) {
             return;
         }
     }
+    
+    headerContainer.innerHTML = headerHTMLTemplate;
     
     const navLinks = headerContainer.querySelector('.nav-links');
     const headerUserStats = headerContainer.querySelector('.header-user-stats');

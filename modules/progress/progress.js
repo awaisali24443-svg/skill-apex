@@ -26,7 +26,7 @@ function renderAchievements(unlockedAchievements) {
     }).join('');
 }
 
-function handleNemesisQuiz(e) {
+async function handleNemesisQuiz(e) {
     const topicName = e.currentTarget.dataset.topic;
     const concepts = e.currentTarget.dataset.concepts;
     const prompt = generateNemesisQuiz(topicName, concepts);
@@ -39,7 +39,7 @@ function handleNemesisQuiz(e) {
         generationType: 'quiz'
     };
 
-    startQuizFlow(quizContext);
+    await startQuizFlow(quizContext);
 }
 
 function renderWeakestConcepts(history) {
@@ -205,9 +205,13 @@ export async function init() {
 export function cleanup() {
     eventListeners.forEach(({ element, type, handler }) => element.removeEventListener(type, handler));
     eventListeners.length = 0; // Clear the array
-    if (performanceChart) performanceChart.destroy();
-    if (masteryChart) masteryChart.destroy();
-    performanceChart = null;
-    masteryChart = null;
+    if (performanceChart) {
+        performanceChart.destroy();
+        performanceChart = null;
+    }
+    if (masteryChart) {
+        masteryChart.destroy();
+        masteryChart = null;
+    }
     sceneManager = cleanupModuleScene(sceneManager);
 }

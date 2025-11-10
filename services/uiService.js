@@ -80,9 +80,16 @@ export function showConfirmationModal({ title, text, confirmText = 'Confirm', is
         
         const closeHandler = (value) => {
             container.classList.add('hidden');
-            controller.abort(); // Remove both event listeners
+            controller.abort(); // Remove all event listeners attached with this signal
             resolve(value);
         };
+
+        // Allow closing by clicking the overlay
+        container.addEventListener('click', (e) => {
+            if (e.target === container) {
+                closeHandler(isPrompt ? null : false);
+            }
+        }, { signal });
         
         confirmBtn.addEventListener('click', () => closeHandler(isPrompt ? input.value : true), { signal });
         cancelBtn.addEventListener('click', () => closeHandler(isPrompt ? null : false), { signal });
