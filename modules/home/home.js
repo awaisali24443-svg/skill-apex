@@ -149,16 +149,23 @@ export async function init() {
     const canvas = document.getElementById('stellar-map-canvas');
     const loadingOverlay = document.getElementById('stellar-map-loading');
 
-    if(canvas && window.THREE) {
-        stellarMap = new StellarMap(canvas);
-        await stellarMap.init(); // This method handles its own loading state internally
-    } else {
-        // If THREE.js is missing or canvas isn't found, handle it gracefully.
-        console.warn("Stellar map could not be initialized. THREE.js might be missing or blocked.");
-        if (canvas) canvas.style.display = 'none'; // Hide the canvas element
+    // Robust check for all dependencies before attempting initialization
+    if (!canvas || !window.THREE || !window.THREE.OrbitControls) {
+        console.warn("Stellar map dependencies not met. THREE.js or OrbitControls might be missing or blocked.");
+        if (canvas) canvas.style.display = 'none';
         if (loadingOverlay) {
-            // Update the loading message to an informative error message.
             loadingOverlay.innerHTML = `<p style="color:var(--color-warning); text-align:center;">3D map component failed to load.<br>The dashboard remains fully functional.</p>`;
+        }
+    } else {
+        // Safety net to catch any unexpected errors during map setup
+        try {
+            stellarMap = new StellarMap(canvas);
+            await stellarMap.init(); // This method handles its own internal loading state
+        } catch(e) {
+            console.error("Critical error during StellarMap initialization in home.js:", e);
+            if (loadingOverlay) {
+                loadingOverlay.innerHTML = `<p style="color:var(--color-danger); text-align:center;">A critical error occurred while loading the 3D map.</p>`;
+            }
         }
     }
     

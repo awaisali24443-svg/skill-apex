@@ -62,17 +62,13 @@ export class StellarMap {
             dirLight.position.set(5, 5, 5);
             this.#scene.add(dirLight);
 
-            // Controls (defensive check)
-            if (window.THREE && THREE.OrbitControls) {
-                this.#controls = new THREE.OrbitControls(this.#camera, this.#renderer.domElement);
-                this.#controls.enableDamping = true;
-                this.#controls.enablePan = false;
-                this.#controls.minDistance = 10;
-                this.#controls.maxDistance = 50;
-                this.#controls.target.set(0, 0, 0);
-            } else {
-                console.warn("THREE.OrbitControls not found. The stellar map will not be interactive.");
-            }
+            // Controls - dependency now checked in home.js, so we can assume it exists.
+            this.#controls = new THREE.OrbitControls(this.#camera, this.#renderer.domElement);
+            this.#controls.enableDamping = true;
+            this.#controls.enablePan = false;
+            this.#controls.minDistance = 10;
+            this.#controls.maxDistance = 50;
+            this.#controls.target.set(0, 0, 0);
 
             this.#createBackground();
             this.#createConstellations();
