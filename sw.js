@@ -1,6 +1,6 @@
 // sw.js
 
-const CACHE_NAME = 'knowledge-tester-v1.5';
+const CACHE_NAME = 'knowledge-tester-v1.6'; // Incremented cache version
 const urlsToCache = [
   '/',
   '/index.html',
@@ -12,10 +12,10 @@ const urlsToCache = [
   '/global/header.html',
   // Themes
   '/themes/theme-dark-cyber.css',
-  // Third-party libraries (now local)
-  '/libs/three.min.js',
-  '/libs/OrbitControls.min.js',
-  '/libs/chart.min.js',
+  // Third-party libraries (from CDN)
+  'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.164.1/three.min.js',
+  'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/js/controls/OrbitControls.js',
+  'https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js',
   // Modules (core ones to start)
   '/modules/home/home.html',
   '/modules/home/home.css',
@@ -81,7 +81,7 @@ self.addEventListener('fetch', event => {
                         
                         // For basic requests (same-origin), we can cache them.
                         // For cross-origin requests, we can cache them too but need to be careful.
-                        // In our case, caching Google Fonts is okay.
+                        // In our case, caching Google Fonts and CDN JS is okay.
                         const responseToCache = networkResponse.clone();
                         caches.open(CACHE_NAME)
                             .then(cache => {
