@@ -10,7 +10,7 @@ const handleGuestLogin = () => {
 
 export function init() {
     document.getElementById('guest-btn')?.addEventListener('click', handleGuestLogin);
-    sceneManager = initModuleScene('#welcome-canvas', 'subtleParticles');
+    sceneManager = initModuleScene('.background-canvas', 'subtleParticles');
 }
 
 export function cleanup() {

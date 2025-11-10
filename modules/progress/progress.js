@@ -196,7 +196,7 @@ async function renderProgress() {
 
 export async function init() {
     renderProgress();
-    sceneManager = initModuleScene('.background-canvas', 'calmGeometric');
+    sceneManager = initModuleScene('.background-canvas', 'nebula');
 }
 
 export function cleanup() {

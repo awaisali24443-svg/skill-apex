@@ -1,1 +1,15 @@
-full contents of modules/live-results/live-results.css
+.live-results-container {
+    width: 100%;
+    text-align: center;
+    animation: fadeIn 0.5s ease-in-out;
+}
+.live-results-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 2.5rem;
+}
+.placeholder-content {
+    padding: 2rem;
+    background: var(--color-bg);
+    border-radius: 8px;
+}
