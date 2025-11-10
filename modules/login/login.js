@@ -62,8 +62,8 @@ const handleLogin = async (e) => {
     }
 };
 
-export function init() {
-    sceneManager = initModuleScene('.background-canvas', 'particleGalaxy');
+export async function init() {
+    sceneManager = await initModuleScene('.background-canvas', 'particleGalaxy');
     form = document.getElementById('login-form');
     if (form) {
         form.addEventListener('submit', handleLogin);

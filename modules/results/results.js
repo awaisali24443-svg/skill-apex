@@ -124,7 +124,7 @@ function setupActionButtons(score, total, topic) {
 export async function init() {
     await renderResults();
     quizState.clearQuizState();
-    sceneManager = initModuleScene('.background-canvas', 'atomicStructure');
+    sceneManager = await initModuleScene('.background-canvas', 'atomicStructure');
 }
 
 export function cleanup() {

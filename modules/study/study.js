@@ -96,7 +96,7 @@ function showPrevFlashcard() {
     }
 }
 
-export function init() {
+export async function init() {
     const contextString = sessionStorage.getItem('quizContext');
     quizContext = JSON.parse(contextString);
 
@@ -117,7 +117,7 @@ export function init() {
     });
 
     streamStudyGuide();
-    sceneManager = initModuleScene('.background-canvas', 'microscopic');
+    sceneManager = await initModuleScene('.background-canvas', 'microscopic');
 }
 
 export function cleanup() {

@@ -61,9 +61,9 @@ async function renderChallengeResults() {
 }
 
 
-export function init() {
-    renderChallengeResults();
-    sceneManager = initModuleScene('.background-canvas', 'abstractHub');
+export async function init() {
+    await renderChallengeResults();
+    sceneManager = await initModuleScene('.background-canvas', 'abstractHub');
 }
 
 export function cleanup() {

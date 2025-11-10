@@ -116,8 +116,8 @@ function handleNewTopic() {
     chatHistory.push({ role: 'model', parts: [{ text: initialMessage }] });
 }
 
-export function init() {
-    sceneManager = initModuleScene('.background-canvas', 'subtleParticles');
+export async function init() {
+    sceneManager = await initModuleScene('.background-canvas', 'subtleParticles');
     
     chatWindow = document.getElementById('chat-window');
     chatForm = document.getElementById('chat-form');

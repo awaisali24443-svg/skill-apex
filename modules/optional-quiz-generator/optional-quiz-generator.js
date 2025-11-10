@@ -61,8 +61,8 @@ const handleQuizSubmit = async (e) => {
     await startQuizFlow(quizContext);
 };
 
-export function init() {
-    sceneManager = initModuleScene('.background-canvas', 'dataStream');
+export async function init() {
+    sceneManager = await initModuleScene('.background-canvas', 'dataStream');
     form = document.getElementById('topic-form');
     if (form) {
         updateButtonState();
