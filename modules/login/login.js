@@ -52,6 +52,9 @@ const handleLogin = async (e) => {
             case 'auth/invalid-email':
                 userMessage = 'Please enter a valid email address.';
                 break;
+            case 'auth/unavailable':
+                userMessage = error.message; // Use the specific message from authService
+                break;
         }
         displayError(userMessage);
     } finally {

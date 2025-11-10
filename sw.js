@@ -1,6 +1,6 @@
 // sw.js
 
-const CACHE_NAME = 'knowledge-tester-v1.4';
+const CACHE_NAME = 'knowledge-tester-v1.5';
 const urlsToCache = [
   '/',
   '/index.html',

@@ -11,33 +11,6 @@ let sceneManager;
 let performanceChart, masteryChart;
 let eventListeners = [];
 
-// A map to store promises for scripts that are loading or have loaded.
-const scriptLoadPromises = new Map();
-
-/**
- * Dynamically loads a script and returns a promise that resolves when it's loaded.
- * Caches the promise to avoid reloading the same script.
- * @param {string} src The URL of the script to load.
- * @returns {Promise<void>}
- */
-function loadScript(src) {
-    if (scriptLoadPromises.has(src)) {
-        return scriptLoadPromises.get(src);
-    }
-
-    const promise = new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = src;
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error(`Script load failed for ${src}`));
-        document.head.appendChild(script);
-    });
-
-    scriptLoadPromises.set(src, promise);
-    return promise;
-}
-
-
 function renderAchievements(unlockedAchievements) {
     const grid = document.getElementById('achievements-grid');
     if (!grid) return;
@@ -213,13 +186,15 @@ async function renderProgress() {
         renderAchievements(achievements);
         renderWeakestConcepts(history);
 
-        // Load chart script and then render both charts
+        // Render charts, now assuming Chart.js is globally available.
         try {
-            await loadScript('/libs/chart.min.js');
+            if (typeof Chart === 'undefined') {
+                throw new Error("Chart.js library failed to load.");
+            }
             renderPerformanceChart(history);
             renderMasteryChart(levels);
         } catch (e) {
-            console.error("Chart.js failed to load.", e);
+            console.error("Chart rendering failed:", e);
             const pChartContainer = document.getElementById('performance-chart')?.parentElement;
             if (pChartContainer) pChartContainer.innerHTML = '<p style="text-align:center;color:var(--color-text-muted);">Chart failed to load.</p>';
             const mChartContainer = document.getElementById('mastery-chart')?.parentElement;

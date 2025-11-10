@@ -54,6 +54,7 @@ const handleSignup = async (e) => {
             case 'auth/email-already-in-use': userMessage = 'This email address is already taken.'; break;
             case 'auth/invalid-email': userMessage = 'Please enter a valid email address.'; break;
             case 'auth/weak-password': userMessage = 'Password is too weak. Please choose a stronger one.'; break;
+            case 'auth/unavailable': userMessage = error.message; break; // Use the specific message from authService
         }
         displayError(userMessage);
     } finally {

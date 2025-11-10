@@ -11,34 +11,6 @@ import { NUM_QUESTIONS, MAX_LEVEL } from '../../constants.js';
 
 let stellarMap;
 
-// A map to store promises for scripts that are loading or have loaded.
-// This prevents trying to load the same script multiple times.
-const scriptLoadPromises = new Map();
-
-/**
- * Dynamically loads a script and returns a promise that resolves when it's loaded.
- * Caches the promise to avoid reloading the same script.
- * @param {string} src The URL of the script to load.
- * @returns {Promise<void>}
- */
-function loadScript(src) {
-    if (scriptLoadPromises.has(src)) {
-        return scriptLoadPromises.get(src);
-    }
-
-    const promise = new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = src;
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error(`Script load failed for ${src}`));
-        document.head.appendChild(script);
-    });
-
-    scriptLoadPromises.set(src, promise);
-    return promise;
-}
-
-
 async function renderDashboard() {
     const user = auth.getCurrentUser();
     const userProgress = await progress.getProgress();
@@ -179,16 +151,18 @@ export async function init() {
     const loadingOverlay = document.getElementById('stellar-map-loading');
 
     try {
-        // Explicitly load dependencies in the correct order.
-        await loadScript('/libs/three.min.js');
-        await loadScript('/libs/OrbitControls.min.js');
+        // The libraries are now loaded globally via index.html.
+        // We just need to check if they exist in case they were blocked.
+        if (typeof THREE === 'undefined' || typeof THREE.OrbitControls === 'undefined') {
+            throw new Error("Essential 3D libraries (THREE.js) failed to load.");
+        }
 
         // Now that scripts are guaranteed to be loaded, initialize the map.
         stellarMap = new StellarMap(canvas);
         await stellarMap.init(); // This method handles its own internal loading state
 
     } catch(error) {
-        console.error("Failed to load 3D map dependencies or initialize StellarMap:", error);
+        console.error("Failed to initialize StellarMap:", error);
         if (canvas) canvas.style.display = 'none';
         if (loadingOverlay) {
             loadingOverlay.innerHTML = `<p style="color:var(--color-warning); text-align:center;">3D map component failed to load.<br>The dashboard remains fully functional.</p>`;

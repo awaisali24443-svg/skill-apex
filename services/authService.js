@@ -1,6 +1,17 @@
 // services/authService.js
+import { initializeFirebase } from '../firebase-config.js';
+import { 
+    createUserWithEmailAndPassword, 
+    updateProfile,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { 
+    doc, 
+    setDoc 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// Firebase is NOT imported at the top level anymore. This is crucial.
 
 const GUEST_SESSION_KEY = 'guestSession';
 let onSessionStateChangeCallback = () => {};
@@ -51,20 +62,13 @@ export const getCurrentUser = () => {
 };
 
 // --- Firebase Functions ---
-// These functions will now load and initialize Firebase on demand.
 
 export const signUp = async (email, password, username) => {
-    // Dynamically import Firebase services ONLY when needed.
-    const { initializeFirebase } = await import('../firebase-config.js');
-    const { auth, db } = await initializeFirebase();
-
+    const { auth, db } = initializeFirebase();
     if (!auth || !db) {
-        throw new Error("Firebase is not configured. Cannot sign up.");
+        throw { code: 'auth/unavailable', message: "Firebase is not configured on this site. Please contact the administrator." };
     }
     
-    const { createUserWithEmailAndPassword, updateProfile } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
-    const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     await updateProfile(user, { displayName: username });
@@ -80,25 +84,19 @@ export const signUp = async (email, password, username) => {
     });
 
     localStorage.removeItem(GUEST_SESSION_KEY);
-    currentUserState = user;
-    notifyStateChange();
+    // The onAuthStateChanged listener will handle state updates
     return userCredential;
 };
 
 export const logIn = async (email, password) => {
-    const { initializeFirebase } = await import('../firebase-config.js');
-    const { auth } = await initializeFirebase();
-    
+    const { auth } = initializeFirebase();
     if (!auth) {
-        throw new Error("Firebase is not configured. Cannot log in.");
+        throw { code: 'auth/unavailable', message: "Firebase is not configured on this site. Please contact the administrator." };
     }
 
-    const { signInWithEmailAndPassword } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
-    
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     localStorage.removeItem(GUEST_SESSION_KEY);
-    currentUserState = userCredential.user;
-    notifyStateChange();
+    // The onAuthStateChanged listener will handle state updates
     return userCredential;
 };
 
@@ -106,36 +104,43 @@ export const logOut = async () => {
     if (isGuest()) {
         localStorage.removeItem(GUEST_SESSION_KEY);
         currentUserState = null;
+        notifyStateChange();
     } else {
-        const { initializeFirebase } = await import('../firebase-config.js');
-        const { auth } = await initializeFirebase();
+        const { auth } = initializeFirebase();
         if (auth) {
-            const { signOut } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
             await signOut(auth);
+            // The onAuthStateChanged listener will set currentUserState to null and notify
+        } else {
+            // Fallback if firebase isn't configured but a user somehow existed
+            currentUserState = null;
+            notifyStateChange();
         }
-        currentUserState = null;
     }
-    notifyStateChange();
 };
 
-// This function will be called from global.js to hook into the live Firebase state
-// ONLY if Firebase has been initialized.
-export async function attachFirebaseListener() {
-    try {
-        const { initializeFirebase } = await import('../firebase-config.js');
-        const { auth } = await initializeFirebase();
-        if (auth) {
-            const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
+// This function will be called from global.js to hook into the live Firebase state.
+export function attachFirebaseListener() {
+    const { auth } = initializeFirebase();
+    
+    if (auth) {
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // A real user is logged in, clear any guest session.
+                if (isGuest()) {
                     localStorage.removeItem(GUEST_SESSION_KEY);
-                    currentUserState = user;
                 }
-                // We notify even if user is null (on logout)
-                notifyStateChange();
-            });
-        }
-    } catch (e) {
-        console.error("Could not attach Firebase listener", e);
+                currentUserState = user;
+            } else if (!isGuest()) {
+                // User logged out from Firebase, and we are not in guest mode.
+                currentUserState = null;
+            }
+            // If user is null but we are in guest mode, we don't change anything.
+            // logOut() handles clearing guest mode explicitly.
+            notifyStateChange();
+        });
+    } else {
+        // If Firebase isn't configured, we don't attach a listener.
+        // The app will rely solely on guest mode state.
+        console.log("Firebase not configured, auth listener not attached.");
     }
 }

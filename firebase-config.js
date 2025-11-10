@@ -1,57 +1,46 @@
 // firebase-config.js
 
-// This file is now designed to be imported dynamically ONLY when Firebase is needed.
-// It should not be imported at the top level of the application's startup sequence.
-
-// We will use dynamic imports for Firebase to ensure it's only loaded on-demand.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+// --- PASTE YOUR FIREBASE CONFIGURATION OBJECT HERE ---
+// You can get this from your project's settings in the Firebase console.
+// IMPORTANT: For this app to work with user accounts, you must replace
+// these placeholder values with your actual Firebase project credentials.
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+
+
 let firebaseApp, auth, db;
 
-// This function will fetch the config from the server.
-// This is the secure way to get client-side keys without exposing them in the repo.
-// For now, it will fail gracefully until you set up the endpoint and keys.
-async function getFirebaseConfig() {
-    // In a real production app, you would fetch this from a secure server endpoint.
-    // For now, to allow the app to run without your keys, we'll return an empty object.
-    // When you are ready to add Firebase, you will replace this with your actual config.
-    // Example:
-    /*
-    return {
-        apiKey: "AIza...",
-        authDomain: "your-project.firebaseapp.com",
-        projectId: "your-project",
-        storageBucket: "your-project.appspot.com",
-        messagingSenderId: "...",
-        appId: "..."
-    };
-    */
-    // For now, this allows the app to function without crashing.
-    console.warn("Firebase config is not set. Login/Signup will not work until configured.");
-    return null; 
-}
-
-
-export const initializeFirebase = async () => {
+export const initializeFirebase = () => {
     // Only initialize if it hasn't been already
-    if (!firebaseApp) {
-        const firebaseConfig = await getFirebaseConfig();
-        // Only proceed if a valid config is returned
-        if (firebaseConfig) {
-            try {
-                firebaseApp = initializeApp(firebaseConfig);
-                auth = getAuth(firebaseApp);
-                db = getFirestore(firebaseApp);
-            } catch (error) {
-                console.error("Firebase initialization failed:", error);
-                // Return nulls so the app knows initialization failed
-                return { firebaseApp: null, auth: null, db: null };
-            }
-        } else {
-             return { firebaseApp: null, auth: null, db: null };
-        }
+    if (firebaseApp) {
+        return { firebaseApp, auth, db };
     }
+
+    // A simple check to see if the user has replaced the placeholder config.
+    if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+        console.warn("Firebase is not configured. Please add your project credentials in firebase-config.js. Login/Signup for registered users will not work, but Guest Mode is available.");
+        return { firebaseApp: null, auth: null, db: null };
+    }
+
+    try {
+        firebaseApp = initializeApp(firebaseConfig);
+        auth = getAuth(firebaseApp);
+        db = getFirestore(firebaseApp);
+    } catch (error) {
+        console.error("Firebase initialization failed:", error);
+        // Return nulls so the app knows initialization failed
+        return { firebaseApp: null, auth: null, db: null };
+    }
+    
     return { firebaseApp, auth, db };
 };
