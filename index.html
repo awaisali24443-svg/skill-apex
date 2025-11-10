@@ -4,26 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Knowledge Tester</title>
-    <link rel="stylesheet" href="/global/global.css">
-    <link rel="stylesheet" href="/global/accessibility.css">
-    <link rel="stylesheet" href="/themes/theme-dark-cyber.css">
-    <link rel="stylesheet" href="/global/splash.css">
+    
+    <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#ff007f">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700;800&family=Orbitron:wght@800&display=swap" rel="stylesheet">
+
+    <!-- Core & Theme Stylesheets -->
+    <link rel="stylesheet" href="/global/global.css">
+    <link rel="stylesheet" href="/themes/theme-dark-cyber.css">
+    <link rel="stylesheet" href="/global/accessibility.css">
+    <link rel="stylesheet" href="/global/splash.css">
+
 <script type="importmap">
 {
   "imports": {
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.0",
+    "express": "https://aistudiocdn.com/express@^5.1.0",
     "path": "https://aistudiocdn.com/path@^0.12.7",
-    "express": "https://aistudiocdn.com/express@^5.1.0"
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.0",
+    "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.164.1/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
   }
 }
 </script>
 </head>
-<body class="loading-splash">
-    <!-- SPLASH SCREEN -->
+<body data-theme="cyber">
+
+    <!-- Splash Screen -->
     <div id="splash-screen">
         <div class="splash-content">
             <svg class="splash-logo" viewBox="0 0 400 60" xmlns="http://www.w3.org/2000/svg">
@@ -39,54 +51,12 @@
         </div>
     </div>
 
-    <!-- MAIN APP STRUCTURE -->
-    <div id="header-container" class="hidden"></div>
-    <main id="root-container"></main>
-    <footer class="site-footer">
-        &copy; 2024 Knowledge Tester. All rights reserved.
-    </footer>
+    <!-- Main Application Structure -->
+    <header id="header-container"></header>
+    <main id="app" class="main-container"></main>
 
-    <!-- MODALS & OVERLAYS -->
-    <div id="cursor-aura"></div>
-    <div id="toast-container"></div>
-    
-    <div id="welcome-modal-overlay" class="hidden">
-        <div class="welcome-modal-card">
-            <h2>🎉 Welcome to the App!</h2>
-            <p>You've just created your account and taken the first step on your knowledge journey.</p>
-            <p>Explore topics, challenge yourself, and watch your skills grow. Good luck!</p>
-            <button id="welcome-modal-close-btn" class="btn btn-primary">Let's Go!</button>
-        </div>
-    </div>
-    
-    <div id="modal-container" class="hidden">
-        <div id="modal-card" class="card">
-            <h2 id="modal-title">Confirmation</h2>
-            <p id="modal-text">Are you sure?</p>
-            <div id="modal-input-container" class="hidden">
-                <input type="text" id="modal-input" class="form-control">
-            </div>
-            <div id="modal-actions">
-                <button id="modal-cancel-btn" class="btn btn-secondary">Cancel</button>
-                <button id="modal-confirm-btn" class="btn btn-primary">Confirm</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="level-up-container" class="hidden">
-        <div id="level-up-card" class="card">
-            <h2 class="level-up-title">LEVEL UP!</h2>
-            <div class="level-up-badge">
-                <span id="level-up-number">2</span>
-            </div>
-            <div class="level-up-rewards">
-                <p>New features may be unlocked!</p>
-            </div>
-            <button id="level-up-continue-btn" class="btn btn-primary">Continue</button>
-        </div>
-    </div>
-
-    <!-- Main application script is now the single entry point -->
+    <!-- Master App Controller -->
     <script type="module" src="/global/global.js"></script>
+
 </body>
 </html>

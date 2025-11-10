@@ -1,5 +1,5 @@
 {
   "name": "Knowledge Tester",
-  "description": "A rebuilt, professional quiz application that generates custom quizzes on any topic using the Gemini API. Features a modular design and dynamic theming.",
+  "description": "A streamlined, AI-powered quiz application rebuilt from the ground up with vanilla JavaScript for performance and reliability. Generate quizzes on any topic instantly.",
   "requestFramePermissions": []
 }

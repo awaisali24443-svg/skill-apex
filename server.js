@@ -1,7 +1,7 @@
 // server.js
 import express from 'express';
 import path from 'path';
-import { GoogleGenAI, HarmCategory, HarmBlockThreshold } from '@google/genai';
+import { GoogleGenAI } from '@google/genai';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -12,37 +12,42 @@ app.use(express.json());
 app.use(express.static(path.resolve()));
 
 // Gemini AI setup
+// Ensure API_KEY is set in your environment
+if (!process.env.API_KEY) {
+    throw new Error("API_KEY environment variable not set.");
+}
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-const safetySettings = [
-    { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-    { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-    { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-    { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-];
 
 const modelConfig = {
     model: "gemini-2.5-flash",
-    config: { safetySettings }
 };
 
-
-// API Endpoint for non-streaming generation
+// API Endpoint for quiz generation
 app.post('/api/generate', async (req, res) => {
     try {
         const { prompt, schema } = req.body;
-        if (!prompt) {
-            return res.status(400).json({ error: 'Prompt is required' });
+        if (!prompt || !schema) {
+            return res.status(400).json({ error: 'Prompt and schema are required' });
         }
 
         const response = await ai.models.generateContent({
-            ...modelConfig,
+            model: modelConfig.model,
             contents: prompt,
             config: {
-                ...modelConfig.config,
-                responseMimeType: schema ? "application/json" : "text/plain",
-                responseSchema: schema || undefined,
+                responseMimeType: "application/json",
+                responseSchema: schema,
             }
         });
+        
+        // Let's add more robust error checking from the API response itself
+        if (!response.text) {
+             console.error('API Error: No text in response', response);
+             let errorMessage = 'The AI returned an empty response.';
+             if (response?.candidates?.[0]?.finishReason === 'SAFETY') {
+                 errorMessage = 'The request was blocked due to safety concerns. Please try a different topic.';
+             }
+             return res.status(500).json({ error: errorMessage });
+        }
 
         res.json({ text: response.text });
 
@@ -51,38 +56,6 @@ app.post('/api/generate', async (req, res) => {
         res.status(500).json({ error: error.message || 'Failed to generate content from AI.' });
     }
 });
-
-// API Endpoint for streaming generation
-app.post('/api/generate-stream', async (req, res) => {
-    try {
-        const { prompt } = req.body;
-        if (!prompt) {
-            return res.status(400).json({ error: 'Prompt is required' });
-        }
-
-        const responseStream = await ai.models.generateContentStream({
-            ...modelConfig,
-            contents: prompt
-        });
-
-        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-        res.setHeader('Transfer-Encoding', 'chunked');
-
-        for await (const chunk of responseStream) {
-            res.write(chunk.text);
-        }
-        res.end();
-
-    } catch (error) {
-        console.error('API Stream Error:', error);
-        if (!res.headersSent) {
-             res.status(500).json({ error: error.message || 'Failed to generate content stream from AI.' });
-        } else {
-            res.end();
-        }
-    }
-});
-
 
 // Fallback to index.html for single-page application routing
 app.get('*', (req, res) => {

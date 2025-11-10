@@ -1,22 +1,25 @@
 {
-  "name": "knowledge-tester-rebuilt",
-  "version": "1.3.0",
-  "description": "An interactive quiz application that generates custom quizzes on any topic using the power of the Gemini API.",
+  "name": "knowledge-tester-vanilla",
+  "version": "1.0.0",
+  "description": "A streamlined, AI-powered quiz application built with vanilla JavaScript.",
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "build": "echo 'No build step defined' && exit 0"
+    "start": "node server.js"
   },
   "engines": {
-    "node": "22.x"
+    "node": ">=18.0.0"
   },
   "dependencies": {
-    "@google/genai": "^0.14.0",
+    "@google/genai": "^1.29.0",
     "express": "^4.19.2"
   },
-  "devDependencies": {},
-  "keywords": [],
-  "author": "Awais Ali",
-  "license": "MIT"
+  "keywords": [
+    "gemini",
+    "ai",
+    "quiz",
+    "vanilla-js"
+  ],
+  "author": "",
+  "license": "ISC"
 }

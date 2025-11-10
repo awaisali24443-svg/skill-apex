@@ -1,233 +1,102 @@
-// global/global.js
+import { ROUTES } from '../constants.js';
 
-// --- CORE IMPORTS ---
-import { ROUTES, MODULE_CONTEXT_KEY } from '../constants.js';
-import * as authService from '../services/authService.js';
-import * as progressService from '../services/progressService.js';
-import { initUIEffects, showToast, showWelcomeModal } from '../services/uiService.js';
-
-// --- STATE ---
+const app = document.getElementById('app');
+const headerContainer = document.getElementById('header-container');
+const splashScreen = document.getElementById('splash-screen');
 let currentModule = null;
-let currentUser = null;
-let userProgress = null;
-let headerHTMLTemplate = ''; // Cache for the header template
 
-// --- SPLASH SCREEN MANAGEMENT ---
-function hideSplashScreen() {
-    const splash = document.getElementById('splash-screen');
-    if (splash) {
-        splash.classList.add('fade-out');
-        document.body.classList.remove('loading-splash');
-    }
-}
+// --- STATE MANAGEMENT ---
+// A simple global state to pass information between modules if needed
+const appState = {
+    context: null,
+};
 
-// --- HEADER MANAGEMENT ---
-async function updateHeaderUI(user, progress) {
-    const headerContainer = document.getElementById('header-container');
-    if (!headerContainer) return;
-
-    if (!headerHTMLTemplate) {
-        try {
-            const response = await fetch('/global/header.html');
-            if (response.ok) {
-                headerHTMLTemplate = await response.text();
-            } else {
-                 console.error('Failed to load header HTML.');
-                 return;
-            }
-        } catch (error) {
-            console.error('Error fetching header HTML:', error);
-            return;
-        }
-    }
+// --- MODULE LOADER ---
+async function loadModule(moduleName, context = {}) {
+    console.log(`Loading module: ${moduleName} with context:`, context);
     
-    headerContainer.innerHTML = headerHTMLTemplate;
-    
-    const navLinks = headerContainer.querySelector('.nav-links');
-    const headerUserStats = headerContainer.querySelector('.header-user-stats');
-
-    if (user) { // This now applies to GUESTS as well
-        headerContainer.classList.remove('hidden');
-        
-        const logoutText = user.isGuest ? 'Exit Guest Mode' : 'Logout';
-
-        navLinks.innerHTML = `
-            <li><a href="#home" class="nav-link" data-route="home"><span class="nav-link-text">Dashboard</span></a></li>
-            <li><a href="#progress" class="nav-link" data-route="progress"><span class="nav-link-text">My Progress</span></a></li>
-            <li><a href="#library" class="nav-link" data-route="library"><span class="nav-link-text">My Library</span></a></li>
-            <li><a href="#settings" class="nav-link" data-route="settings"><span class="nav-link-text">Settings</span></a></li>
-            <li><button id="logout-btn" class="nav-link"><span class="btn-content">${logoutText}</span></button></li>
-        `;
-        document.getElementById('logout-btn').addEventListener('click', handleLogout);
-
-        if (progress) {
-            headerUserStats.classList.remove('hidden');
-            const totalXp = progress.totalXp || 0;
-            const level = progressService.calculateLevel(totalXp).level;
-            headerUserStats.querySelector('#header-level').textContent = level;
-            headerUserStats.querySelector('#header-streak').textContent = progress.streak || 0;
-        } else {
-             headerUserStats.classList.add('hidden');
-        }
-
-    } else { // No user, not even a guest
-        headerContainer.classList.add('hidden');
-        navLinks.innerHTML = '';
-        headerUserStats.classList.add('hidden');
-    }
-    
-    // Hamburger menu for mobile
-    const hamburger = headerContainer.querySelector('.nav-hamburger');
-    if(hamburger) {
-        hamburger.onclick = () => {
-            hamburger.classList.toggle('active');
-            navLinks.classList.toggle('active');
-        };
-    }
-}
-
-
-async function handleLogout() {
-    const logoutBtn = document.getElementById('logout-btn');
-    if (!logoutBtn) return;
-    const btnContent = logoutBtn.querySelector('.btn-content');
-    
-    btnContent.innerHTML = `<div class="spinner"></div>`;
-    logoutBtn.disabled = true;
-
-    try {
-        await authService.logOut();
-        // The session state change listener will handle routing.
-        showToast('You have exited guest mode.', 'success');
-    } catch (error) {
-        showToast('Failed to exit. Please try again.', 'error');
-        btnContent.textContent = authService.isGuest() ? 'Exit Guest Mode' : 'Logout';
-    } finally {
-        logoutBtn.disabled = false;
-    }
-}
-
-// --- ROUTING ---
-const loadModule = async (moduleName, context = {}) => {
+    // Cleanup previous module's styles and scripts
     if (currentModule && currentModule.cleanup) {
         currentModule.cleanup();
     }
     
-    sessionStorage.setItem(MODULE_CONTEXT_KEY, JSON.stringify(context));
+    app.innerHTML = ''; // Clear previous content
 
-    const rootContainer = document.getElementById('root-container');
-    rootContainer.classList.add('module-exit');
+    const modulePath = `../modules/${moduleName}/${moduleName}`;
+    const htmlPath = `${modulePath}.html`;
+    const cssPath = `${modulePath}.css`;
+    const jsPath = `${modulePath}.js`;
 
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
     try {
-        const response = await fetch(`/modules/${moduleName}/${moduleName}.html`);
-        if (!response.ok) throw new Error(`Module '${moduleName}' not found.`);
-        rootContainer.innerHTML = await response.text();
+        // 1. Fetch HTML
+        const htmlRes = await fetch(htmlPath);
+        if (!htmlRes.ok) throw new Error(`Failed to load HTML for ${moduleName}`);
+        app.innerHTML = await htmlRes.text();
+
+        // 2. Load CSS
+        const cssLink = document.createElement('link');
+        cssLink.rel = 'stylesheet';
+        cssLink.href = cssPath;
+        cssLink.id = `style-${moduleName}`;
+        document.head.appendChild(cssLink);
         
-        currentModule = await import(`../modules/${moduleName}/${moduleName}.js`);
-        if (currentModule.init) {
-            await currentModule.init();
+        // 3. Load and execute JS
+        const module = await import(jsPath);
+        if (module.init) {
+            appState.context = context;
+            module.init(appState);
         }
+
+        // Store cleanup function
+        currentModule = {
+            name: moduleName,
+            cleanup: () => {
+                document.getElementById(`style-${moduleName}`)?.remove();
+                if (module.destroy) {
+                    module.destroy();
+                }
+            }
+        };
+
     } catch (error) {
-        console.error(`Failed to load module ${moduleName}:`, error);
-        rootContainer.innerHTML = `
-            <div class="card" style="text-align: center;">
-                <h2>Error Loading Page</h2>
-                <p style="margin: 1rem 0;">Could not load the requested content. It might be an issue with your connection or the application.</p>
-                <a href="#home" class="btn btn-primary">Return to Dashboard</a>
-            </div>
-        `;
-    } finally {
-        rootContainer.classList.remove('module-exit');
-        rootContainer.classList.add('module-enter');
-        setTimeout(() => rootContainer.classList.remove('module-enter'), 300);
-        updateActiveNavLink();
+        console.error(`Error loading module ${moduleName}:`, error);
+        app.innerHTML = `<div class="error-container"><h2>Error</h2><p>Could not load the requested page. Please try again.</p><a href="#home" class="btn">Go Home</a></div>`;
     }
-};
+}
 
-const router = async () => {
-    const hash = window.location.hash || '#';
-    const [path] = hash.slice(1).split('/');
-    const cleanPath = path || (currentUser ? 'home' : 'welcome');
+
+// --- ROUTER ---
+function handleRouteChange() {
+    const hash = window.location.hash || '#welcome';
+    const path = hash.substring(1);
     
-    const user = currentUser;
-    const publicRoutes = ['welcome', 'login', 'signup'];
-
-    if (!user && !publicRoutes.includes(cleanPath)) {
-        // Use replace to avoid polluting browser history with redirects
-        window.location.replace('#welcome');
-        return;
-    }
+    const route = ROUTES[path] || ROUTES['home']; // Fallback to home
     
-    if (user && publicRoutes.includes(cleanPath)) {
-        // Use replace to avoid polluting browser history with redirects
-        window.location.replace('#home');
-        return;
-    }
-
-    const routeConfig = ROUTES[cleanPath] || ROUTES['home'];
-    const [, param] = hash.slice(1).split('/');
-    
-    await loadModule(routeConfig.module, { ...routeConfig.context, param });
-};
-
-function updateActiveNavLink() {
-    const hash = window.location.hash || '#home';
-    document.querySelectorAll('.nav-link').forEach(link => {
-        const route = link.getAttribute('data-route');
-        if (route && hash.includes(route)) {
-            link.classList.add('active');
-        } else {
-            link.classList.remove('active');
-        }
-    });
+    loadModule(route.module, route.context || {});
 }
 
 // --- INITIALIZATION ---
-function applyInitialTheme() {
-    const settings = JSON.parse(localStorage.getItem('generalSettings') || '{}');
-    const theme = settings.theme || 'cyber'; // Default to cyber theme
-    document.documentElement.setAttribute('data-theme', theme);
-}
-
-function registerServiceWorker() {
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js')
-                .then(registration => console.log('ServiceWorker registration successful.'))
-                .catch(err => console.error('ServiceWorker registration failed: ', err));
-        });
+async function init() {
+    console.log("Initializing application...");
+    
+    // Load header
+    try {
+        const headerRes = await fetch('/global/header.html');
+        headerContainer.innerHTML = await headerRes.text();
+    } catch (error) {
+        console.error("Failed to load header:", error);
     }
+
+    // Set up routing
+    window.addEventListener('hashchange', handleRouteChange);
+    
+    // Initial load
+    handleRouteChange();
+    
+    // Hide splash screen after a delay
+    setTimeout(() => {
+        splashScreen.classList.add('fade-out');
+    }, 2500); // Let logo animation play
 }
 
-async function initializeApp() {
-    applyInitialTheme();
-    registerServiceWorker();
-    initUIEffects();
-    
-    authService.onSessionStateChange(async (user) => {
-        currentUser = user;
-        
-        if (user) {
-            userProgress = await progressService.getProgress();
-            // isNewUser modal is disabled as it requires Firebase
-        } else {
-            userProgress = null;
-        }
-
-        await updateHeaderUI(currentUser, userProgress);
-        router();
-    });
-
-    // Initial check
-    authService.initializeSession();
-
-    window.addEventListener('hashchange', router);
-    
-    // The splash screen will be hidden by the first module that loads successfully.
-    document.addEventListener('moduleReady', hideSplashScreen, { once: true });
-}
-
-// Start the application
-initializeApp();
+document.addEventListener('DOMContentLoaded', init);

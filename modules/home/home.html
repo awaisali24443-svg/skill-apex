@@ -1,100 +1,37 @@
-<link rel="stylesheet" href="/modules/home/home.css">
-<div class="dashboard-container">
-    <canvas id="stellar-map-canvas"></canvas>
-    <div id="stellar-map-loading">
-        <div class="spinner"></div>
-        <p>Calibrating Stellar Map...</p>
-    </div>
-    
-    <div class="dashboard-overlay">
-        <div class="dashboard-header">
-            <h1 id="welcome-message">Welcome, Agent!</h1>
-            <div class="player-stats-card">
-                <div class="level-progress">
-                    <div class="level-info">
-                        <span id="player-level" class="level-badge">LVL 1</span>
-                        <strong><span id="player-name">Player</span></strong>
-                    </div>
-                    <div class="xp-bar-container">
-                        <div id="player-xp-bar" class="xp-bar" style="width: 0%;"></div>
-                    </div>
-                    <div id="player-xp-text" class="xp-text">0 / 100 XP</div>
-                </div>
-                <div class="streak-info">
-                    <div class="streak-icon">🔥</div>
-                    <div id="player-streak">0 Day Streak</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="dashboard-section">
-            <h2>🚀 Quick Actions</h2>
-            <div class="quick-actions-grid">
-                <a href="#explore-topics" class="action-card">
-                    <span class="action-icon">🌌</span>
-                    <h3>Topic Universe</h3>
-                    <p>Master specific subjects.</p>
-                </a>
-                <a href="#challenge-setup" class="action-card">
-                    <span class="action-icon">🧪</span>
-                    <h3>Challenge Mode</h3>
-                    <p>Test your speed and accuracy.</p>
-                </a>
-                <button id="random-challenge-btn" class="action-card">
-                    <span class="action-icon">🎲</span>
-                    <h3>Random Challenge</h3>
-                    <p>A surprise quiz topic!</p>
-                </button>
-                <a href="#custom-quiz" class="action-card">
-                    <span class="action-icon">🔥</span>
-                    <h3>AI Quiz Forge</h3>
-                    <p>Create a quiz on any topic.</p>
-                </a>
-            </div>
-        </div>
+<div class="home-container">
+    <canvas id="bg-canvas"></canvas>
+    <div class="home-content fade-in">
+        <section class="hero-section">
+            <h1>Welcome, Knowledge Seeker</h1>
+            <p class="subtitle">Your journey to mastery begins now. What would you like to do today?</p>
+        </section>
 
-        <div id="recommendations-section" class="dashboard-section">
-            <h2>🎯 Recommended For You</h2>
-            <div id="recommendations-list">
-                <p class="loading-text">Analyzing your performance...</p>
-            </div>
-        </div>
-
-        <div class="dashboard-section">
-            <h2>🗓️ Daily Missions</h2>
-            <div id="missions-list">
-                <p class="loading-text">Loading missions...</p>
-            </div>
-            <div id="weekly-streak-container">
-                 <h3>📅 Weekly Streak</h3>
-                 <div id="streak-calendar"></div>
-            </div>
-        </div>
-        
-        <div id="learning-paths-section" class="dashboard-section">
-             <h2>🗺️ AI Learning Planner</h2>
-             <form id="learning-path-form">
-                 <input type="text" id="learning-goal-input" placeholder="Enter a learning goal (e.g., Learn Quantum Physics)" required>
-                 <button type="submit" class="btn btn-secondary">Generate Path</button>
-             </form>
-             <div id="learning-paths-list"></div>
-        </div>
-
-        <div id="activity-feed-section" class="dashboard-section">
-            <h2>🛰️ Activity Feed</h2>
-            <div id="activity-feed-list">
-                <p class="loading-text">Loading recent activity...</p>
-            </div>
-        </div>
-    </div>
-    
-    <div id="stellar-map-info-panel" class="hidden">
-        <h3 id="info-panel-title">Topic</h3>
-        <p id="info-panel-level">LVL 1</p>
-        <p id="info-panel-desc">Description</p>
-        <div class="info-panel-actions">
-            <button id="info-panel-study-btn" class="btn btn-secondary">Study</button>
-            <button id="info-panel-quiz-btn" class="btn btn-primary">Quiz</button>
-        </div>
+        <section class="dashboard-grid">
+            <a href="#custom-quiz" class="dashboard-card primary">
+                <div class="card-icon">🚀</div>
+                <h3>Custom Quiz</h3>
+                <p>Generate a quiz on any topic imaginable.</p>
+            </a>
+            <a href="#explore-topics" class="dashboard-card secondary">
+                <div class="card-icon">🧭</div>
+                <h3>Explore Topics</h3>
+                <p>Browse curated topics and challenges.</p>
+            </a>
+            <a href="#leaderboard" class="dashboard-card">
+                <div class="card-icon">🏆</div>
+                <h3>Leaderboard</h3>
+                <p>See how you rank against others.</p>
+            </a>
+            <a href="#progress" class="dashboard-card">
+                <div class="card-icon">📊</div>
+                <h3>My Progress</h3>
+                <p>Track your learning and stats.</p>
+            </a>
+             <a href="#settings" class="dashboard-card">
+                <div class="card-icon">⚙️</div>
+                <h3>Settings</h3>
+                <p>Customize your application experience.</p>
+            </a>
+        </section>
     </div>
 </div>

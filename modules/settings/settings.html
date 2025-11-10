@@ -1,54 +1,12 @@
-<link rel="stylesheet" href="/modules/settings/settings.css">
-<div class="settings-container card glass-card has-back-button">
-    <canvas class="background-canvas"></canvas>
-    <a href="#home" class="back-button">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        Back to Dashboard
-    </a>
-    <h1 class="settings-title">Settings</h1>
-
-    <!-- Profile Section -->
-    <div class="settings-section">
-        <h2>👤 Profile</h2>
-        <p class="section-description">Manage your public profile and account details.</p>
-        <div class="profile-header">
-            <div class="profile-picture-wrapper">
-                <img id="profile-picture" src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="Profile Picture">
-                <button class="edit-picture-btn" aria-label="Edit profile picture">✏️</button>
-            </div>
-            <div class="profile-info">
-                 <input type="text" id="profile-username" class="profile-input" placeholder="Username" disabled>
-                 <textarea id="profile-bio" class="profile-input" placeholder="Your bio..." disabled></textarea>
-                 <button id="save-profile-btn" class="btn btn-primary" disabled>
-                     <span class="btn-text">Save Changes</span>
-                     <div class="spinner hidden"></div>
-                 </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Go Pro Section (Placeholder) -->
-    <div class="settings-section go-pro-section">
-        <div class="pro-features">
-            <div>
-                <h2>✨ Go Pro!</h2>
-                <ul>
-                    <li>✔️ Unlimited Custom Quizzes</li>
-                    <li>✔️ Advanced Analytics</li>
-                    <li>✔️ Exclusive Themes</li>
-                    <li>✔️ Priority Support</li>
-                </ul>
-            </div>
-            <button id="go-pro-btn" class="btn btn-primary">Upgrade Now</button>
-        </div>
+<div class="settings-container fade-in">
+    <div class="settings-header">
+        <h1>Settings</h1>
+        <p>Customize your experience.</p>
     </div>
 
-
-    <!-- General Settings Section -->
-    <div class="settings-section">
-        <h2>⚙️ General</h2>
-        <p class="section-description">Customize the application's look and feel.</p>
-        <div class="settings-item">
+    <div class="settings-section card">
+        <h3>General</h3>
+        <div class="setting-item">
             <label for="theme-select">Theme</label>
             <select id="theme-select" class="form-control">
                 <option value="cyber">Cyber Neon</option>
@@ -56,57 +14,51 @@
                 <option value="light">Light Professional</option>
             </select>
         </div>
-        <div class="settings-item">
-            <label for="sound-toggle">Sound Effects</label>
-            <input type="checkbox" id="sound-toggle" class="toggle-switch">
-        </div>
-        <div class="settings-item">
-            <label for="3d-toggle">3D Animated Backgrounds</label>
-            <input type="checkbox" id="3d-toggle" class="toggle-switch">
-        </div>
-    </div>
-    
-    <!-- Accessibility Section -->
-    <div class="settings-section">
-        <h2>♿ Accessibility</h2>
-        <p class="section-description">Adjust settings for a more comfortable experience.</p>
-        <div class="accessibility-options">
-            <div class="option-toggle">
-                <label for="large-text-toggle">Large Text</label>
-                <input type="checkbox" id="large-text-toggle" class="toggle-switch" data-body-class="large-text">
-            </div>
-            <div class="option-toggle">
-                <label for="high-contrast-toggle">High Contrast</label>
-                <input type="checkbox" id="high-contrast-toggle" class="toggle-switch" data-body-class="high-contrast">
-            </div>
-            <div class="option-toggle">
-                <label for="dyslexia-font-toggle">Dyslexia-Friendly Font</label>
-                <input type="checkbox" id="dyslexia-font-toggle" class="toggle-switch" data-body-class="dyslexia-font">
-            </div>
-            <div class="option-toggle">
-                <label for="reduce-motion-toggle">Reduce Motion</label>
-                <input type="checkbox" id="reduce-motion-toggle" class="toggle-switch" data-body-class="reduce-motion">
-            </div>
+         <div class="setting-item">
+            <label for="sound-toggle">Enable Sound Effects</label>
+            <label class="switch">
+                <input type="checkbox" id="sound-toggle">
+                <span class="slider"></span>
+            </label>
         </div>
     </div>
 
-    <!-- Danger Zone Section -->
-    <div class="settings-section">
-         <h2>⚠️ Danger Zone</h2>
-         <div class="danger-zone">
-             <div>
-                 <strong>Reset All Progress</strong>
-                 <p>This will erase all your XP, levels, and quiz history. This action cannot be undone.</p>
-             </div>
-             <button id="reset-progress-btn" class="btn-danger">Reset Progress</button>
-         </div>
-         <div class="danger-zone" style="margin-top: 1rem;">
-             <div>
-                 <strong>Delete Account</strong>
-                 <p>Permanently delete your account and all associated data.</p>
-             </div>
-             <button id="delete-account-btn" class="btn-danger">Delete Account</button>
-         </div>
+    <div class="settings-section card">
+        <h3>Experimental</h3>
+        <div class="setting-item">
+            <label for="background-toggle">
+                Enable 3D Background
+                <small>A cool, but potentially resource-intensive, background effect on the home screen.</small>
+            </label>
+            <label class="switch">
+                <input type="checkbox" id="background-toggle">
+                <span class="slider"></span>
+            </label>
+        </div>
     </div>
 
+     <div class="settings-section card">
+        <h3>Accessibility</h3>
+        <div class="setting-item">
+            <label for="large-text-toggle">Large Text</label>
+            <label class="switch">
+                <input type="checkbox" id="large-text-toggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="setting-item">
+            <label for="high-contrast-toggle">High Contrast</label>
+            <label class="switch">
+                <input type="checkbox" id="high-contrast-toggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="setting-item">
+            <label for="dyslexia-font-toggle">Dyslexia-Friendly Font</label>
+            <label class="switch">
+                <input type="checkbox" id="dyslexia-font-toggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
 </div>
