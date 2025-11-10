@@ -41,45 +41,55 @@ export class StellarMap {
     }
 
     async init() {
-        // Fetch user progress first
-        const progress = await getProgress();
-        this.#userLevels = progress?.levels || {};
+        try {
+            // Fetch user progress first
+            const progress = await getProgress();
+            this.#userLevels = progress?.levels || {};
 
-        // Scene and Camera
-        this.#scene = new THREE.Scene();
-        this.#camera = new THREE.PerspectiveCamera(60, this.#canvas.clientWidth / this.#canvas.clientHeight, 0.1, 1000);
-        this.#camera.position.z = 25;
+            // Scene and Camera
+            this.#scene = new THREE.Scene();
+            this.#camera = new THREE.PerspectiveCamera(60, this.#canvas.clientWidth / this.#canvas.clientHeight, 0.1, 1000);
+            this.#camera.position.z = 25;
 
-        // Renderer
-        this.#renderer = new THREE.WebGLRenderer({ canvas: this.#canvas, antialias: true, alpha: true });
-        this.#renderer.setSize(this.#canvas.clientWidth, this.#canvas.clientHeight);
-        this.#renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            // Renderer
+            this.#renderer = new THREE.WebGLRenderer({ canvas: this.#canvas, antialias: true, alpha: true });
+            this.#renderer.setSize(this.#canvas.clientWidth, this.#canvas.clientHeight);
+            this.#renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
+            // Lights
+            this.#scene.add(new THREE.AmbientLight(0xffffff, 0.2));
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            dirLight.position.set(5, 5, 5);
+            this.#scene.add(dirLight);
 
-        // Lights
-        this.#scene.add(new THREE.AmbientLight(0xffffff, 0.2));
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
-        dirLight.position.set(5, 5, 5);
-        this.#scene.add(dirLight);
+            // Controls (defensive check)
+            if (window.THREE && THREE.OrbitControls) {
+                this.#controls = new THREE.OrbitControls(this.#camera, this.#renderer.domElement);
+                this.#controls.enableDamping = true;
+                this.#controls.enablePan = false;
+                this.#controls.minDistance = 10;
+                this.#controls.maxDistance = 50;
+                this.#controls.target.set(0, 0, 0);
+            } else {
+                console.warn("THREE.OrbitControls not found. The stellar map will not be interactive.");
+            }
 
-        // Controls
-        this.#controls = new THREE.OrbitControls(this.#camera, this.#renderer.domElement);
-        this.#controls.enableDamping = true;
-        this.#controls.enablePan = false;
-        this.#controls.minDistance = 10;
-        this.#controls.maxDistance = 50;
-        this.#controls.target.set(0, 0, 0);
+            this.#createBackground();
+            this.#createConstellations();
 
-        this.#createBackground();
-        this.#createConstellations();
+            // Event Listeners
+            window.addEventListener('resize', this.#onResize);
+            this.#canvas.addEventListener('mousemove', this.#onMouseMove);
+            this.#canvas.addEventListener('click', this.#onClick);
 
-        // Event Listeners
-        window.addEventListener('resize', this.#onResize);
-        this.#canvas.addEventListener('mousemove', this.#onMouseMove);
-        this.#canvas.addEventListener('click', this.#onClick);
-        
-        this.#loadingOverlay.classList.add('hidden');
-        this.#animate();
+            this.#loadingOverlay.classList.add('hidden');
+            this.#animate();
+        } catch (error) {
+            console.error("StellarMap initialization failed:", error);
+            if (this.#loadingOverlay) {
+                this.#loadingOverlay.innerHTML = `<p style="color:red; text-align:center;">Error initializing 3D map.<br>Please try refreshing the page.</p>`;
+            }
+        }
     }
 
     #createBackground() {
@@ -178,7 +188,7 @@ export class StellarMap {
     };
 
     #onClick = () => {
-        if (this.#isAnimating || !this.#intersected) return;
+        if (this.#isAnimating || !this.#intersected || !this.#controls) return;
 
         const topicData = this.#intersected; // intersected object from the hover check
         this.#infoPanel.classList.add('hidden');
@@ -209,11 +219,16 @@ export class StellarMap {
             const easedProgress = 0.5 * (1 - Math.cos(progress * Math.PI));
 
             this.#camera.position.lerpVectors(this.#animationStartPosition, this.#cameraTargetPosition, easedProgress);
-            this.#controls.target.lerpVectors(this.#animationStartTarget, this.#controlsTarget, easedProgress);
+            
+            if (this.#controls) {
+                this.#controls.target.lerpVectors(this.#animationStartTarget, this.#controlsTarget, easedProgress);
+            }
 
             if (progress >= 1) {
                 this.#isAnimating = false;
-                this.#controls.enabled = true;
+                if (this.#controls) {
+                    this.#controls.enabled = true;
+                }
                 this.#showInfoPanel(this.#animationEndObject);
                 this.#animationEndObject = null;
             }
@@ -251,7 +266,9 @@ export class StellarMap {
             this.#intersected.scale.set(baseScale * pulse, baseScale * pulse, baseScale * pulse);
         }
 
-        this.#controls.update();
+        if (this.#controls) {
+            this.#controls.update();
+        }
         this.#renderer.render(this.#scene, this.#camera);
     };
 

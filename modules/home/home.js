@@ -84,7 +84,7 @@ export async function init() {
     const canvas = document.getElementById('stellar-map-canvas');
     if(canvas && window.THREE) {
         stellarMap = new StellarMap(canvas);
-        stellarMap.init();
+        await stellarMap.init();
     }
 }
 
