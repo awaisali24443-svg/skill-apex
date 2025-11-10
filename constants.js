@@ -9,6 +9,7 @@ export const ROUTES = {
     'login': { module: 'login' },
     'signup': { module: 'signup' },
     'home': { module: 'home' },
+    'tutor': { module: 'tutor' },
     'explore-topics': { module: 'explore-topics' },
     'topics': { module: 'topic-list', context: { category: 'programming' } },
     'topics/programming': { module: 'topic-list', context: { category: 'programming' } },

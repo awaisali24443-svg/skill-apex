@@ -1,0 +1,20 @@
+<link rel="stylesheet" href="/modules/tutor/tutor.css">
+<div class="tutor-container card glass-card">
+    <canvas class="background-canvas"></canvas>
+    <div class="tutor-header">
+        <h1>🧠 AI Tutor</h1>
+        <p>Ask anything! Get explanations, examples, or summaries on any topic.</p>
+    </div>
+    <div id="chat-window" class="chat-window">
+        <!-- Chat messages will be appended here -->
+    </div>
+    <div class="tutor-actions">
+        <button id="new-topic-btn" class="btn btn-secondary">Start New Topic</button>
+        <form id="chat-form" class="chat-form">
+            <input type="text" id="chat-input" placeholder="Ask a question..." autocomplete="off" required>
+            <button type="submit" id="send-btn" aria-label="Send message">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </form>
+    </div>
+</div>

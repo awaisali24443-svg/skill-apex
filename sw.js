@@ -35,6 +35,7 @@ const urlsToCache = [
   '/modules/learning-path/learning-path.html', '/modules/learning-path/learning-path.css', '/modules/learning-path/learning-path.js',
   '/modules/challenge-setup/challenge-setup.html', '/modules/challenge-setup/challenge-setup.css', '/modules/challenge-setup/challenge-setup.js',
   '/modules/challenge-results/challenge-results.html', '/modules/challenge-results/challenge-results.css', '/modules/challenge-results/challenge-results.js',
+  '/modules/tutor/tutor.html', '/modules/tutor/tutor.css', '/modules/tutor/tutor.js',
   // Placeholder modules
   '/modules/challenge-lobby/challenge-lobby.html', '/modules/challenge-lobby/challenge-lobby.css', '/modules/challenge-lobby/challenge-lobby.js',
   '/modules/live-quiz/live-quiz.html', '/modules/live-quiz/live-quiz.css', '/modules/live-quiz/live-quiz.js',
