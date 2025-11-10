@@ -35,7 +35,6 @@ export async function loadThreeJS() {
     try {
         // Sequentially load Three.js first, then OrbitControls which depends on it.
         await loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/0.164.1/three.min.js');
-        await loadScript('https://cdn.jsdelivr.net/npm/three@0.164.1/examples/js/controls/OrbitControls.js');
     } catch (error) {
         console.error("Could not load Three.js libraries.", error);
         throw error; // Re-throw to be caught by the calling module

@@ -8,22 +8,21 @@ export class StellarMap {
     #renderer;
     #scene;
     #camera;
-    #controls; // For camera movement
     #raycaster;
     #mouse;
     #clock;
-    #objects = { stars: [], constellations: [] };
+    #objects = { stars: [], constellations: [], constellationGroup: null };
     #intersected = null;
     #userLevels = {};
 
     // Animation state
     #isAnimating = false;
     #cameraTargetPosition = new THREE.Vector3();
-    #controlsTarget = new THREE.Vector3();
+    #cameraLookAtTarget = new THREE.Vector3();
     #animationStartTime = 0;
     #animationDuration = 1.5; // in seconds
     #animationStartPosition = new THREE.Vector3();
-    #animationStartTarget = new THREE.Vector3();
+    #animationStartLookAt = new THREE.Vector3();
     #animationEndObject = null;
     #animationFrameId;
 
@@ -61,14 +60,6 @@ export class StellarMap {
             const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
             dirLight.position.set(5, 5, 5);
             this.#scene.add(dirLight);
-
-            // Controls - Its existence is now guaranteed by the home module.
-            this.#controls = new THREE.OrbitControls(this.#camera, this.#renderer.domElement);
-            this.#controls.enableDamping = true;
-            this.#controls.enablePan = false;
-            this.#controls.minDistance = 10;
-            this.#controls.maxDistance = 50;
-            this.#controls.target.set(0, 0, 0);
 
             this.#createBackground();
             this.#createConstellations();
@@ -111,11 +102,15 @@ export class StellarMap {
         const starTexture = new THREE.TextureLoader().load('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==');
         const starMaterial = new THREE.SpriteMaterial({ map: starTexture, color: 0xffffff, blending: THREE.AdditiveBlending, sizeAttenuation: true });
         
+        const constellationGroup = new THREE.Group();
+        this.#scene.add(constellationGroup);
+        this.#objects.constellationGroup = constellationGroup;
+
         for (const catKey in categoryData) {
             const category = categoryData[catKey];
             const categoryGroup = new THREE.Group();
             categoryGroup.position.set(category.pos.x, category.pos.y, category.pos.z);
-            this.#scene.add(categoryGroup);
+            constellationGroup.add(categoryGroup);
 
             const points = [];
             category.topics.forEach(topic => {
@@ -188,9 +183,9 @@ export class StellarMap {
     };
 
     #onClick = () => {
-        if (this.#isAnimating || !this.#intersected || !this.#controls) return;
+        if (this.#isAnimating || !this.#intersected) return;
 
-        const topicData = this.#intersected; // intersected object from the hover check
+        const topicData = this.#intersected; 
         this.#infoPanel.classList.add('hidden');
 
         // Start animation
@@ -199,40 +194,44 @@ export class StellarMap {
         this.#animationEndObject = topicData;
 
         this.#animationStartPosition.copy(this.#camera.position);
-        this.#animationStartTarget.copy(this.#controls.target);
+        this.#animationStartLookAt.set(0,0,0); // Assume we are looking at the center
 
         const worldPosition = new THREE.Vector3();
         topicData.getWorldPosition(worldPosition);
 
-        this.#controlsTarget.copy(worldPosition);
+        this.#cameraLookAtTarget.copy(worldPosition);
         this.#cameraTargetPosition.copy(worldPosition).add(new THREE.Vector3(0, 2, 5));
-
-        this.#controls.enabled = false;
     };
 
     #animate = () => {
         this.#animationFrameId = requestAnimationFrame(this.#animate);
+        const elapsedTime = this.#clock.getElapsedTime();
 
         if (this.#isAnimating) {
-            const elapsed = this.#clock.getElapsedTime() - this.#animationStartTime;
+            const elapsed = elapsedTime - this.#animationStartTime;
             const progress = Math.min(elapsed / this.#animationDuration, 1);
             const easedProgress = 0.5 * (1 - Math.cos(progress * Math.PI));
 
             this.#camera.position.lerpVectors(this.#animationStartPosition, this.#cameraTargetPosition, easedProgress);
             
-            if (this.#controls) {
-                this.#controls.target.lerpVectors(this.#animationStartTarget, this.#controlsTarget, easedProgress);
-            }
+            const currentLookAt = new THREE.Vector3().lerpVectors(this.#animationStartLookAt, this.#cameraLookAtTarget, easedProgress);
+            this.#camera.lookAt(currentLookAt);
 
             if (progress >= 1) {
                 this.#isAnimating = false;
-                if (this.#controls) {
-                    this.#controls.enabled = true;
-                }
                 this.#showInfoPanel(this.#animationEndObject);
                 this.#animationEndObject = null;
             }
         } else {
+            // Idle state animation: auto-rotation and mouse parallax
+            if (this.#objects.constellationGroup) {
+                this.#objects.constellationGroup.rotation.y = elapsedTime * 0.05;
+            }
+
+            this.#camera.position.x += (this.#mouse.x * 2 - this.#camera.position.x) * .02;
+            this.#camera.position.y += (-this.#mouse.y * 2 - this.#camera.position.y) * .02;
+            this.#camera.lookAt(this.#scene.position);
+
             // Raycasting for hover effect
             this.#raycaster.setFromCamera(this.#mouse, this.#camera);
             const intersects = this.#raycaster.intersectObjects(this.#objects.constellations);
@@ -261,14 +260,11 @@ export class StellarMap {
         
         // Apply pulse to the currently hovered object
         if (this.#intersected) {
-            const pulse = Math.sin(this.#clock.getElapsedTime() * 5) * 0.1 + 1.0;
+            const pulse = Math.sin(elapsedTime * 5) * 0.1 + 1.0;
             const baseScale = this.#intersected.userData.baseScale * 1.5; // Scale up for hover
             this.#intersected.scale.set(baseScale * pulse, baseScale * pulse, baseScale * pulse);
         }
 
-        if (this.#controls) {
-            this.#controls.update();
-        }
         this.#renderer.render(this.#scene, this.#camera);
     };
 
@@ -279,8 +275,6 @@ export class StellarMap {
         window.removeEventListener('resize', this.#onResize);
         this.#canvas.removeEventListener('mousemove', this.#onMouseMove);
         this.#canvas.removeEventListener('click', this.#onClick);
-
-        if (this.#controls) this.#controls.dispose();
         
         if (this.#scene) {
             this.#scene.traverse(object => {
