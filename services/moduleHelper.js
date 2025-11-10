@@ -8,9 +8,9 @@ import { loadThreeJS } from './libraryLoader.js';
  * @returns {SceneManager|null} The created scene manager instance or null on failure.
  */
 export async function initModuleScene(canvasSelector, sceneType) {
-    // Check user setting first
+    // Check user setting first, default to 3D disabled
     const settings = JSON.parse(localStorage.getItem('generalSettings') || '{}');
-    if (settings['enable-3d'] === false) {
+    if (settings['enable-3d'] !== true) {
         console.log('3D backgrounds are disabled by user setting.');
         // Also ensure canvas is hidden in case CSS hasn't applied yet
         const canvas = document.querySelector(canvasSelector);

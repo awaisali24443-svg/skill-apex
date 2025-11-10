@@ -102,7 +102,7 @@ export async function init() {
     
     // Check user setting for 3D backgrounds
     const settings = JSON.parse(localStorage.getItem('generalSettings') || '{}');
-    const enable3d = settings['enable-3d'] !== false; // default to true if not set
+    const enable3d = settings['enable-3d'] === true; // default to false if not set
 
     if (enable3d) {
         try {

@@ -7,7 +7,7 @@ let sceneManager;
 const settings = {
     theme: 'cyber',
     soundEnabled: true,
-    'enable-3d': true,
+    'enable-3d': false,
     'large-text': false,
     'high-contrast': false,
     'dyslexia-font': false,
@@ -17,7 +17,7 @@ const settings = {
 function loadSettings() {
     const savedSettings = JSON.parse(localStorage.getItem('generalSettings') || '{}');
     if (savedSettings['enable-3d'] === undefined) {
-        savedSettings['enable-3d'] = true;
+        savedSettings['enable-3d'] = false;
     }
     Object.assign(settings, savedSettings);
 
