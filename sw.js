@@ -1,4 +1,3 @@
-
 // sw.js
 
 const CACHE_NAME = 'knowledge-tester-v2.0'; // Major version bump for new strategy
@@ -15,6 +14,7 @@ const urlsToCache = [
   '/themes/theme-dark-cyber.css',
   // Third-party libraries (from CDN, will be cached on first fetch)
   'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.164.1/three.min.js',
+  'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/js/controls/OrbitControls.js',
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js',
   // All Modules
   '/modules/home/home.html', '/modules/home/home.css', '/modules/home/home.js',
@@ -35,7 +35,6 @@ const urlsToCache = [
   '/modules/learning-path/learning-path.html', '/modules/learning-path/learning-path.css', '/modules/learning-path/learning-path.js',
   '/modules/challenge-setup/challenge-setup.html', '/modules/challenge-setup/challenge-setup.css', '/modules/challenge-setup/challenge-setup.js',
   '/modules/challenge-results/challenge-results.html', '/modules/challenge-results/challenge-results.css', '/modules/challenge-results/challenge-results.js',
-  '/modules/tutor/tutor.html', '/modules/tutor/tutor.css', '/modules/tutor/tutor.js',
   // Placeholder modules
   '/modules/challenge-lobby/challenge-lobby.html', '/modules/challenge-lobby/challenge-lobby.css', '/modules/challenge-lobby/challenge-lobby.js',
   '/modules/live-quiz/live-quiz.html', '/modules/live-quiz/live-quiz.css', '/modules/live-quiz/live-quiz.js',

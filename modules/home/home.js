@@ -1,4 +1,3 @@
-
 import * as auth from '../../services/authService.js';
 import * as progress from '../../services/progressService.js';
 import * as missions from '../../services/missionService.js';
@@ -8,6 +7,7 @@ import { startQuizFlow } from '../../services/navigationService.js';
 import { categoryData } from '../../services/topicService.js';
 import { NUM_QUESTIONS } from '../../constants.js';
 import { loadThreeJS } from '../../services/libraryLoader.js';
+import { showToast } from '../../services/uiService.js';
 
 
 let stellarMap;
@@ -103,18 +103,21 @@ export async function init() {
     try {
         await loadThreeJS();
         stellarMap = new StellarMap(canvas);
-        await stellarMap.init(); // This method handles its own internal loading state
+        await stellarMap.init();
 
     } catch(error) {
         console.error("Failed to initialize StellarMap:", error);
-        // Graceful fallback to a static background
+        if (canvas) canvas.style.display = 'none';
+        if (loadingOverlay) {
+            loadingOverlay.classList.add('hidden');
+        }
+        
         const dashboardContainer = document.querySelector('.dashboard-container');
         if (dashboardContainer) {
             dashboardContainer.classList.add('map-failed');
         }
-        if (loadingOverlay) {
-            loadingOverlay.innerHTML = `<p style="color:var(--color-warning); text-align:center;">3D map component failed to load.<br>Displaying static background.</p>`;
-        }
+
+        showToast('3D map component failed to load. Displaying static background.', 'warning');
     }
     
     // Signal that the module is fully loaded and ready to be displayed.

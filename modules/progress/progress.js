@@ -199,7 +199,7 @@ async function renderProgress() {
 
 export async function init() {
     await renderProgress();
-    sceneManager = await initModuleScene('.background-canvas', 'nebula');
+    sceneManager = initModuleScene('.background-canvas', 'nebula');
 }
 
 export function cleanup() {

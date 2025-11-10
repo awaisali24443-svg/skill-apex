@@ -22,9 +22,9 @@ async function handleStartChallenge() {
     await startQuizFlow(quizContext);
 }
 
-export async function init() {
+export function init() {
     document.getElementById('start-challenge-btn')?.addEventListener('click', handleStartChallenge);
-    sceneManager = await initModuleScene('.background-canvas', 'dataStream');
+    sceneManager = initModuleScene('.background-canvas', 'dataStream');
 }
 
 export function cleanup() {

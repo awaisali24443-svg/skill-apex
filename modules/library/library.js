@@ -71,7 +71,7 @@ async function handleDelete(e) {
 
 export async function init() {
     await renderLibrary();
-    sceneManager = await initModuleScene('.background-canvas', 'calmGeometric');
+    sceneManager = initModuleScene('.background-canvas', 'calmGeometric');
 }
 
 export function cleanup() {

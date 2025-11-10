@@ -1,4 +1,3 @@
-
 /* Stellar Map Canvas and Overlay */
 .dashboard-container {
     width: 100%;
@@ -163,14 +162,10 @@
 .info-panel-actions { display: flex; gap: 1rem; }
 .info-panel-actions .btn { flex: 1; }
 
-/* Fallback style for when the 3D map fails to load */
+/* Fallback styles for when the 3D map fails */
 .dashboard-container.map-failed {
-    background-image: 
-        radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--color-primary) 30%, transparent) 0%, transparent 40%),
-        radial-gradient(circle at 0% 100%, color-mix(in srgb, var(--color-secondary) 30%, transparent) 0%, transparent 40%);
-    background-color: var(--color-bg);
+    color: var(--color-text); /* Use theme text color instead of hardcoded white */
 }
-
-.dashboard-container.map-failed #stellar-map-canvas {
-    display: none;
+.dashboard-container.map-failed .dashboard-overlay {
+    background: var(--color-bg); /* Use solid theme background */
 }

@@ -2,8 +2,8 @@ import { initModuleScene, cleanupModuleScene } from '../../services/moduleHelper
 
 let sceneManager;
 
-export async function init() {
-    sceneManager = await initModuleScene('.background-canvas', 'dataStream');
+export function init() {
+    sceneManager = initModuleScene('.background-canvas', 'dataStream');
 }
 
 export function cleanup() {

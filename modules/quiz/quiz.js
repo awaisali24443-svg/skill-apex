@@ -138,7 +138,7 @@ function startChallengeTimer() {
     }, 1000);
 }
 
-export async function init() {
+export function init() {
     quizContainer = document.getElementById('quiz-container');
     state = quizState.loadQuizState();
     if (!state) {
@@ -147,7 +147,7 @@ export async function init() {
         return;
     }
     renderQuizUI();
-    sceneManager = await initModuleScene('.background-canvas', 'abstractHub');
+    sceneManager = initModuleScene('.background-canvas', 'abstractHub');
 }
 
 export function cleanup() {

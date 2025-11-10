@@ -1,6 +1,5 @@
 import { getLeaderboardData } from '../../services/leaderboardService.js';
 import { SceneManager } from '../../services/threeManager.js';
-import { initModuleScene, cleanupModuleScene } from '../../services/moduleHelper.js';
 
 let sceneManager;
 let countdownInterval;
@@ -73,7 +72,7 @@ export async function init() {
     renderLeaderboard();
     startCountdown();
     
-    sceneManager = await initModuleScene('.background-canvas', 'calmGeometric');
+    sceneManager = initModuleScene('.background-canvas', 'calmGeometric');
 }
 
 export function cleanup() {

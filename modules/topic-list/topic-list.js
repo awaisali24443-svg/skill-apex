@@ -91,7 +91,7 @@ export async function init() {
     }).join('');
 
     attachCardListeners();
-    sceneManager = await initModuleScene('.background-canvas', 'atomicStructure');
+    sceneManager = initModuleScene('.background-canvas', 'atomicStructure');
 }
 
 export function cleanup() {

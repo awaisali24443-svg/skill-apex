@@ -8,9 +8,9 @@ const handleGuestLogin = () => {
     // The onSessionStateChange listener in global.js will handle the redirect
 };
 
-export async function init() {
+export function init() {
     document.getElementById('guest-btn')?.addEventListener('click', handleGuestLogin);
-    sceneManager = await initModuleScene('.background-canvas', 'subtleParticles');
+    sceneManager = initModuleScene('.background-canvas', 'subtleParticles');
     
     // Signal that the module is fully loaded and ready to be displayed.
     document.dispatchEvent(new CustomEvent('moduleReady'));
