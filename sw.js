@@ -1,6 +1,6 @@
 // sw.js
 
-const CACHE_NAME = 'knowledge-tester-v1.2';
+const CACHE_NAME = 'knowledge-tester-v1.3';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -12,7 +12,10 @@ const urlsToCache = [
   '/global/header.html',
   // Themes
   '/themes/theme-dark-cyber.css',
-  // Core JS libs (if self-hosted) - we will intercept CDN calls instead
+  // Third-party libraries (now local)
+  '/libs/three.min.js',
+  '/libs/OrbitControls.min.js',
+  '/libs/chart.min.js',
   // Modules (core ones to start)
   '/modules/home/home.html',
   '/modules/home/home.css',
@@ -71,12 +74,14 @@ self.addEventListener('fetch', event => {
                 return fetch(event.request).then(
                     networkResponse => {
                         // Check if we received a valid response
-                        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-                            // Don't cache non-basic (cross-origin) or error responses
-                            // Note: This means CDN scripts won't be cached unless CORS is enabled, which is fine.
+                        if (!networkResponse || networkResponse.status !== 200) {
+                             // Don't cache error responses
                             return networkResponse;
                         }
-
+                        
+                        // For basic requests (same-origin), we can cache them.
+                        // For cross-origin requests, we can cache them too but need to be careful.
+                        // In our case, caching Google Fonts is okay.
                         const responseToCache = networkResponse.clone();
                         caches.open(CACHE_NAME)
                             .then(cache => {
@@ -92,6 +97,7 @@ self.addEventListener('fetch', event => {
             })
     );
 });
+
 
 // Clean up old caches
 self.addEventListener('activate', event => {
