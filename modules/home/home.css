@@ -1,14 +1,17 @@
 
 .galaxy-container {
-    /* FIX: Ensure the container fills the entire viewport, overriding parent layout constraints. */
-    position: fixed; /* Use fixed to guarantee it's relative to the viewport. */
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
+    /* FIX: This is a bulletproof rule to ensure the container always fills the viewport, overriding any possible layout conflicts. */
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    overflow: hidden !important;
     background-color: #000;
-    z-index: 1; /* Sit above the standard layout but below overlays */
+    z-index: 1;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
 }
 
 #galaxy-canvas {

@@ -5,7 +5,9 @@ import { ROUTES } from '../../constants.js';
 import { soundService } from '../../services/soundService.js';
 
 let appStateRef;
-let galaxyContainer;
+let galaxyCanvas;
+let retryCount = 0;
+const MAX_RETRIES = 20; // Increased retries for more resilience
 
 // --- Module Lifecycle ---
 
@@ -30,28 +32,63 @@ const handleCloseModule = () => {
     threeManager.resetCamera();
 };
 
+/**
+ * DEFINITIVE FIX: Robustly attempts to initialize the Three.js scene. 
+ * It now checks three conditions:
+ * 1. The canvas element still exists.
+ * 2. The canvas element is still connected to the live DOM.
+ * 3. The canvas element has valid, non-zero dimensions.
+ * This prevents all race conditions with the router and CSS layout engine.
+ */
+function attemptThreeInit() {
+    // 1. Check if canvas exists (it might have been destroyed)
+    if (!galaxyCanvas) return;
+
+    // 2. CRITICAL: Check if the element is still part of the document.
+    // This prevents errors if the router clears the parent's innerHTML.
+    const isConnected = galaxyCanvas.isConnected;
+    
+    // 3. Check for valid dimensions.
+    const hasValidSize = galaxyCanvas.clientWidth > 0 && galaxyCanvas.clientHeight > 0;
+
+    if (isConnected && hasValidSize) {
+        console.log(`Galaxy canvas is connected and sized: ${galaxyCanvas.clientWidth}x${galaxyCanvas.clientHeight}. Initializing Three.js.`);
+        threeManager.init(galaxyCanvas, handlePlanetClick);
+    } else if (retryCount < MAX_RETRIES) {
+        retryCount++;
+        // Log detailed status for debugging
+        console.warn(`Galaxy canvas not ready. Retrying... (Attempt ${retryCount}/${MAX_RETRIES}). Connected: ${isConnected}, Size: ${galaxyCanvas.clientWidth}x${galaxyCanvas.clientHeight}`);
+        requestAnimationFrame(attemptThreeInit);
+    } else {
+        console.error(`Galaxy canvas failed to initialize after ${MAX_RETRIES} retries. Aborting.`);
+        const container = document.querySelector('.galaxy-container');
+        if (container) {
+            container.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: white; text-align: center; font-family: var(--font-sans); padding: 2rem;">
+                    <div>
+                        <h2>Error Initializing Galaxy</h2>
+                        <p>The 3D view could not be loaded. This might be due to a slow network or device. Please try refreshing the page.</p>
+                    </div>
+                </div>
+            `;
+        }
+    }
+}
+
 export async function init(appState) {
     console.log("Home module (Knowledge Galaxy) initialized.");
     appStateRef = appState;
     
-    galaxyContainer = document.getElementById('galaxy-canvas');
-    if (galaxyContainer) {
+    galaxyCanvas = document.getElementById('galaxy-canvas');
+    if (galaxyCanvas) {
         document.body.classList.add('galaxy-view');
         
-        // FIX: Defer Three.js initialization until the next animation frame.
-        // This ensures the DOM is fully painted and the canvas has correct dimensions,
-        // preventing a common bug where the renderer initializes with a 0x0 canvas.
-        requestAnimationFrame(() => {
-            if (galaxyContainer.clientWidth > 0 && galaxyContainer.clientHeight > 0) {
-                 threeManager.init(galaxyContainer, handlePlanetClick);
-            } else {
-                console.error("Galaxy canvas has zero dimensions. Three.js initialization aborted.");
-            }
-        });
+        retryCount = 0; // Reset retry count for this initialization
+        attemptThreeInit(); // Start the robust initialization attempt
 
         window.addEventListener('close-module-view', handleCloseModule);
     } else {
-        console.error("Galaxy canvas container not found!");
+        console.error("Galaxy canvas element not found!");
     }
 }
 
@@ -60,5 +97,6 @@ export function destroy() {
     document.body.classList.remove('galaxy-view');
     window.removeEventListener('close-module-view', handleCloseModule);
     appStateRef = null;
+    galaxyCanvas = null; // Important: nullify the canvas reference to stop any pending retries.
     console.log("Home module (Knowledge Galaxy) destroyed.");
 }

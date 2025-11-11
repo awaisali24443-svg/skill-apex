@@ -56,20 +56,13 @@ body {
     margin-left: var(--sidebar-width-expanded);
 }
 
-/* --- Styles for 3D Galaxy View --- */
-body.galaxy-view {
-    overflow: hidden; /* Prevent scrollbars on 3D view */
+/* --- Styles for 3D Galaxy View (Handled by home.js) --- */
+/* The body class is now only for hiding the sidebar */
+body.galaxy-view .sidebar-nav {
+    display: none;
 }
 body.galaxy-view .main-container {
-    padding: 0;
-    max-width: 100%;
-    margin-left: 0; /* Override sidebar margin */
-    overflow: hidden; /* Disable scrolling for the galaxy view */
-    height: 100%; /* Ensure it fills parent height, overriding mobile 'auto' */
-    min-height: 100%; /* Override mobile min-height */
-}
-body.galaxy-view .sidebar-nav {
-    display: none; /* Hide sidebar on 3D view */
+    margin-left: 0; /* Still need to collapse margin when sidebar is hidden */
 }
 
 
