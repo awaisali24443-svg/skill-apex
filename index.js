@@ -17,9 +17,16 @@ const appState = {
         return this._context;
     },
     set context(data) {
-        // BUG FIX: Merge new data with existing context instead of overwriting it.
-        // This prevents state loss during navigation.
         this._context = { ...this._context, ...data };
+        try {
+            sessionStorage.setItem(APP_STATE_KEY, JSON.stringify(this._context));
+        } catch (error) {
+            console.warn("Could not write to sessionStorage.", error);
+        }
+    },
+    // FIX: Add a specific method for setting router params to prevent state corruption.
+    setRouteParams(params) {
+        this._context.params = params; // Direct replacement of only the params property.
         try {
             sessionStorage.setItem(APP_STATE_KEY, JSON.stringify(this._context));
         } catch (error) {
@@ -76,7 +83,7 @@ async function loadModule(moduleConfig, params = {}) {
         currentModule.instance = js;
         
         // Pass params from router to the module's init function
-        appState.context = { params }; // Use setter to merge params
+        appState.setRouteParams(params); // Use the new, safer method.
         if (typeof js.init === 'function') {
             js.init(appState);
         }
