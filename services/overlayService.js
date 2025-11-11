@@ -56,17 +56,6 @@ async function loadModuleContent(moduleConfig) {
     if (panelBody) panelBody.style.opacity = 1;
 }
 
-function handleFabClick(e) {
-    const fab = e.target.closest('.module-fab');
-    if (!fab) return;
-
-    const moduleHash = fab.dataset.module;
-    const moduleConfig = ROUTES.find(r => r.hash === moduleHash);
-    if (moduleConfig) {
-        soundService.playSound('click');
-        loadModuleContent(moduleConfig);
-    }
-}
 
 // --- Public API ---
 
@@ -77,6 +66,7 @@ async function show(moduleConfig, globalAppState) {
         appStateRef = globalAppState;
     }
     
+    // If overlay is already visible but we're loading a new module
     if (overlay.classList.contains('visible')) {
         if (currentModule?.module !== moduleConfig.module) {
             await loadModuleContent(moduleConfig);
@@ -99,35 +89,21 @@ async function show(moduleConfig, globalAppState) {
         currentModule = { ...moduleConfig, instance: js };
 
         overlay.innerHTML = `
-            <style></style> <!-- Style tag for module-specific CSS -->
+            <style>${css}</style> <!-- Style tag for module-specific CSS -->
             <div class="module-panel">
                 <div class="module-panel-header">
                     <h2>${moduleConfig.name}</h2>
                     <button class="back-to-galaxy-btn" title="Back to Galaxy">&times;</button>
                 </div>
                 <div class="module-panel-body">${html}</div>
-                <div class="module-fab-container">
-                     <button class="module-fab" data-module="aural" title="Aural">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72h-1.7z"></path></svg>
-                    </button>
-                    <button class="module-fab" data-module="profile" title="Profile">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
-                    </button>
-                    <button class="module-fab" data-module="settings" title="Settings">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61-.25-1.17-.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19-.15-.24.42-.12.64l2 3.46c.12-.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49.42l.38-2.65c.61-.25 1.17-.59-1.69.98l2.49 1c.23-.09.49 0 .61-.22l2-3.46c.12-.22-.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"></path></svg>
-                    </button>
-                </div>
             </div>
         `;
         
-        overlay.querySelector('style').textContent = css;
-
         if (typeof js.init === 'function') {
             await js.init(appStateRef);
         }
 
         overlay.querySelector('.back-to-galaxy-btn').addEventListener('click', hide);
-        overlay.querySelector('.module-fab-container').addEventListener('click', handleFabClick);
         
         overlay.classList.add('visible');
 
@@ -140,7 +116,12 @@ async function show(moduleConfig, globalAppState) {
 }
 
 function hide() {
+    if (!overlay.classList.contains('visible')) return;
+
     overlay.classList.remove('visible');
+
+    // Let the home module know the overlay is closed immediately
+    window.dispatchEvent(new CustomEvent('close-module-view'));
 
     setTimeout(() => {
         if (currentModule && currentModule.instance && typeof currentModule.instance.destroy === 'function') {
@@ -149,10 +130,6 @@ function hide() {
         overlay.innerHTML = '';
         currentModule = null;
         appStateRef = null;
-        
-        // Let the home module know the overlay is closed
-        window.dispatchEvent(new CustomEvent('close-module-view'));
-
     }, 400); // Match CSS transition duration
 }
 

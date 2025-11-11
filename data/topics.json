@@ -1,90 +1,58 @@
 {
     "categories": [
         {
-            "id": "trending-tech",
-            "name": "Trending Tech",
-            "description": "Test your understanding of AI, emerging tech, and cybersecurity.",
-            "icon": "🤖"
+            "id": "science-nature",
+            "name": "Science & Nature",
+            "description": "Explore the wonders of the natural world, from the vastness of space to the intricacies of life.",
+            "icon": "🔬"
         },
         {
-            "id": "modern-life",
-            "name": "Modern Life",
-            "description": "Explore quizzes on 2025's pop culture trends and discover which modern career matches you.",
-            "icon": "🌐"
+            "id": "history",
+            "name": "History",
+            "description": "Journey through time and test your knowledge of pivotal events, figures, and civilizations.",
+            "icon": "🏛️"
         },
         {
-            "id": "challenges",
-            "name": "AI Challenges",
-            "description": "Can you outsmart AI in this general knowledge test?",
-            "icon": "🏆"
+            "id": "arts-literature",
+            "name": "Arts & Literature",
+            "description": "Delve into the world of creativity, from classic novels to masterpieces of the art world.",
+            "icon": "🎨"
+        },
+        {
+            "id": "tech-innovation",
+            "name": "Technology & Innovation",
+            "description": "Challenge your understanding of modern technology, from AI to space exploration.",
+            "icon": "💡"
         }
     ],
     "topics": {
-        "trending-tech": [
-            {
-                "id": "ai-awareness",
-                "name": "AI & Technology Awareness",
-                "description": "Test your understanding of artificial intelligence, ChatGPT, and emerging tech in 2025.",
-                "questions": [
-                    "Which AI model powers most chatbots today?",
-                    "What is a deepfake?",
-                    "Which company launched ChatGPT?",
-                    "What is the main function of machine learning?",
-                    "Which of these is NOT an AI application?"
-                ]
-            },
-            {
-                "id": "cybersecurity",
-                "name": "Cybersecurity & Online Life",
-                "description": "Find out how secure your digital life really is.",
-                "questions": [
-                    "What does 'phishing' mean?",
-                    "Which is the safest password format?",
-                    "What should you do if you receive a suspicious link?",
-                    "What’s the purpose of two-factor authentication?",
-                    "Which of these is an example of ransomware?"
-                ]
-            }
+        "science-nature": [
+            { "id": "solar-system", "name": "The Solar System" },
+            { "id": "human-anatomy", "name": "Human Anatomy" },
+            { "id": "marine-biology", "name": "Marine Biology" },
+            { "id": "dinosaurs", "name": "The Age of Dinosaurs" },
+            { "id": "botany", "name": "The World of Plants" }
         ],
-        "modern-life": [
-            {
-                "id": "pop-culture-2025",
-                "name": "Pop Culture 2025",
-                "description": "Guess the song, movie, or trend that’s taking over social media this year.",
-                "questions": [
-                    "Which artist released the 2025 global hit 'Neon Dreams'?",
-                    "Who won the 2025 Oscar for Best Actor?",
-                    "Which emoji trend dominated TikTok this year?",
-                    "Name the most-streamed Netflix show of 2025.",
-                    "Which social platform introduced holographic stories?"
-                ]
-            },
-            {
-                "id": "career-2025",
-                "name": "Personality & Career in 2025",
-                "description": "Discover which modern tech career matches your skills.",
-                "questions": [
-                    "Do you prefer solving problems or creating designs?",
-                    "Would you rather automate tasks or tell stories?",
-                    "How do you handle new technologies?",
-                    "Do you enjoy teamwork or solo work?",
-                    "Which area excites you most: AI, Design, Marketing, or Data?"
-                ]
-            }
+        "history": [
+            { "id": "ancient-egypt", "name": "Ancient Egypt" },
+            { "id": "roman-empire", "name": "The Roman Empire" },
+            { "id": "the-renaissance", "name": "The Renaissance" },
+            { "id": "world-war-2", "name": "World War II" },
+            { "id": "american-revolution", "name": "The American Revolution" }
         ],
-        "challenges": [
-            {
-                "id": "knowledge-vs-ai",
-                "name": "Knowledge vs AI Challenge",
-                "description": "Can you outsmart AI in this general knowledge test?",
-                "questions": [
-                    "What is the capital of Japan?",
-                    "Who painted the Mona Lisa?",
-                    "What is the speed of light?",
-                    "Which planet is known as the Red Planet?",
-                    "Which programming language is often used for AI?"
-                ]
-            }
+        "arts-literature": [
+            { "id": "shakespeare", "name": "Shakespeare's Plays" },
+            { "id": "impressionism", "name": "Impressionist Painters" },
+            { "id": "greek-mythology", "name": "Greek Mythology" },
+            { "id": "famous-operas", "name": "Famous Operas" },
+            { "id": "modern-architecture", "name": "Modern Architecture" }
+        ],
+        "tech-innovation": [
+            { "id": "ai-fundamentals", "name": "AI Fundamentals" },
+            { "id": "history-of-computing", "name": "History of Computing" },
+            { "id": "space-exploration", "name": "Space Exploration Milestones" },
+            { "id": "cybersecurity-basics", "name": "Cybersecurity Basics" },
+            { "id": "renewable-energy", "name": "Renewable Energy Tech" }
         ]
     }
 }

@@ -1,105 +1,17 @@
-
-
 .galaxy-container {
-    /* The layout is now correctly handled by the global CSS when body.galaxy-view is active. */
-    /* This ensures the container fills the main-content area perfectly. */
     width: 100%;
     height: 100%;
-    overflow: hidden;
-    background-color: #000;
-    position: relative; /* Use relative positioning within the flow of main-container */
-    z-index: 1;
+    position: relative;
+    background-color: #000; /* Fallback for when canvas is loading */
 }
 
 #galaxy-canvas {
-    display: block;
     width: 100%;
     height: 100%;
+    display: block; /* Removes any default spacing */
     cursor: grab;
 }
 
 #galaxy-canvas:active {
     cursor: grabbing;
-}
-
-/* --- Intro Animation Overlay --- */
-#intro-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    text-align: center;
-    pointer-events: none;
-    opacity: 0;
-    animation: fadeInIntro 2s ease-out 1.5s forwards, fadeOutIntro 1.5s ease-in 4.5s forwards;
-    z-index: 10;
-}
-
-#intro-title-main {
-    font-family: var(--font-display);
-    font-size: clamp(2rem, 8vw, 5rem);
-    letter-spacing: 0.2em;
-    text-shadow: 0 0 10px var(--color-primary), 0 0 20px var(--color-primary), 0 0 40px var(--color-secondary);
-    margin: 0;
-    opacity: 0;
-    transform: scale(0.8);
-    animation: popInText 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) 2s forwards;
-}
-
-#intro-subtitle {
-    font-size: clamp(1rem, 3vw, 1.5rem);
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeInText 1s ease-out 3s forwards;
-}
-
-#intro-voiceover {
-    position: absolute;
-    bottom: 10%;
-    font-family: var(--font-mono);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-    opacity: 0;
-    animation: fadeInText 2s ease-out 1s forwards;
-}
-
-@keyframes fadeInIntro {
-    to { opacity: 1; }
-}
-@keyframes fadeOutIntro {
-    to { opacity: 0; }
-}
-@keyframes popInText {
-    to { opacity: 1; transform: scale(1); }
-}
-@keyframes fadeInText {
-    to { opacity: 1; transform: translateY(0); }
-}
-
-
-/* --- Controls Hint --- */
-#controls-hint {
-    position: absolute;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.3);
-    padding: 8px 16px;
-    border-radius: var(--border-radius-md);
-    color: var(--color-text-muted);
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-    pointer-events: none;
-    opacity: 0;
-    animation: fadeInHint 1s ease-out 6s forwards;
-    z-index: 5; /* Ensure it's above the canvas */
-}
-
-@keyframes fadeInHint {
-    to { opacity: 1; }
 }

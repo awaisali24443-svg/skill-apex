@@ -1,6 +1,6 @@
 // sw.js
 
-const CACHE_NAME = 'knowledge-tester-v1.5';
+const CACHE_NAME = 'knowledge-tester-v1.7'; // Incremented cache version
 const STATIC_ASSETS = [
     '/global/global.css',
     '/global/splash.css',
@@ -8,29 +8,56 @@ const STATIC_ASSETS = [
     '/global/accessibility.css',
     '/index.js',
     '/constants.js',
-    // Pre-cache core services and home module for fast initial load
+    // Re-added core services for 3D view
     '/services/configService.js',
     '/services/featureService.js',
-    '/services/soundService.js', // NEW
+    '/services/soundService.js',
+    '/services/libraryService.js',
+    '/services/topicService.js',
+    '/services/threeManager.js',
+    '/services/overlayService.js',
+    // Home module for galaxy view
     '/modules/home/home.js',
     '/modules/home/home.html',
     '/modules/home/home.css',
-    // NEW: Pre-cache Aural module
+    // Pre-cache Aural module
     '/modules/aural/aural.js',
     '/modules/aural/aural.html',
     '/modules/aural/aural.css',
-    // Fonts and assets
+    // Fonts
     'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@400;500;700&display=swap',
     'https://fonts.gstatic.com/s/orbitron/v31/yMJRMIlzdpvBhQQL_Qq7dy0.woff2',
     'https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu4mxK.woff2',
+    // Core assets
     '/assets/icon-192.png',
     '/assets/icon-512.png',
     '/icon.svg',
-    // NEW: Audio assets
+    // Audio assets
     '/assets/sounds/ambient.mp3',
     '/assets/sounds/click.wav',
     '/assets/sounds/hover.wav',
-    '/assets/sounds/transition.wav'
+    '/assets/sounds/transition.wav',
+    // NEW: Realistic Textures for 3D Scene
+    '/assets/textures/lensflare0.png',
+    '/assets/textures/lensflare3.png',
+    '/assets/textures/rings/realistic_rings.png',
+    '/assets/textures/planets/earth_day.jpg',
+    '/assets/textures/planets/earth_clouds.png',
+    '/assets/textures/planets/earth_specular.png',
+    '/assets/textures/planets/mars.jpg',
+    '/assets/textures/planets/mars_bump.jpg',
+    '/assets/textures/planets/jupiter.jpg',
+    '/assets/textures/planets/neptune.jpg',
+    '/assets/textures/planets/rocky.jpg',
+    '/assets/textures/planets/rocky_bump.jpg',
+    '/assets/textures/planets/ice.jpg',
+    // Skybox textures
+    '/assets/textures/realistic_skybox/px.jpg',
+    '/assets/textures/realistic_skybox/nx.jpg',
+    '/assets/textures/realistic_skybox/py.jpg',
+    '/assets/textures/realistic_skybox/ny.jpg',
+    '/assets/textures/realistic_skybox/pz.jpg',
+    '/assets/textures/realistic_skybox/nz.jpg'
 ];
 
 // On install, pre-cache static assets
@@ -60,7 +87,7 @@ self.addEventListener('activate', event => {
             );
         })
     );
-    // FIX #24: Ensure the new service worker takes control immediately
+    // Ensure the new service worker takes control immediately
     return self.clients.claim();
 });
 
@@ -68,7 +95,7 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
     const { request } = event;
 
-    // FIX #7: Use a more intelligent, hybrid caching strategy.
+    // Use a more intelligent, hybrid caching strategy.
     
     // Strategy 1: Network First for HTML and API calls.
     // Ensures the user always gets the latest app logic and data.

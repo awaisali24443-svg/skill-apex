@@ -36,10 +36,10 @@
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.15), 0 4px 6px -4px rgba(0, 0, 0, 0.15);
 }
 
-/* --- NEW: Cyber-Core Theme --- */
+/* --- REFINED: Cyber-Core Theme --- */
 @keyframes subtle-grid-scroll {
     from { background-position: 0 0; }
-    to { background-position: -60px -60px; }
+    to { background-position: -80px -80px; }
 }
 
 @keyframes pulse-correct {
@@ -73,10 +73,10 @@
 [data-theme="cyber"] body {
     background-color: var(--color-bg);
     background-image:
-        linear-gradient(rgba(0, 246, 255, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 246, 255, 0.05) 1px, transparent 1px);
-    background-size: 30px 30px;
-    animation: subtle-grid-scroll 3s linear infinite;
+        linear-gradient(rgba(0, 246, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 246, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: subtle-grid-scroll 4s linear infinite;
 }
 
 /* --- Enhanced Cyber Components --- */
@@ -101,29 +101,7 @@
     overflow: hidden;
 }
 
-/* Corner Bracket Effect */
-[data-theme="cyber"] .card::before, [data-theme="cyber"] .card::after,
-[data-theme="cyber"] .dashboard-card::before, [data-theme="cyber"] .dashboard-card::after {
-    content: '';
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    border-color: var(--color-primary);
-    border-style: solid;
-    transition: all var(--transition-fast);
-}
-[data-theme="cyber"] .card::before, [data-theme="cyber"] .dashboard-card::before {
-    top: -6px; left: -6px; border-width: 2px 0 0 2px;
-}
-[data-theme="cyber"] .card::after, [data-theme="cyber"] .dashboard-card::after {
-    bottom: -6px; right: -6px; border-width: 0 2px 2px 0;
-}
-[data-theme="cyber"] .card:hover::before, [data-theme="cyber"] .dashboard-card:hover::before {
-    transform: translate(-3px, -3px);
-}
-[data-theme="cyber"] .card:hover::after, [data-theme="cyber"] .dashboard-card:hover::after {
-    transform: translate(3px, 3px);
-}
+/* REMOVED: Corner Bracket Effect for a cleaner look */
 
 [data-theme="cyber"] .card:hover,
 [data-theme="cyber"] .dashboard-card:hover,

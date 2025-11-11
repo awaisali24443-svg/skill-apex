@@ -1,5 +1,3 @@
-
-
 import { threeManager } from '../../services/threeManager.js';
 import { overlayService } from '../../services/overlayService.js';
 import { ROUTES } from '../../constants.js';
