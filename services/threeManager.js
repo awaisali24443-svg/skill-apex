@@ -5,17 +5,26 @@ let camera, scene, renderer, particles;
 let animationFrameId;
 let resizeListener;
 let mouse = new THREE.Vector2(0, 0);
+const clock = new THREE.Clock(); // Add a clock for smooth animation
 
-const PARTICLE_COUNT = 8000;
-const Z_SPEED = 3;
+// --- Galaxy Parameters ---
+const GALAXY_PARAMS = {
+    count: 100000,
+    size: 0.01,
+    radius: 5,
+    branches: 5,
+    spin: 1,
+    randomness: 0.5,
+    randomnessPower: 3,
+};
 
 const init = () => {
     // Scene setup
     scene = new THREE.Scene();
     
     // Camera setup
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
-    camera.position.z = 500;
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 1.5, 6); // Adjusted camera position for a better view
 
     // Renderer setup
     const canvas = document.getElementById('bg-canvas');
@@ -31,35 +40,89 @@ const init = () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    // Particle Geometry
+    // --- Generate Galaxy Geometry ---
     const geometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(PARTICLE_COUNT * 3);
-    const colors = new Float32Array(PARTICLE_COUNT * 3);
+    const positions = new Float32Array(GALAXY_PARAMS.count * 3);
+    const colors = new Float32Array(GALAXY_PARAMS.count * 3);
+    const scales = new Float32Array(GALAXY_PARAMS.count * 1);
 
-    const color1 = new THREE.Color('#a855f7'); // Aurora primary
-    const color2 = new THREE.Color('#2dd4bf'); // Aurora secondary
+    const insideColor = new THREE.Color('#a855f7'); // Aurora primary
+    const outsideColor = new THREE.Color('#2dd4bf'); // Aurora secondary
 
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
+    for (let i = 0; i < GALAXY_PARAMS.count; i++) {
         const i3 = i * 3;
-        positions[i3] = (Math.random() - 0.5) * 2000; // x
-        positions[i3 + 1] = (Math.random() - 0.5) * 2000; // y
-        positions[i3 + 2] = (Math.random() - 1) * 1500; // z
+        
+        // Position
+        const radius = Math.random() * GALAXY_PARAMS.radius;
+        const spinAngle = radius * GALAXY_PARAMS.spin;
+        const branchAngle = (i % GALAXY_PARAMS.branches) / GALAXY_PARAMS.branches * Math.PI * 2;
 
-        const color = Math.random() > 0.5 ? color1 : color2;
-        colors[i3] = color.r;
-        colors[i3 + 1] = color.g;
-        colors[i3 + 2] = color.b;
+        const randomX = Math.pow(Math.random(), GALAXY_PARAMS.randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * GALAXY_PARAMS.randomness * radius;
+        const randomY = Math.pow(Math.random(), GALAXY_PARAMS.randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * GALAXY_PARAMS.randomness * radius;
+        const randomZ = Math.pow(Math.random(), GALAXY_PARAMS.randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * GALAXY_PARAMS.randomness * radius;
+
+        positions[i3] = Math.cos(branchAngle + spinAngle) * radius + randomX;
+        positions[i3 + 1] = randomY;
+        positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ;
+
+        // Color
+        const mixedColor = insideColor.clone();
+        mixedColor.lerp(outsideColor, radius / GALAXY_PARAMS.radius);
+
+        colors[i3] = mixedColor.r;
+        colors[i3 + 1] = mixedColor.g;
+        colors[i3 + 2] = mixedColor.b;
+
+        // Scale
+        scales[i] = Math.random();
     }
 
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    geometry.setAttribute('aScale', new THREE.BufferAttribute(scales, 1));
 
-    const material = new THREE.PointsMaterial({
-        size: 1.2,
+
+    // --- Custom Shader Material ---
+    const material = new THREE.ShaderMaterial({
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
         vertexColors: true,
-        transparent: true,
-        opacity: 0.8,
-        depthWrite: false, // For better blending
+        uniforms: {
+            uTime: { value: 0 },
+            uSize: { value: 30 * renderer.getPixelRatio() }
+        },
+        vertexShader: `
+            uniform float uTime;
+            uniform float uSize;
+            attribute float aScale;
+            varying vec3 vColor;
+            void main() {
+                vColor = color;
+                vec4 modelPosition = modelMatrix * vec4(position, 1.0);
+                
+                // Spin animation
+                float angle = atan(modelPosition.x, modelPosition.z);
+                float distance = length(modelPosition.xz);
+                angle += distance * 0.1 * uTime;
+                modelPosition.x = cos(angle) * distance;
+                modelPosition.z = sin(angle) * distance;
+                
+                vec4 viewPosition = viewMatrix * modelPosition;
+                vec4 projectedPosition = projectionMatrix * viewPosition;
+                gl_Position = projectedPosition;
+                gl_PointSize = uSize * aScale * (1.0 / -viewPosition.z);
+            }
+        `,
+        fragmentShader: `
+            varying vec3 vColor;
+            void main() {
+                float strength = distance(gl_PointCoord, vec2(0.5));
+                strength = 1.0 - strength;
+                strength = pow(strength, 3.0);
+                
+                gl_FragColor = vec4(vColor * strength, strength * 0.8);
+            }
+        `
     });
 
     particles = new THREE.Points(geometry, material);
@@ -71,6 +134,7 @@ const init = () => {
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        material.uniforms.uSize.value = 30 * renderer.getPixelRatio();
     };
     window.addEventListener('resize', resizeListener);
 
@@ -78,25 +142,17 @@ const init = () => {
 };
 
 const animate = () => {
-    // Parallax effect based on mouse position
-    const targetX = mouse.x * -100;
-    const targetY = mouse.y * 100;
-    if (particles) {
-        particles.rotation.y += 0.02 * (targetX - particles.rotation.y);
-        particles.rotation.x += 0.02 * (targetY - particles.rotation.x);
+    const elapsedTime = clock.getElapsedTime();
     
-        // Animate particles
-        const positions = particles.geometry.attributes.position.array;
-        for (let i = 0; i < PARTICLE_COUNT; i++) {
-            const i3 = i * 3;
-            positions[i3 + 2] += Z_SPEED; // move along z-axis
-
-            if (positions[i3 + 2] > camera.position.z) {
-                positions[i3 + 2] = -1500; // Reset to the back
-            }
-        }
-        particles.geometry.attributes.position.needsUpdate = true;
+    // Update material time uniform
+    if (particles) {
+        particles.material.uniforms.uTime.value = elapsedTime * 0.1;
     }
+
+    // Smoother camera parallax effect
+    camera.position.x += (mouse.x * 0.5 - camera.position.x) * 0.02;
+    camera.position.y += (-mouse.y * 0.5 - camera.position.y) * 0.02;
+    camera.lookAt(scene.position);
 
     renderer.render(scene, camera);
     animationFrameId = requestAnimationFrame(animate);
