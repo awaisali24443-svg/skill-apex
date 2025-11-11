@@ -10,6 +10,12 @@ let mouseMoveHandler;
 
 const dashboardItems = [
     {
+        href: '#explore',
+        icon: '🧭',
+        title: 'Explore Topics',
+        description: 'Browse curated categories and discover new quizzes.',
+    },
+    {
         href: '#library',
         icon: '📚',
         title: 'My Library',
