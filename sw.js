@@ -1,6 +1,6 @@
 // sw.js
 
-const CACHE_NAME = 'knowledge-tester-v1.7'; // Incremented cache version
+const CACHE_NAME = 'knowledge-tester-v1.9'; // Incremented cache version
 const STATIC_ASSETS = [
     '/global/global.css',
     '/global/splash.css',
@@ -44,6 +44,9 @@ const STATIC_ASSETS = [
     '/assets/textures/planets/earth_day.jpg',
     '/assets/textures/planets/earth_clouds.png',
     '/assets/textures/planets/earth_specular.png',
+    '/assets/textures/planets/earth_night.jpg',
+    '/assets/textures/planets/earth_bump.jpg',
+    '/assets/textures/planets/asteroid.jpg',
     '/assets/textures/planets/mars.jpg',
     '/assets/textures/planets/mars_bump.jpg',
     '/assets/textures/planets/jupiter.jpg',
@@ -51,6 +54,7 @@ const STATIC_ASSETS = [
     '/assets/textures/planets/rocky.jpg',
     '/assets/textures/planets/rocky_bump.jpg',
     '/assets/textures/planets/ice.jpg',
+    '/assets/textures/particle_noise.png', // NEW: Added noise texture for particles
     // Skybox textures
     '/assets/textures/realistic_skybox/px.jpg',
     '/assets/textures/realistic_skybox/nx.jpg',

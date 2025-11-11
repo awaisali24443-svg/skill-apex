@@ -13,6 +13,12 @@ export function initializeCardGlow() {
             card.style.setProperty('--mouse-x', `${x}px`);
             card.style.setProperty('--mouse-y', `${y}px`);
         });
+
+        // Set the data-text attribute for the button glitch effect
+        card.querySelectorAll('.btn').forEach(btn => {
+             btn.dataset.text = btn.textContent;
+        });
+
         card.dataset.glowEffectAttached = 'true';
     });
 }
@@ -21,4 +27,10 @@ export function initializeCardGlow() {
 // Each module that loads cards will now call initializeCardGlow() directly.
 
 // Run on initial load for any static cards
-document.addEventListener('DOMContentLoaded', initializeCardGlow);
+document.addEventListener('DOMContentLoaded', () => {
+    initializeCardGlow();
+    // Add the data-text attribute to all buttons on the page for the glitch effect
+    document.querySelectorAll('.btn').forEach(btn => {
+        btn.dataset.text = btn.textContent;
+    });
+});
