@@ -1,1 +1,27 @@
-{}
+
+{
+  "name": "knowledge-tester",
+  "version": "1.5.0",
+  "description": "A streamlined, AI-powered quiz application with a Node.js backend.",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "build": "echo \"No build setup required\""
+  },
+  "keywords": [
+    "ai",
+    "quiz",
+    "gemini",
+    "javascript",
+    "nodejs",
+    "express"
+  ],
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@google/genai": "^1.29.0",
+    "express": "^5.0.0-beta.1",
+    "express-rate-limit": "^7.3.1"
+  }
+}
