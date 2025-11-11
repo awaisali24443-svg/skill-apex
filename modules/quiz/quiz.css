@@ -1,4 +1,5 @@
 
+
 .quiz-container {
     max-width: 800px;
     margin: 1rem auto;
@@ -122,4 +123,10 @@
     border-left: 4px solid var(--color-secondary);
     border-radius: var(--border-radius-sm);
     transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+    margin-bottom: 2rem; /* Add space for the button */
+}
+
+.quiz-footer {
+    text-align: center;
+    margin-top: 1rem;
 }

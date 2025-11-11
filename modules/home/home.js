@@ -6,7 +6,6 @@ import { getCategories, getTopicsForCategory } from '../../services/topicService
 let is3DInitialized = false;
 let homeContainer;
 let appStateRef;
-let gridContainer;
 let cardEventListeners = [];
 
 const handleMouseMove = (event) => {
@@ -88,30 +87,29 @@ const handleCardMouseLeave = (e) => {
 };
 
 async function renderDashboard() {
-    gridContainer = document.getElementById('dashboard-grid');
-    if (!gridContainer) return;
+    const mainGridContainer = document.getElementById('dashboard-grid');
+    const featuredTopicsSection = document.getElementById('featured-topics-section');
+    const featuredTopicsGrid = document.getElementById('featured-topics-grid');
 
+    if (!mainGridContainer || !featuredTopicsGrid) return;
+
+    // 1. Render static action cards
     const staticCardsHtml = dashboardItems.map(item => {
         const isEnabled = !item.feature || isFeatureEnabled(item.feature);
-        
         const isComingSoon = item.feature === 'learningPaths' && !isEnabled;
 
-        if (!isEnabled && !isComingSoon) {
-            return '';
-        }
+        if (!isEnabled && !isComingSoon) return '';
 
         const tag = isComingSoon ? 'div' : 'a';
         const href = isComingSoon ? '' : `href="${item.href}"`;
         const extraClasses = `${item.size === 'large' ? 'large' : ''} ${isComingSoon ? 'coming-soon' : ''}`;
-
-        const largeCardContent = `
+        const content = item.size === 'large' ? `
             <div class="card-icon">${item.icon}</div>
             <div class="card-content">
                 <h3>${item.title}</h3>
                 <p>${item.description}</p>
             </div>
-        `;
-        const smallCardContent = `
+        ` : `
             <div class="card-icon">${item.icon}</div>
             <div class="card-content">
                 <h3>${item.title}</h3>
@@ -119,43 +117,38 @@ async function renderDashboard() {
                 ${isComingSoon ? `<div class="card-footer"><span class="coming-soon-tag">Coming Soon</span></div>` : ''}
             </div>
         `;
-
-        return `
-            <${tag} ${href} class="dashboard-card ${extraClasses}">
-                ${item.size === 'large' ? largeCardContent : smallCardContent}
-            </${tag}>
-        `;
+        return `<${tag} ${href} class="dashboard-card ${extraClasses}">${content}</${tag}>`;
     }).join('');
+    mainGridContainer.innerHTML = staticCardsHtml;
 
-    let topicCardsHtml = '';
+    // 2. Render featured topic cards
     try {
         const categories = await getCategories();
         const allTopicsPromises = categories.map(cat => getTopicsForCategory(cat.id));
         const allTopicsArrays = await Promise.all(allTopicsPromises);
         const allTopics = allTopicsArrays.flat();
         
-        topicCardsHtml = allTopics.map(topic => `
-            <a href="#loading" class="dashboard-card" data-topic="${topic.name}">
-                 <div class="card-icon">🧠</div>
-                 <div class="card-content">
-                    <h3>${topic.name}</h3>
-                    <p>${topic.description}</p>
-                </div>
-            </a>
-        `).join('');
+        if (allTopics.length > 0) {
+            const topicCardsHtml = allTopics.map(topic => `
+                <a href="#loading" class="dashboard-card" data-topic="${topic.name}">
+                     <div class="card-icon">🧠</div>
+                     <div class="card-content">
+                        <h3>${topic.name}</h3>
+                        <p>${topic.description}</p>
+                    </div>
+                </a>
+            `).join('');
+            featuredTopicsGrid.innerHTML = topicCardsHtml;
+            featuredTopicsSection.style.display = 'block';
+        }
     } catch (error) {
         console.error("Could not load topics for home screen", error);
     }
     
-    gridContainer.innerHTML = staticCardsHtml + topicCardsHtml;
-    
-    // Apply animations and effects
-    const cards = gridContainer.querySelectorAll('.dashboard-card');
-    cards.forEach((card, index) => {
-        // Staggered fade-in animation
+    // 3. Apply animations and effects to all cards
+    const allCards = document.querySelectorAll('.home-content .dashboard-card');
+    allCards.forEach((card, index) => {
         card.style.animationDelay = `${index * 100}ms`;
-
-        // Add 3D tilt effect listeners to interactive cards
         if (!card.classList.contains('coming-soon')) {
             card.addEventListener('mousemove', handleCardMouseMove);
             card.addEventListener('mouseleave', handleCardMouseLeave);
@@ -172,9 +165,10 @@ export async function init(appState) {
     homeContainer = document.querySelector('.home-container');
     
     await renderDashboard();
-
-    if (gridContainer) {
-        gridContainer.addEventListener('click', handleGridClick);
+    
+    const contentArea = document.querySelector('.home-content');
+    if (contentArea) {
+        contentArea.addEventListener('click', handleGridClick);
     }
 
     const use3DBackground = getSetting('enable3DBackground');
@@ -201,8 +195,9 @@ export function destroy() {
     if (homeContainer) {
         homeContainer.removeEventListener('mousemove', handleMouseMove);
     }
-     if (gridContainer) {
-        gridContainer.removeEventListener('click', handleGridClick);
+    const contentArea = document.querySelector('.home-content');
+     if (contentArea) {
+        contentArea.removeEventListener('click', handleGridClick);
     }
     
     // Clean up card event listeners
@@ -220,6 +215,5 @@ export function destroy() {
         is3DInitialized = false;
     }
     appStateRef = null;
-    gridContainer = null;
     console.log("Home module destroyed.");
 }

@@ -2,8 +2,24 @@ import { getQuizState } from '../../services/quizStateService.js';
 import { saveQuestion, isQuestionSaved } from '../../services/libraryService.js';
 import { markStepComplete } from '../../services/learningPathService.js';
 import { PASSING_SCORE_PERCENTAGE } from '../../constants.js';
+import { toastService } from '../../services/toastService.js';
+
+let appStateRef;
+let retakeBtn;
+
+const handleRetakeQuiz = () => {
+    const originalTopic = appStateRef.context.topic;
+    if (originalTopic) {
+        appStateRef.context = { topic: originalTopic };
+        window.location.hash = '#loading';
+    } else {
+        // Fallback for safety, e.g., if session state was lost
+        window.location.hash = '#custom-quiz';
+    }
+};
 
 function renderResults(appState) {
+    appStateRef = appState;
     const { questions, userAnswers, score } = getQuizState();
     
     const scorePercent = Math.round((score / questions.length) * 100);
@@ -12,6 +28,7 @@ function renderResults(appState) {
     const scoreText = document.getElementById('score-text');
     const finalScoreText = document.getElementById('final-score-text');
     const title = document.getElementById('results-title');
+    retakeBtn = document.getElementById('retake-quiz-btn');
 
     scoreText.textContent = `${scorePercent}%`;
     finalScoreText.textContent = `You answered ${score} out of ${questions.length} questions correctly.`;
@@ -28,7 +45,6 @@ function renderResults(appState) {
         title.textContent = "Keep Practicing!";
     }
 
-    // FIX #12: If this was part of a learning path, mark it complete if passed
     const pathContext = appState.context.learningPathContext;
     if (pathContext && scorePercent >= PASSING_SCORE_PERCENTAGE) {
         markStepComplete(pathContext.pathId, pathContext.stepId);
@@ -36,6 +52,10 @@ function renderResults(appState) {
     }
 
     renderQuestionReview(questions, userAnswers);
+
+    if (retakeBtn) {
+        retakeBtn.addEventListener('click', handleRetakeQuiz);
+    }
 }
 
 function renderQuestionReview(questions, userAnswers) {
@@ -69,15 +89,16 @@ function renderQuestionReview(questions, userAnswers) {
         reviewItem.querySelector('.review-explanation p').textContent = q.explanation;
         
         const saveBtn = reviewItem.querySelector('.save-question-btn');
-        // FIX #9: Check if question is already saved and update UI
         if (isQuestionSaved(q)) {
             saveBtn.classList.add('saved');
             saveBtn.disabled = true;
         } else {
             saveBtn.addEventListener('click', () => {
-                saveQuestion(q);
-                saveBtn.classList.add('saved');
-                saveBtn.disabled = true;
+                if (saveQuestion(q)) {
+                    saveBtn.classList.add('saved');
+                    saveBtn.disabled = true;
+                    toastService.show('Question saved to library!');
+                }
             });
         }
 
@@ -91,5 +112,8 @@ export function init(appState) {
 }
 
 export function destroy() {
+    if (retakeBtn) {
+        retakeBtn.removeEventListener('click', handleRetakeQuiz);
+    }
     console.log("Results module destroyed.");
 }

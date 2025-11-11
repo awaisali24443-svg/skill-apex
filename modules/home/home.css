@@ -48,6 +48,17 @@
     perspective: 1500px; /* Add perspective for 3D effect */
 }
 
+.featured-topics-section {
+    margin-top: 4rem;
+}
+.featured-topics-section h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    font-family: var(--font-display);
+}
+
+
 @keyframes animated-gradient-bg {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
