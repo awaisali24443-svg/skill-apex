@@ -70,7 +70,9 @@
                     "Do you enjoy teamwork or solo work?",
                     "Which area excites you most: AI, Design, Marketing, or Data?"
                 ]
-            },
+            }
+        ],
+        "challenges": [
             {
                 "id": "knowledge-vs-ai",
                 "name": "Knowledge vs AI Challenge",

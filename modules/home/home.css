@@ -1,3 +1,5 @@
+/* modules/home/home.css */
+
 .home-container {
     text-align: center;
     position: relative;
@@ -43,25 +45,87 @@
     display: grid;
     gap: 1.5rem;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    perspective: 1500px; /* Add perspective for 3D effect */
+}
+
+@keyframes animated-gradient-bg {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .dashboard-card {
-    background: rgba(255, 255, 255, 0.08);
+    background: linear-gradient(
+        -45deg, 
+        rgba(255, 255, 255, 0.05), 
+        rgba(255, 255, 255, 0.1), 
+        rgba(0, 255, 255, 0.05), 
+        rgba(255, 0, 127, 0.05)
+    );
+    background-size: 400% 400%;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: var(--border-radius-lg);
     padding: 2rem;
     text-align: left;
-    transition: all var(--transition-fast);
+    transition: box-shadow var(--transition-fast), border-color var(--transition-fast), transform var(--transition-med);
     text-decoration: none;
     color: var(--color-text);
     z-index: 10;
     display: flex;
     flex-direction: column;
-    opacity: 0; /* For entry animation */
-    animation: card-fade-in 0.5s ease-out forwards;
+    opacity: 0;
+    animation: 
+        card-fade-in 0.5s ease-out forwards,
+        animated-gradient-bg 15s ease infinite;
+    position: relative;
+    overflow: hidden;
 }
+
+/* Shine effect on hover */
+.dashboard-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        110deg,
+        transparent 40%,
+        rgba(255, 255, 255, 0.2) 50%,
+        transparent 60%
+    );
+    transform: translateX(-100%);
+    transition: transform 0.6s ease-in-out;
+    z-index: 1; /* Sits above background and grid */
+}
+
+/* Grid pattern overlay */
+.dashboard-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+    z-index: 0; /* Sits behind content, above main background */
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.dashboard-card:hover::before {
+    transform: translateX(100%);
+}
+
+/* Ensure content is above all pseudo-element effects */
+.dashboard-card > * {
+    position: relative;
+    z-index: 2;
+}
+
 
 @keyframes card-fade-in {
     from {
@@ -76,10 +140,8 @@
 
 
 .dashboard-card:hover {
-    transform: translateY(-8px);
     box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 20px var(--color-glow);
     border-color: var(--color-primary);
-    background: rgba(255, 255, 255, 0.12);
 }
 
 .dashboard-card.large {

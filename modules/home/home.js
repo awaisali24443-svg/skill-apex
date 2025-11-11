@@ -7,6 +7,7 @@ let is3DInitialized = false;
 let homeContainer;
 let appStateRef;
 let gridContainer;
+let cardEventListeners = [];
 
 const handleMouseMove = (event) => {
     if (is3DInitialized) {
@@ -65,6 +66,25 @@ const handleGridClick = (e) => {
             window.location.hash = '#loading';
         }
     }
+};
+
+const handleCardMouseMove = (e) => {
+    const card = e.currentTarget;
+    const { left, top, width, height } = card.getBoundingClientRect();
+    const x = e.clientX - left;
+    const y = e.clientY - top;
+
+    const rotateX = (y / height - 0.5) * -25; // Tilt intensity
+    const rotateY = (x / width - 0.5) * 25;
+
+    card.style.transition = 'transform 0.1s linear';
+    card.style.transform = `translateY(-5px) scale(1.03) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+};
+
+const handleCardMouseLeave = (e) => {
+    const card = e.currentTarget;
+    card.style.transition = `transform ${getComputedStyle(card).getPropertyValue('--transition-med')} ease-out`;
+    card.style.transform = `translateY(0) scale(1) rotateX(0) rotateY(0)`;
 };
 
 async function renderDashboard() {
@@ -129,10 +149,19 @@ async function renderDashboard() {
     
     gridContainer.innerHTML = staticCardsHtml + topicCardsHtml;
     
-    // Apply staggered animation delay
+    // Apply animations and effects
     const cards = gridContainer.querySelectorAll('.dashboard-card');
     cards.forEach((card, index) => {
+        // Staggered fade-in animation
         card.style.animationDelay = `${index * 100}ms`;
+
+        // Add 3D tilt effect listeners to interactive cards
+        if (!card.classList.contains('coming-soon')) {
+            card.addEventListener('mousemove', handleCardMouseMove);
+            card.addEventListener('mouseleave', handleCardMouseLeave);
+            cardEventListeners.push({ element: card, type: 'mousemove', handler: handleCardMouseMove });
+            cardEventListeners.push({ element: card, type: 'mouseleave', handler: handleCardMouseLeave });
+        }
     });
 }
 
@@ -175,6 +204,13 @@ export function destroy() {
      if (gridContainer) {
         gridContainer.removeEventListener('click', handleGridClick);
     }
+    
+    // Clean up card event listeners
+    cardEventListeners.forEach(listener => {
+        listener.element.removeEventListener(listener.type, listener.handler);
+    });
+    cardEventListeners = [];
+
     if (is3DInitialized) {
         console.log("Destroying 3D background from Home module.");
         const canvas = document.getElementById('bg-canvas');
