@@ -401,6 +401,86 @@ body.galaxy-view .main-container {
     40%, 80% { transform: translateX(4px); }
 }
 
+/* --- Toast Notifications --- */
+#toast-container {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 10px;
+    pointer-events: none;
+}
+.toast {
+    padding: 1rem 1.5rem;
+    background-color: var(--color-bg-light);
+    color: var(--color-text);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--color-border);
+    font-weight: 600;
+    animation: toast-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, toast-out 0.3s ease-in 2.7s forwards;
+}
+@keyframes toast-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes toast-out {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(20px); }
+}
+
+/* --- Confirmation Modal --- */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(10, 15, 30, 0.5);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease-out;
+}
+.modal-overlay.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+.modal-content {
+    background-color: var(--color-bg-light);
+    padding: 2rem;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+    width: 90%;
+    max-width: 450px;
+    text-align: center;
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.modal-overlay.visible .modal-content {
+    transform: scale(1);
+}
+.modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-family: var(--font-display);
+}
+.modal-content p {
+    color: var(--color-text-muted);
+    margin-bottom: 2rem;
+}
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+
 /* --- Mobile & Responsive --- */
 @media (max-width: 768px) {
     .app-layout {
