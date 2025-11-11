@@ -1,55 +1,88 @@
-
 {
     "categories": [
         {
-            "id": "science",
-            "name": "Science & Nature",
-            "description": "From the cosmos to the smallest particles.",
-            "icon": "🔬"
+            "id": "trending-tech",
+            "name": "Trending Tech",
+            "description": "Test your understanding of AI, emerging tech, and cybersecurity.",
+            "icon": "🤖"
         },
         {
-            "id": "history",
-            "name": "History",
-            "description": "Explore the pivotal moments of the past.",
-            "icon": "🏛️"
+            "id": "modern-life",
+            "name": "Modern Life",
+            "description": "Explore quizzes on 2025's pop culture trends and discover which modern career matches you.",
+            "icon": "🌐"
         },
         {
-            "id": "technology",
-            "name": "Technology",
-            "description": "Dive into the world of code and circuits.",
-            "icon": "💻"
-        },
-        {
-            "id": "arts",
-            "name": "Arts & Literature",
-            "description": "Masterpieces of human creativity.",
-            "icon": "🎨"
+            "id": "challenges",
+            "name": "AI Challenges",
+            "description": "Can you outsmart AI in this general knowledge test?",
+            "icon": "🏆"
         }
     ],
     "topics": {
-        "science": [
-            { "id": "astronomy", "name": "Astronomy: The Solar System" },
-            { "id": "biology", "name": "Biology: Cell Structures" },
-            { "id": "chemistry", "name": "Chemistry: The Periodic Table" },
-            { "id": "physics", "name": "Physics: Newtonian Mechanics" }
+        "trending-tech": [
+            {
+                "id": "ai-awareness",
+                "name": "AI & Technology Awareness",
+                "description": "Test your understanding of artificial intelligence, ChatGPT, and emerging tech in 2025.",
+                "questions": [
+                    "Which AI model powers most chatbots today?",
+                    "What is a deepfake?",
+                    "Which company launched ChatGPT?",
+                    "What is the main function of machine learning?",
+                    "Which of these is NOT an AI application?"
+                ]
+            },
+            {
+                "id": "cybersecurity",
+                "name": "Cybersecurity & Online Life",
+                "description": "Find out how secure your digital life really is.",
+                "questions": [
+                    "What does 'phishing' mean?",
+                    "Which is the safest password format?",
+                    "What should you do if you receive a suspicious link?",
+                    "What’s the purpose of two-factor authentication?",
+                    "Which of these is an example of ransomware?"
+                ]
+            }
         ],
-        "history": [
-            { "id": "ancient-egypt", "name": "Ancient Egypt" },
-            { "id": "roman-empire", "name": "The Roman Empire" },
-            { "id": "world-war-2", "name": "World War II" },
-            { "id": "renaissance", "name": "The Renaissance" }
-        ],
-        "technology": [
-            { "id": "python-basics", "name": "Python Programming Basics" },
-            { "id": "javascript-fundamentals", "name": "JavaScript Fundamentals" },
-            { "id": "how-internet-works", "name": "How the Internet Works" },
-            { "id": "ai-concepts", "name": "Core Concepts of AI" }
-        ],
-        "arts": [
-            { "id": "shakespeare", "name": "William Shakespeare's Plays" },
-            { "id": "impressionism", "name": "Impressionist Painters" },
-            { "id": "classical-music", "name": "Classical Music Composers" },
-            { "id": "modern-architecture", "name": "Modern Architecture" }
+        "modern-life": [
+            {
+                "id": "pop-culture-2025",
+                "name": "Pop Culture 2025",
+                "description": "Guess the song, movie, or trend that’s taking over social media this year.",
+                "questions": [
+                    "Which artist released the 2025 global hit 'Neon Dreams'?",
+                    "Who won the 2025 Oscar for Best Actor?",
+                    "Which emoji trend dominated TikTok this year?",
+                    "Name the most-streamed Netflix show of 2025.",
+                    "Which social platform introduced holographic stories?"
+                ]
+            },
+            {
+                "id": "career-2025",
+                "name": "Personality & Career in 2025",
+                "description": "Discover which modern tech career matches your skills.",
+                "questions": [
+                    "Do you prefer solving problems or creating designs?",
+                    "Would you rather automate tasks or tell stories?",
+                    "How do you handle new technologies?",
+                    "Do you enjoy teamwork or solo work?",
+                    "Which area excites you most: AI, Design, Marketing, or Data?"
+                ]
+            },
+            {
+                "id": "knowledge-vs-ai",
+                "name": "Knowledge vs AI Challenge",
+                "description": "Can you outsmart AI in this general knowledge test?",
+                "questions": [
+                    "What is the capital of Japan?",
+                    "Who painted the Mona Lisa?",
+                    "What is the speed of light?",
+                    "Which planet is known as the Red Planet?",
+                    "Which programming language is often used for AI?"
+                ]
+            }
         ]
     }
 }
