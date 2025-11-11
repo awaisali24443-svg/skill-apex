@@ -1,5 +1,6 @@
 
-import { startQuiz, getCurrentQuestion, answerQuestion, nextQuestion, isLastQuestion } from '../../services/quizStateService.js';
+
+import { getQuizState, startQuiz, getCurrentQuestion, answerQuestion, nextQuestion, isLastQuestion } from '../../services/quizStateService.js';
 
 let appStateRef;
 let elements;
@@ -93,7 +94,7 @@ function handleOptionClick(e) {
 }
 
 function updateProgress() {
-    const state = appStateRef.context.quizState;
+    const state = getQuizState();
     const progressPercent = ((state.currentQuestionIndex + 1) / state.questions.length) * 100;
     elements.progressBar.style.width = `${progressPercent}%`;
     elements.progressText.textContent = `Question ${state.currentQuestionIndex + 1} / ${state.questions.length}`;
@@ -110,10 +111,6 @@ export function init(appState) {
     }
 
     startQuiz(quizData);
-    appStateRef.context.quizState = { // For progress update
-        questions: quizData.questions,
-        currentQuestionIndex: 0
-    };
 
     elements = {
         progressBar: document.getElementById('progress-bar'),

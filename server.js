@@ -30,7 +30,14 @@ app.post('/api/generate', apiLimiter, async (req, res) => {
         return res.status(400).json({ error: 'Topic and number of questions are required.' });
     }
 
-    const prompt = `Generate a quiz with ${numQuestions} multiple-choice questions about "${topic}". The difficulty should be ${difficulty || 'Medium'}. For each question, provide 4 options, the index of the correct answer, and a brief explanation for why it's correct.`;
+    const prompt = `Create a fun multiple-choice quiz about "${topic}". I need ${numQuestions} questions.
+Your tone should be friendly, engaging, and conversational. Use simple, everyday language that's easy for anyone to understand, avoiding jargon.
+The quiz difficulty should be "${difficulty || 'Medium'}".
+For each question, provide:
+1. The question text.
+2. Four possible answer options.
+3. The index of the correct answer.
+4. A brief, clear explanation for the correct answer, also written in a friendly and simple tone.`;
 
     const schema = {
         type: Type.OBJECT,
