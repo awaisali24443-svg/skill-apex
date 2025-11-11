@@ -7,83 +7,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: opacity 0.8s ease-out 0.2s; /* Add delay to fade out */
+    transition: opacity 0.5s ease-out;
     overflow: hidden;
 }
 
 #splash-screen.fade-out {
     opacity: 0;
     pointer-events: none;
-}
-
-/* --- New "Game Space" Elements --- */
-
-/* Background Grid & Scanlines */
-.splash-grid-lines, .splash-scan-lines {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0;
-    animation: fadeIn 1s ease-out forwards;
-}
-.splash-grid-lines {
-    background-image:
-        linear-gradient(var(--color-border) 1px, transparent 1px),
-        linear-gradient(to right, var(--color-border) 1px, transparent 1px);
-    background-size: 40px 40px;
-    opacity: 0.1;
-}
-.splash-scan-lines {
-     background: repeating-linear-gradient(
-        0deg,
-        transparent 0,
-        transparent 2px,
-        rgba(0, 255, 255, 0.05) 3px,
-        rgba(0, 255, 255, 0.05) 4px
-    );
-    animation: scanlines 10s linear infinite, fadeIn 1s ease-out forwards;
-    opacity: 0.2;
-}
-@keyframes scanlines {
-    from { background-position: 0 0; }
-    to { background-position: 0 100px; }
-}
-
-/* HUD Corners */
-.splash-hud-corner {
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    border: 3px solid var(--color-primary);
-    opacity: 0;
-    animation: slideIn 1s ease-out 0.5s forwards;
-}
-.splash-hud-corner.top-left { top: 20px; left: 20px; border-right: none; border-bottom: none; }
-.splash-hud-corner.top-right { top: 20px; right: 20px; border-left: none; border-bottom: none; }
-.splash-hud-corner.bottom-left { bottom: 20px; left: 20px; border-right: none; border-top: none; }
-.splash-hud-corner.bottom-right { bottom: 20px; right: 20px; border-left: none; border-top: none; }
-@keyframes slideIn {
-    from { opacity: 0; transform: scale(1.5); }
-    to { opacity: 0.8; transform: scale(1); }
-}
-
-/* Radial Burst */
-.splash-content::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 1px;
-    height: 1px;
-    background: var(--color-primary);
-    border-radius: 50%;
-    opacity: 0;
-    transform: translate(-50%, -50%);
-    animation: radial-burst 1.5s ease-out 1.2s forwards;
-}
-@keyframes radial-burst {
-    0% { transform: translate(-50%, -50%) scale(0); opacity: 0.8; }
-    100% { transform: translate(-50%, -50%) scale(1500); opacity: 0; }
 }
 
 .splash-content {
@@ -97,32 +27,62 @@
     max-width: 400px;
     margin-bottom: 2rem;
     opacity: 0;
-    animation: logo-power-on 1.5s ease-out 1.5s forwards;
-}
-@keyframes logo-power-on {
-    from { opacity: 0; filter: blur(10px) brightness(3); }
-    to { opacity: 1; filter: blur(0) brightness(1); }
+    transform: translateY(10px);
+    animation: splash-logo-fade-in 1s ease-out 0.5s forwards;
 }
 
+@keyframes splash-logo-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
 .splash-logo-text {
-    font-family: 'Orbitron', sans-serif;
+    font-family: var(--font-display);
     font-weight: 800;
     font-size: 24px;
     fill: url(#splash-logo-gradient);
     letter-spacing: 2px;
-    text-shadow: 0 0 10px var(--color-glow);
 }
 
-.splash-status-text {
-    font-family: var(--font-display);
-    color: var(--color-secondary);
-    letter-spacing: 4px;
+.splash-loader {
+    width: 120px;
+    height: 4px;
+    background-color: var(--color-border);
+    border-radius: 2px;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
     opacity: 0;
-    animation: glitch-fade-in 1s steps(1, end) 2s forwards;
+    animation: splash-logo-fade-in 1s ease-out 1s forwards;
 }
-@keyframes glitch-fade-in {
-  0%, 100% { opacity: 1; text-shadow: 0 0 5px var(--color-secondary); }
-  10%, 90% { opacity: 0.7; }
-  30%, 70% { opacity: 1; transform: translateX(-2px); }
-  50% { opacity: 0.5; transform: translateX(2px); }
+
+.splash-loader::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 40%;
+    background-image: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+    border-radius: 2px;
+    animation: splash-progress 2s ease-in-out 1.2s infinite;
+}
+
+@keyframes splash-progress {
+    0% {
+        transform: translateX(-100%);
+    }
+    50% {
+        transform: translateX(250%);
+    }
+    100% {
+        transform: translateX(250%);
+    }
 }
