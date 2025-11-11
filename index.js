@@ -235,6 +235,9 @@ function init() {
 
     applyBodyClasses();
     window.addEventListener('settings-changed', applyBodyClasses);
+
+    // Build the search index for the explore page
+    createSearchIndex();
     
     // FIX #15: Ensure header is loaded before routing
     loadHeader().then(() => {
