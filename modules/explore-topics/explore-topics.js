@@ -1,6 +1,8 @@
 
+
 import { getCategories } from '../../services/topicService.js';
 import { search } from '../../services/searchService.js';
+import { initializeCardGlow } from '../../global/global.js';
 
 let resultsContainer;
 let searchInput;
@@ -27,6 +29,7 @@ function renderCategories(categories) {
     } else {
         resultsContainer.innerHTML = '<p class="no-results-message">No categories available at the moment.</p>';
     }
+    initializeCardGlow(); // Apply effect to newly rendered cards
 }
 
 function renderSearchResults(results, query) {
@@ -57,6 +60,7 @@ function renderSearchResults(results, query) {
     } else {
         resultsContainer.innerHTML = `<p class="no-results-message">No results found for "${query}"</p>`;
     }
+    initializeCardGlow(); // Apply effect to newly rendered cards
 }
 
 async function showDefaultView() {

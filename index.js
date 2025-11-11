@@ -18,17 +18,29 @@ const appState = {
     get context() {
         return this._context;
     },
+    /**
+     * ARCHITECTURAL FIX: This setter is now hardened to prevent state pollution.
+     * It intelligently preserves the router `params` while replacing the rest of the context.
+     * This ensures that navigating between modules doesn't leave behind stale data that
+     * could corrupt the state of the next module.
+     */
     set context(data) {
-        this._context = { ...this._context, ...data };
+        // Preserve existing params unless new ones are explicitly provided
+        const newContext = { 
+            ...data, 
+            params: data.params || this._context.params 
+        };
+        this._context = newContext;
+
         try {
             sessionStorage.setItem(APP_STATE_KEY, JSON.stringify(this._context));
-        } catch (error) {
+        } catch (error)
+        {
             console.warn("Could not write to sessionStorage.", error);
         }
     },
-    // FIX: Add a specific method for setting router params to prevent state corruption.
     setRouteParams(params) {
-        this._context.params = params; // Direct replacement of only the params property.
+        this._context.params = params;
         try {
             sessionStorage.setItem(APP_STATE_KEY, JSON.stringify(this._context));
         } catch (error) {
@@ -86,7 +98,7 @@ async function loadModule(moduleConfig, params = {}) {
         currentModule.instance = js;
         
         // Pass params from router to the module's init function
-        appState.setRouteParams(params); // Use the new, safer method.
+        appState.setRouteParams(params);
         if (typeof js.init === 'function') {
             await js.init(appState);
         }

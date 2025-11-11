@@ -1,5 +1,5 @@
 // --- Card Hover Glow Effect ---
-function initializeCardGlow() {
+export function initializeCardGlow() {
     // This function can be called multiple times, so we use querySelectorAll to get all current cards
     const cards = document.querySelectorAll('.card, .dashboard-card, .category-card, .topic-item, .review-item, .saved-question-item');
     cards.forEach(card => {
@@ -17,20 +17,8 @@ function initializeCardGlow() {
     });
 }
 
-// Use a MutationObserver to apply the effect to cards loaded dynamically
-const observer = new MutationObserver((mutationsList) => {
-    for (const mutation of mutationsList) {
-        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-            // A new module might have been loaded, re-run the initialization
-            initializeCardGlow();
-        }
-    }
-});
+// The MutationObserver has been removed for performance and stability.
+// Each module that loads cards will now call initializeCardGlow() directly.
 
-const appElement = document.getElementById('app');
-if (appElement) {
-    observer.observe(appElement, { childList: true, subtree: true });
-}
-
-// Run on initial load
+// Run on initial load for any static cards
 document.addEventListener('DOMContentLoaded', initializeCardGlow);

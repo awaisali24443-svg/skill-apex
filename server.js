@@ -1,6 +1,8 @@
 
 
 
+
+
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -150,7 +152,7 @@ For each question, provide:
             },
         });
 
-        // CRITICAL FIX: Use optional chaining to prevent crash on unexpected AI response.
+        // CRITICAL FIX: Use optional chaining and check finishReason to prevent crash on unexpected AI response.
         const finishReason = response.candidates?.[0]?.finishReason;
         const text = response.text;
         
@@ -161,7 +163,8 @@ For each question, provide:
              } else if (finishReason === 'RECITATION') {
                  errorMessage = "The request was blocked due to recitation concerns.";
              }
-             throw new Error(errorMessage);
+             // Send a 400 Bad Request for client-side issues like safety blocks.
+             return res.status(400).json({ error: errorMessage });
         }
 
         if (!text) {

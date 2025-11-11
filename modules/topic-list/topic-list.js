@@ -1,6 +1,8 @@
 
 
+
 import { getTopicsForCategory, getCategoryById } from '../../services/topicService.js';
+import { initializeCardGlow } from '../../global/global.js';
 
 let listContainer;
 let appStateRef;
@@ -61,6 +63,8 @@ export async function init(appState) {
             
             // Use a single delegated event listener on the container
             listContainer.addEventListener('click', handleTopicClick);
+            
+            initializeCardGlow(); // Apply effect to newly rendered items
 
         } else {
             listContainer.innerHTML = "<p>No topics found for this category.</p>";

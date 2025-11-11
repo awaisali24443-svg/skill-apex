@@ -1,4 +1,5 @@
 import { getSavedQuestions, removeQuestion } from '../../services/libraryService.js';
+import { initializeCardGlow } from '../../global/global.js';
 
 let container;
 
@@ -42,6 +43,8 @@ function renderSavedQuestions() {
         fragment.appendChild(itemEl);
     });
     container.appendChild(fragment);
+    
+    initializeCardGlow(); // Apply effect to newly rendered items
 }
 
 function handleRemove(question, element) {

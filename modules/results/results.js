@@ -3,6 +3,7 @@ import { saveQuestion, isQuestionSaved } from '../../services/libraryService.js'
 import { markStepComplete } from '../../services/learningPathService.js';
 import { PASSING_SCORE_PERCENTAGE } from '../../constants.js';
 import { toastService } from '../../services/toastService.js';
+import { initializeCardGlow } from '../../global/global.js';
 
 let appStateRef;
 let retakeBtn, toggleReviewBtn;
@@ -134,6 +135,8 @@ function renderQuestionReview(questions, userAnswers) {
 
         container.appendChild(reviewItem);
     });
+    
+    initializeCardGlow(); // Apply effect to newly rendered cards
 }
 
 export function init(appState) {

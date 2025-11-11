@@ -27,6 +27,8 @@ body, .btn, .card, input, select, .modal-content, .sidebar-nav {
 
 html, body {
     height: 100%;
+    width: 100%;
+    overflow: hidden; /* Prevent body scroll */
 }
 
 body {
@@ -34,23 +36,23 @@ body {
     background-color: var(--color-bg);
     color: var(--color-text);
     line-height: 1.6;
-    overflow: hidden; /* Control scrolling within main-container */
 }
 
 /* --- App Layout --- */
 .app-layout {
     display: flex;
-    height: 100%;
+    height: 100vh; /* Use viewport height for stability */
 }
 
 .main-container {
     flex-grow: 1;
     margin-left: var(--sidebar-width);
-    max-width: calc(100% - var(--sidebar-width));
+    width: calc(100% - var(--sidebar-width)); /* Use width instead of max-width */
     transition: margin-left var(--transition-med), padding var(--transition-med);
     overflow-y: auto; /* Allow scrolling for content that overflows */
     height: 100%; /* Ensure it fills parent height */
     padding: 2rem 1.5rem;
+    position: relative; /* Add for stacking context */
 }
 .sidebar-nav:hover ~ .main-container {
     margin-left: var(--sidebar-width-expanded);
@@ -61,12 +63,18 @@ body {
 body.galaxy-view .sidebar-nav {
     display: none;
 }
+/* By using position:absolute, this container is lifted out of the normal flow,
+   ignoring any flexbox or mobile layout rules that were collapsing its height. */
 body.galaxy-view .main-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     margin-left: 0;
-    max-width: 100%;
-    height: 100%; /* CRITICAL: Ensure it takes full height */
     padding: 0; /* Remove padding for full-screen canvas */
     overflow: hidden; /* Prevent any scrollbars */
+    z-index: 10;
 }
 
 
@@ -445,10 +453,12 @@ body.galaxy-view .main-container {
 
     .main-container {
         margin-left: 0;
-        max-width: 100%;
+        width: 100%; /* Ensure full width */
         padding: 1rem 1rem 70px 1rem; /* Space for bottom nav */
-        height: auto; /* Allow content to define height */
-        min-height: calc(100vh - 60px); /* Fill screen minus nav */
+        /* This rule was the source of the main bug. The new absolute positioning
+           for the galaxy view bypasses this entire block, fixing the issue. */
+        height: auto; 
+        min-height: calc(100vh - 60px);
         overflow-y: auto;
     }
     .sidebar-nav:hover ~ .main-container {

@@ -1,4 +1,5 @@
 
+
 import { threeManager } from '../../services/threeManager.js';
 import { overlayService } from '../../services/overlayService.js';
 import { ROUTES } from '../../constants.js';
@@ -37,7 +38,7 @@ const handleCloseModule = () => {
  * It now checks three conditions:
  * 1. The canvas element still exists.
  * 2. The canvas element is still connected to the live DOM.
- * 3. The canvas element has valid, non-zero dimensions.
+ * 3. The canvas element has valid, non-zero dimensions (BOTH width and height).
  * This prevents all race conditions with the router and CSS layout engine.
  */
 function attemptThreeInit() {
@@ -47,7 +48,7 @@ function attemptThreeInit() {
     // 2. CRITICAL: Check if the element is still part of the document.
     const isConnected = galaxyCanvas.isConnected;
     
-    // 3. Check for valid dimensions.
+    // 3. BULLETPROOF FIX: Check for valid 2D dimensions.
     const hasValidSize = galaxyCanvas.clientWidth > 0 && galaxyCanvas.clientHeight > 0;
 
     if (isConnected && hasValidSize) {
