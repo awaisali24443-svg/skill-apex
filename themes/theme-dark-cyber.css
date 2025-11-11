@@ -34,31 +34,136 @@
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.15), 0 4px 6px -4px rgba(0, 0, 0, 0.15);
 }
 
-/* --- Cyber Neon Theme --- */
-[data-theme="cyber"] {
-    --color-primary: #ff007f; /* Neon Pink */
-    --color-secondary: #00ffff; /* Neon Cyan */
-    --color-bg: #0d0f1a; /* Very Dark Blue */
-    --color-bg-light: #1a1c2d; /* Darker Blue */
-    --color-text: #e0e0e0; /* Light Gray */
-    --color-text-muted: #8c8c8c; /* Muted Gray */
-    --color-border: #3c3c5c; /* Purple-ish Border */
-    --color-success: #00ff00; /* Neon Green */
-    --color-danger: #ff3333; /* Neon Red */
-    --color-warning: #ffff00; /* Neon Yellow */
-    --color-glow: rgba(255, 0, 127, 0.3);
-    --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 5px 20px rgba(0, 0, 0, 0.4);
+/* --- Aurora Glass Theme (replaces Cyber) --- */
+[data-theme="aurora"] {
+    --color-primary: #a855f7; /* Purple 500 */
+    --color-secondary: #2dd4bf; /* Teal 400 */
+    --color-accent: #ec4899; /* Pink 500 */
+    --color-bg: #0c0a09; /* Neutral 950 */
+    --color-bg-light: rgba(31, 25, 40, 0.5); /* Semi-transparent dark purple for glass */
+    --color-text: #f5f3ff; /* Lavender 50 */
+    --color-text-muted: #a7a2b8; /* Lavender 300 */
+    --color-border: rgba(167, 139, 250, 0.3); /* Violet 300 with alpha */
+    --color-success: #4ade80; /* Green 400 */
+    --color-danger: #f87171; /* Red 400 */
+    --color-warning: #fbbf24; /* Amber 400 */
+    --color-glow: rgba(168, 85, 247, 0.2); /* Purple glow */
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+    --border-radius-sm: 8px;
+    --border-radius-md: 12px;
+    --border-radius-lg: 20px;
 }
-[data-theme="cyber"] body {
-    background: #0d0f1a;
-    background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+
+[data-theme="aurora"] body {
+    background-color: var(--color-bg);
+    background-image: 
+        radial-gradient(at 80% 10%, hsla(269, 88%, 69%, 0.15) 0px, transparent 50%),
+        radial-gradient(at 20% 90%, hsla(172, 78%, 69%, 0.15) 0px, transparent 50%),
+        radial-gradient(at 50% 50%, hsla(330, 88%, 69%, 0.1) 0px, transparent 50%);
 }
-[data-theme="cyber"] .btn-primary {
-    background-image: linear-gradient(to right, var(--color-primary) 0%, var(--color-secondary) 100%);
+
+/* --- Glassmorphism Components for Aurora --- */
+[data-theme="aurora"] .card,
+[data-theme="aurora"] .site-nav,
+[data-theme="aurora"] .modal-content,
+[data-theme="aurora"] .toast,
+[data-theme="aurora"] .hero-form,
+[data-theme="aurora"] .option-btn {
+    background: var(--color-bg-light);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37);
+}
+
+[data-theme="aurora"] .card:hover,
+[data-theme="aurora"] .dashboard-card:hover,
+[data-theme="aurora"] .category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 25px var(--color-glow);
+    border-color: var(--color-primary);
+}
+
+
+[data-theme="aurora"] .form-control {
+    background-color: rgba(31, 25, 40, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--color-border);
+}
+[data-theme="aurora"] .form-control:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-glow);
+}
+
+/* Base style overrides for Aurora theme */
+[data-theme="aurora"] .btn {
+    border: 2px solid var(--color-border);
+    background: transparent;
+}
+[data-theme="aurora"] .btn:hover {
+    background: var(--color-glow);
+    border-color: var(--color-primary);
+}
+
+[data-theme="aurora"] .btn-primary {
+    background-image: linear-gradient(to right, var(--color-primary) 0%, var(--color-accent) 100%);
     background-size: 200% auto;
-    text-shadow: 0 0 5px var(--color-primary), 0 0 10px var(--color-primary);
+    color: white;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+    border: none;
+    padding: calc(0.75rem + 2px) calc(1.5rem + 2px); /* Maintain size after removing border */
 }
-[data-theme="cyber"] .btn-primary:hover {
+[data-theme="aurora"] .btn-primary:hover {
+    filter: none; /* remove default brightness filter */
     background-position: right center;
+    box-shadow: 0 0 20px var(--color-glow);
+    border-color: transparent;
+}
+
+/* --- Module Specific Overrides --- */
+
+[data-theme="aurora"] .option-btn {
+    border-width: 2px;
+}
+[data-theme="aurora"] .option-btn:hover:not(:disabled) {
+    border-color: var(--color-primary);
+    background: rgba(255,255,255,0.1);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+}
+
+[data-theme="aurora"] .option-btn.correct {
+    background: rgba(74, 222, 128, 0.2);
+    border-color: var(--color-success);
+    color: var(--color-text);
+    box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+}
+[data-theme="aurora"] .option-btn.incorrect {
+    background: rgba(248, 113, 113, 0.2);
+    border-color: var(--color-danger);
+    color: var(--color-text);
+    box-shadow: 0 0 10px rgba(248, 113, 113, 0.5);
+}
+
+[data-theme="aurora"] #score-ring-fg {
+    stroke: url(#score-gradient);
+}
+
+[data-theme="aurora"] .progress-bar {
+    background: linear-gradient(to right, var(--color-primary), var(--color-accent));
+}
+
+[data-theme="aurora"] .review-options .option.correct {
+    background-color: rgba(74, 222, 128, 0.15);
+}
+
+[data-theme="aurora"] .review-options .option.incorrect {
+    background-color: rgba(248, 113, 113, 0.15);
+}
+
+[data-theme="aurora"] .nav-link:hover::after,
+[data-theme="aurora"] .home-section h2::after {
+    background-image: linear-gradient(to right, var(--color-primary), var(--color-secondary));
 }

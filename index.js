@@ -153,7 +153,7 @@ function applyBodyClasses() {
     document.body.classList.toggle('large-text', settings.largeText);
     document.body.classList.toggle('high-contrast', settings.highContrast);
     document.body.classList.toggle('dyslexia-font', settings.dyslexiaFont);
-    document.body.setAttribute('data-theme', settings.theme || 'cyber');
+    document.body.setAttribute('data-theme', settings.theme || 'aurora');
 }
 
 async function loadHeader() {
