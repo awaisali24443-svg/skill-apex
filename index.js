@@ -1,5 +1,6 @@
 
 
+
 import { ROUTES, APP_STATE_KEY } from './constants.js';
 import { setSetting, getSetting, getAllSettings } from './services/configService.js';
 import { endQuiz } from './services/quizStateService.js';
@@ -87,7 +88,7 @@ async function loadModule(moduleConfig, params = {}) {
         // Pass params from router to the module's init function
         appState.setRouteParams(params); // Use the new, safer method.
         if (typeof js.init === 'function') {
-            js.init(appState);
+            await js.init(appState);
         }
         
         // Fade in new content

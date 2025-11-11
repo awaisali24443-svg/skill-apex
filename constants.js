@@ -1,10 +1,11 @@
 
+
 // --- Routing ---
 // FIX #2: Simplified routes for the new dynamic router
 export const ROUTES = [
     { hash: 'home', module: 'home', name: 'Home', inNav: true },
     { hash: 'custom-quiz', module: 'optional-quiz-generator', name: 'Custom Quiz', inNav: true },
-    { hash: 'explore', module: 'explore-topics', name: 'Explore', inNav: true },
+    { hash: 'explore', module: 'explore-topics', name: 'Explore', inNav: false },
     { hash: 'topics/:categoryId', module: 'topic-list', name: 'Topic List', inNav: false },
     { hash: 'paths', module: 'learning-path', name: 'Learning Paths', inNav: false },
     { hash: 'library', module: 'library', name: 'My Library', inNav: false },

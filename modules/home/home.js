@@ -1,9 +1,12 @@
 import { getSetting } from '../../services/configService.js';
 import { threeManager } from '../../services/threeManager.js';
 import { isFeatureEnabled } from '../../services/featureService.js';
+import { getCategories, getTopicsForCategory } from '../../services/topicService.js';
 
 let is3DInitialized = false;
 let homeContainer;
+let appStateRef;
+let gridContainer;
 
 const handleMouseMove = (event) => {
     if (is3DInitialized) {
@@ -22,13 +25,6 @@ const dashboardItems = [
         icon: '🚀',
         title: 'Custom Quiz',
         description: 'Challenge yourself on any topic. Our AI will generate a unique quiz for you in seconds.',
-        size: 'large',
-    },
-    {
-        href: '#explore',
-        icon: '🧭',
-        title: 'Explore Topics',
-        description: 'Browse our library of curated topics and quizzes across various subjects like science, history, and more.',
         size: 'large',
     },
     {
@@ -59,11 +55,23 @@ const dashboardItems = [
     }
 ];
 
-function renderDashboard() {
-    const gridContainer = document.getElementById('dashboard-grid');
+const handleGridClick = (e) => {
+    const topicCard = e.target.closest('a.dashboard-card[data-topic]');
+    if (topicCard) {
+        e.preventDefault();
+        const topic = topicCard.dataset.topic;
+        if (appStateRef) {
+            appStateRef.context = { topic };
+            window.location.hash = '#loading';
+        }
+    }
+};
+
+async function renderDashboard() {
+    gridContainer = document.getElementById('dashboard-grid');
     if (!gridContainer) return;
 
-    const cardsHtml = dashboardItems.map(item => {
+    const staticCardsHtml = dashboardItems.map(item => {
         const isEnabled = !item.feature || isFeatureEnabled(item.feature);
         
         const isComingSoon = item.feature === 'learningPaths' && !isEnabled;
@@ -99,7 +107,27 @@ function renderDashboard() {
         `;
     }).join('');
 
-    gridContainer.innerHTML = cardsHtml;
+    let topicCardsHtml = '';
+    try {
+        const categories = await getCategories();
+        const allTopicsPromises = categories.map(cat => getTopicsForCategory(cat.id));
+        const allTopicsArrays = await Promise.all(allTopicsPromises);
+        const allTopics = allTopicsArrays.flat();
+        
+        topicCardsHtml = allTopics.map(topic => `
+            <a href="#loading" class="dashboard-card" data-topic="${topic.name}">
+                 <div class="card-icon">🧠</div>
+                 <div class="card-content">
+                    <h3>${topic.name}</h3>
+                    <p>${topic.description}</p>
+                </div>
+            </a>
+        `).join('');
+    } catch (error) {
+        console.error("Could not load topics for home screen", error);
+    }
+    
+    gridContainer.innerHTML = staticCardsHtml + topicCardsHtml;
     
     // Apply staggered animation delay
     const cards = gridContainer.querySelectorAll('.dashboard-card');
@@ -109,11 +137,16 @@ function renderDashboard() {
 }
 
 
-export function init(appState) {
+export async function init(appState) {
     console.log("Home module initialized.");
+    appStateRef = appState;
     homeContainer = document.querySelector('.home-container');
+    
+    await renderDashboard();
 
-    renderDashboard();
+    if (gridContainer) {
+        gridContainer.addEventListener('click', handleGridClick);
+    }
 
     const use3DBackground = getSetting('enable3DBackground');
     const canvas = document.getElementById('bg-canvas');
@@ -139,6 +172,9 @@ export function destroy() {
     if (homeContainer) {
         homeContainer.removeEventListener('mousemove', handleMouseMove);
     }
+     if (gridContainer) {
+        gridContainer.removeEventListener('click', handleGridClick);
+    }
     if (is3DInitialized) {
         console.log("Destroying 3D background from Home module.");
         const canvas = document.getElementById('bg-canvas');
@@ -147,5 +183,7 @@ export function destroy() {
         threeManager.destroy();
         is3DInitialized = false;
     }
+    appStateRef = null;
+    gridContainer = null;
     console.log("Home module destroyed.");
 }
