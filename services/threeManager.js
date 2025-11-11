@@ -167,6 +167,7 @@ function init(canvas, clickCallback) {
     const renderScene = new RenderPass(scene, camera);
     const bloomPass = new UnrealBloomPass(new THREE.Vector2(canvas.clientWidth, canvas.clientHeight), 1.0, 0.1, 0.1);
     composer = new EffectComposer(renderer);
+    composer.setSize(canvas.clientWidth, canvas.clientHeight);
     composer.addPass(renderScene);
     composer.addPass(bloomPass);
 

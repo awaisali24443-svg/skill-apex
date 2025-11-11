@@ -117,6 +117,7 @@ body.galaxy-view .main-container {
 .btn-primary:hover {
     filter: brightness(1.1);
     box-shadow: 0 6px 20px 0 rgba(0,0,0,0.15);
+    transform: translateY(-2px);
 }
 
 .main-container .card {
@@ -367,11 +368,11 @@ body.galaxy-view .main-container {
 
 /* --- Utility & Animation --- */
 .fade-in {
-    animation: fadeIn 0.5s ease-out forwards;
+    animation: fadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px) scale(0.98); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .main-container.fade-out {
@@ -383,20 +384,21 @@ body.galaxy-view .main-container {
 .stagger-in {
     animation: stagger-fade-in 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateX(-20px);
 }
 
 @keyframes stagger-fade-in {
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateX(0);
     }
 }
 
-@keyframes shake {
+/* Replaced "shake" with a sharper, more professional "vibrate" animation */
+@keyframes vibrate-error {
     0%, 100% { transform: translateX(0); }
-    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-    20%, 40%, 60%, 80% { transform: translateX(4px); }
+    20%, 60% { transform: translateX(-4px); }
+    40%, 80% { transform: translateX(4px); }
 }
 
 /* --- Mobile & Responsive --- */

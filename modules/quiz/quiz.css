@@ -104,28 +104,6 @@
     box-shadow: none;
 }
 
-/* Keyframes for feedback animations */
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-    20%, 40%, 60%, 80% { transform: translateX(4px); }
-}
-
-/* Classes to trigger feedback animations */
-.option-btn.pulse {
-    animation: pulse 0.5s ease-in-out;
-}
-
-.option-btn.shake {
-    animation: shake 0.5s ease-in-out;
-}
-
 .explanation-container {
     margin-top: 2rem;
     padding: 1rem;

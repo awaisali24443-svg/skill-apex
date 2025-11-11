@@ -72,10 +72,10 @@ function handleOptionClick(e) {
     const selectedButton = optionButtons[selectedIndex];
     const correctButton = optionButtons[question.correctAnswerIndex];
 
-    // Apply feedback classes and animations
-    correctButton.classList.add('correct', 'pulse');
+    // Apply feedback classes. The theme's CSS will handle the animations.
+    correctButton.classList.add('correct');
     if (!isCorrect) {
-        selectedButton.classList.add('incorrect', 'shake');
+        selectedButton.classList.add('incorrect');
     }
 
     elements.srFeedback.textContent = isCorrect ? 'Correct!' : 'Incorrect.';
