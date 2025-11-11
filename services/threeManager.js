@@ -1,3 +1,4 @@
+
 // services/threeManager.js
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -13,11 +14,18 @@ const interactableObjects = [];
 const planets = [];
 
 const PLANET_CONFIG = [
-    { name: 'Explore', route: '#explore', color: 0x4da6ff, size: 0.8, distance: 7, speed: 0.3, rings: true },
-    { name: 'Custom Quiz', route: '#custom-quiz', color: 0x33cc33, size: 0.6, distance: 11, speed: 0.2, moons: 2 },
-    { name: 'My Library', route: '#library', color: 0xffa500, size: 0.7, distance: 15, speed: 0.15 },
-    { name: 'Settings', route: '#settings', color: 0xcccccc, size: 0.5, distance: 19, speed: 0.1 },
-    { name: 'Leaderboard', route: '#coming-soon', color: 0xffd700, size: 0.9, distance: 24, speed: 0.08 },
+    // Existing, working planets
+    { name: 'Explore Topics', route: '#explore', color: 0x4da6ff, size: 1.2, orbitRadiusX: 10, orbitRadiusZ: 10, speed: 0.2, rotationSpeed: 0.005, rings: true },
+    { name: 'Custom Quiz', route: '#custom-quiz', color: 0xff6b6b, size: 0.8, orbitRadiusX: 15, orbitRadiusZ: 14, speed: 0.15, rotationSpeed: 0.004, moons: 2 },
+    { name: 'My Library', route: '#library', color: 0xa375ff, size: 1.0, orbitRadiusX: 20, orbitRadiusZ: 19, speed: 0.1, rotationSpeed: 0.003 },
+    { name: 'Settings', route: '#settings', color: 0xcdcdcd, size: 0.7, orbitRadiusX: 25, orbitRadiusZ: 25, speed: 0.08, rotationSpeed: 0.006, rings: true, ringColor: 0xaaaaaa },
+    
+    // "Coming Soon" planets
+    { name: 'Leaderboard', route: '#placeholder', color: 0xffd700, size: 1.1, orbitRadiusX: 31, orbitRadiusZ: 30, speed: 0.06, rotationSpeed: 0.002 },
+    { name: 'Time Challenge', route: '#time-challenge', color: 0xf783ac, size: 0.9, orbitRadiusX: 37, orbitRadiusZ: 37, speed: 0.05, rotationSpeed: 0.007, moons: 1 },
+    { name: 'Profile', route: '#profile', color: 0x33cc33, size: 0.8, orbitRadiusX: 43, orbitRadiusZ: 42, speed: 0.04, rotationSpeed: 0.004 },
+    { name: 'Coming Soon', route: '#placeholder', color: 0xa1eaed, size: 1.5, orbitRadiusX: 50, orbitRadiusZ: 50, speed: 0.03, rotationSpeed: 0.001, rings: true, ringColor: 0xf0f8ff },
+    { name: 'Coming Soon', route: '#placeholder', color: 0xffa07a, size: 1.3, orbitRadiusX: 58, orbitRadiusZ: 57, speed: 0.025, rotationSpeed: 0.005, moons: 3 },
 ];
 
 function init(canvas, navigateCallback) {
@@ -94,41 +102,53 @@ function init(canvas, navigateCallback) {
 }
 
 function createPlanet(config) {
-    const planetGroup = new THREE.Object3D();
+    const planetGroup = new THREE.Object3D(); // This group will handle the orbit
     scene.add(planetGroup);
 
-    const planetMaterial = new THREE.MeshStandardMaterial({ color: config.color, roughness: 0.8 });
+    const planetMaterial = new THREE.MeshStandardMaterial({ color: config.color, roughness: 0.8, metalness: 0.2 });
     const planetMesh = new THREE.Mesh(new THREE.SphereGeometry(config.size, 32, 32), planetMaterial);
-    planetMesh.position.x = config.distance;
     planetMesh.userData = { route: config.route, name: config.name };
     planetMesh.castShadow = true;
-    planetGroup.add(planetMesh);
+    planetGroup.add(planetMesh); // Add mesh to the group at its center
     interactableObjects.push(planetMesh);
 
     // Rings
     if (config.rings) {
         const ringGeo = new THREE.RingGeometry(config.size * 1.3, config.size * 1.8, 64);
-        const ringMat = new THREE.MeshBasicMaterial({ color: config.color, side: THREE.DoubleSide, transparent: true, opacity: 0.4 });
+        const ringMat = new THREE.MeshBasicMaterial({ color: config.ringColor || config.color, side: THREE.DoubleSide, transparent: true, opacity: 0.4 });
         const ringMesh = new THREE.Mesh(ringGeo, ringMat);
         ringMesh.rotation.x = Math.PI * 0.5;
-        planetMesh.add(ringMesh);
+        planetMesh.add(ringMesh); // Rings rotate with the planet
     }
     
     // Moons
     if (config.moons) {
         for(let i=0; i<config.moons; i++) {
+            const moonGroup = new THREE.Object3D(); // Moon orbit group
+            planetMesh.add(moonGroup);
+
             const moonGeo = new THREE.SphereGeometry(config.size * 0.15, 16, 16);
             const moonMat = new THREE.MeshStandardMaterial({ color: 0x888888 });
             const moonMesh = new THREE.Mesh(moonGeo, moonMat);
-            const angle = Math.random() * Math.PI * 2;
             const dist = config.size + 0.5 + Math.random() * 0.5;
-            moonMesh.position.set(Math.cos(angle) * dist, 0, Math.sin(angle) * dist);
-            planetMesh.add(moonMesh);
+            moonMesh.position.x = dist;
+            moonGroup.add(moonMesh);
+
+            moonGroup.rotation.y = Math.random() * Math.PI * 2; // random start angle
+            moonGroup.userData.speed = Math.random() * 0.5 + 0.5; // random speed
         }
     }
 
-    planets.push({ mesh: planetMesh, group: planetGroup, speed: config.speed, distance: config.distance });
+    planets.push({ 
+        mesh: planetMesh, 
+        group: planetGroup, 
+        speed: config.speed, 
+        orbitRadiusX: config.orbitRadiusX, 
+        orbitRadiusZ: config.orbitRadiusZ,
+        rotationSpeed: config.rotationSpeed
+    });
 }
+
 
 function introAnimation() {
     // Simple tweening function
@@ -175,10 +195,21 @@ function introAnimation() {
 function animate() {
     animationFrameId = requestAnimationFrame(animate);
     const delta = clock.getDelta();
+    const elapsedTime = clock.getElapsedTime();
 
     planets.forEach(p => {
-        p.group.rotation.y += p.speed * delta;
-        p.mesh.rotation.y += 0.5 * delta;
+        const angle = elapsedTime * p.speed;
+        p.group.position.x = Math.cos(angle) * p.orbitRadiusX;
+        p.group.position.z = Math.sin(angle) * p.orbitRadiusZ;
+        
+        p.mesh.rotation.y += p.rotationSpeed;
+
+        // Animate moons if they exist
+        p.mesh.children.forEach(child => {
+            if (child instanceof THREE.Object3D && child.userData.speed) { // it's a moon group
+                child.rotation.y += child.userData.speed * delta;
+            }
+        });
     });
     
     controls.update();

@@ -1,3 +1,4 @@
+
 import { threeManager } from '../../services/threeManager.js';
 import { toastService } from '../../services/toastService.js';
 
@@ -7,11 +8,6 @@ let galaxyContainer;
 // --- Module Lifecycle ---
 
 const handlePlanetNavigation = (route) => {
-    if (route === '#coming-soon') {
-        toastService.show('This feature is coming soon!');
-        return;
-    }
-    
     if (route) {
         window.location.hash = route;
     }
