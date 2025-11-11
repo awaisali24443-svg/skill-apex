@@ -1,17 +1,37 @@
 
 import { getTopicsForCategory, getCategoryById } from '../../services/topicService.js';
 
+let listContainer;
+let appStateRef;
+
+const handleTopicClick = (e) => {
+    const link = e.target.closest('.topic-item-link');
+    if (!link) return;
+
+    e.preventDefault();
+    const selectedTopic = link.dataset.topic;
+    
+    // Use the stored appState reference to modify the context
+    if (appStateRef) {
+        appStateRef.context = { topic: selectedTopic };
+    }
+    
+    window.location.hash = link.getAttribute('href');
+};
+
 export async function init(appState) {
-    const listContainer = document.getElementById('topic-list-container');
+    appStateRef = appState; // Store reference to appState
+    listContainer = document.getElementById('topic-list-container');
     const categoryTitle = document.getElementById('category-title');
     const categoryDescription = document.getElementById('category-description');
     
-    // FIX #2: Read category from the dynamic router's params
     const categoryId = appState.context.params?.categoryId;
 
     if (!categoryId || !listContainer) {
         console.error("Category ID not found in state or list container not found.");
-        listContainer.innerHTML = "<p>Could not load topics for this category.</p>";
+        if (listContainer) {
+            listContainer.innerHTML = "<p>Could not load topics for this category.</p>";
+        }
         return;
     }
 
@@ -37,15 +57,8 @@ export async function init(appState) {
                 </a>
             `).join('');
             
-            // Add event listeners to set the topic and navigate
-            listContainer.querySelectorAll('.topic-item-link').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const selectedTopic = e.currentTarget.dataset.topic;
-                    appState.context = { topic: selectedTopic };
-                    window.location.hash = e.currentTarget.getAttribute('href');
-                });
-            });
+            // Use a single delegated event listener on the container
+            listContainer.addEventListener('click', handleTopicClick);
 
         } else {
             listContainer.innerHTML = "<p>No topics found for this category.</p>";
@@ -57,6 +70,10 @@ export async function init(appState) {
 }
 
 export function destroy() {
-    // No complex listeners to remove, but good practice to have the function.
+    if (listContainer) {
+        // Remove the single delegated listener
+        listContainer.removeEventListener('click', handleTopicClick);
+    }
+    appStateRef = null; // Clear reference
     console.log("Topic List module destroyed.");
 }
