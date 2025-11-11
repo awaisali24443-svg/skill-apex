@@ -62,7 +62,7 @@ self.addEventListener('fetch', event => {
     
     // Strategy 1: Network First for HTML and API calls.
     // Ensures the user always gets the latest app logic and data.
-    if (request.mode === 'navigate' || request.url.includes('/api/generate') || request.url.includes('/data/topics.json')) {
+    if (request.mode === 'navigate' || request.url.includes('/api/')) {
         event.respondWith(
             fetch(request)
                 .then(response => {

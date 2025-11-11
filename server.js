@@ -3,9 +3,36 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI, Type } from '@google/genai';
 import rateLimit from 'express-rate-limit';
+import fs from 'fs/promises';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// --- Load topics data on startup and cache it ---
+let topicsData = null;
+try {
+    const dataPath = path.resolve(__dirname, 'data', 'topics.json');
+    const data = await fs.readFile(dataPath, 'utf-8');
+    topicsData = JSON.parse(data);
+    console.log('Topics data loaded and cached successfully.');
+} catch (error) {
+    console.error('FATAL: Could not load topics.json. The topics API will be unavailable.', error);
+    // Set to a default structure to avoid crashes on clients expecting an object
+    topicsData = { categories: [], topics: {} };
+}
+
+// --- Helper function to find a curated topic ---
+function findCuratedTopic(topicName, data) {
+    if (!data || !data.topics) return null;
+    for (const categoryId in data.topics) {
+        const topicsInCategory = data.topics[categoryId];
+        const foundTopic = topicsInCategory.find(t => t.name.toLowerCase() === topicName.toLowerCase());
+        if (foundTopic) {
+            return foundTopic;
+        }
+    }
+    return null;
+}
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -22,15 +49,54 @@ const apiLimiter = rateLimit({
     message: 'Too many requests from this IP, please try again after 15 minutes',
 });
 
+// --- API Routes ---
+
+// API route for serving topics
+app.get('/api/topics', apiLimiter, (req, res) => {
+    if (topicsData) {
+        res.json(topicsData);
+    } else {
+        // This case should be rare due to startup loading, but it's good practice.
+        res.status(500).json({ error: 'Topics data is currently unavailable.' });
+    }
+});
+
 // API route for generating quizzes
 app.post('/api/generate', apiLimiter, async (req, res) => {
     const { topic, numQuestions, difficulty } = req.body;
 
-    if (!topic || !numQuestions) {
-        return res.status(400).json({ error: 'Topic and number of questions are required.' });
+    if (!topic) {
+        return res.status(400).json({ error: 'Topic is required.' });
     }
 
-    const prompt = `Create a fun multiple-choice quiz about "${topic}". I need ${numQuestions} questions.
+    let prompt;
+    const curatedTopic = findCuratedTopic(topic, topicsData);
+
+    if (curatedTopic && curatedTopic.questions && curatedTopic.questions.length > 0) {
+        // Handle curated topics: use the pre-defined questions
+        console.log(`Generating quiz for curated topic: "${topic}"`);
+        const questionList = curatedTopic.questions.map(q => `- "${q}"`).join('\n');
+        prompt = `Create a fun multiple-choice quiz based *only* on the following questions:
+${questionList}
+
+Your tone should be friendly, engaging, and conversational. Use simple, everyday language that's easy for anyone to understand, avoiding jargon.
+The quiz difficulty should be "${difficulty || 'Medium'}".
+
+For each question, provide:
+1. The original question text, exactly as provided.
+2. Four possible answer options.
+3. The index of the correct answer.
+4. A brief, clear explanation for the correct answer, also written in a friendly and simple tone.
+
+Ensure the number of questions in your response exactly matches the number of questions I provided.`;
+
+    } else {
+        // Handle custom topics: generate questions from scratch
+        console.log(`Generating quiz for custom topic: "${topic}"`);
+        if (!numQuestions) {
+            return res.status(400).json({ error: 'Number of questions is required for a custom topic.' });
+        }
+        prompt = `Create a fun multiple-choice quiz about "${topic}". I need ${numQuestions} questions.
 Your tone should be friendly, engaging, and conversational. Use simple, everyday language that's easy for anyone to understand, avoiding jargon.
 The quiz difficulty should be "${difficulty || 'Medium'}".
 For each question, provide:
@@ -38,6 +104,7 @@ For each question, provide:
 2. Four possible answer options.
 3. The index of the correct answer.
 4. A brief, clear explanation for the correct answer, also written in a friendly and simple tone.`;
+    }
 
     const schema = {
         type: Type.OBJECT,

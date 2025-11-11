@@ -7,8 +7,8 @@ async function loadCuratedData() {
         return curatedData;
     }
     try {
-        // FIX #5: Decouple content by loading from a JSON file
-        const response = await fetch('/data/topics.json');
+        // FIX #5: Decouple content by loading from the new API endpoint
+        const response = await fetch('/api/topics');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
