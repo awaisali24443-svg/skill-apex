@@ -1,12 +1,16 @@
 const THEMES = {
+    'light-cyber': {
+        path: '/themes/theme-light-cyber.css',
+        color: '#f0f2f8'
+    },
+    'dark': {
+        path: '/themes/theme-dark.css',
+        color: '#121212'
+    },
     'dark-cyber': {
         path: '/themes/theme-dark-cyber.css',
         color: '#0c0e1a'
     },
-    'light-cyber': {
-        path: '/themes/theme-light-cyber.css',
-        color: '#f0f2f8'
-    }
 };
 
 /**

@@ -1,0 +1,35 @@
+:root {
+    /* --- Color Palette: Standard Dark --- */
+
+    /* Primary Colors */
+    --color-primary: #007bff;   /* Standard Blue */
+    --color-secondary: #6f42c1; /* Standard Purple */
+
+    /* Background & Surface Colors */
+    --color-background: #121212; /* Very dark grey */
+    --color-surface: #1e1e1e;
+    --color-surface-hover: #2a2a2a;
+    --color-surface-active: #333333;
+
+    /* Text Colors */
+    --color-text: #e0e0e0;
+    --color-text-secondary: #a0a0a0;
+
+    /* Border & Accent Colors */
+    --color-border: #383838;
+
+    /* Transparent Variants for Glows & Gradients */
+    --color-primary-transparent: rgba(0, 123, 255, 0.15);
+    --color-primary-transparent-heavy: rgba(0, 123, 255, 0.3);
+    --color-secondary-transparent: rgba(111, 66, 193, 0.15);
+    --color-secondary-transparent-heavy: rgba(111, 66, 193, 0.3);
+    --color-surface-transparent: rgba(56, 56, 56, 0.3);
+
+    /* Feedback Colors */
+    --color-success: #28a745;
+    --color-error: #dc3545;
+    --color-success-bg: rgba(40, 167, 69, 0.1);
+    --color-error-bg: rgba(220, 53, 69, 0.1);
+    --color-success-border: rgba(40, 167, 69, 0.5);
+    --color-error-border: rgba(220, 53, 69, 0.5);
+}
