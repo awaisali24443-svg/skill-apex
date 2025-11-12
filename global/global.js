@@ -1,8 +1,8 @@
 /**
- * Initializes the interactive glow effect for card elements.
+ * Initializes an interactive glow effect for card elements that follows the mouse.
  * This function should be called by each module after its content,
  * containing `.card` elements, has been added to the DOM.
- * @param {HTMLElement} container - The parent element to query for cards. Defaults to `document`.
+ * @param {HTMLElement} [container=document] - The parent element to query for cards. Defaults to `document`.
  */
 export function initializeCardGlow(container = document) {
     const cards = container.querySelectorAll('.card');

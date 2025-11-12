@@ -6,6 +6,18 @@
     <div class="settings-card card">
         <div class="setting-item">
             <div class="setting-info">
+                <h3>Theme</h3>
+                <p>Switch between light and dark modes.</p>
+            </div>
+            <div class="setting-control">
+                <div class="theme-toggle" id="theme-toggle">
+                    <button data-theme="dark-cyber" class="active">Dark</button>
+                    <button data-theme="light-cyber">Light</button>
+                </div>
+            </div>
+        </div>
+        <div class="setting-item">
+            <div class="setting-info">
                 <h3>Sound Effects</h3>
                 <p>Enable or disable sounds for quiz answers.</p>
             </div>
@@ -24,7 +36,7 @@
                 <p>This will permanently delete your saved library, learning paths, and settings.</p>
             </div>
             <div class="setting-control">
-                <button id="clear-data-btn" class="btn">Clear Data</button>
+                <button id="clear-data-btn" class="btn btn-danger">Clear Data</button>
             </div>
         </div>
     </div>

@@ -5,6 +5,10 @@ let sounds = {
 };
 let isInitialized = false;
 
+/**
+ * Loads the audio files into Audio objects.
+ * @private
+ */
 function loadSounds() {
     try {
         sounds.correct = new Audio('/assets/sounds/correct.mp3');
@@ -16,6 +20,10 @@ function loadSounds() {
     }
 }
 
+/**
+ * Initializes the sound service.
+ * @param {object} configService - A reference to the configService module.
+ */
 export function init(configService) {
     if (isInitialized) return;
     configSvc = configService;
@@ -23,6 +31,10 @@ export function init(configService) {
     isInitialized = true;
 }
 
+/**
+ * Plays a sound if sound effects are enabled in the settings.
+ * @param {'correct'|'incorrect'} soundName - The name of the sound to play.
+ */
 export function playSound(soundName) {
     const { enableSound } = configSvc.getConfig();
     if (enableSound && sounds[soundName]) {

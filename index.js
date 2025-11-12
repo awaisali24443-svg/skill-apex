@@ -5,14 +5,24 @@ import { renderSidebar } from './services/sidebarService.js';
 import { showFatalError } from './services/errorService.js';
 import * as soundService from './services/soundService.js';
 import * as learningPathService from './services/learningPathService.js';
+import * as historyService from './services/historyService.js';
+import * as themeService from './services/themeService.js';
 
+// appState holds the current module and a context object for passing data between modules.
 const appState = {
     currentModule: null,
     context: {},
 };
 
+// Caches loaded modules to avoid redundant network requests.
 const moduleCache = new Map();
 
+/**
+ * Fetches the HTML, CSS, and JS for a given module.
+ * Caches the module artifacts for subsequent loads.
+ * @param {string} moduleName - The name of the module to load.
+ * @returns {Promise<object>} An object containing the module's html, css, and js module.
+ */
 async function fetchModule(moduleName) {
     if (moduleCache.has(moduleName)) {
         return moduleCache.get(moduleName);
@@ -32,6 +42,12 @@ async function fetchModule(moduleName) {
     }
 }
 
+/**
+ * Matches a given path (e.g., from location.hash) to a defined route.
+ * Supports dynamic route parameters like '/learning-path/:id'.
+ * @param {string} path - The path to match.
+ * @returns {object|null} The matched route object with params, or null if no match.
+ */
 function matchRoute(path) {
     for (const route of ROUTES) {
         const paramNames = [];
@@ -53,11 +69,16 @@ function matchRoute(path) {
     return null;
 }
 
-
+/**
+ * Core function to load and render a module into the DOM.
+ * Handles module lifecycle (destroying old, initializing new), styling, and page transitions.
+ * @param {object} route - The route object returned by matchRoute.
+ */
 async function loadModule(route) {
     const appContainer = document.getElementById('app');
     const styleTagId = 'module-style';
 
+    // 1. Destroy the previous module if it has a destroy function.
     if (appState.currentModule && appState.currentModule.js.destroy) {
         try {
             appState.currentModule.js.destroy();
@@ -66,20 +87,23 @@ async function loadModule(route) {
         }
     }
 
+    // 2. Animate the page out.
     appContainer.classList.add('fade-out');
     await new Promise(resolve => setTimeout(resolve, 200));
 
     try {
-        // Pass route params into the app state context
+        // Pass route params into the app state context for the new module.
         appState.context.params = route.params;
 
+        // 3. Fetch the new module's assets.
         const moduleData = await fetchModule(route.module);
         appState.currentModule = moduleData;
 
-        // Clear previous content and apply full-bleed if needed
+        // 4. Prepare the DOM for the new module.
         appContainer.innerHTML = '';
         document.getElementById('app-container').classList.toggle('full-bleed-container', !!route.fullBleed);
         
+        // 5. Apply module-specific styles.
         let styleTag = document.getElementById(styleTagId);
         if (!styleTag) {
             styleTag = document.createElement('style');
@@ -87,12 +111,16 @@ async function loadModule(route) {
             document.head.appendChild(styleTag);
         }
         styleTag.textContent = moduleData.css;
+
+        // 6. Inject the module's HTML.
         appContainer.innerHTML = moduleData.html;
 
+        // 7. Initialize the new module's JavaScript.
         if (moduleData.js.init) {
             await moduleData.js.init(appState);
         }
 
+        // 8. Update the active state in the sidebar navigation.
         document.querySelectorAll('.sidebar-link').forEach(link => {
             link.classList.remove('active');
             // Use startsWith to handle dynamic routes like /learning-path/:id
@@ -102,7 +130,7 @@ async function loadModule(route) {
             }
         });
         
-        // Reset scroll position for the new view
+        // Reset scroll position for the new view.
         document.getElementById('app-container').scrollTop = 0;
 
 
@@ -116,10 +144,14 @@ async function loadModule(route) {
             </div>
         `;
     } finally {
+        // 9. Animate the new page in.
         appContainer.classList.remove('fade-out');
     }
 }
 
+/**
+ * Handles the hashchange event to navigate between modules.
+ */
 function handleRouteChange() {
     const path = window.location.hash.slice(1) || '/';
     const route = matchRoute(path);
@@ -127,20 +159,26 @@ function handleRouteChange() {
     if (route) {
         loadModule(route);
     } else {
-        // Handle 404
+        // Handle 404 by redirecting to the home page.
         loadModule(ROUTES.find(r => r.path === '/'));
         console.warn(`No route found for path: ${path}. Redirecting to home.`);
     }
 }
 
+/**
+ * The main entry point for the application.
+ * Initializes services, renders static UI, sets up routing, and hides the splash screen.
+ */
 async function main() {
     try {
-        // Initialize services
+        // Initialize all core services
         configService.init();
+        themeService.applyTheme(configService.getConfig().theme); // Apply theme on startup
         soundService.init(configService);
         learningPathService.init();
+        historyService.init();
 
-        // Register service worker for PWA capabilities
+        // Register service worker for PWA capabilities and offline functionality.
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
@@ -149,19 +187,20 @@ async function main() {
             });
         }
 
-        // Render static UI elements
+        // Render static UI elements like the sidebar.
         renderSidebar(document.getElementById('sidebar'));
 
-        // Set up routing
+        // Set up event listeners for routing and global settings changes.
         window.addEventListener('hashchange', handleRouteChange);
+        window.addEventListener('settings-changed', (e) => themeService.applyTheme(e.detail.theme));
 
-        // Initial load
+
+        // Initial data fetch and page load.
+        await searchService.createIndex();
         handleRouteChange();
 
-        // Must happen after initial route change to ensure DOM is populated
-        await searchService.createIndex();
 
-        // Hide splash screen
+        // Hide the splash screen once the app is ready.
         document.getElementById('splash-screen').classList.add('hidden');
 
     } catch (error) {
@@ -170,5 +209,5 @@ async function main() {
     }
 }
 
-// Start the application
+// Start the application.
 main();

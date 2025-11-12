@@ -27,6 +27,7 @@ async function startGeneration() {
             quizData.learningPathId = learningPathId;
         }
 
+        quizData.topic = topic; // Add topic to quiz data for history
         quizStateService.startQuiz(quizData);
         window.location.hash = '/quiz';
 

@@ -2,6 +2,7 @@ export const LOCAL_STORAGE_KEYS = {
     CONFIG: 'knowledge-tester-config',
     LIBRARY: 'knowledge-tester-library',
     LEARNING_PATHS: 'knowledge-tester-learning-paths',
+    HISTORY: 'knowledge-tester-history',
 };
 
 export const ROUTES = [
@@ -13,6 +14,7 @@ export const ROUTES = [
     { path: '/quiz', module: 'quiz', name: 'Quiz', nav: false },
     { path: '/results', module: 'results', name: 'Results', nav: false },
     { path: '/library', module: 'library', name: 'Library', icon: 'book', nav: true },
+    { path: '/history', module: 'history', name: 'History', icon: 'archive', nav: true },
     { path: '/study', module: 'study', name: 'Study', nav: false },
     { path: '/aural', module: 'aural', name: 'Aural', icon: 'mic', nav: true, fullBleed: true },
     { path: '/learning-path-generator', module: 'learning-path-generator', name: 'Paths', icon: 'git-branch', nav: true },

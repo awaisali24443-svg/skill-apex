@@ -1,3 +1,8 @@
+/**
+ * Displays a full-screen fatal error message, hiding the main application.
+ * This is used for critical errors during startup that prevent the app from running.
+ * @param {Error} error - The error object to display.
+ */
 export function showFatalError(error) {
     const splash = document.getElementById('splash-screen');
     const appWrapper = document.getElementById('app-wrapper');

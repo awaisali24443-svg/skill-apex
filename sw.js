@@ -9,6 +9,7 @@ const APP_SHELL_URLS = [
     '/global/global.css',
     '/global/global.js',
     '/themes/theme-dark-cyber.css',
+    '/themes/theme-light-cyber.css',
     '/assets/icons/favicon.svg',
     '/assets/icons/feather-sprite.svg',
     '/assets/images/apple-touch-icon.png',

@@ -1,0 +1,35 @@
+:root {
+    /* --- Color Palette: Cyber Core Light --- */
+
+    /* Primary Colors */
+    --color-primary: #007b8a;   /* Darker Teal for contrast */
+    --color-secondary: #862197; /* Darker Violet */
+
+    /* Background & Surface Colors */
+    --color-background: #f0f2f8; /* Light Bluish Gray */
+    --color-surface: #ffffff;
+    --color-surface-hover: #f8f9fa;
+    --color-surface-active: #e9ecef;
+
+    /* Text Colors */
+    --color-text: #212529;
+    --color-text-secondary: #6c757d;
+
+    /* Border & Accent Colors */
+    --color-border: #d1d9e6;
+
+    /* Transparent Variants for Glows & Gradients */
+    --color-primary-transparent: rgba(0, 123, 138, 0.1);
+    --color-primary-transparent-heavy: rgba(0, 123, 138, 0.2);
+    --color-secondary-transparent: rgba(134, 33, 151, 0.1);
+    --color-secondary-transparent-heavy: rgba(134, 33, 151, 0.2);
+    --color-surface-transparent: rgba(209, 217, 230, 0.5);
+
+    /* Feedback Colors */
+    --color-success: #198754;
+    --color-error: #dc3545;
+    --color-success-bg: rgba(25, 135, 84, 0.1);
+    --color-error-bg: rgba(220, 53, 69, 0.1);
+    --color-success-border: rgba(25, 135, 84, 0.5);
+    --color-error-border: rgba(220, 53, 69, 0.5);
+}

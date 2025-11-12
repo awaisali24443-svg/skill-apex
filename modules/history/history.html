@@ -1,0 +1,34 @@
+<div class="history-container">
+    <header class="page-header history-header">
+        <h1>Quiz History</h1>
+        <p>Review your past quiz performances.</p>
+        <div class="history-actions">
+            <button id="clear-history-btn" class="btn" disabled>Clear History</button>
+        </div>
+    </header>
+    <div id="history-grid">
+        <!-- Saved quizzes will be rendered here -->
+    </div>
+    <div id="empty-history-message" class="empty-state" style="display: none;">
+        <h2>No History Yet</h2>
+        <p>Your completed quizzes will appear here.</p>
+        <a href="/#/topics" class="btn">Take a Quiz</a>
+    </div>
+</div>
+
+<template id="history-item-template">
+    <div class="card history-item">
+        <div class="card-content">
+            <div class="history-item-header">
+                <h3 class="history-topic"></h3>
+                <span class="history-date"></span>
+            </div>
+            <div class="history-item-body">
+                <p class="history-score"></p>
+                <div class="score-bar">
+                    <div class="score-bar-fill"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

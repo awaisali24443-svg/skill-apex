@@ -68,28 +68,34 @@ function updateUI(newState, message = '') {
         case STATE.IDLE:
             elements.status.textContent = 'Tap to Start';
             elements.micBtn.classList.remove('active');
+            elements.micBtn.setAttribute('aria-label', 'Start conversation');
             break;
         case STATE.CONNECTING:
             elements.status.textContent = 'Connecting...';
+            elements.micBtn.setAttribute('aria-label', 'Connecting');
             break;
         case STATE.LISTENING:
             elements.status.textContent = 'Listening...';
             elements.orb.classList.add('listening');
             elements.micBtn.classList.add('active');
+            elements.micBtn.setAttribute('aria-label', 'Stop conversation');
             break;
         case STATE.THINKING:
             elements.status.textContent = 'Thinking...';
             elements.orb.classList.add('thinking');
+            elements.micBtn.setAttribute('aria-label', 'Stop conversation');
             break;
         case STATE.SPEAKING:
             elements.status.textContent = 'Speaking...';
             elements.orb.classList.add('speaking');
+            elements.micBtn.setAttribute('aria-label', 'Stop conversation');
             break;
         case STATE.ERROR:
             elements.status.textContent = 'Error';
             elements.error.textContent = message;
             elements.error.style.display = 'block';
             elements.micBtn.classList.remove('active');
+            elements.micBtn.setAttribute('aria-label', 'Start conversation');
             break;
     }
 }

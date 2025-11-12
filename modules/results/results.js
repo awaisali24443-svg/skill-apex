@@ -1,6 +1,7 @@
 import * as quizStateService from '../../services/quizStateService.js';
 import * as libraryService from '../../services/libraryService.js';
 import * as learningPathService from '../../services/learningPathService.js';
+import * as historyService from '../../services/historyService.js';
 import { initializeCardGlow } from '../../global/global.js';
 
 let quizState;
@@ -120,6 +121,9 @@ export function init(appState) {
 }
 
 export function destroy() {
+    // Save attempt to history before clearing
+    historyService.addQuizAttempt(quizStateService.getQuizState());
+    
     // Crucial for cleaning up the finished quiz state
     quizStateService.endQuiz();
     if(reviewContainer && clickHandler) {
