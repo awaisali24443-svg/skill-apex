@@ -2,6 +2,7 @@
   {
     "category": "Science",
     "description": "Explore the wonders of the natural and physical world.",
+    "icon": "cpu",
     "topics": [
       { "name": "Quantum Physics", "difficulty": "Hard" },
       { "name": "Genetics", "difficulty": "Medium" },
@@ -14,6 +15,7 @@
   {
     "category": "History",
     "description": "Journey through the events and figures that shaped our world.",
+    "icon": "book-open",
     "topics": [
       { "name": "Ancient Rome", "difficulty": "Medium" },
       { "name": "The Renaissance", "difficulty": "Medium" },
@@ -26,6 +28,7 @@
   {
     "category": "Technology",
     "description": "Dive into the innovations driving our future.",
+    "icon": "sliders",
     "topics": [
       { "name": "Machine Learning", "difficulty": "Hard" },
       { "name": "Blockchain & Crypto", "difficulty": "Medium" },
@@ -38,6 +41,7 @@
   {
     "category": "Arts & Literature",
     "description": "Discover the masterpieces of human creativity.",
+    "icon": "feather",
     "topics": [
       { "name": "Shakespearean Plays", "difficulty": "Medium" },
       { "name": "Impressionist Art", "difficulty": "Easy" },
@@ -45,6 +49,18 @@
       { "name": "History of Jazz", "difficulty": "Medium" },
       { "name": "Gothic Architecture", "difficulty": "Hard" },
       { "name": "Russian Literature", "difficulty": "Medium" }
+    ]
+  },
+  {
+    "category": "Hot & Trending",
+    "description": "Stay current with quizzes on today's most talked-about subjects.",
+    "icon": "trending-up",
+    "topics": [
+      { "name": "AI Assistants (ChatGPT, Gemini)", "difficulty": "Easy" },
+      { "name": "Sustainable Energy Solutions", "difficulty": "Medium" },
+      { "name": "The Metaverse & VR", "difficulty": "Medium" },
+      { "name": "CRISPR Gene Editing", "difficulty": "Hard" },
+      { "name": "Modern Web Frameworks", "difficulty": "Hard" }
     ]
   }
 ]

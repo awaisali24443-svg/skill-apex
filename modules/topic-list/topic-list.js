@@ -13,6 +13,14 @@ function renderTopics(appState) {
 
         categories.forEach(category => {
             const card = template.content.cloneNode(true);
+
+            const iconUse = card.querySelector('.category-icon use');
+            if (category.icon) {
+                iconUse.setAttribute('href', `/assets/icons/feather-sprite.svg#${category.icon}`);
+            } else {
+                card.querySelector('.category-icon').style.display = 'none';
+            }
+            
             card.querySelector('.category-title').textContent = category.category;
             card.querySelector('.category-description').textContent = category.description;
 
