@@ -239,4 +239,8 @@ function main() {
 }
 
 // --- Entry Point ---
-document.addEventListener('DOMContentLoaded', main);
+// CRITICAL FIX: Use the 'load' event instead of 'DOMContentLoaded'.
+// 'load' waits for all resources including stylesheets to be fully loaded,
+// preventing a race condition where the script tries to animate the splash
+// screen before its CSS is ready.
+window.addEventListener('load', main);
