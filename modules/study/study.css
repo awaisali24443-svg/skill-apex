@@ -1,0 +1,66 @@
+.study-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.flashcard-scene {
+    width: 90%;
+    max-width: 600px;
+    height: 400px;
+    perspective: 1000px;
+    margin-bottom: 2rem;
+}
+
+.flashcard {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.6s;
+    cursor: pointer;
+}
+
+.flashcard.is-flipped {
+    transform: rotateY(180deg);
+}
+
+.flashcard-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    font-size: 1.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    background-color: var(--color-surface);
+}
+
+.flashcard-front {
+    color: var(--color-text);
+}
+
+.flashcard-back {
+    background-color: var(--color-surface-active);
+    color: var(--color-primary);
+    transform: rotateY(180deg);
+}
+
+.study-controls {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.card-counter {
+    font-family: var(--font-family-mono);
+    font-size: 1.2rem;
+    color: var(--color-text-secondary);
+}

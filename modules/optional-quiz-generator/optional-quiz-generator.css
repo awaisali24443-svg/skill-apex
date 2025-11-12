@@ -1,0 +1,15 @@
+.custom-quiz-container {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.form-card {
+    padding: 2.5rem;
+}
+
+.generate-btn {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.1rem;
+    margin-top: 1rem;
+}

@@ -1,0 +1,63 @@
+.explore-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.search-bar-container {
+    margin-bottom: 3rem;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#search-input {
+    padding: 1rem 1.5rem;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.search-results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.search-result-card .card-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-family: var(--font-family-mono);
+    font-size: 0.8rem;
+}
+
+.category-tag {
+    background-color: var(--color-primary-transparent);
+    color: var(--color-primary);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+.difficulty-tag {
+    background-color: var(--color-secondary-transparent);
+    color: var(--color-secondary);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+
+.topic-name {
+    flex-grow: 1;
+    margin-bottom: 1.5rem;
+    color: var(--color-text);
+}
+
+.start-quiz-btn {
+    width: 100%;
+}

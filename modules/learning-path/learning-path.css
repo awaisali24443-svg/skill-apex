@@ -1,0 +1,77 @@
+.view-path-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.steps-list {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.step-item {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem;
+}
+
+.step-number {
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-family: var(--font-family-heading);
+    color: var(--color-text);
+}
+
+.step-content {
+    flex-grow: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Step States */
+
+/* Current Step */
+.step-item.current .step-number {
+    background-color: var(--color-primary);
+}
+.step-item.current {
+    border-color: var(--color-primary);
+}
+
+/* Completed Step */
+.step-item.completed {
+    opacity: 0.7;
+}
+.step-item.completed .step-number {
+    background-color: var(--color-success);
+}
+.step-item.completed .start-topic-btn {
+    display: none; /* Hide button for completed steps */
+}
+.step-item.completed .step-name::after {
+    content: ' (Completed)';
+    color: var(--color-success);
+    font-size: 0.9rem;
+    margin-left: 10px;
+}
+
+/* Locked Step */
+.step-item.locked {
+    opacity: 0.5;
+    pointer-events: none;
+}
+.step-item.locked .step-number {
+    background-color: var(--color-border);
+}
+.step-item.locked .start-topic-btn {
+    background-color: var(--color-surface-hover);
+    cursor: not-allowed;
+}

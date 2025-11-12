@@ -1,0 +1,25 @@
+<div class="explore-container">
+    <header class="page-header">
+        <h1>Explore & Search</h1>
+        <p>Use the search below to generate a quiz on any topic you can imagine.</p>
+    </header>
+    <div class="search-bar-container">
+        <input type="search" id="search-input" class="form-input" placeholder="e.g., 'The Renaissance', 'Quantum Computing'..." autocomplete="off">
+    </div>
+    <div id="search-results-container" class="search-results-grid">
+        <!-- Search results or default topics will be rendered here -->
+    </div>
+</div>
+
+<template id="search-result-template">
+    <div class="card search-result-card">
+        <div class="card-content">
+            <div class="card-header">
+                <span class="category-tag"></span>
+                <span class="difficulty-tag"></span>
+            </div>
+            <h3 class="topic-name"></h3>
+            <button class="btn btn-primary start-quiz-btn">Start Quiz</button>
+        </div>
+    </div>
+</template>

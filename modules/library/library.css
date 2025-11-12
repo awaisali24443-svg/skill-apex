@@ -1,0 +1,52 @@
+.library-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+#library-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.library-item {
+    display: flex;
+    flex-direction: column;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.library-item.removing {
+    opacity: 0;
+    transform: scale(0.95);
+}
+
+.library-item .card-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+
+.library-question-text {
+    flex-grow: 1;
+    margin-bottom: 1.5rem;
+    color: var(--color-text);
+}
+
+.remove-btn {
+    align-self: flex-end;
+}
+
+.empty-state {
+    text-align: center;
+    margin-top: 4rem;
+}
+.empty-state h2 {
+    margin-bottom: 1rem;
+}
+.empty-state p {
+    margin-bottom: 2rem;
+}

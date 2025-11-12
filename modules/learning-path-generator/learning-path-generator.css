@@ -1,0 +1,61 @@
+.learning-path-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.generator-card {
+    padding: 2rem;
+    margin-bottom: 3rem;
+}
+
+#generate-path-btn {
+    width: 100%;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+#generate-path-btn .btn-spinner {
+    width: 20px;
+    height: 20px;
+    border-width: 2px;
+    margin-left: 10px;
+}
+
+.saved-paths-section h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+#saved-paths-list {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.path-item-card {
+    text-decoration: none;
+    color: inherit;
+}
+
+.path-goal {
+    color: var(--color-text);
+}
+
+.path-details {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.path-progress .progress-bar {
+    margin-bottom: 0.5rem;
+}
+
+.path-progress .progress-text {
+    font-size: 0.8rem;
+    font-family: var(--font-family-mono);
+}
+
+#no-paths-message {
+    text-align: center;
+    color: var(--color-text-secondary);
+}

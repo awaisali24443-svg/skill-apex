@@ -1,0 +1,50 @@
+[
+  {
+    "category": "Science",
+    "description": "Explore the wonders of the natural and physical world.",
+    "topics": [
+      { "name": "Quantum Physics", "difficulty": "Hard" },
+      { "name": "Genetics", "difficulty": "Medium" },
+      { "name": "Astrophysics", "difficulty": "Hard" },
+      { "name": "Organic Chemistry", "difficulty": "Medium" },
+      { "name": "Neuroscience", "difficulty": "Hard" },
+      { "name": "Marine Biology", "difficulty": "Easy" }
+    ]
+  },
+  {
+    "category": "History",
+    "description": "Journey through the events and figures that shaped our world.",
+    "topics": [
+      { "name": "Ancient Rome", "difficulty": "Medium" },
+      { "name": "The Renaissance", "difficulty": "Medium" },
+      { "name": "World War II", "difficulty": "Easy" },
+      { "name": "The Cold War", "difficulty": "Medium" },
+      { "name": "The Silk Road", "difficulty": "Hard" },
+      { "name": "The Viking Age", "difficulty": "Easy" }
+    ]
+  },
+  {
+    "category": "Technology",
+    "description": "Dive into the innovations driving our future.",
+    "topics": [
+      { "name": "Machine Learning", "difficulty": "Hard" },
+      { "name": "Blockchain & Crypto", "difficulty": "Medium" },
+      { "name": "Cybersecurity", "difficulty": "Medium" },
+      { "name": "Cloud Computing", "difficulty": "Easy" },
+      { "name": "Game Development", "difficulty": "Medium" },
+      { "name": "Quantum Computing", "difficulty": "Hard" }
+    ]
+  },
+  {
+    "category": "Arts & Literature",
+    "description": "Discover the masterpieces of human creativity.",
+    "topics": [
+      { "name": "Shakespearean Plays", "difficulty": "Medium" },
+      { "name": "Impressionist Art", "difficulty": "Easy" },
+      { "name": "Modernist Poetry", "difficulty": "Hard" },
+      { "name": "History of Jazz", "difficulty": "Medium" },
+      { "name": "Gothic Architecture", "difficulty": "Hard" },
+      { "name": "Russian Literature", "difficulty": "Medium" }
+    ]
+  }
+]
