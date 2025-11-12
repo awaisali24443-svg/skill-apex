@@ -1,7 +1,7 @@
 import { initializeCardGlow } from '../../global/global.js';
 import { isFeatureEnabled } from '../../services/featureService.js';
 
-export async function init(appContainer, appState, onReady) {
+export async function init(appState) {
     console.log("Home module (Dashboard) initialized.");
 
     const learningPathCard = document.getElementById('learning-path-card');
@@ -10,9 +10,6 @@ export async function init(appContainer, appState, onReady) {
     }
 
     initializeCardGlow();
-    
-    // onReady hides the splash screen.
-    onReady();
 }
 
 export function destroy() {

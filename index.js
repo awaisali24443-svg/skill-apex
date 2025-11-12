@@ -141,21 +141,20 @@ async function loadModule(route) {
         appContainer.innerHTML = `<style>${css}</style>${html}`;
         currentModule = { ...route, instance: js };
         
-        const onReady = route.hash === 'home' ? hideSplashScreen : () => {};
-
         if (js.init) {
-             if (route.hash === 'home') {
-                await js.init(appContainer, appState, onReady);
-             } else {
-                await js.init(appState);
-             }
+            // Pass appState to all modules; they can use it if they need it.
+            // This simplifies the logic and removes the special case for the home module.
+            await js.init(appState);
         }
         
-        if (route.hash !== 'home') hideSplashScreen();
+        // The router is now responsible for hiding the splash screen for all routes.
+        hideSplashScreen();
 
     } catch (error) {
         console.error(`Failed to load module ${route.module}:`, error);
         appContainer.innerHTML = `<h2>Error loading ${route.name}</h2><p>Please try refreshing the page.</p>`;
+        // Ensure splash screen is hidden even on error.
+        hideSplashScreen();
     } finally {
         appContainer.classList.remove('fade-out');
         window.scrollTo(0, 0);
