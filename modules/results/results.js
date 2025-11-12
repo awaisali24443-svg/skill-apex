@@ -62,7 +62,7 @@ function renderResults(appState) {
 
     // Animate the score ring and text
     setTimeout(() => {
-        scoreRingFg.setAttribute('stroke-dasharray', `${scorePercent}, 100`);
+        scoreRingFg.style.strokeDasharray = `${scorePercent}, 100`;
         animateScore(scorePercent, scoreText);
     }, 100);
 

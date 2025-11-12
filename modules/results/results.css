@@ -38,6 +38,7 @@
     stroke-linecap: round;
     transform: rotate(-90deg);
     transform-origin: 50% 50%;
+    stroke-dasharray: 0, 100;
     transition: stroke-dasharray 1s ease-out;
 }
 

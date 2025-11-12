@@ -131,11 +131,7 @@
 [data-theme="cyber"] .review-item,
 [data-theme="cyber"] .saved-question-item {
     background-image: radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(0, 246, 255, 0.2) 0%, transparent 40%);
-    background-size: 150% 150%;
-    background-position: center center;
-    background-repeat: no-repeat;
-    opacity: 0; /* Start hidden for hover effect */
-    transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast), opacity 0.5s;
+    transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 [data-theme="cyber"] .card:hover,
@@ -147,14 +143,6 @@
     transform: translateY(-5px);
     border-color: var(--color-primary);
     box-shadow: 0 0 20px var(--color-glow);
-}
-[data-theme="cyber"] .card:hover::before,
-[data-theme="cyber"] .dashboard-card:hover::before,
-[data-theme="cyber"] .category-card:hover::before,
-[data-theme="cyber"] .topic-item:hover::before,
-[data-theme="cyber"] .review-item:hover::before,
-[data-theme="cyber"] .saved-question-item:hover::before {
-    opacity: 1;
 }
 
 /* --- Header --- */
