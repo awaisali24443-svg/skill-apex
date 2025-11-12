@@ -1,3 +1,4 @@
+
 import { LOCAL_STORAGE_KEYS } from '../constants.js';
 import { showToast } from './toastService.js';
 
@@ -55,8 +56,15 @@ export function addQuizAttempt(quizState) {
         return;
     }
 
+    const attemptId = `hist_${quizState.startTime}`;
+
+    // Prevent duplicate entries if user navigates back to results page
+    if (history.some(attempt => attempt.id === attemptId)) {
+        return;
+    }
+
     const newAttempt = {
-        id: `hist_${quizState.startTime}`,
+        id: attemptId,
         topic: quizState.topic,
         score: quizState.score,
         totalQuestions: quizState.questions.length,

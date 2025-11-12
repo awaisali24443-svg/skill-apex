@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Modality } from '@google/genai';
 
 // --- State Management ---
@@ -38,12 +39,13 @@ function decode(base64) {
   return bytes;
 }
 async function decodeAudioData(
-  data,
+  data, // data is a Uint8Array
   ctx,
   sampleRate,
   numChannels,
 ) {
-  const dataInt16 = new Int16Array(data.buffer);
+  // Use the specific buffer segment of the Uint8Array for robustness
+  const dataInt16 = new Int16Array(data.buffer, data.byteOffset, data.byteLength / 2);
   const frameCount = dataInt16.length / numChannels;
   const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
 
@@ -150,6 +152,14 @@ async function startConversation() {
                     scriptProcessor.connect(inputAudioContext.destination);
                 },
                 onmessage: async (message) => {
+                    if (message.serverContent?.interrupted) {
+                        for (const source of sources.values()) {
+                            source.stop();
+                        }
+                        sources.clear();
+                        nextStartTime = 0;
+                    }
+
                     const audioData = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
                     if (audioData) {
                         updateUI(STATE.SPEAKING);
@@ -166,14 +176,6 @@ async function startConversation() {
                         source.start(nextStartTime);
                         nextStartTime += audioBuffer.duration;
                         sources.add(source);
-                    }
-
-                    if (message.serverContent?.interrupted) {
-                        for (const source of sources.values()) {
-                            source.stop();
-                            sources.delete(source);
-                        }
-                        nextStartTime = 0;
                     }
 
                     if (message.serverContent?.outputTranscription?.text) {

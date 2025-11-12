@@ -1,3 +1,4 @@
+
 import * as quizStateService from '../../services/quizStateService.js';
 import * as libraryService from '../../services/libraryService.js';
 import * as learningPathService from '../../services/learningPathService.js';
@@ -8,7 +9,6 @@ import { initializeCardGlow } from '../../global/global.js';
 let quizState;
 let reviewContainer;
 let clickHandler;
-let historySaved = false;
 
 function animateScore(scorePercent) {
     const scoreRingFg = document.getElementById('score-ring-fg');
@@ -102,12 +102,9 @@ export function init(appState) {
         return;
     }
 
-    // Save attempt to history as soon as results load to prevent data loss
-    if (!historySaved) {
-        historyService.addQuizAttempt(quizState);
-        historySaved = true;
-    }
-
+    // Save attempt to history. The service now prevents duplicates.
+    historyService.addQuizAttempt(quizState);
+    
     soundService.playSound('finish');
     const scorePercent = quizState.questions.length > 0 ? Math.round((quizState.score / quizState.questions.length) * 100) : 0;
     
@@ -138,6 +135,4 @@ export function destroy() {
     if(reviewContainer && clickHandler) {
         reviewContainer.removeEventListener('click', clickHandler);
     }
-    // Reset flag for the next quiz result
-    historySaved = false;
 }
