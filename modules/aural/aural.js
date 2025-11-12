@@ -9,7 +9,7 @@ const STATE = {
 };
 
 let currentState = STATE.IDLE;
-let socket, mediaStream, inputAudioContext, outputAudioContext, scriptProcessor;
+let socket, mediaStream, inputAudioContext, outputAudioContext, scriptProcessor, connectionTimeout;
 let nextStartTime = 0;
 let sources = new Set();
 let currentInputTranscription = '', currentOutputTranscription = '';
@@ -113,6 +113,13 @@ async function startConversation() {
     updateUI(STATE.CONNECTING);
     elements.error.style.display = 'none';
 
+    connectionTimeout = setTimeout(() => {
+        if (currentState === STATE.CONNECTING) {
+            updateUI(STATE.ERROR, 'Connection timed out. Please try again.');
+            stopConversation();
+        }
+    }, 8000); // 8-second timeout
+
     try {
         mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         inputAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
@@ -122,6 +129,7 @@ async function startConversation() {
         socket = new WebSocket(`${protocol}//${window.location.host}`);
 
         socket.onopen = () => {
+            clearTimeout(connectionTimeout);
             updateUI(STATE.LISTENING);
             const source = inputAudioContext.createMediaStreamSource(mediaStream);
             scriptProcessor = inputAudioContext.createScriptProcessor(4096, 1, 1);
@@ -187,6 +195,7 @@ async function startConversation() {
 
     } catch (err) {
         console.error("Error starting conversation:", err);
+        clearTimeout(connectionTimeout);
         updateUI(STATE.ERROR, `Could not start microphone: ${err.message}`);
     }
 }
@@ -194,6 +203,8 @@ async function startConversation() {
 function stopConversation() {
     if (currentState === STATE.IDLE) return;
     
+    clearTimeout(connectionTimeout);
+
     if (socket) {
         socket.close();
         socket = null;
