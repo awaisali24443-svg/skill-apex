@@ -3,7 +3,7 @@
 // A simple feature flag management service.
 // Set a feature to `true` to enable it, `false` to disable it.
 const FEATURES = {
-    learningPaths: false, // This feature is not ready, so it's disabled.
+    learningPaths: true, // This feature is not ready, so it's disabled.
     studyMode: true,      // This feature is working and will be shown.
     userAccounts: false,  // Planned but not implemented.
 };
