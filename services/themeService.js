@@ -15,12 +15,15 @@ const THEMES = {
  * @param {string} [themeName='dark-cyber'] - The name of the theme to apply (e.g., 'dark-cyber', 'light-cyber').
  */
 export function applyTheme(themeName = 'dark-cyber') {
-    const theme = THEMES[themeName];
+    let effectiveThemeName = themeName;
+    let theme = THEMES[effectiveThemeName];
+
     if (!theme) {
         console.warn(`Theme "${themeName}" not found. Defaulting to dark-cyber.`);
-        themeName = 'dark-cyber';
+        effectiveThemeName = 'dark-cyber';
+        theme = THEMES[effectiveThemeName];
     }
 
-    document.getElementById('theme-stylesheet')?.setAttribute('href', THEMES[themeName].path);
-    document.getElementById('theme-color-meta')?.setAttribute('content', THEMES[themeName].color);
+    document.getElementById('theme-stylesheet')?.setAttribute('href', theme.path);
+    document.getElementById('theme-color-meta')?.setAttribute('content', theme.color);
 }

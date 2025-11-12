@@ -36,12 +36,13 @@ function renderQuestion() {
 }
 
 function handleOptionClick(event) {
-    if (answered || !event.target.classList.contains('option-btn')) {
+    const button = event.target.closest('.option-btn');
+    if (answered || !button) {
         return;
     }
     answered = true;
 
-    const selectedIndex = parseInt(event.target.dataset.index, 10);
+    const selectedIndex = parseInt(button.dataset.index, 10);
     const isCorrect = quizStateService.answerQuestion(selectedIndex);
     const question = quizStateService.getCurrentQuestion();
 
@@ -49,14 +50,14 @@ function handleOptionClick(event) {
 
     // Update button styles
     const optionButtons = elements.optionsContainer.querySelectorAll('.option-btn');
-    optionButtons.forEach(button => {
-        const index = parseInt(button.dataset.index, 10);
+    optionButtons.forEach(btn => {
+        const index = parseInt(btn.dataset.index, 10);
         if (index === question.correctAnswerIndex) {
-            button.classList.add('correct');
+            btn.classList.add('correct');
         } else if (index === selectedIndex) {
-            button.classList.add('incorrect');
+            btn.classList.add('incorrect');
         }
-        button.disabled = true;
+        btn.disabled = true;
     });
 
     // Show explanation
