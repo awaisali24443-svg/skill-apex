@@ -13,7 +13,10 @@ function loadSettings() {
     soundToggle.checked = config.enableSound;
 
     document.querySelectorAll('#theme-toggle button').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.theme === config.theme);
+        btn.classList.remove('active');
+        if (btn.dataset.theme === config.theme) {
+            btn.classList.add('active');
+        }
     });
 }
 
@@ -23,11 +26,18 @@ function handleSoundToggle() {
 
 function handleThemeToggle(event) {
     const button = event.target.closest('button[data-theme]');
-    if (button) {
+    if (button && !button.classList.contains('active')) {
         const newTheme = button.dataset.theme;
+        
+        // Apply the theme visually
         applyTheme(newTheme);
+        
+        // Save the setting
         configService.setConfig({ theme: newTheme });
-        loadSettings(); // Instantly update the active button style
+        
+        // Update the button's active state directly
+        themeToggle.querySelector('button.active')?.classList.remove('active');
+        button.classList.add('active');
     }
 }
 

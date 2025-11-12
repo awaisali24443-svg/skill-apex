@@ -10,6 +10,7 @@ function renderQuestion() {
     const state = quizStateService.getQuizState();
     
     if (!question) {
+        console.error("Could not get current question, redirecting.");
         window.location.hash = '/';
         return;
     }
@@ -60,9 +61,10 @@ function handleOptionClick(event) {
         btn.disabled = true;
     });
 
-    // Show explanation
+    // Show explanation and focus the next button for better UX/accessibility
     elements.explanationText.textContent = question.explanation;
     elements.explanationContainer.style.display = 'block';
+    elements.nextQuestionBtn.focus();
 }
 
 function handleNextQuestion() {
@@ -70,6 +72,7 @@ function handleNextQuestion() {
     if (hasNext) {
         renderQuestion();
     } else {
+        // This is the final question, go to results
         window.location.hash = '/results';
     }
 }
@@ -78,9 +81,9 @@ export function init(globalState) {
     appState = globalState;
     const quizData = quizStateService.getQuizState();
 
-    if (!quizData || !quizData.questions) {
+    if (!quizData || !quizData.questions || quizData.questions.length === 0) {
         console.error("No quiz data found, redirecting.");
-        window.location.hash = '/';
+        window.location.hash = '/'; // Redirect if state is invalid
         return;
     }
 

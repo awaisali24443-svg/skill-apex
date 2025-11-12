@@ -88,9 +88,20 @@ async function loadModule(route) {
         }
     }
 
-    // 2. Animate the page out.
-    appContainer.classList.add('fade-out');
-    await new Promise(resolve => setTimeout(resolve, 300));
+    // 2. Animate the page out using a more robust method.
+    await new Promise(resolve => {
+        const handler = (event) => {
+            // Ensure the event is for the appContainer itself
+            if (event.target === appContainer) {
+                appContainer.removeEventListener('transitionend', handler);
+                resolve();
+            }
+        };
+        appContainer.addEventListener('transitionend', handler);
+        appContainer.classList.add('fade-out');
+        // Fallback timer in case transitionend doesn't fire (e.g., element is hidden)
+        setTimeout(resolve, 350);
+    });
 
     try {
         // Pass route params into the app state context for the new module.
