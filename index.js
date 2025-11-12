@@ -7,6 +7,7 @@ import * as soundService from './services/soundService.js';
 import * as learningPathService from './services/learningPathService.js';
 import * as historyService from './services/historyService.js';
 import * as themeService from './services/themeService.js';
+import * as backgroundService from './services/backgroundService.js';
 
 // appState holds the current module and a context object for passing data between modules.
 const appState = {
@@ -89,7 +90,7 @@ async function loadModule(route) {
 
     // 2. Animate the page out.
     appContainer.classList.add('fade-out');
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(resolve => setTimeout(resolve, 300));
 
     try {
         // Pass route params into the app state context for the new module.
@@ -174,6 +175,7 @@ async function main() {
         // Initialize all core services
         configService.init();
         themeService.applyTheme(configService.getConfig().theme); // Apply theme on startup
+        backgroundService.init();
         soundService.init(configService);
         learningPathService.init();
         historyService.init();
