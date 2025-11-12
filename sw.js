@@ -1,4 +1,4 @@
-const CACHE_NAME = 'knowledge-tester-v2.0.0';
+const CACHE_NAME = 'knowledge-tester-v2.0.1';
 // Add assets to this list
 const APP_SHELL_URLS = [
     '/',
@@ -16,6 +16,9 @@ const APP_SHELL_URLS = [
     '/assets/images/og-image.png',
     '/assets/sounds/correct.mp3',
     '/assets/sounds/incorrect.mp3',
+    '/assets/sounds/click.mp3',
+    '/assets/sounds/start.mp3',
+    '/assets/sounds/finish.mp3',
     'https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Inter:wght@400;600&family=Roboto+Mono:wght@400;500&display=swap',
 ];
 

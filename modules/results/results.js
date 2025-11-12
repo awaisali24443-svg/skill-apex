@@ -97,6 +97,7 @@ export function init(appState) {
         return;
     }
 
+    soundService.playSound('finish');
     const scorePercent = quizState.questions.length > 0 ? Math.round((quizState.score / quizState.questions.length) * 100) : 0;
     
     renderSummary(scorePercent);

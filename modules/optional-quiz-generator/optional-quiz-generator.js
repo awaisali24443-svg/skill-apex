@@ -1,15 +1,14 @@
 let appState;
-let form;
+let form, topicInput, numQuestionsSelect, difficultySelect;
 
 function handleSubmit(event) {
     event.preventDefault();
-    const topic = document.getElementById('topic-input').value;
-    const numQuestions = document.getElementById('num-questions-select').value;
-    const difficulty = document.getElementById('difficulty-select').value;
+    const topic = topicInput.value;
+    const numQuestions = numQuestionsSelect.value;
+    const difficulty = difficultySelect.value;
     
     if (topic.trim() === '') {
-        // Basic validation
-        document.getElementById('topic-input').focus();
+        topicInput.focus();
         return;
     }
 
@@ -24,10 +23,16 @@ function handleSubmit(event) {
 export function init(globalState) {
     appState = globalState;
     form = document.getElementById('custom-quiz-form');
+    topicInput = document.getElementById('topic-input');
+    numQuestionsSelect = document.getElementById('num-questions-select');
+    difficultySelect = document.getElementById('difficulty-select');
+
     form.addEventListener('submit', handleSubmit);
-    document.getElementById('topic-input').focus();
+    topicInput.focus();
 }
 
 export function destroy() {
-    form.removeEventListener('submit', handleSubmit);
+    if (form) {
+        form.removeEventListener('submit', handleSubmit);
+    }
 }

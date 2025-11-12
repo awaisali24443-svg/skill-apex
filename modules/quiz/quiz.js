@@ -83,6 +83,8 @@ export function init(globalState) {
         window.location.hash = '/';
         return;
     }
+
+    soundService.playSound('start');
     
     elements = {
         progressBarFill: document.getElementById('progress-bar-fill'),
