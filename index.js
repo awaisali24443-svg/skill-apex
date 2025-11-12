@@ -179,8 +179,16 @@ function handleRouteChange() {
 }
 
 function hideSplashScreen() {
-    if (splashScreen && !splashScreen.classList.contains('fade-out')) {
-        splashScreen.classList.add('fade-out');
+    const splash = document.getElementById('splash-screen');
+    // Use a data attribute to ensure we only run this once.
+    if (splash && !splash.dataset.hiding) {
+        splash.dataset.hiding = 'true';
+        splash.style.transition = 'opacity 0.5s ease-out';
+        splash.style.opacity = '0';
+        
+        setTimeout(() => {
+            splash.remove();
+        }, 500); // Matches the CSS transition duration
     }
 }
 
