@@ -1,6 +1,6 @@
 // sw.js
 
-const CACHE_NAME = 'knowledge-tester-v2.1'; // Incremented cache version
+const CACHE_NAME = 'knowledge-tester-v2.2'; // Incremented cache version
 const STATIC_ASSETS = [
     '/global/global.css',
     '/global/splash.css',
@@ -10,13 +10,12 @@ const STATIC_ASSETS = [
     '/constants.js',
     // Core services
     '/services/configService.js',
-    '/services/featureService.js',
     '/services/soundService.js',
     '/services/libraryService.js',
     '/services/topicService.js',
+    '/services/apiService.js',
     // NEW: 3D Galaxy Services
     '/services/threeManager.js',
-    '/services/overlayService.js',
     // Home module for GALAXY view
     '/modules/home/home.js',
     '/modules/home/home.html',
@@ -28,6 +27,9 @@ const STATIC_ASSETS = [
     '/modules/learning-path-generator/learning-path-generator.js',
     '/modules/learning-path-generator/learning-path-generator.html',
     '/modules/learning-path-generator/learning-path-generator.css',
+    '/modules/learning-path/learning-path.js',
+    '/modules/learning-path/learning-path.html',
+    '/modules/learning-path/learning-path.css',
     // Fonts
     'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@400;500;700&display=swap',
     'https://fonts.gstatic.com/s/orbitron/v31/yMJRMIlzdpvBhQQL_Qq7dy0.woff2',

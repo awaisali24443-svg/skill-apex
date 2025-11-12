@@ -1,30 +1,25 @@
 import { threeManager } from '../../services/threeManager.js';
-import { overlayService } from '../../services/overlayService.js';
 import { ROUTES } from '../../constants.js';
 
 let appStateRef;
 
 function handlePlanetClick(target) {
-    const route = target.userData.route;
-    if (!route) return;
+    const routeHash = target.userData.route;
+    if (!routeHash) return;
     
-    const routeConfig = ROUTES.find(r => `/#${r.hash}` === route || `/${route}` === `/#${r.hash}`);
+    // Find the full route configuration
+    const routeConfig = ROUTES.find(r => `#${r.hash}` === routeHash);
     if (!routeConfig) {
-        console.warn(`No route config found for: ${route}`);
+        console.warn(`No route config found for: ${routeHash}`);
         return;
     }
     
-    // Use the focus animation, and once complete, show the overlay.
-    threeManager.focusOnPlanet(target, () => {
-        overlayService.show(routeConfig, appStateRef);
-    });
+    // Directly navigate by changing the hash. The main router in index.js will handle the rest.
+    window.location.hash = routeHash;
 }
 
-function handleCloseModuleView() {
-    threeManager.resetCamera();
-}
 
-export async function init(appState) {
+export async function init(appContainer, appState) {
     console.log("Home module (Galaxy) initialized.");
     appStateRef = appState;
     const canvas = document.getElementById('galaxy-canvas');
@@ -32,14 +27,13 @@ export async function init(appState) {
         console.error("Galaxy canvas not found!");
         return;
     }
+    // Pass the main container's dimensions for the renderer
     await threeManager.init(canvas, handlePlanetClick);
-    
-    window.addEventListener('close-module-view', handleCloseModuleView);
 }
 
 export function destroy() {
     console.log("Home module (Galaxy) destroyed.");
-    threeManager.destroy();
-    window.removeEventListener('close-module-view', handleCloseModuleView);
+    // threeManager.destroy() is now called from the main router in index.js
+    // to ensure it happens *before* the new module's content is added.
     appStateRef = null;
 }

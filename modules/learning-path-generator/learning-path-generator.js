@@ -1,4 +1,5 @@
 import { saveNewPath, getAllLearningPaths } from '../../services/learningPathService.js';
+import { generateLearningPath } from '../../services/apiService.js';
 import { toastService } from '../../services/toastService.js';
 import { initializeCardGlow } from '../../global/global.js';
 
@@ -16,18 +17,7 @@ async function handleFormSubmit(e) {
     setLoading(true);
 
     try {
-        const response = await fetch('/api/generate-path', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ goal })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || 'Failed to generate path.');
-        }
-
+        const data = await generateLearningPath(goal);
         const newPath = saveNewPath({ name: goal, steps: data.path });
         
         // Redirect to the newly created path

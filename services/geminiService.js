@@ -1,4 +1,3 @@
-
 export async function generateQuiz(topic, topicId, numQuestions, difficulty = 'Medium') {
     try {
         const response = await fetch('/api/generate', {
@@ -17,11 +16,9 @@ export async function generateQuiz(topic, topicId, numQuestions, difficulty = 'M
         const data = await response.json();
 
         if (!response.ok) {
-            // If the server sent back an error object, use its message
             throw new Error(data.error || 'An error occurred while generating the quiz.');
         }
 
-        // Validate the received data structure
         if (!data.questions || !Array.isArray(data.questions) || data.questions.length === 0) {
             throw new Error("Received invalid or empty quiz data from the server.");
         }
@@ -35,7 +32,31 @@ export async function generateQuiz(topic, topicId, numQuestions, difficulty = 'M
         return data;
     } catch (error) {
         console.error("Error in generateQuiz service:", error);
-        // Re-throw the error so the calling module (loading.js) can catch it
+        throw error;
+    }
+}
+
+export async function generateLearningPath(goal) {
+    try {
+        const response = await fetch('/api/generate-path', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ goal })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to generate learning path.');
+        }
+        
+        if (!data.path || !Array.isArray(data.path)) {
+            throw new Error("Received invalid path data from the server.");
+        }
+
+        return data;
+    } catch (error) {
+        console.error("Error in generateLearningPath service:", error);
         throw error;
     }
 }

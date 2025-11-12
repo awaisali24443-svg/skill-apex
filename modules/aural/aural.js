@@ -1,4 +1,4 @@
-import { GoogleGenAI, LiveServerMessage, Modality, Blob } from '@google/genai';
+import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
 
 // --- State Management ---
 let ai;
@@ -11,6 +11,7 @@ let nextStartTime = 0;
 let currentInputTranscription = '';
 let currentModelTranscription = '';
 let isConnecting = false;
+let isSessionActive = false;
 
 // --- DOM Elements ---
 let elements = {};
@@ -63,22 +64,31 @@ function createBlob(data) {
 
 // --- UI & State Update Functions ---
 function setUIState(state, message) {
+    if (!elements.orb) return;
     elements.orb.className = `orb-${state}`;
     elements.status.textContent = message;
 }
 
 function addTranscriptionEntry(text, sender) {
-    if (!text.trim()) return;
-    const entry = document.createElement('div');
-    entry.className = `transcription-entry ${sender}`;
-    entry.textContent = text;
+    if (!text.trim() || !elements.log) return;
+    const template = document.getElementById('transcription-template');
+    const entry = template.content.cloneNode(true);
+    const entryDiv = entry.querySelector('.transcription-entry');
+    const label = entry.querySelector('.sender-label');
+    const textP = entry.querySelector('.transcription-text');
+    
+    entryDiv.classList.add(sender);
+    label.textContent = sender === 'user' ? 'You' : 'AI';
+    textP.textContent = text;
+    
     elements.log.appendChild(entry);
     elements.log.parentElement.scrollTop = elements.log.parentElement.scrollHeight;
 }
 
+
 // --- Core Aural Logic ---
 async function startConversation() {
-    if (isConnecting) return;
+    if (isConnecting || isSessionActive) return;
     isConnecting = true;
 
     setUIState('connecting', 'Connecting to AI...');
@@ -98,6 +108,7 @@ async function startConversation() {
             callbacks: {
                 onopen: () => {
                     isConnecting = false;
+                    isSessionActive = true;
                     elements.controlBtn.disabled = false;
                     elements.controlBtn.textContent = 'Stop Conversation';
                     setUIState('listening', 'Listening...');
@@ -109,7 +120,9 @@ async function startConversation() {
                         const inputData = audioProcessingEvent.inputBuffer.getChannelData(0);
                         const pcmBlob = createBlob(inputData);
                         sessionPromise.then((session) => {
-                            session.sendRealtimeInput({ media: pcmBlob });
+                            if (isSessionActive) {
+                                session.sendRealtimeInput({ media: pcmBlob });
+                            }
                         });
                     };
 
@@ -122,10 +135,12 @@ async function startConversation() {
                     setUIState('idle', 'Session error. Please try again.');
                     stopConversation();
                 },
-                onclose: () => {
-                    console.log('Session closed.');
-                    setUIState('idle', 'Session ended.');
-                    stopConversation();
+                onclose: (e) => {
+                    console.log('Session closed.', e);
+                    if (isSessionActive) {
+                       setUIState('idle', 'Session ended.');
+                       stopConversation();
+                    }
                 },
             },
             config: {
@@ -133,40 +148,44 @@ async function startConversation() {
                 speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } } },
                 inputAudioTranscription: {},
                 outputAudioTranscription: {},
+                systemInstruction: 'You are a friendly and helpful AI assistant. Keep your answers concise and conversational.',
             },
         });
     } catch (error) {
         console.error('Failed to start conversation:', error);
         setUIState('idle', 'Could not access microphone.');
         stopConversation();
-        isConnecting = false;
     }
 }
 
 async function handleServerMessage(message) {
-    // Handle transcriptions
+    if (!isSessionActive) return;
+
+    let uiState = 'listening'; // Default state
+    let uiMessage = 'Listening...';
+
     if (message.serverContent?.inputTranscription) {
         currentInputTranscription += message.serverContent.inputTranscription.text;
+        uiState = 'thinking';
+        uiMessage = 'Thinking...';
     }
-    if (message.serverContent?.outputTranscription) {
-        currentModelTranscription += message.serverContent.outputTranscription.text;
-        setUIState('speaking', 'Speaking...');
+    if (message.serverContent?.outputTranscription || message.serverContent?.modelTurn?.parts[0]?.inlineData?.data) {
+        if(message.serverContent?.outputTranscription) {
+            currentModelTranscription += message.serverContent.outputTranscription.text;
+        }
+        uiState = 'speaking';
+        uiMessage = 'Speaking...';
     }
-    if(message.serverContent?.modelTurn?.parts[0]?.inlineData?.data) {
-        setUIState('speaking', 'Speaking...');
-    } else if (currentInputTranscription && !currentModelTranscription) {
-        setUIState('thinking', 'Thinking...');
-    }
-
+    
     if (message.serverContent?.turnComplete) {
         addTranscriptionEntry(currentInputTranscription, 'user');
         addTranscriptionEntry(currentModelTranscription, 'model');
         currentInputTranscription = '';
         currentModelTranscription = '';
-        setUIState('listening', 'Listening...');
     }
 
-    // Handle audio playback
+    setUIState(uiState, uiMessage);
+
     const audioData = message.serverContent?.modelTurn?.parts[0]?.inlineData.data;
     if (audioData) {
         nextStartTime = Math.max(nextStartTime, outputAudioContext.currentTime);
@@ -180,7 +199,6 @@ async function handleServerMessage(message) {
         sources.add(source);
     }
 
-    // Handle interruptions
     if (message.serverContent?.interrupted) {
         for (const source of sources.values()) {
             source.stop();
@@ -191,7 +209,12 @@ async function handleServerMessage(message) {
 }
 
 function stopConversation() {
-    sessionPromise?.then(session => session.close());
+    if (!isSessionActive && !isConnecting) return;
+    
+    isSessionActive = false;
+    isConnecting = false;
+
+    sessionPromise?.then(session => session.close()).catch(e => console.error("Error closing session:", e));
     sessionPromise = null;
 
     microphoneStream?.getTracks().forEach(track => track.stop());
@@ -200,25 +223,26 @@ function stopConversation() {
     scriptProcessor?.disconnect();
     scriptProcessor = null;
     
-    inputAudioContext?.close();
-    outputAudioContext?.close();
+    inputAudioContext?.close().catch(e => {});
+    outputAudioContext?.close().catch(e => {});
     inputAudioContext = null;
     outputAudioContext = null;
 
     for (const source of sources.values()) {
-        source.stop();
+        try { source.stop(); } catch (e) {}
     }
     sources.clear();
     nextStartTime = 0;
 
-    isConnecting = false;
-    elements.controlBtn.textContent = 'Start Conversation';
-    elements.controlBtn.disabled = false;
+    if (elements.controlBtn) {
+        elements.controlBtn.textContent = 'Start Conversation';
+        elements.controlBtn.disabled = false;
+    }
     setUIState('idle', 'Press start to talk to the AI');
 }
 
 function handleControlButtonClick() {
-    if (sessionPromise || isConnecting) {
+    if (isSessionActive || isConnecting) {
         stopConversation();
     } else {
         startConversation();
@@ -241,5 +265,6 @@ export function destroy() {
     if (elements.controlBtn) {
         elements.controlBtn.removeEventListener('click', handleControlButtonClick);
     }
+    elements = {}; // Clear references
     console.log("Aural module destroyed.");
 }

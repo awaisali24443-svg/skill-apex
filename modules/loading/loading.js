@@ -1,5 +1,4 @@
-
-import { generateQuiz } from '../../services/geminiService.js';
+import { generateQuiz } from '../../services/apiService.js';
 import { NUM_QUESTIONS } from '../../constants.js';
 
 const messages = [
@@ -13,6 +12,7 @@ const messages = [
 
 let messageInterval;
 let isCancelled = false;
+let cancelTimeout;
 
 async function startQuizGeneration(appState) {
     const statusEl = document.getElementById('loading-status');
@@ -22,15 +22,18 @@ async function startQuizGeneration(appState) {
     const cancelBtn = document.getElementById('cancel-btn');
 
     // Show cancel button after a delay
-    const cancelTimeout = setTimeout(() => {
+    cancelTimeout = setTimeout(() => {
         if(cancelBtn) cancelBtn.style.display = 'inline-flex';
     }, 5000);
 
     let messageIndex = 0;
-    statusEl.textContent = messages[messageIndex];
+    if (statusEl) {
+        statusEl.textContent = messages[messageIndex];
+    }
+    
     messageInterval = setInterval(() => {
         messageIndex = (messageIndex + 1) % messages.length;
-        statusEl.textContent = messages[messageIndex];
+        if(statusEl) statusEl.textContent = messages[messageIndex];
     }, 2500);
 
     try {
@@ -41,15 +44,15 @@ async function startQuizGeneration(appState) {
         if (isCancelled) return; // Don't navigate if user cancelled while waiting
 
         // Pass the generated data to the next module
-        appState.context = { quizData };
+        appState.context = { ...appState.context, quizData };
         window.location.hash = '#quiz';
 
     } catch (error) {
         if (isCancelled) return;
         
         console.error("Failed to generate quiz:", error);
-        loadingText.style.display = 'none';
-        cancelBtn.style.display = 'none';
+        if(loadingText) loadingText.style.display = 'none';
+        if(cancelBtn) cancelBtn.style.display = 'none';
 
         let userFriendlyError = "An unexpected error occurred.";
         if (error.message.toLowerCase().includes('safety')) {
@@ -62,8 +65,8 @@ async function startQuizGeneration(appState) {
             userFriendlyError = error.message;
         }
         
-        errorText.textContent = userFriendlyError;
-        errorContainer.style.display = 'block';
+        if(errorText) errorText.textContent = userFriendlyError;
+        if(errorContainer) errorContainer.style.display = 'block';
     } finally {
         clearTimeout(cancelTimeout); // Clean up timeout
     }
@@ -71,18 +74,19 @@ async function startQuizGeneration(appState) {
 
 function handleCancel() {
     isCancelled = true;
-    window.location.hash = '#custom-quiz';
+    window.history.back(); // Go back to the previous page instead of a fixed hash
 }
 
 export function init(appState) {
     isCancelled = false;
-    document.getElementById('cancel-btn').addEventListener('click', handleCancel);
+    document.getElementById('cancel-btn')?.addEventListener('click', handleCancel);
     startQuizGeneration(appState);
     console.log("Loading module initialized.");
 }
 
 export function destroy() {
     clearInterval(messageInterval);
+    clearTimeout(cancelTimeout);
     isCancelled = true; // Mark as cancelled on navigation
     const cancelBtn = document.getElementById('cancel-btn');
     if(cancelBtn) {

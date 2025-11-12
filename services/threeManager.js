@@ -20,19 +20,15 @@ let asteroidBelt, particleSystem;
 let hoveredPlanet = null;
 const textureLoader = new THREE.TextureLoader();
 
-let isAnimatingCamera = false;
-let animationCallback = null;
-const targetPosition = new THREE.Vector3();
-const targetLookAt = new THREE.Vector3();
 const initialCameraPos = new THREE.Vector3(0, 20, 55);
-const initialLookAt = new THREE.Vector3(0, 0, 0);
 
 // --- Static Planet Config for non-category modules ---
 const STATIC_PLANET_CONFIG = [
     { name: 'Custom Quiz', route: '#custom-quiz', size: 1.0, orbitRadiusX: 28, orbitRadiusZ: 26, speed: 0.15, rotationSpeed: 0.004, type: 'neptune' },
     { name: 'Aural AI', route: '#aural', size: 1.5, orbitRadiusX: 58, orbitRadiusZ: 58, speed: 0.06, rotationSpeed: 0.002, type: 'jupiter', rings: true },
-    { name: 'My Library', route: '#library', size: 0.9, orbitRadiusX: 70, orbitRadiusZ: 68, speed: 0.05, rotationSpeed: 0.007, type: 'ice' },
-    { name: 'Settings', route: '#settings', size: 0.6, orbitRadiusX: 80, orbitRadiusZ: 80, speed: 0.04, rotationSpeed: 0.008, type: 'rocky_dark' },
+    { name: 'Learning Paths', route: '#paths', size: 1.2, orbitRadiusX: 70, orbitRadiusZ: 68, speed: 0.05, rotationSpeed: 0.007, type: 'ice' },
+    { name: 'My Library', route: '#library', size: 0.9, orbitRadiusX: 80, orbitRadiusZ: 80, speed: 0.04, rotationSpeed: 0.008, type: 'rocky_dark' },
+    { name: 'Settings', route: '#settings', size: 0.7, orbitRadiusX: 90, orbitRadiusZ: 92, speed: 0.03, rotationSpeed: 0.009, type: 'mars' },
 ];
 
 const PLANET_VISUAL_TYPES = ['earth', 'mars', 'rocky', 'neptune', 'ice', 'jupiter'];
@@ -162,7 +158,7 @@ async function init(canvas, clickCallback) {
         categories.forEach((cat, index) => {
             allPlanetConfigs.push({
                 name: cat.name,
-                route: `/#topics/${cat.id}`,
+                route: `#topics/${cat.id}`,
                 size: 1.0 + Math.random() * 0.4 - 0.2, // ~0.8 to 1.2
                 orbitRadiusX: baseOrbit + (index * orbitStep),
                 orbitRadiusZ: baseOrbit + (index * orbitStep) + (Math.random() * 4 - 2), // slightly elliptical
@@ -201,8 +197,8 @@ async function init(canvas, clickCallback) {
 
 
     window.addEventListener('resize', onWindowResize);
-    window.addEventListener('click', onClick);
-    window.addEventListener('mousemove', onMouseMove);
+    canvas.addEventListener('click', onClick);
+    canvas.addEventListener('mousemove', onMouseMove);
 
     introAnimation();
     animate();
@@ -380,8 +376,8 @@ function createAsteroidBelt() {
     asteroidBelt.receiveShadow = true;
 
     const dummy = new THREE.Object3D();
-    const innerRadius = 32;
-    const outerRadius = 35;
+    const innerRadius = 42;
+    const outerRadius = 45;
 
     for (let i = 0; i < asteroidCount; i++) {
         const radius = Math.random() * (outerRadius - innerRadius) + innerRadius;
@@ -428,20 +424,23 @@ function introAnimation() {
     
     const startPos = camera.position.clone();
     const duration = 4.0;
-    const startTime = clock.getElapsedTime();
+    let startTime = null;
 
-    function updateCameraAnimation() {
-        if (!clock) return; 
-        const t = (clock.getElapsedTime() - startTime) / duration;
+    function updateCameraAnimation(timestamp) {
+        if (!clock) return;
+        if (startTime === null) startTime = timestamp; 
+        const elapsed = timestamp - startTime;
+        const t = Math.min(elapsed / (duration * 1000), 1.0);
         const easedT = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+        
+        camera.position.lerpVectors(startPos, initialCameraPos, easedT);
         if (t < 1.0) {
-            camera.position.lerpVectors(startPos, initialCameraPos, easedT);
             requestAnimationFrame(updateCameraAnimation);
         } else {
             camera.position.copy(initialCameraPos);
         }
     }
-    updateCameraAnimation();
+    requestAnimationFrame(updateCameraAnimation);
 }
 
 function animate() {
@@ -449,34 +448,17 @@ function animate() {
     const delta = clock.getDelta();
     const elapsedTime = clock.getElapsedTime();
     
-    // Animate Sun pulse
     sunLight.intensity = 3.5 + Math.sin(elapsedTime * 0.5) * 0.2;
     sunMesh.scale.setScalar(1.0 + Math.sin(elapsedTime * 0.5) * 0.02);
     
-    // Update God Rays light position
     if (composer) {
         const screenPosition = new THREE.Vector3();
         sunMesh.getWorldPosition(screenPosition);
         screenPosition.project(camera);
-        const godRaysPass = composer.passes[1]; // Assuming it's the second pass
+        const godRaysPass = composer.passes[1]; 
         if (godRaysPass && godRaysPass.material.uniforms.uLightPosition) {
             godRaysPass.material.uniforms.uLightPosition.value.x = (screenPosition.x + 1) * 0.5;
             godRaysPass.material.uniforms.uLightPosition.value.y = (screenPosition.y + 1) * 0.5;
-        }
-    }
-    
-    if (isAnimatingCamera) {
-        camera.position.lerp(targetPosition, 0.05);
-        controls.target.lerp(targetLookAt, 0.05);
-        if (camera.position.distanceTo(targetPosition) < 0.1) {
-            camera.position.copy(targetPosition);
-            controls.target.copy(targetLookAt);
-            isAnimatingCamera = false;
-            controls.enabled = true;
-            if (animationCallback) {
-                animationCallback();
-                animationCallback = null;
-            }
         }
     }
 
@@ -497,72 +479,74 @@ function animate() {
     });
     
     if (asteroidBelt) asteroidBelt.rotation.y += 0.0002;
-    if (particleSystem) {
-        particleSystem.rotation.y += 0.0001;
-        // Interactive particle effect
-        const positions = particleSystem.geometry.attributes.position.array;
-        const targetX = mouse.x * 50;
-        const targetY = mouse.y * 20;
-        for (let i = 0; i < positions.length; i += 3) {
-            const dx = positions[i] - targetX;
-            const dy = positions[i+1] - targetY;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-            if (dist < 10) {
-                 positions[i+2] += (10-dist) * 0.01;
-            }
-             positions[i+2] *= 0.99; // Slowly return to position
-        }
-        particleSystem.geometry.attributes.position.needsUpdate = true;
-    }
+    if (particleSystem) particleSystem.rotation.y += 0.0001;
     
     controls.update();
     composer.render();
 }
 
 function onClick(event) {
-    if (isAnimatingCamera || event.target.tagName !== 'CANVAS') return;
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    const canvas = renderer.domElement;
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
     raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(interactableObjects);
+    const intersects = raycaster.intersectObjects(interactableObjects, true);
 
-    if (intersects.length > 0 && intersects[0].object.userData.isPlanet) {
-        soundService.playSound('click');
-        const targetObject = intersects[0].object;
-        if (onPlanetClick) {
-            onPlanetClick(targetObject);
+    if (intersects.length > 0) {
+        let currentObject = intersects[0].object;
+        // Traverse up to find the object with userData
+        while(currentObject) {
+            if (currentObject.userData.isPlanet) {
+                soundService.playSound('click');
+                if (onPlanetClick) {
+                    onPlanetClick(currentObject);
+                }
+                return;
+            }
+            currentObject = currentObject.parent;
         }
     }
 }
 
 function onMouseMove(event) {
-    if (isAnimatingCamera || event.target.tagName !== 'CANVAS') {
-        mouse.x = -10; // Move mouse off-screen for particle effect
-        mouse.y = -10;
-        return;
-    };
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    const canvas = renderer.domElement;
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
     raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(interactableObjects);
+    const intersects = raycaster.intersectObjects(interactableObjects, true);
 
-    if (intersects.length > 0 && intersects[0].object.userData.isPlanet) {
-        const intersectedObject = intersects[0].object;
-        document.body.style.cursor = 'pointer';
-        if (hoveredPlanet !== intersectedObject) {
-            if (hoveredPlanet) {
-                hoveredPlanet.material.emissive?.setHex(0x000000);
+    let intersectedPlanet = null;
+    if (intersects.length > 0) {
+        let currentObject = intersects[0].object;
+        while(currentObject) {
+             if (currentObject.userData.isPlanet) {
+                intersectedPlanet = currentObject;
+                break;
             }
-            hoveredPlanet = intersectedObject;
-            hoveredPlanet.material.emissive?.setHex(0x222222);
+            currentObject = currentObject.parent;
+        }
+    }
+    
+    if (intersectedPlanet) {
+        canvas.style.cursor = 'pointer';
+        if (hoveredPlanet !== intersectedPlanet) {
+            if (hoveredPlanet && hoveredPlanet.material.emissive) {
+                hoveredPlanet.material.emissive.setHex(0x000000);
+            }
+            hoveredPlanet = intersectedPlanet;
+            if (hoveredPlanet.material.emissive) {
+                 hoveredPlanet.material.emissive.setHex(0x444444);
+            }
             soundService.playSound('hover');
         }
     } else {
-        document.body.style.cursor = 'grab';
-        if (hoveredPlanet) {
-            hoveredPlanet.material.emissive?.setHex(0x000000);
+        canvas.style.cursor = 'grab';
+        if (hoveredPlanet && hoveredPlanet.material.emissive) {
+            hoveredPlanet.material.emissive.setHex(0x000000);
             hoveredPlanet = null;
         }
     }
@@ -570,34 +554,34 @@ function onMouseMove(event) {
 
 function onWindowResize() {
     const canvas = renderer.domElement;
-    if(!canvas) return;
-    camera.aspect = canvas.clientWidth / canvas.clientHeight;
+    if(!canvas || !canvas.parentElement) return;
+
+    const parent = canvas.parentElement;
+    camera.aspect = parent.clientWidth / parent.clientHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
-    composer.setSize(canvas.clientWidth, canvas.clientHeight);
+    renderer.setSize(parent.clientWidth, parent.clientHeight);
+    composer.setSize(parent.clientWidth, parent.clientHeight);
 }
 
 function destroy() {
+    console.log("Destroying Three.js manager");
     cancelAnimationFrame(animationFrameId);
+    
+    const canvas = renderer?.domElement;
+    if (canvas) {
+        canvas.removeEventListener('click', onClick);
+        canvas.removeEventListener('mousemove', onMouseMove);
+    }
     window.removeEventListener('resize', onWindowResize);
-    window.removeEventListener('click', onClick);
-    window.removeEventListener('mousemove', onMouseMove);
+    
     soundService.stopAmbient();
 
     scene.traverse(object => {
         if (object.geometry) object.geometry.dispose();
         if (object.material) {
             if (Array.isArray(object.material)) {
-                object.material.forEach(material => {
-                    Object.values(material).forEach(prop => {
-                        if (prop && typeof prop.dispose === 'function') prop.dispose();
-                    });
-                    material.dispose();
-                });
+                object.material.forEach(material => material.dispose());
             } else {
-                Object.values(object.material).forEach(prop => {
-                    if (prop && typeof prop.dispose === 'function') prop.dispose();
-                });
                 object.material.dispose();
             }
         }
@@ -605,37 +589,19 @@ function destroy() {
 
     if (renderer) renderer.dispose();
     if (controls) controls.dispose();
+    
+    // Clear arrays
     interactableObjects.length = 0;
     planets.length = 0;
     orbitLines.length = 0;
-    clock = null;
-}
 
-function focusOnPlanet(target, onComplete) {
-    controls.enabled = false;
-    isAnimatingCamera = true;
-    animationCallback = onComplete;
-    soundService.playSound('transition');
-    
-    const planetRadius = target.geometry.parameters.radius;
-    const offset = new THREE.Vector3(0, planetRadius * 0.5, planetRadius * 4);
-    target.getWorldPosition(targetLookAt);
-    targetPosition.copy(targetLookAt).add(offset);
-}
-
-function resetCamera(onComplete) {
-    controls.enabled = false;
-    isAnimatingCamera = true;
-    animationCallback = onComplete;
-    soundService.playSound('transition');
-    
-    targetPosition.copy(initialCameraPos);
-    targetLookAt.copy(initialLookAt);
+    // Nullify variables
+    camera = scene = renderer = composer = controls = sunLight = sunMesh = clock = raycaster = mouse = null;
+    asteroidBelt = particleSystem = hoveredPlanet = null;
+    animationFrameId = undefined;
 }
 
 export const threeManager = {
     init,
     destroy,
-    focusOnPlanet,
-    resetCamera,
 };

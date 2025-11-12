@@ -1,14 +1,10 @@
-
-
-
 import { ROUTES, APP_STATE_KEY } from './constants.js';
 import { setSetting, getSetting, getAllSettings } from './services/configService.js';
 import { endQuiz } from './services/quizStateService.js';
 import { updateMetaTags } from './services/seoService.js';
 import { createIndex as createSearchIndex } from './services/searchService.js';
-import { soundService } from './services/soundService.js'; // NEW
-import { threeManager } from './services/threeManager.js'; // NEW: For 3D Galaxy
-import { overlayService } from './services/overlayService.js'; // NEW: For 3D Galaxy
+import { soundService } from './services/soundService.js';
+import { threeManager } from './services/threeManager.js';
 
 const app = document.getElementById('app');
 const sidebarContainer = document.getElementById('sidebar-container');
@@ -16,30 +12,17 @@ const splashScreen = document.getElementById('splash-screen');
 
 const moduleCache = new Map();
 
-// Global state object
 const appState = {
     _context: {},
     get context() {
         return this._context;
     },
-    /**
-     * ARCHITECTURAL FIX: This setter is now hardened to prevent state pollution.
-     * It intelligently preserves the router `params` while replacing the rest of the context.
-     * This ensures that navigating between modules doesn't leave behind stale data that
-     * could corrupt the state of the next module.
-     */
     set context(data) {
-        // Preserve existing params unless new ones are explicitly provided
-        const newContext = { 
-            ...data, 
-            params: data.params || this._context.params 
-        };
+        const newContext = { ...data, params: data.params || this._context.params };
         this._context = newContext;
-
         try {
             sessionStorage.setItem(APP_STATE_KEY, JSON.stringify(this._context));
-        } catch (error)
-        {
+        } catch (error) {
             console.warn("Could not write to sessionStorage.", error);
         }
     },
@@ -56,54 +39,43 @@ const appState = {
 let currentModule = null;
 
 async function loadModule(moduleConfig, params = {}) {
-    // --- Special Handling for 3D Home ---
-    if (moduleConfig.module === 'home') {
-        if (currentModule && currentModule.instance && typeof currentModule.instance.destroy === 'function') {
-            currentModule.instance.destroy();
+    if (currentModule && currentModule.module === moduleConfig.module) {
+        // Avoid reloading the same module, but update params if they change
+        if (JSON.stringify(appState.context.params) !== JSON.stringify(params)) {
+             appState.setRouteParams(params);
+             if (currentModule.instance && typeof currentModule.instance.init === 'function') {
+                 await currentModule.instance.init(appState); // Re-initialize with new params
+             }
         }
-        document.querySelector(`link[data-module-id]`)?.remove();
-        app.innerHTML = ''; // Clear previous content
-
-        // Dynamically import home module to initialize 3D scene
-        const homeModule = await import('./modules/home/home.js');
-        await homeModule.init(appState);
-        currentModule = { ...moduleConfig, instance: homeModule };
-        app.parentElement.classList.add('galaxy-view'); // Add class to main container
         return;
-    }
-     
-    app.parentElement.classList.remove('galaxy-view');
-
-    if (currentModule && currentModule.path === moduleConfig.path) {
-        return; // Avoid reloading the same module
     }
 
     // --- Cleanup previous module ---
-    if (currentModule && currentModule.instance && typeof currentModule.instance.destroy === 'function') {
-        // FIX #3: If navigating away from quiz, ensure state is cleared.
-        if (currentModule.path.startsWith('quiz')) {
-            endQuiz();
+    if (currentModule) {
+        if (currentModule.instance && typeof currentModule.instance.destroy === 'function') {
+            if (currentModule.module === 'quiz') {
+                endQuiz();
+            }
+            currentModule.instance.destroy();
         }
-        currentModule.instance.destroy();
+        document.querySelector(`link[data-module-id="${currentModule.module}"]`)?.remove();
     }
-    document.querySelector(`link[data-module-id]`)?.remove();
-    // FIX #11: Add a fade-out animation instead of instantly clearing content
-    app.classList.add('fade-out');
-    
-    // Wait for fade out to complete before clearing
-    await new Promise(resolve => setTimeout(resolve, 200)); 
 
+    app.classList.add('fade-out');
+    await new Promise(resolve => setTimeout(resolve, 200));
 
     currentModule = { ...moduleConfig, instance: null };
-    app.innerHTML = ''; // Now clear the content
+    app.innerHTML = '';
+    app.parentElement.classList.toggle('galaxy-view', moduleConfig.module === 'home');
+
 
     // --- Load new module ---
     try {
-        const path = moduleConfig.path || moduleConfig.module;
+        const path = moduleConfig.module;
         if (!moduleCache.has(path)) {
             const [html, css, js] = await Promise.all([
-                fetch(`/modules/${path}/${path}.html`).then(res => res.text()),
-                fetch(`/modules/${path}/${path}.css`).then(res => res.text()),
+                fetch(`/modules/${path}/${path}.html`).then(res => res.ok ? res.text() : ''),
+                fetch(`/modules/${path}/${path}.css`).then(res => res.ok ? res.text() : ''),
                 import(`./modules/${path}/${path}.js`)
             ]);
             moduleCache.set(path, { html, css, js });
@@ -119,39 +91,33 @@ async function loadModule(moduleConfig, params = {}) {
         app.innerHTML = html;
         currentModule.instance = js;
         
-        // Pass params from router to the module's init function
         appState.setRouteParams(params);
         if (typeof js.init === 'function') {
-            await js.init(appState);
+            // Special case for home module initialization
+            if (path === 'home') {
+                 await js.init(app, appState);
+            } else {
+                 await js.init(appState);
+            }
         }
         
-        // Fade in new content
         app.classList.remove('fade-out');
 
-
     } catch (error) {
-        console.error(`Failed to load module: ${moduleConfig.path}`, error);
-        app.innerHTML = `<div class="error-container"><h2>Error</h2><p>Could not load page. Please try again.</p></div>`;
+        console.error(`Failed to load module: ${moduleConfig.module}`, error);
+        app.innerHTML = `<div class="error-container card"><h2>Error</h2><p>Could not load page. Please try again.</p><a href="#home" class="btn">Go Home</a></div>`;
         app.classList.remove('fade-out');
     }
 }
 
-// FIX #2: New dynamic router
 async function handleRouteChange() {
     const hash = window.location.hash.slice(1) || 'home';
     
-    // If we're in the galaxy view and a new hash is set, it means we clicked a planet.
-    if (app.parentElement.classList.contains('galaxy-view') && hash !== 'home') {
-        return; // Let the overlay service handle it
-    }
-    
     // If navigating away from the galaxy, clean it up.
-    if (!app.parentElement.classList.contains('galaxy-view') && currentModule?.module === 'home') {
+    if (currentModule?.module === 'home' && hash !== 'home') {
         threeManager.destroy();
     }
 
-    const [path, ...params] = hash.split('/');
-    
     let matchedRoute = null;
     let routeParams = {};
 
@@ -182,15 +148,10 @@ async function handleRouteChange() {
     }
 
     if (matchedRoute) {
-        // For non-home routes clicked from nav, ensure galaxy is destroyed
-        if (matchedRoute.module !== 'home' && threeManager) {
-            threeManager.destroy();
-        }
         await loadModule(matchedRoute, routeParams);
         updateActiveNavLink(matchedRoute.hash);
         await updateMetaTags(matchedRoute.name, routeParams);
     } else {
-        // Fallback to a 'not found' module or redirect to home
         console.warn(`No route found for hash: ${hash}`);
         window.location.hash = '#home';
     }
@@ -234,7 +195,6 @@ function populateNavLinks() {
 
 function updateActiveNavLink(currentHash) {
     const hashBase = currentHash.split('/')[0];
-    // Get all navigation links
     const navLinks = sidebarContainer.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
         link.classList.toggle('active', link.dataset.hash === hashBase);
@@ -242,7 +202,6 @@ function updateActiveNavLink(currentHash) {
 }
 
 function init() {
-    // FIX #2: Restore state from sessionStorage on load
     try {
         const storedState = sessionStorage.getItem(APP_STATE_KEY);
         if (storedState) {
@@ -256,19 +215,15 @@ function init() {
     applyBodyClasses();
     window.addEventListener('settings-changed', applyBodyClasses);
 
-    // Build the search index for the explore page
     createSearchIndex();
     
-    // NEW: Initialize the sound service
     soundService.init();
     
-    // FIX #15: Ensure sidebar is loaded before routing
     loadSidebar().then(() => {
         window.addEventListener('hashchange', handleRouteChange);
         handleRouteChange(); // Initial route
     });
     
-    // Hide splash screen after a delay
     setTimeout(() => {
         if(splashScreen) splashScreen.classList.add('fade-out');
     }, 3800);
