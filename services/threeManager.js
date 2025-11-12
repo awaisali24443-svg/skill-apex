@@ -8,7 +8,7 @@ import { Lensflare, LensflareElement } from 'three/addons/objects/Lensflare.js';
 import { soundService } from './soundService.js';
 import { getCategories } from './topicService.js';
 
-let camera, scene, renderer, composer, controls, sunLight;
+let camera, scene, renderer, composer, controls, sunLight, corona;
 let clock, raycaster, mouse;
 let animationFrameId;
 let onPlanetClick, onReadyCallback;
@@ -16,7 +16,7 @@ let isFirstFrame = true;
 const interactableObjects = [];
 const planets = [];
 const orbitLines = [];
-let asteroidBelt, particleSystem;
+let asteroidBelt, particleSystem, starSystem;
 let hoveredPlanet = null;
 const textureLoader = new THREE.TextureLoader();
 
@@ -24,11 +24,11 @@ const initialCameraPos = new THREE.Vector3(0, 25, 60);
 
 // --- Static Planet Config for non-category modules ---
 const STATIC_PLANET_CONFIG = [
-    { name: 'Custom Quiz', route: '#custom-quiz', size: 1.0, orbitRadiusX: 28, orbitRadiusZ: 26, speed: 0.15, rotationSpeed: 0.004, type: 'neptune' },
-    { name: 'Aural AI', route: '#aural', size: 1.8, orbitRadiusX: 65, orbitRadiusZ: 65, speed: 0.06, rotationSpeed: 0.002, type: 'saturn', rings: true },
-    { name: 'Learning Paths', route: '#paths', size: 1.2, orbitRadiusX: 80, orbitRadiusZ: 78, speed: 0.05, rotationSpeed: 0.007, type: 'ice' },
-    { name: 'My Library', route: '#library', size: 0.9, orbitRadiusX: 95, orbitRadiusZ: 95, speed: 0.04, rotationSpeed: 0.008, type: 'rocky_dark' },
-    { name: 'Settings', route: '#settings', size: 0.7, orbitRadiusX: 110, orbitRadiusZ: 112, speed: 0.03, rotationSpeed: 0.009, type: 'mars' },
+    { name: 'Custom Quiz', route: '#custom-quiz', size: 1.0, orbitRadiusX: 28, orbitRadiusZ: 26, speed: 0.15, rotationSpeed: 0.004, axialTilt: 0.1, type: 'neptune' },
+    { name: 'Aural AI', route: '#aural', size: 1.8, orbitRadiusX: 65, orbitRadiusZ: 65, speed: 0.06, rotationSpeed: 0.002, axialTilt: 0.05, type: 'saturn', rings: true },
+    { name: 'Learning Paths', route: '#paths', size: 1.2, orbitRadiusX: 80, orbitRadiusZ: 78, speed: 0.05, rotationSpeed: 0.007, axialTilt: 0.2, type: 'ice' },
+    { name: 'My Library', route: '#library', size: 0.9, orbitRadiusX: 95, orbitRadiusZ: 95, speed: 0.04, rotationSpeed: 0.008, axialTilt: -0.15, type: 'rocky_dark' },
+    { name: 'Settings', route: '#settings', size: 0.7, orbitRadiusX: 110, orbitRadiusZ: 112, speed: 0.03, rotationSpeed: 0.009, axialTilt: 0.3, type: 'mars' },
 ];
 
 const PLANET_VISUAL_TYPES = ['earth', 'mars', 'rocky', 'neptune', 'ice', 'jupiter'];
@@ -151,6 +151,9 @@ async function init(canvas, clickCallback, onReady) {
     sunLight.shadow.mapSize.width = 1024;
     sunLight.shadow.mapSize.height = 1024;
     sunLight.shadow.bias = -0.001;
+    // ENHANCEMENT: Add radius for softer shadows
+    sunLight.shadow.radius = 4;
+    sunLight.shadow.blurSamples = 8;
     scene.add(sunLight);
     
     // --- Dynamic Sun ---
@@ -170,7 +173,7 @@ async function init(canvas, clickCallback, onReady) {
         blending: THREE.AdditiveBlending,
         opacity: 0.7,
     });
-    const corona = new THREE.Sprite(coronaMaterial);
+    corona = new THREE.Sprite(coronaMaterial);
     corona.scale.set(30, 30, 1);
     sunGroup.add(corona);
     scene.add(sunGroup);
@@ -197,6 +200,7 @@ async function init(canvas, clickCallback, onReady) {
                 orbitRadiusZ: baseOrbit + (index * orbitStep) + (Math.random() * 4 - 2),
                 speed: 0.2 - (index * 0.03),
                 rotationSpeed: 0.003 + Math.random() * 0.004,
+                axialTilt: (Math.random() - 0.5) * 0.4, // Add random tilt
                 type: PLANET_VISUAL_TYPES[index % PLANET_VISUAL_TYPES.length]
             });
         });
@@ -212,6 +216,7 @@ async function init(canvas, clickCallback, onReady) {
     
     createAsteroidBelt();
     createParticleNebula();
+    createTwinklingStars(); // ENHANCEMENT: Add twinkling stars
 
     // --- Post-Processing ---
     composer = new EffectComposer(renderer);
@@ -236,6 +241,11 @@ function createPlanet(config) {
     
     let planetMesh;
     const materialConfig = { roughness: 0.8, metalness: 0.1 };
+
+    // ENHANCEMENT: Create a tilt group for realistic axial tilt
+    const tiltGroup = new THREE.Object3D();
+    tiltGroup.rotation.z = config.axialTilt || 0;
+    planetGroup.add(tiltGroup);
     
     switch (config.type) {
         case 'earth':
@@ -249,7 +259,10 @@ function createPlanet(config) {
                     specularMap: textureLoader.load('/assets/textures/planets/earth_specular.png'),
                     emissiveMap: textureLoader.load('/assets/textures/planets/earth_night.jpg'),
                     emissive: new THREE.Color(0xffddaa),
-                    emissiveIntensity: 1.0
+                    emissiveIntensity: 1.0,
+                    // ENHANCEMENT: Add normal map for better surface detail
+                    normalMap: textureLoader.load('/assets/textures/planets/earth_normal.jpg'),
+                    normalScale: new THREE.Vector2(0.5, 0.5),
                 })
             );
              const cloudsMesh = new THREE.Mesh(
@@ -282,9 +295,23 @@ function createPlanet(config) {
                 new THREE.MeshStandardMaterial({ ...materialConfig, map: textureLoader.load('/assets/textures/planets/jupiter.jpg') })
             );
             break;
+        case 'mars':
+             planetMesh = new THREE.Mesh(
+                new THREE.SphereGeometry(config.size, 64, 64),
+                new THREE.MeshStandardMaterial({
+                    ...materialConfig,
+                    map: textureLoader.load('/assets/textures/planets/mars.jpg'),
+                    bumpMap: textureLoader.load('/assets/textures/planets/mars_bump.jpg'),
+                    bumpScale: 0.05,
+                    // ENHANCEMENT: Add normal map for Mars
+                    normalMap: textureLoader.load('/assets/textures/planets/mars_normal.jpg'),
+                    normalScale: new THREE.Vector2(0.3, 0.3),
+                })
+            );
+            break;
         default:
             const textureName = config.type.startsWith('rocky') ? 'rocky' : config.type;
-            const bumpName = textureName === 'rocky' || textureName === 'mars' ? textureName : null;
+            const bumpName = textureName === 'rocky' ? 'rocky' : null;
             planetMesh = new THREE.Mesh(
                 new THREE.SphereGeometry(config.size, 64, 64),
                 new THREE.MeshStandardMaterial({
@@ -301,7 +328,9 @@ function createPlanet(config) {
     planetMesh.castShadow = true;
     planetMesh.receiveShadow = true;
     planetMesh.userData = { route: config.route, name: config.name, isPlanet: true, atmosphere: planetMesh.children.find(c => c.material.type === 'ShaderMaterial') };
-    planetGroup.add(planetMesh);
+    
+    // Add the planet to the tilt group instead of directly to the planet group
+    tiltGroup.add(planetMesh);
     interactableObjects.push(planetMesh);
 
     if (config.rings) {
@@ -312,7 +341,7 @@ function createPlanet(config) {
         ringMesh.receiveShadow = true;
         ringMesh.castShadow = true;
         ringMesh.rotation.x = Math.PI * 0.5;
-        planetMesh.add(ringMesh);
+        tiltGroup.add(ringMesh); // Add rings to the tilt group as well
     }
     
     planets.push({ mesh: planetMesh, group: planetGroup, config });
@@ -368,6 +397,38 @@ function createParticleNebula() {
     scene.add(particleSystem);
 }
 
+// ENHANCEMENT: Create a twinkling starfield for more depth
+function createTwinklingStars() {
+    const starCount = 5000;
+    const positions = new Float32Array(starCount * 3);
+    const colors = new Float32Array(starCount * 3);
+
+    for (let i = 0; i < starCount; i++) {
+        positions[i * 3] = (Math.random() - 0.5) * 1000;
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 1000;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 1000;
+        
+        const color = new THREE.Color();
+        color.setHSL(0.6, 1.0, 0.5 + Math.random() * 0.5);
+        colors[i * 3] = color.r;
+        colors[i * 3 + 1] = color.g;
+        colors[i * 3 + 2] = color.b;
+    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    const material = new THREE.PointsMaterial({
+        size: 0.5 + Math.random(),
+        vertexColors: true,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+    });
+    starSystem = new THREE.Points(geometry, material);
+    scene.add(starSystem);
+}
+
 function introAnimation() {
     camera.position.set(0, 10, 150);
     controls.target.set(0, 0, 0);
@@ -396,6 +457,11 @@ function animate() {
         sunMaterial.uniforms.uTime.value = elapsedTime;
     }
 
+    // ENHANCEMENT: Animate sun corona for a "living" effect
+    if (corona) {
+        const coronaScale = 1.0 + Math.sin(elapsedTime * 0.8) * 0.04;
+        corona.scale.set(30 * coronaScale, 30 * coronaScale, 1);
+    }
 
     planets.forEach(p => {
         const { speed, orbitRadiusX, orbitRadiusZ, rotationSpeed } = p.config;
@@ -411,6 +477,7 @@ function animate() {
     
     if (asteroidBelt) asteroidBelt.rotation.y += 0.0001;
     if (particleSystem) particleSystem.rotation.y += 0.00005;
+    if (starSystem) starSystem.rotation.y += 0.0001; // ENHANCEMENT: Slowly rotate starfield
     
     controls.update();
     composer.render(delta);
@@ -523,8 +590,8 @@ function destroy() {
     interactableObjects.length = 0;
     planets.length = 0;
     orbitLines.length = 0;
-    camera = scene = renderer = composer = controls = sunLight = clock = raycaster = mouse = null;
-    asteroidBelt = particleSystem = hoveredPlanet = onReadyCallback = null;
+    camera = scene = renderer = composer = controls = sunLight = clock = raycaster = mouse = corona = null;
+    asteroidBelt = particleSystem = starSystem = hoveredPlanet = onReadyCallback = null;
     animationFrameId = undefined;
 }
 

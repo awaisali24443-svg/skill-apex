@@ -1,6 +1,6 @@
 // sw.js
 
-const CACHE_NAME = 'knowledge-tester-v2.2'; // Incremented cache version
+const CACHE_NAME = 'knowledge-tester-v2.3'; // Incremented cache version
 const STATIC_ASSETS = [
     '/global/global.css',
     '/global/splash.css',
@@ -67,6 +67,9 @@ const STATIC_ASSETS = [
     '/assets/textures/planets/rocky_bump.jpg',
     '/assets/textures/planets/asteroid.jpg',
     '/assets/textures/rings/realistic_rings.png',
+    // ENHANCEMENT: Add new normal maps for more detail
+    '/assets/textures/planets/earth_normal.jpg',
+    '/assets/textures/planets/mars_normal.jpg',
 ];
 
 // On install, pre-cache static assets
