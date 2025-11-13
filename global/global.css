@@ -164,7 +164,6 @@ body::after {
     font-weight: 700;
     font-family: var(--font-family-heading);
     color: var(--color-primary);
-    margin-bottom: var(--space-xl);
 }
 
 .sidebar-links {
@@ -210,6 +209,13 @@ body::after {
     width: 24px;
     height: 24px;
     margin-right: 24px;
+    transition: filter var(--transition-speed-fast), transform var(--transition-speed-fast);
+}
+
+.sidebar-link:hover .icon,
+.sidebar-link.active .icon {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 5px var(--color-primary-transparent)) drop-shadow(0 0 8px var(--color-primary-transparent-heavy));
 }
 
 .sidebar-link .text {
@@ -297,7 +303,7 @@ a:hover { text-decoration: underline; }
 }
 
 .btn-primary {
-    background: linear-gradient(45deg, var(--color-primary), var(--color-secondary));
+    background: var(--brand-gradient, linear-gradient(45deg, var(--color-primary), var(--color-secondary)));
     color: #fff;
     border: none;
     box-shadow: 0 4px 15px var(--color-primary-transparent-heavy);

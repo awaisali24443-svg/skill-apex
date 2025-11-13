@@ -64,17 +64,23 @@
     width: 60px;
     height: 60px;
     margin-bottom: var(--space-lg);
-    background: var(--color-surface-hover);
+    background: var(--brand-gradient, linear-gradient(45deg, var(--color-primary), var(--color-secondary)));
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--color-border);
+    border: none;
+    box-shadow: 0 4px 15px var(--color-primary-transparent-heavy);
+    transition: all var(--transition-speed-med) ease;
 }
 .card-icon svg {
     width: 32px;
     height: 32px;
-    color: var(--color-primary);
+    color: #fff;
+}
+.home-card:hover .card-icon {
+    transform: translateY(-5px) scale(1.1);
+    box-shadow: 0 8px 25px var(--color-primary-transparent-heavy);
 }
 
 .home-card h2 {

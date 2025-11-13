@@ -48,16 +48,17 @@
     width: 60px;
     height: 60px;
     margin: 0 auto var(--space-lg) auto;
-    background-color: var(--color-surface-hover);
+    background: var(--brand-gradient, linear-gradient(45deg, var(--color-primary), var(--color-secondary)));
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 4px 15px var(--color-primary-transparent-heavy);
 }
 .empty-state-icon svg {
     width: 30px;
     height: 30px;
-    color: var(--color-primary);
+    color: #fff;
 }
 .empty-state h2 { margin-bottom: var(--space-sm); }
 .empty-state p { margin-bottom: var(--space-lg); }

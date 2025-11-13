@@ -32,4 +32,7 @@
     --color-error-bg: rgba(244, 67, 54, 0.1);
     --color-success-border: rgba(76, 175, 80, 0.5);
     --color-error-border: rgba(244, 67, 54, 0.5);
+
+    /* Brand Gradient */
+    --brand-gradient: linear-gradient(45deg, var(--color-primary), var(--color-secondary));
 }
