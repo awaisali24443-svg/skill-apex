@@ -1,7 +1,7 @@
 
 
 
-const CACHE_NAME = 'knowledge-tester-v2.2.1';
+const CACHE_NAME = 'knowledge-tester-v2.2.2';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 // The list of assets to cache during installation.
@@ -20,6 +20,8 @@ const APP_SHELL_URLS = [
     '/assets/icons/feather-sprite.svg',
     '/assets/images/apple-touch-icon.png',
     '/assets/images/og-image.png',
+    '/assets/images/icon-192.png',
+    '/assets/images/icon-512.png',
     '/assets/sounds/correct.mp3',
     '/assets/sounds/incorrect.mp3',
     '/assets/sounds/click.mp3',
