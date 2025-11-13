@@ -204,12 +204,13 @@ body::after {
     border-radius: 0 4px 4px 0;
 }
 
-.sidebar-link .icon {
+#sidebar .sidebar-link .icon {
     flex-shrink: 0;
     width: 24px;
     height: 24px;
     margin-right: 24px;
     transition: filter var(--transition-speed-fast), transform var(--transition-speed-fast);
+    stroke: url(#brand-gradient-icon);
 }
 
 .sidebar-link:hover .icon,
@@ -228,6 +229,14 @@ body::after {
 }
 
 /* --- Generic Components --- */
+.icon {
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
 h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-family-heading);
     color: var(--color-text);
@@ -484,7 +493,7 @@ body.animations-off::before, body.animations-off::after, body.animations-off #pa
         flex-direction: column; justify-content: center; flex-grow: 1;
         height: 100%; padding: 0;
     }
-    .sidebar-link .icon { margin: 0; margin-bottom: 4px; }
+    #sidebar .sidebar-link .icon { margin: 0; margin-bottom: 4px; }
     .sidebar-link .text { opacity: 1; font-size: 0.75rem; }
     .sidebar-link.active::before {
         width: 50%; height: 3px; top: 0; left: 25%; border-radius: 0 0 4px 4px;
