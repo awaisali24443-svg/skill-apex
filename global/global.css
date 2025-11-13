@@ -26,11 +26,12 @@ html, body {
     font-family: var(--font-family-body);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
 }
 
 body {
     position: relative;
+    /* Base transition for theme changes */
+    transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
 }
 
 body::before {
@@ -525,6 +526,41 @@ a:hover {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+/* --- Animation Intensity Control --- */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+body.animations-subtle *,
+body.animations-subtle *::before,
+body.animations-subtle *::after {
+    transition-duration: 0.1s !important;
+    animation-duration: 0.2s !important;
+}
+/* Stop infinite animations in subtle mode */
+body.animations-subtle .spinner::before,
+body.animations-subtle .spinner::after,
+body.animations-subtle body::before,
+body.animations-subtle body::after,
+body.animations-subtle .orb.listening,
+body.animations-subtle .orb.thinking,
+body.animations-subtle .orb.speaking {
+    animation-iteration-count: 1 !important;
+}
+
+
+body.animations-off *,
+body.animations-off *::before,
+body.animations-off *::after {
+    transition: none !important;
+    animation: none !important;
 }
 
 

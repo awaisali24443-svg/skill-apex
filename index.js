@@ -178,6 +178,16 @@ function handleRouteChange() {
 }
 
 /**
+ * Applies global settings from the config object to the DOM.
+ * @param {object} config - The application configuration object.
+ */
+function applyAppSettings(config) {
+    themeService.applyTheme(config.theme);
+    themeService.applyAnimationSetting(config.animationIntensity);
+}
+
+
+/**
  * The main entry point for the application.
  * Initializes services, renders static UI, sets up routing, and hides the splash screen.
  */
@@ -185,7 +195,7 @@ async function main() {
     try {
         // Initialize all core services
         configService.init();
-        themeService.applyTheme(configService.getConfig().theme); // Apply theme on startup
+        applyAppSettings(configService.getConfig()); // Apply theme & animations on startup
         backgroundService.init();
         soundService.init(configService);
         learningPathService.init();
@@ -203,8 +213,10 @@ async function main() {
         // Render static UI elements like the sidebar.
         renderSidebar(document.getElementById('sidebar'));
 
-        // Set up event listeners for routing.
+        // Set up event listeners for routing and global settings changes.
         window.addEventListener('hashchange', handleRouteChange);
+        window.addEventListener('settings-changed', (e) => applyAppSettings(e.detail));
+
         
         // Global click sound handler
         document.body.addEventListener('click', (event) => {

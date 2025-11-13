@@ -4,6 +4,7 @@ import { LOCAL_STORAGE_KEYS } from '../constants.js';
 const defaultConfig = {
     theme: 'dark-cyber',
     enableSound: true,
+    animationIntensity: 'full', // 'off', 'subtle', 'full'
 };
 
 let currentConfig = { ...defaultConfig };

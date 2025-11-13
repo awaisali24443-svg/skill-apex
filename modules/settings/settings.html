@@ -34,6 +34,21 @@
                 </label>
             </div>
         </div>
+
+        <div class="setting-item">
+            <div class="setting-info">
+                <label for="animation-slider">Animation Intensity</label>
+                <p id="animation-description">Control the level of UI animations and transitions.</p>
+            </div>
+            <div class="setting-control range-slider-control">
+                <input type="range" id="animation-slider" min="0" max="2" step="1" aria-describedby="animation-description">
+                <div class="range-slider-labels" aria-hidden="true">
+                    <span>Off</span>
+                    <span>Subtle</span>
+                    <span>Full</span>
+                </div>
+            </div>
+        </div>
     </section>
 
     <section class="settings-group card danger-zone" aria-labelledby="danger-zone-heading">

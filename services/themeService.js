@@ -31,3 +31,18 @@ export function applyTheme(themeName = 'dark-cyber') {
     document.getElementById('theme-stylesheet')?.setAttribute('href', theme.path);
     document.getElementById('theme-color-meta')?.setAttribute('content', theme.color);
 }
+
+
+/**
+ * Applies the animation intensity setting by adding a class to the body.
+ * @param {string} level - The animation level ('off', 'subtle', 'full').
+ */
+export function applyAnimationSetting(level = 'full') {
+    const body = document.body;
+    body.classList.remove('animations-off', 'animations-subtle');
+    if (level === 'off') {
+        body.classList.add('animations-off');
+    } else if (level === 'subtle') {
+        body.classList.add('animations-subtle');
+    }
+}

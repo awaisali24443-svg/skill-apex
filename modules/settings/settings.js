@@ -2,9 +2,9 @@ import * as configService from '../../services/configService.js';
 import { showConfirmationModal } from '../../services/modalService.js';
 import { LOCAL_STORAGE_KEYS } from '../../constants.js';
 import { showToast } from '../../services/toastService.js';
-import { applyTheme } from '../../services/themeService.js';
 
 let elements = {};
+const animationLevels = ['off', 'subtle', 'full'];
 
 /**
  * Updates the visual state of the segmented theme toggle control.
@@ -25,20 +25,12 @@ function setActiveThemeButton(button, instant = false) {
     const left = buttonRect.left - containerRect.left;
     const width = buttonRect.width;
     
-    // Disable transition for initial load to prevent sliding from default position
-    if (instant) {
-        indicator.style.transition = 'none';
-    }
+    if (instant) indicator.style.transition = 'none';
 
     indicator.style.left = `${left}px`;
     indicator.style.width = `${width}px`;
-
-    // Re-enable transition after a very short delay
-    if (instant) {
-        setTimeout(() => {
-            indicator.style.transition = '';
-        }, 50);
-    }
+    
+    if (instant) setTimeout(() => { indicator.style.transition = ''; }, 50);
 }
 
 /**
@@ -50,19 +42,24 @@ function loadSettings() {
 
     const activeThemeButton = elements.themeToggle.querySelector(`button[data-theme="${config.theme}"]`);
     setActiveThemeButton(activeThemeButton, true); // Instant update on load
+    
+    elements.animationSlider.value = animationLevels.indexOf(config.animationIntensity);
 }
 
 function handleSoundToggle() {
     configService.setConfig({ enableSound: elements.soundToggle.checked });
 }
 
+function handleAnimationChange() {
+    const level = animationLevels[elements.animationSlider.value];
+    configService.setConfig({ animationIntensity: level });
+}
+
 function handleThemeToggle(event) {
     const button = event.target.closest('button[data-theme]');
     if (button && button.getAttribute('aria-checked') !== 'true') {
         const newTheme = button.dataset.theme;
-        
         setActiveThemeButton(button);
-        applyTheme(newTheme);
         configService.setConfig({ theme: newTheme });
     }
 }
@@ -80,7 +77,6 @@ async function handleClearData() {
             localStorage.removeItem(key);
         });
         showToast('All application data has been cleared.', 'success');
-        // Reload the app to apply default settings and clear state.
         setTimeout(() => window.location.reload(), 1000);
     }
 }
@@ -88,6 +84,7 @@ async function handleClearData() {
 export function init(appState) {
     elements = {
         soundToggle: document.getElementById('sound-toggle'),
+        animationSlider: document.getElementById('animation-slider'),
         clearDataBtn: document.getElementById('clear-data-btn'),
         themeToggle: document.getElementById('theme-toggle-group'),
         themeToggleButtons: document.querySelectorAll('#theme-toggle-group button'),
@@ -96,13 +93,15 @@ export function init(appState) {
     loadSettings();
 
     elements.soundToggle.addEventListener('change', handleSoundToggle);
+    elements.animationSlider.addEventListener('input', handleAnimationChange);
     elements.clearDataBtn.addEventListener('click', handleClearData);
     elements.themeToggle.addEventListener('click', handleThemeToggle);
 }
 
 export function destroy() {
     if(elements.soundToggle) elements.soundToggle.removeEventListener('change', handleSoundToggle);
+    if(elements.animationSlider) elements.animationSlider.removeEventListener('input', handleAnimationChange);
     if(elements.clearDataBtn) elements.clearDataBtn.removeEventListener('click', handleClearData);
     if(elements.themeToggle) elements.themeToggle.removeEventListener('click', handleThemeToggle);
-    elements = {}; // Clear references
+    elements = {};
 }
