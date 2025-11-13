@@ -22,15 +22,15 @@ function renderHistory() {
         
         history.forEach(item => {
             const card = template.content.cloneNode(true);
-            const link = card.querySelector('.history-item');
-            link.dataset.topic = item.topic; // Set topic data attribute for click handler
+            const historyItemDiv = card.querySelector('.history-item');
+            historyItemDiv.dataset.topic = item.topic; 
 
             const scorePercent = item.totalQuestions > 0 ? Math.round((item.score / item.totalQuestions) * 100) : 0;
             
-            link.querySelector('.history-topic').textContent = item.topic;
-            link.querySelector('.history-date').textContent = new Date(item.date).toLocaleDateString();
-            link.querySelector('.history-score').textContent = `Score: ${item.score} / ${item.totalQuestions} (${scorePercent}%)`;
-            link.querySelector('.score-bar-fill').style.width = `${scorePercent}%`;
+            historyItemDiv.querySelector('.history-topic').textContent = item.topic;
+            historyItemDiv.querySelector('.history-date').textContent = new Date(item.date).toLocaleDateString();
+            historyItemDiv.querySelector('.history-score').textContent = `Score: ${item.score} / ${item.totalQuestions} (${scorePercent}%)`;
+            historyItemDiv.querySelector('.score-bar-fill').style.width = `${scorePercent}%`;
 
             container.appendChild(card);
         });
@@ -52,18 +52,20 @@ async function handleClearHistory() {
 }
 
 function handleGridClick(event) {
-    const historyItem = event.target.closest('.history-item');
-    if (historyItem) {
-        event.preventDefault(); // Prevent default <a> behavior
-        const topic = historyItem.dataset.topic;
+    const retryButton = event.target.closest('.retry-btn');
+    if (retryButton) {
+        const historyItem = retryButton.closest('.history-item');
+        if (historyItem) {
+            const topic = historyItem.dataset.topic;
 
-        if (topic && appStateRef) {
-            appStateRef.context = {
-                topic: topic,
-                numQuestions: 10, // Default for retries
-                difficulty: 'medium' // Default for retries
-            };
-            window.location.hash = '/loading';
+            if (topic && appStateRef) {
+                appStateRef.context = {
+                    topic: topic,
+                    numQuestions: 10, // Default for retries
+                    difficulty: 'medium' // Default for retries
+                };
+                window.location.hash = '/loading';
+            }
         }
     }
 }
