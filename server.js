@@ -12,7 +12,7 @@ import { WebSocketServer } from 'ws';
 // --- CONSTANTS & CONFIG ---
 const PORT = process.env.PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(filename);
 let topicsCache = null;
 
 // --- GEMINI API SETUP ---
@@ -69,6 +69,19 @@ const learningPathSchema = {
   required: ["path"]
 };
 
+const learningContentSchema = {
+    type: Type.OBJECT,
+    properties: {
+        title: { type: Type.STRING, description: "A concise, engaging title for the learning summary." },
+        summary: {
+            type: Type.ARRAY,
+            description: "An array of paragraphs that summarize the key concepts of the topic.",
+            items: { type: Type.STRING }
+        }
+    },
+    required: ["title", "summary"]
+};
+
 
 // --- GEMINI SERVICE FUNCTIONS ---
 /**
@@ -76,11 +89,19 @@ const learningPathSchema = {
  * @param {string} topic - The quiz topic.
  * @param {number} numQuestions - The number of questions.
  * @param {string} difficulty - The difficulty level.
+ * @param {string} [learningContext] - Optional text to base the quiz on.
  * @returns {Promise<object>} The parsed quiz data.
  */
-async function generateQuizContent(topic, numQuestions, difficulty) {
+async function generateQuizContent(topic, numQuestions, difficulty, learningContext) {
     if (!ai) throw new Error("AI Service not initialized. Check server configuration.");
-    const prompt = `Generate a ${difficulty} level multiple-choice quiz with exactly ${numQuestions} questions about "${topic}". For each question, provide 4 options, the 0-based index of the correct answer, and a brief explanation. Ensure the content is accurate and educational.`;
+
+    let prompt;
+    if (learningContext) {
+        prompt = `Generate a ${difficulty} level multiple-choice quiz with exactly ${numQuestions} questions about "${topic}". The questions must be based *only* on the information provided in the following text: "${learningContext}". For each question, provide 4 options, the 0-based index of the correct answer, and a brief explanation. Ensure the content is accurate and educational.`;
+    } else {
+        prompt = `Generate a ${difficulty} level multiple-choice quiz with exactly ${numQuestions} questions about "${topic}". For each question, provide 4 options, the 0-based index of the correct answer, and a brief explanation. Ensure the content is accurate and educational.`;
+    }
+
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
@@ -118,6 +139,30 @@ async function generateLearningPathContent(goal) {
     } catch (error) {
         console.error('Gemini API Error (Learning Path):', error);
         throw new Error('Failed to generate learning path.');
+    }
+}
+
+/**
+ * Generates learning content using the Gemini API.
+ * @param {string} topic - The learning topic.
+ * @returns {Promise<object>} The parsed learning content.
+ */
+async function generateLearningContent(topic) {
+    if (!ai) throw new Error("AI Service not initialized. Check server configuration.");
+    const prompt = `Provide a concise summary of the key concepts for the topic: '${topic}'. The summary should be easy to understand for a beginner and cover the most important points. Make it engaging and educational. Structure the output as a JSON object with a 'title' and 'summary' field, where 'summary' is an array of paragraphs.`;
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+            config: {
+                responseMimeType: 'application/json',
+                responseSchema: learningContentSchema,
+            }
+        });
+        return JSON.parse(response.text);
+    } catch (error) {
+        console.error('Gemini API Error (Learning Content):', error);
+        throw new Error('Failed to generate learning content.');
     }
 }
 
@@ -162,12 +207,12 @@ async function handleGetTopics(req, res, next) {
  * Handles POST /api/generate
  */
 async function handleGenerateQuiz(req, res, next) {
-    const { topic, numQuestions, difficulty } = req.body;
+    const { topic, numQuestions, difficulty, learningContext } = req.body;
     if (!topic || !numQuestions || !difficulty) {
         return res.status(400).json({ error: 'Missing required parameters: topic, numQuestions, difficulty.' });
     }
     try {
-        const quizData = await generateQuizContent(topic, numQuestions, difficulty);
+        const quizData = await generateQuizContent(topic, numQuestions, difficulty, learningContext);
         res.json(quizData);
     } catch (error) {
         next(error);
@@ -190,11 +235,29 @@ async function handleGeneratePath(req, res, next) {
     }
 }
 
+/**
+ * Handles POST /api/generate-learning-content
+ */
+async function handleGenerateLearningContent(req, res, next) {
+    const { topic } = req.body;
+    if (!topic) {
+        return res.status(400).json({ error: 'Missing required parameter: topic.' });
+    }
+    try {
+        const contentData = await generateLearningContent(topic);
+        res.json(contentData);
+    } catch (error) {
+        next(error);
+    }
+}
+
+
 // --- API ROUTER ---
 const apiRouter = express.Router();
 apiRouter.get('/topics', handleGetTopics);
 apiRouter.post('/generate', handleGenerateQuiz);
 apiRouter.post('/generate-path', handleGeneratePath);
+apiRouter.post('/generate-learning-content', handleGenerateLearningContent);
 app.use('/api', apiRouter);
 
 

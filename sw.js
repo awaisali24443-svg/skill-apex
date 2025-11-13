@@ -1,6 +1,7 @@
 
 
-const CACHE_NAME = 'knowledge-tester-v2.2.0';
+
+const CACHE_NAME = 'knowledge-tester-v2.2.1';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 // The list of assets to cache during installation.
@@ -51,6 +52,7 @@ const APP_SHELL_URLS = [
     '/modules/history/history.html', '/modules/history/history.css', '/modules/history/history.js',
     '/modules/study/study.html', '/modules/study/study.css', '/modules/study/study.js',
     '/modules/aural/aural.html', '/modules/aural/aural.css', '/modules/aural/aural.js',
+    '/modules/learn/learn.html', '/modules/learn/learn.css', '/modules/learn/learn.js',
     '/modules/learning-path-generator/learning-path-generator.html', '/modules/learning-path-generator/learning-path-generator.css', '/modules/learning-path-generator/learning-path-generator.js',
     '/modules/learning-path/learning-path.html', '/modules/learning-path/learning-path.css', '/modules/learning-path/learning-path.js',
     '/modules/settings/settings.html', '/modules/settings/settings.css', '/modules/settings/settings.js',

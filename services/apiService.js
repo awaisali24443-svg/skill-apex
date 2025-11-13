@@ -33,24 +33,46 @@ export async function fetchTopics() {
 }
 
 /**
- * Sends a request to the backend to generate a new quiz.
+ * Sends a request to the backend to generate a new quiz, potentially based on provided context.
  * @param {object} params - The quiz generation parameters.
  * @param {string} params.topic - The topic of the quiz.
  * @param {number} params.numQuestions - The number of questions for the quiz.
  * @param {string} params.difficulty - The difficulty level of the quiz.
+ * @param {string} [params.learningContext] - Optional learning text to base the quiz on.
  * @returns {Promise<object>} A promise that resolves to the generated quiz data.
  * @throws {Error} If the quiz generation fails.
  */
-export async function generateQuiz({ topic, numQuestions, difficulty }) {
+export async function generateQuiz({ topic, numQuestions, difficulty, learningContext }) {
     try {
         const response = await fetch('/api/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, numQuestions, difficulty })
+            body: JSON.stringify({ topic, numQuestions, difficulty, learningContext })
         });
         return await handleResponse(response);
     } catch (error) {
         // The error will be handled by the loading module
+        throw error;
+    }
+}
+
+/**
+ * Sends a request to the backend to generate learning content for a topic.
+ * @param {object} params - The parameters.
+ * @param {string} params.topic - The topic to learn about.
+ * @returns {Promise<object>} A promise that resolves to the generated learning content.
+ * @throws {Error} If the generation fails.
+ */
+export async function generateLearningContent({ topic }) {
+    try {
+        const response = await fetch('/api/generate-learning-content', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topic })
+        });
+        return await handleResponse(response);
+    } catch (error) {
+        showToast(error.message || 'Failed to generate learning content.', 'error');
         throw error;
     }
 }

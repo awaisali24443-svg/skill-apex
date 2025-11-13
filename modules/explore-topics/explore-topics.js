@@ -19,10 +19,6 @@ function renderResults(topics) {
         card.querySelector('.difficulty-tag').textContent = topic.difficulty;
         card.querySelector('.topic-name').textContent = topic.name;
         
-        const button = card.querySelector('.start-quiz-btn');
-        button.dataset.topic = topic.name;
-        button.dataset.difficulty = topic.difficulty;
-
         resultsContainer.appendChild(card);
     });
     initializeCardGlow(resultsContainer);
@@ -41,13 +37,22 @@ function handleSearch() {
 }
 
 function handleResultClick(event) {
-    const button = event.target.closest('.start-quiz-btn');
-    if (button) {
-        appState.context = {
-            topic: button.dataset.topic,
-            numQuestions: 10,
-            difficulty: button.dataset.difficulty
-        };
+    const button = event.target.closest('.start-quiz-btn, .start-learn-btn');
+    if (!button) return;
+
+    const card = button.closest('.search-result-card');
+    const topic = card.querySelector('.topic-name').textContent;
+    const difficulty = card.querySelector('.difficulty-tag').textContent;
+    
+    appState.context = {
+        topic: topic,
+        numQuestions: 10,
+        difficulty: difficulty.toLowerCase(),
+    };
+
+    if (button.classList.contains('start-learn-btn')) {
+        window.location.hash = '/learn';
+    } else { // start-quiz-btn
         window.location.hash = '/loading';
     }
 }

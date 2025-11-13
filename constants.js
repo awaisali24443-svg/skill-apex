@@ -19,6 +19,7 @@ export const ROUTES = [
     { path: '/history', module: 'history', name: 'History', icon: 'archive', nav: true },
     { path: '/study', module: 'study', name: 'Study', nav: false },
     { path: '/aural', module: 'aural', name: 'Aural', icon: 'mic', nav: true, fullBleed: true },
+    { path: '/learn', module: 'learn', name: 'Learn', nav: false },
     { path: '/learning-path-generator', module: 'learning-path-generator', name: 'Paths', icon: 'git-branch', nav: true },
     { path: '/learning-path/:id', module: 'learning-path', name: 'Learning Path', nav: false },
     { path: '/settings', module: 'settings', name: 'Settings', icon: 'settings', nav: true, footer: true },

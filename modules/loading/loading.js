@@ -6,7 +6,7 @@ let cancelBtn;
 let cancelTimer;
 
 async function startGeneration() {
-    const { topic, numQuestions, difficulty, learningPathId } = appState.context;
+    const { topic, numQuestions, difficulty, learningPathId, learningContext } = appState.context;
 
     if (!topic) {
         window.location.hash = '/';
@@ -16,7 +16,7 @@ async function startGeneration() {
     document.getElementById('loading-topic').textContent = `Topic: "${topic}"`;
 
     try {
-        const quizData = await generateQuiz({ topic, numQuestions, difficulty });
+        const quizData = await generateQuiz({ topic, numQuestions, difficulty, learningContext });
 
         if (!quizData || !quizData.questions || quizData.questions.length === 0) {
             throw new Error("The AI returned an empty or invalid quiz.");
