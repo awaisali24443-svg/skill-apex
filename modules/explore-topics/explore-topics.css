@@ -1,25 +1,36 @@
-.explore-container {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
 .search-bar-container {
-    margin-bottom: 3rem;
-    max-width: 800px;
+    margin-bottom: var(--space-xxl);
+    max-width: 700px;
     margin-left: auto;
     margin-right: auto;
+    position: relative;
+}
+
+.search-icon {
+    position: absolute;
+    left: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    color: var(--color-text-secondary);
+    pointer-events: none;
 }
 
 #search-input {
-    padding: 1rem 1.5rem;
-    font-size: 1.2rem;
-    text-align: center;
+    padding: 1rem 1.5rem 1rem 4rem;
+    font-size: 1.1rem;
+    border-radius: 50px;
 }
 
 .search-results-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-lg);
+}
+
+.search-result-card {
+     animation: fade-slide-in 0.3s ease-out forwards;
 }
 
 .search-result-card .card-content {
@@ -32,35 +43,34 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-md);
     font-family: var(--font-family-mono);
-    font-size: 0.8rem;
+    font-size: var(--fs-sm);
 }
 
 .category-tag {
     background-color: var(--color-primary-transparent);
     color: var(--color-primary);
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: 6px;
 }
 
 .difficulty-tag {
     background-color: var(--color-secondary-transparent);
     color: var(--color-secondary);
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: 6px;
 }
-
 
 .topic-name {
     flex-grow: 1;
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--space-lg);
     color: var(--color-text);
 }
 
 .card-actions {
     display: flex;
-    gap: 0.75rem;
+    gap: var(--space-sm);
     margin-top: auto; /* Push to bottom */
 }
 

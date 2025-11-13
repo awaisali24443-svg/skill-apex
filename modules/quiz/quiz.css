@@ -1,10 +1,18 @@
 .quiz-container {
     max-width: 800px;
-    margin: 2rem auto;
+    margin-top: 2rem;
 }
 
 .quiz-header {
-    margin-bottom: 2rem;
+    margin-bottom: var(--space-lg);
+}
+
+.progress-text {
+    text-align: center;
+    margin-bottom: var(--space-sm);
+    color: var(--color-text-secondary);
+    font-family: var(--font-family-mono);
+    font-size: var(--fs-sm);
 }
 
 .progress-bar {
@@ -19,23 +27,16 @@
     width: 0%;
     height: 100%;
     background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
-    transition: width 0.3s ease;
-}
-
-.progress-text {
-    text-align: right;
-    margin-top: 0.5rem;
-    color: var(--color-text-secondary);
-    font-family: var(--font-family-mono);
+    transition: width var(--transition-speed-med) ease;
 }
 
 .quiz-card {
-    padding: 2.5rem;
+    padding: var(--space-xl);
 }
 
 #question-text {
-    margin-bottom: 2.5rem;
-    font-size: 1.5rem;
+    margin-bottom: var(--space-xl);
+    font-size: var(--fs-h3);
     line-height: 1.5;
     animation: fade-slide-in 0.4s ease-out;
 }
@@ -43,7 +44,7 @@
 .options-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: var(--space-md);
 }
 
 .option-btn {
@@ -51,19 +52,16 @@
     justify-content: flex-start;
     text-align: left;
     padding: 1rem 1.5rem;
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-family: var(--font-family-body);
     font-weight: 400;
-    border: 1px solid var(--color-border);
     opacity: 0;
     animation: fade-slide-in 0.5s ease-out forwards;
 }
-
 .options-grid .option-btn:nth-child(1) { animation-delay: 0.1s; }
 .options-grid .option-btn:nth-child(2) { animation-delay: 0.2s; }
 .options-grid .option-btn:nth-child(3) { animation-delay: 0.3s; }
 .options-grid .option-btn:nth-child(4) { animation-delay: 0.4s; }
-
 
 .option-btn:not(:disabled):hover {
     background-color: var(--color-primary-transparent);
@@ -74,8 +72,8 @@
     background-color: var(--color-success-bg);
     border-color: var(--color-success-border);
     color: var(--color-success);
+    font-weight: 600;
 }
-
 .option-btn.incorrect {
     background-color: var(--color-error-bg);
     border-color: var(--color-error-border);
@@ -84,21 +82,21 @@
 
 .option-btn:disabled {
     cursor: default;
-    opacity: 1; /* Ensure opacity is reset when disabled */
+    opacity: 1;
 }
 .option-btn:disabled:not(.correct):not(.incorrect) {
     opacity: 0.6;
 }
 
 .explanation-container {
-    margin-top: 2rem;
-    padding-top: 2rem;
+    margin-top: var(--space-xl);
+    padding-top: var(--space-lg);
     border-top: 1px solid var(--color-border);
     animation: fade-in 0.5s ease;
 }
 
 #explanation-text {
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--space-lg);
     color: var(--color-text-secondary);
 }
 

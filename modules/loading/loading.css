@@ -6,7 +6,6 @@
     text-align: center;
     height: 100%;
     width: 100%;
-    padding: 2rem;
 }
 
 .loading-content {
@@ -15,25 +14,25 @@
 
 #loading-status {
     color: var(--color-primary);
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--space-sm);
 }
 
 .loading-topic-text {
-    font-size: 1.5rem;
+    font-size: var(--fs-lg);
     color: var(--color-text);
-    margin-bottom: 2rem;
+    margin-bottom: var(--space-xl);
     font-family: var(--font-family-mono);
 }
 
 .spinner {
-    margin: 2rem auto;
+    margin: var(--space-xl) auto;
 }
 
 .loading-tip {
     color: var(--color-text-secondary);
-    margin-bottom: 2rem;
+    margin-bottom: var(--space-xl);
 }
 
 #cancel-generation-btn {
-    margin-top: 1rem;
+    margin-top: var(--space-md);
 }

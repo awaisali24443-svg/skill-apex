@@ -1,10 +1,12 @@
-<div class="study-container">
+<div class="page-container study-container">
     <div id="flashcard-scene" class="flashcard-scene">
-        <div id="flashcard" class="flashcard">
+        <div id="flashcard" class="flashcard card">
             <div class="flashcard-face flashcard-front">
+                <span class="face-label">Question</span>
                 <p id="flashcard-question"></p>
             </div>
             <div class="flashcard-face flashcard-back">
+                 <span class="face-label">Answer</span>
                 <p id="flashcard-answer"></p>
             </div>
         </div>
@@ -15,6 +17,9 @@
         <button id="next-card-btn" class="btn">Next &gt;</button>
     </div>
     <div id="empty-study-message" class="empty-state" style="display: none;">
+         <div class="empty-state-icon">
+             <svg><use href="/assets/icons/feather-sprite.svg#book-open"/></svg>
+        </div>
         <h2>No Questions to Study</h2>
         <p>Your study library is empty. Save some questions from a quiz to get started.</p>
         <a href="/#/library" class="btn">Back to Library</a>

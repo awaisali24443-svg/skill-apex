@@ -7,11 +7,11 @@
 }
 
 .flashcard-scene {
-    width: 90%;
+    width: 100%;
     max-width: 600px;
     height: 400px;
-    perspective: 1000px;
-    margin-bottom: 2rem;
+    perspective: 1500px;
+    margin-bottom: var(--space-xl);
 }
 
 .flashcard {
@@ -19,8 +19,9 @@
     height: 100%;
     position: relative;
     transform-style: preserve-3d;
-    transition: transform 0.6s;
+    transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
     cursor: pointer;
+    padding: 0;
 }
 
 .flashcard.is-flipped {
@@ -33,14 +34,21 @@
     height: 100%;
     backface-visibility: hidden;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
+    padding: var(--space-xl);
     text-align: center;
     font-size: 1.5rem;
-    border: 1px solid var(--color-border);
     border-radius: var(--border-radius);
-    background-color: var(--color-surface);
+}
+.face-label {
+    position: absolute;
+    top: 1.5rem;
+    left: 1.5rem;
+    font-size: var(--fs-sm);
+    font-family: var(--font-family-mono);
+    color: var(--color-text-secondary);
 }
 
 .flashcard-front {
@@ -52,15 +60,38 @@
     color: var(--color-primary);
     transform: rotateY(180deg);
 }
+.flashcard-back .face-label {
+    color: var(--color-primary);
+    opacity: 0.7;
+}
 
 .study-controls {
     display: flex;
     align-items: center;
-    gap: 2rem;
+    gap: var(--space-xl);
 }
 
 .card-counter {
     font-family: var(--font-family-mono);
     font-size: 1.2rem;
     color: var(--color-text-secondary);
+    min-width: 80px;
+    text-align: center;
 }
+
+/* Empty State Styling from Library CSS will apply */
+.empty-state {
+    text-align: center;
+    padding: var(--space-xl);
+    background-color: var(--color-surface);
+    border-radius: var(--border-radius);
+    border: 1px dashed var(--color-border);
+}
+.empty-state-icon {
+    width: 60px; height: 60px; margin: 0 auto var(--space-lg) auto;
+    background-color: var(--color-surface-hover); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+}
+.empty-state-icon svg { width: 30px; height: 30px; color: var(--color-primary); }
+.empty-state h2 { margin-bottom: var(--space-sm); }
+.empty-state p { margin-bottom: var(--space-lg); }

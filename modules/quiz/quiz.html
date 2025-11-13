@@ -1,20 +1,20 @@
-<div class="quiz-container">
-    <div class="quiz-header">
+<div class="page-container quiz-container">
+    <header class="quiz-header">
+        <div id="progress-text" class="progress-text">Question 1 / 10</div>
         <div class="progress-bar">
             <div id="progress-bar-fill" class="progress-bar-fill"></div>
         </div>
-        <div id="progress-text" class="progress-text">Question 1 / 10</div>
-    </div>
-    <div class="card quiz-card">
+    </header>
+    <main class="card quiz-card">
         <h2 id="question-text">Loading question...</h2>
         <div id="options-container" class="options-grid">
             <!-- Options will be injected here -->
         </div>
-        <div id="explanation-container" class="explanation-container" style="display: none;">
+        <footer id="explanation-container" class="explanation-container" style="display: none;">
             <p id="explanation-text"></p>
             <button id="next-question-btn" class="btn btn-primary">Next Question</button>
-        </div>
-    </div>
+        </footer>
+    </main>
 </div>
 
 <template id="option-template">

@@ -12,7 +12,7 @@
 .transcription-log {
     flex-grow: 1;
     overflow-y: auto;
-    padding: 2rem;
+    padding: var(--space-lg);
     display: flex;
     flex-direction: column-reverse; /* Newest messages at the bottom */
 }
@@ -22,140 +22,107 @@
     width: fit-content;
     padding: 0.75rem 1.25rem;
     border-radius: 1.25rem;
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-md);
     line-height: 1.5;
     animation: fade-slide-in 0.4s ease-out;
 }
-
 .transcription-entry.user {
     background-color: var(--color-primary);
     color: #fff;
     border-bottom-right-radius: 0.35rem;
     align-self: flex-end;
-    margin-right: 10px;
 }
-
 .transcription-entry.model {
     background-color: var(--color-surface);
     border-bottom-left-radius: 0.35rem;
     align-self: flex-start;
-    margin-left: 10px;
     border: 1px solid var(--color-border);
 }
 
-.orb-container {
-    height: 300px;
+.aural-footer {
+    flex-shrink: 0;
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: var(--space-md);
+    background: linear-gradient(to top, var(--color-background) 60%, transparent);
+}
+
+.orb-container {
+    height: 150px;
+    width: 150px;
+    display: flex;
+    align-items: center;
     justify-content: center;
     position: relative;
-    flex-shrink: 0;
+    margin-bottom: 3.5rem; /* Space for button */
 }
 
 .orb {
-    width: 150px;
-    height: 150px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
-    background: radial-gradient(circle, var(--color-primary), var(--color-secondary));
+    background: radial-gradient(circle at 30% 30%, var(--color-primary), var(--color-secondary));
     position: relative;
     box-shadow: 0 0 50px var(--color-primary-transparent-heavy);
     transition: transform 0.3s ease;
 }
-
 .orb::before, .orb::after {
-    content: '';
-    position: absolute;
-    inset: -20px;
-    border-radius: 50%;
+    content: ''; position: absolute; inset: -15px; border-radius: 50%;
     border: 2px solid var(--color-primary-transparent-heavy);
-    animation: pulse 3s ease-in-out infinite;
+    animation: pulse 4s ease-in-out infinite;
 }
-
-.orb::after {
-    animation-delay: 1.5s;
-}
+.orb::after { animation-delay: 2s; }
 
 .aural-status {
-    position: absolute;
-    bottom: 2rem;
     font-family: var(--font-family-mono);
     color: var(--color-text-secondary);
+    margin-bottom: var(--space-md);
 }
 
 .aural-controls {
-    display: flex;
-    justify-content: center;
-    padding: 1rem 0 2rem 0;
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .btn-mic {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
+    width: 70px; height: 70px; border-radius: 50%;
     background: linear-gradient(45deg, var(--color-primary), var(--color-secondary));
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    cursor: pointer;
+    border: none; display: flex; align-items: center; justify-content: center;
+    color: white; cursor: pointer;
     box-shadow: 0 0 20px var(--color-primary-transparent-heavy);
     transition: all 0.3s ease;
 }
-
-.btn-mic:hover {
-    transform: scale(1.1);
-}
-
-.btn-mic.active {
-    background: var(--color-error);
-}
+.btn-mic:hover { transform: scale(1.1); }
+.btn-mic.active { background: var(--color-error); }
 
 /* Orb States */
-.orb.listening {
-    animation: listening-pulse 1.5s ease-in-out infinite;
-}
-.orb.thinking {
-    animation: thinking-swirl 5s linear infinite;
-}
-.orb.speaking {
-    animation: speaking-beat 1s ease-in-out infinite;
-}
+.orb.listening { animation: listening-pulse 1.5s ease-in-out infinite; }
+.orb.thinking { animation: thinking-swirl 5s linear infinite; }
+.orb.speaking { animation: speaking-beat 1s ease-in-out infinite; }
 
 @keyframes pulse {
     0% { transform: scale(1); opacity: 0.5; }
     50% { transform: scale(1.2); opacity: 0; }
     100% { transform: scale(1); opacity: 0.5; }
 }
-
 @keyframes listening-pulse {
     0% { transform: scale(1); }
     50% { transform: scale(1.1); }
     100% { transform: scale(1); }
 }
-
-@keyframes thinking-swirl {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
+@keyframes thinking-swirl { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes speaking-beat {
-    0% { transform: scale(1) translateY(0); }
+    0%, 20%, 100% { transform: scale(1) translateY(0); }
     10% { transform: scale(1.05) translateY(-5px); }
-    20% { transform: scale(1) translateY(0); }
-    100% { transform: scale(1) translateY(0); }
 }
 
 .aural-error {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 1rem;
-    background-color: var(--color-error-bg);
-    color: var(--color-error);
-    text-align: center;
-    font-family: var(--font-family-mono);
-    animation: fade-in 0.3s;
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: var(--space-md); background-color: var(--color-error-bg);
+    color: var(--color-error); text-align: center;
+    font-family: var(--font-family-mono); animation: fade-in 0.3s;
 }

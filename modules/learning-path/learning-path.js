@@ -8,7 +8,8 @@ let clickHandler;
 
 function renderPath() {
     document.getElementById('path-goal-title').textContent = path.goal;
-    document.getElementById('path-progress-summary').textContent = `Step ${path.currentStep + 1} of ${path.path.length}`;
+    const completedSteps = path.path.length === path.currentStep ? path.currentStep : path.currentStep;
+    document.getElementById('path-progress-summary').textContent = `Progress: ${completedSteps} / ${path.path.length} steps completed`;
     
     stepsList = document.getElementById('path-steps-list');
     const template = document.getElementById('step-item-template');
@@ -17,18 +18,21 @@ function renderPath() {
     path.path.forEach((step, index) => {
         const item = template.content.cloneNode(true);
         const card = item.querySelector('.step-item');
+        const iconUse = item.querySelector('.step-icon use');
         
-        item.querySelector('.step-number').textContent = index + 1;
         item.querySelector('.step-name').textContent = step.name;
         const button = item.querySelector('.start-topic-btn');
         button.dataset.topic = step.topic;
 
         if (index < path.currentStep) {
             card.classList.add('completed');
+            iconUse.setAttribute('href', '/assets/icons/feather-sprite.svg#check-circle');
         } else if (index === path.currentStep) {
             card.classList.add('current');
+            iconUse.setAttribute('href', '/assets/icons/feather-sprite.svg#target');
         } else {
             card.classList.add('locked');
+            iconUse.setAttribute('href', '/assets/icons/feather-sprite.svg#lock');
         }
         stepsList.appendChild(item);
     });

@@ -1,33 +1,17 @@
-<div class="topic-list-container">
+<div class="page-container topic-list-container">
     <header class="page-header">
         <h1>Browse Topics</h1>
         <p>Select a topic to start a quiz with default settings.</p>
     </header>
     <div id="topic-categories-container" class="categories-grid">
+        <!-- Skeleton Loader -->
         <div class="category-card card skeleton">
             <div class="card-content">
                 <div class="category-header">
-                    <div class="category-icon"></div>
+                    <div class="skeleton-line icon"></div>
                     <div class="skeleton-line title"></div>
                 </div>
                 <div class="skeleton-line text"></div>
-                <div class="skeleton-line text short"></div>
-                <div class="topic-buttons">
-                    <div class="skeleton-line button"></div>
-                    <div class="skeleton-line button"></div>
-                    <div class="skeleton-line button"></div>
-                    <div class="skeleton-line button"></div>
-                </div>
-            </div>
-        </div>
-        <div class="category-card card skeleton">
-            <div class="card-content">
-                <div class="category-header">
-                    <div class="category-icon"></div>
-                    <div class="skeleton-line title"></div>
-                </div>
-                <div class="skeleton-line text"></div>
-                <div class="skeleton-line text short"></div>
                 <div class="topic-buttons">
                     <div class="skeleton-line button"></div>
                     <div class="skeleton-line button"></div>
@@ -38,12 +22,25 @@
         <div class="category-card card skeleton">
             <div class="card-content">
                 <div class="category-header">
-                    <div class="category-icon"></div>
+                    <div class="skeleton-line icon"></div>
                     <div class="skeleton-line title"></div>
                 </div>
                 <div class="skeleton-line text"></div>
-                <div class="skeleton-line text short"></div>
                 <div class="topic-buttons">
+                    <div class="skeleton-line button"></div>
+                    <div class="skeleton-line button"></div>
+                </div>
+            </div>
+        </div>
+        <div class="category-card card skeleton">
+             <div class="card-content">
+                <div class="category-header">
+                    <div class="skeleton-line icon"></div>
+                    <div class="skeleton-line title"></div>
+                </div>
+                <div class="skeleton-line text"></div>
+                <div class="topic-buttons">
+                    <div class="skeleton-line button"></div>
                     <div class="skeleton-line button"></div>
                     <div class="skeleton-line button"></div>
                 </div>
@@ -55,12 +52,12 @@
 <template id="category-template">
     <div class="category-card card">
         <div class="card-content">
-            <div class="category-header">
+            <header class="category-header">
                 <div class="category-icon">
                     <svg><use/></svg>
                 </div>
                 <h2 class="category-title"></h2>
-            </div>
+            </header>
             <p class="category-description"></p>
             <div class="topic-buttons"></div>
         </div>

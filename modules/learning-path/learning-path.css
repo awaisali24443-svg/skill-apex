@@ -1,21 +1,32 @@
-.view-path-container {
-    max-width: 800px;
-    margin: 0 auto;
-}
-
 .steps-list {
     display: grid;
-    gap: 1.5rem;
+    gap: var(--space-lg);
+    position: relative;
+    padding-left: 2rem; /* Space for the line */
+}
+
+/* Vertical connecting line */
+.steps-list::before {
+    content: '';
+    position: absolute;
+    left: calc(1.5rem + 25px); /* Align with center of icons */
+    top: 25px;
+    bottom: 25px;
+    width: 2px;
+    background-color: var(--color-border);
+    transform: translateX(-50%);
 }
 
 .step-item {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
-    padding: 1.5rem;
+    gap: var(--space-lg);
+    padding: var(--space-lg);
+    position: relative;
+    margin-left: -2rem; /* Pull back over the padding */
 }
 
-.step-number {
+.step-icon {
     width: 50px;
     height: 50px;
     flex-shrink: 0;
@@ -23,10 +34,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
-    font-weight: 700;
-    font-family: var(--font-family-heading);
     color: var(--color-text);
+    z-index: 1; /* Sit on top of the line */
+}
+.step-icon svg {
+    width: 24px;
+    height: 24px;
 }
 
 .step-content {
@@ -36,30 +49,31 @@
     align-items: center;
 }
 
-/* Step States */
+/* --- Step States --- */
 
 /* Current Step */
-.step-item.current .step-number {
+.step-item.current { border-color: var(--color-primary); }
+.step-item.current .step-icon {
     background-color: var(--color-primary);
+    color: #fff;
 }
-.step-item.current {
-    border-color: var(--color-primary);
+.step-item.current .start-topic-btn {
+    background: var(--color-primary);
+    color: #fff;
 }
 
+
 /* Completed Step */
-.step-item.completed {
-    opacity: 0.7;
-}
-.step-item.completed .step-number {
+.step-item.completed { opacity: 0.8; }
+.step-item.completed .step-icon {
     background-color: var(--color-success);
+    color: #fff;
 }
-.step-item.completed .start-topic-btn {
-    display: none; /* Hide button for completed steps */
-}
+.step-item.completed .start-topic-btn { display: none; }
 .step-item.completed .step-name::after {
     content: ' (Completed)';
     color: var(--color-success);
-    font-size: 0.9rem;
+    font-size: var(--fs-sm);
     margin-left: 10px;
 }
 
@@ -68,10 +82,9 @@
     opacity: 0.5;
     pointer-events: none;
 }
-.step-item.locked .step-number {
+.step-item.locked .step-icon {
     background-color: var(--color-border);
 }
 .step-item.locked .start-topic-btn {
-    background-color: var(--color-surface-hover);
     cursor: not-allowed;
 }

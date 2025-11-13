@@ -1,6 +1,5 @@
 .learn-container {
     max-width: 800px;
-    margin: 2rem auto;
     animation: fade-slide-in 0.5s ease-out;
 }
 
@@ -10,36 +9,36 @@
 }
 
 .learn-loading-state .spinner {
-    margin: 2rem auto;
+    margin: var(--space-xl) auto;
 }
 
 .learn-content-card {
-    padding: 2.5rem;
+    padding: var(--space-xl);
 }
 
 .learn-header {
     text-align: center;
     border-bottom: 1px solid var(--color-border);
-    padding-bottom: 1.5rem;
-    margin-bottom: 2rem;
+    padding-bottom: var(--space-lg);
+    margin-bottom: var(--space-lg);
 }
 
 #learn-title {
     color: var(--color-primary);
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--space-sm);
 }
 
 .learn-summary p {
     font-size: 1.1rem;
     line-height: 1.7;
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--space-lg);
 }
 .learn-summary p:last-child {
     margin-bottom: 0;
 }
 
 .learn-actions {
-    margin-top: 2.5rem;
+    margin-top: var(--space-xl);
     text-align: center;
 }
 

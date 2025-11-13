@@ -1,15 +1,21 @@
-<div class="history-container">
+<div class="page-container history-container">
     <header class="page-header history-header">
         <h1>Quiz History</h1>
         <p>Review your past quiz performances.</p>
         <div class="history-actions">
-            <button id="clear-history-btn" class="btn" disabled>Clear History</button>
+            <button id="clear-history-btn" class="btn" disabled>
+                 <svg class="icon"><use href="/assets/icons/feather-sprite.svg#trash-2"/></svg>
+                 <span>Clear History</span>
+            </button>
         </div>
     </header>
     <div id="history-grid">
         <!-- Saved quizzes will be rendered here -->
     </div>
     <div id="empty-history-message" class="empty-state" style="display: none;">
+         <div class="empty-state-icon">
+             <svg><use href="/assets/icons/feather-sprite.svg#archive"/></svg>
+        </div>
         <h2>No History Yet</h2>
         <p>Your completed quizzes will appear here.</p>
         <a href="/#/topics" class="btn">Take a Quiz</a>

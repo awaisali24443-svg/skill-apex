@@ -1,9 +1,10 @@
-<div class="explore-container">
+<div class="page-container explore-container">
     <header class="page-header">
         <h1>Explore & Search</h1>
         <p>Use the search below to generate a quiz on any topic you can imagine.</p>
     </header>
     <div class="search-bar-container">
+        <svg class="search-icon" viewBox="0 0 24 24"><use href="/assets/icons/feather-sprite.svg#search"/></svg>
         <input type="search" id="search-input" class="form-input" placeholder="e.g., 'The Renaissance', 'Quantum Computing'..." autocomplete="off">
     </div>
     <div id="search-results-container" class="search-results-grid">
@@ -14,15 +15,18 @@
 <template id="search-result-template">
     <div class="card search-result-card">
         <div class="card-content">
-            <div class="card-header">
+            <header class="card-header">
                 <span class="category-tag"></span>
                 <span class="difficulty-tag"></span>
-            </div>
+            </header>
             <h3 class="topic-name"></h3>
-            <div class="card-actions">
-                <button class="btn start-learn-btn">Learn & Quiz</button>
+            <footer class="card-actions">
+                <button class="btn start-learn-btn">
+                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#book-open"/></svg>
+                    <span>Learn First</span>
+                </button>
                 <button class="btn btn-primary start-quiz-btn">Start Quiz</button>
-            </div>
+            </footer>
         </div>
     </div>
 </template>
