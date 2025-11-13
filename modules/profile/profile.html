@@ -4,16 +4,36 @@
         <p>Track your progress and celebrate your learning milestones.</p>
     </header>
 
-    <div class="stats-grid">
-        <div class="card stat-card">
-            <div class="stat-icon"><svg><use href="/assets/icons/feather-sprite.svg#grid"/></svg></div>
-            <div class="stat-value" id="total-quizzes-stat">0</div>
-            <div class="stat-label">Quizzes Completed</div>
+    <div class="card profile-summary-card">
+        <div class="level-info">
+            <div class="level-badge">
+                <span>LVL</span>
+                <span id="profile-level">1</span>
+            </div>
+            <div class="xp-bar-container">
+                <div class="xp-bar">
+                    <div id="xp-bar-fill" class="xp-bar-fill"></div>
+                </div>
+                <div id="xp-text" class="xp-text">0 / 100 XP</div>
+            </div>
         </div>
-        <div class="card stat-card">
-            <div class="stat-icon streak-icon"><svg><use href="/assets/icons/feather-sprite.svg#zap"/></svg></div>
-            <div class="stat-value" id="current-streak-stat">0</div>
-            <div class="stat-label">Current Streak</div>
+        <div class="profile-stats-grid">
+            <div class="profile-stat">
+                <div class="stat-value" id="current-streak-stat">0</div>
+                <div class="stat-label">Day Streak</div>
+            </div>
+            <div class="profile-stat">
+                <div class="stat-value" id="total-quizzes-stat">0</div>
+                <div class="stat-label">Quizzes Taken</div>
+            </div>
+            <div class="profile-stat">
+                <div class="stat-value" id="total-questions-stat">0</div>
+                <div class="stat-label">Questions Answered</div>
+            </div>
+            <div class="profile-stat">
+                <div class="stat-value" id="average-score-stat">0%</div>
+                <div class="stat-label">Average Score</div>
+            </div>
         </div>
     </div>
 

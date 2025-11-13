@@ -1,12 +1,27 @@
 import * as gamificationService from '../../services/gamificationService.js';
 import * as historyService from '../../services/historyService.js';
+import { getXpForNextLevel } from '../../services/gamificationService.js';
 
 function renderStats() {
     const stats = gamificationService.getStats();
     const history = historyService.getHistory();
+    const profileStats = gamificationService.getProfileStats(history);
     
-    document.getElementById('total-quizzes-stat').textContent = history.length;
+    document.getElementById('profile-level').textContent = stats.level;
+    const xpNeeded = getXpForNextLevel(stats.level);
+    const xpProgress = xpNeeded > 0 ? (stats.xp / xpNeeded) * 100 : 100;
+    
+    const xpBarFill = document.getElementById('xp-bar-fill');
+    if (xpBarFill) {
+        xpBarFill.style.width = `${xpProgress}%`;
+    }
+    
+    document.getElementById('xp-text').textContent = `${stats.xp} / ${xpNeeded} XP`;
+
     document.getElementById('current-streak-stat').textContent = stats.currentStreak;
+    document.getElementById('total-quizzes-stat').textContent = profileStats.totalQuizzes;
+    document.getElementById('total-questions-stat').textContent = profileStats.totalQuestions;
+    document.getElementById('average-score-stat').textContent = `${profileStats.averageScore}%`;
 }
 
 function renderAchievements() {

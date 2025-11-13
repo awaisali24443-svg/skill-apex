@@ -2,6 +2,8 @@ import { LOCAL_STORAGE_KEYS } from '../constants.js';
 import { showToast } from './toastService.js';
 
 const defaultStats = {
+    level: 1,
+    xp: 0,
     currentStreak: 0,
     lastQuizDate: null,
     unlockedAchievements: [],
@@ -51,6 +53,15 @@ export function init() {
 
 export function getStats() {
     return { ...stats };
+}
+
+/**
+ * Calculates the total XP required to reach the next level.
+ * @param {number} level - The current level.
+ * @returns {number} The XP needed for the next level.
+ */
+export function getXpForNextLevel(level) {
+    return level * 100;
 }
 
 function isSameDay(date1, date2) {
@@ -107,6 +118,22 @@ export function updateStatsOnQuizCompletion(quizState, history) {
     updateStreak(today);
     stats.lastQuizDate = today.toISOString();
     
+    // Add XP
+    const xpGained = quizState.score * 10;
+    if (xpGained > 0) {
+        stats.xp += xpGained;
+        showToast(`${xpGained} XP gained!`, 'info');
+    }
+
+    // Check for level up
+    let xpForNextLevel = getXpForNextLevel(stats.level);
+    while (stats.xp >= xpForNextLevel) {
+        stats.level++;
+        stats.xp -= xpForNextLevel;
+        showToast(`Level Up! You are now Level ${stats.level}!`, 'success');
+        xpForNextLevel = getXpForNextLevel(stats.level);
+    }
+
     checkAchievements(quizState, history);
     
     saveStats();
@@ -122,4 +149,22 @@ export function getAchievements() {
         ...data,
         unlocked: stats.unlockedAchievements.includes(id),
     }));
+}
+
+/**
+ * Calculates derived profile statistics from the quiz history.
+ * @param {Array<object>} history - The user's quiz history.
+ * @returns {object} An object containing aggregated stats.
+ */
+export function getProfileStats(history) {
+    const totalQuizzes = history.length;
+    const totalQuestions = history.reduce((sum, item) => sum + item.totalQuestions, 0);
+    const totalCorrect = history.reduce((sum, item) => sum + item.score, 0);
+    const averageScore = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+    
+    return {
+        totalQuizzes,
+        totalQuestions,
+        averageScore,
+    };
 }
