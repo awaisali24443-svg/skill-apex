@@ -50,10 +50,10 @@ body::after {
     position: absolute;
     inset: 0;
     background: repeating-linear-gradient(0deg, #00000000 0px, #00000000 1px, #00000033 2px);
-    opacity: 0.2;
+    opacity: 0.15;
     animation: scanline 8s linear infinite;
     pointer-events: none;
-    z-index: 1000;
+    z-index: -1;
 }
 
 @keyframes pan-grid {
@@ -544,15 +544,18 @@ body.animations-subtle *::after {
     transition-duration: 0.1s !important;
     animation-duration: 0.2s !important;
 }
-/* Stop infinite animations in subtle mode */
+/* Stop infinite UI animations in subtle mode */
 body.animations-subtle .spinner::before,
 body.animations-subtle .spinner::after,
-body.animations-subtle body::before,
-body.animations-subtle body::after,
 body.animations-subtle .orb.listening,
 body.animations-subtle .orb.thinking,
 body.animations-subtle .orb.speaking {
     animation-iteration-count: 1 !important;
+}
+/* Static background for subtle mode */
+body.animations-subtle::before,
+body.animations-subtle::after {
+    animation: none;
 }
 
 
@@ -561,6 +564,11 @@ body.animations-off *::before,
 body.animations-off *::after {
     transition: none !important;
     animation: none !important;
+}
+/* Hide background effects when animations are off */
+body.animations-off::before,
+body.animations-off::after {
+    display: none;
 }
 
 

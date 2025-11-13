@@ -1,4 +1,4 @@
-let canvas, ctx, particles, animationFrameId;
+let canvas, ctx, particles, animationFrameId, configSvc;
 
 const PARTICLE_CONFIG = {
     count: 80,
@@ -35,9 +35,6 @@ class Particle {
 
 function createParticles() {
     particles = [];
-    const particleCount = (window.innerWidth * window.innerHeight) / 20000;
-    PARTICLE_CONFIG.count = Math.min(100, Math.floor(particleCount));
-
     for (let i = 0; i < PARTICLE_CONFIG.count; i++) {
         particles.push(new Particle());
     }
@@ -63,6 +60,7 @@ function connectParticles() {
 }
 
 function animate() {
+    if (!ctx || !canvas) return; // Guard against missing canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     particles.forEach(p => {
         p.update();
@@ -73,13 +71,61 @@ function animate() {
 }
 
 function handleResize() {
-    if (!canvas) return;
+    if (!canvas || !configSvc) return; // Guard
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    createParticles(); // Re-create particles for new screen size
+
+    // Recalculate particle count based on intensity and screen size
+    const baseCount = (canvas.width * canvas.height) / 20000;
+    const intensity = configSvc.getConfig().animationIntensity;
+    let countMultiplier = 1.0;
+    if (intensity === 'subtle') {
+        countMultiplier = 0.5;
+    }
+    
+    PARTICLE_CONFIG.count = Math.min(100, Math.floor(baseCount * countMultiplier));
+
+    createParticles();
 }
 
-export function init() {
+function updateAnimationState() {
+    if (!configSvc || !canvas) return;
+    const config = configSvc.getConfig();
+
+    switch (config.animationIntensity) {
+        case 'off':
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            canvas.style.display = 'none';
+            break;
+        case 'subtle':
+            canvas.style.display = 'block';
+            PARTICLE_CONFIG.speed = 0.15;
+            PARTICLE_CONFIG.lineDistance = 120;
+            PARTICLE_CONFIG.maxRadius = 2;
+            handleResize(); // Recreate with new settings
+            if (!animationFrameId && document.body.classList.contains('animations-off') === false) {
+                 animate();
+            }
+            break;
+        case 'full':
+        default:
+            canvas.style.display = 'block';
+            PARTICLE_CONFIG.speed = 0.3;
+            PARTICLE_CONFIG.lineDistance = 150;
+            PARTICLE_CONFIG.maxRadius = 3;
+            handleResize(); // Recreate with new settings
+            if (!animationFrameId && document.body.classList.contains('animations-off') === false) {
+                animate();
+            }
+            break;
+    }
+}
+
+export function init(configService) {
+    configSvc = configService;
     canvas = document.getElementById('particle-canvas');
     if (!canvas) {
         console.error('Particle canvas not found!');
@@ -87,15 +133,17 @@ export function init() {
     }
     ctx = canvas.getContext('2d');
     
-    handleResize(); // Set initial size and particles
-    animate();
+    updateAnimationState();
 
     window.addEventListener('resize', handleResize);
+    window.addEventListener('settings-changed', updateAnimationState);
 }
 
 export function destroy() {
-    if(animationFrameId) {
+    if (animationFrameId) {
        cancelAnimationFrame(animationFrameId);
+       animationFrameId = null;
     }
     window.removeEventListener('resize', handleResize);
+    window.removeEventListener('settings-changed', updateAnimationState);
 }

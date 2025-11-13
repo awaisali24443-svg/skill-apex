@@ -196,7 +196,7 @@ async function main() {
         // Initialize all core services
         configService.init();
         applyAppSettings(configService.getConfig()); // Apply theme & animations on startup
-        backgroundService.init();
+        backgroundService.init(configService);
         soundService.init(configService);
         learningPathService.init();
         historyService.init();
