@@ -288,10 +288,10 @@ function setupWebSocketConnection(ws) {
                 outputAudioTranscription: {},
                 speechConfig: {
                     voiceConfig: {
-                        prebuiltVoiceConfig: { voiceName: 'Kore' },
+                        prebuiltVoiceConfig: { voiceName: 'Zephyr' }, // Changed to a more neutral voice
                     },
                 },
-                systemInstruction: 'You are a friendly and helpful AI tutor. Keep your responses conversational and concise.',
+                systemInstruction: 'You are a helpful and friendly AI tutor. Your goal is to assist the user with their questions in a clear and concise manner.',
             },
             callbacks: {
                 onopen: () => ws.send(JSON.stringify({ type: 'socket_open' })),

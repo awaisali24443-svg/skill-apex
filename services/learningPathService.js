@@ -115,8 +115,8 @@ export function completeStep(pathId) {
         path.currentStep += 1;
         savePaths();
         showToast('Step completed! Well done.');
-    } else if (path && path.currentStep === path.path.length -1) {
-        // Mark the entire path as complete
+    } else if (path && path.currentStep === path.path.length - 1) {
+        // This was the last step, mark the entire path as complete
         path.currentStep = path.path.length;
         savePaths();
         showToast('Learning path completed! Congratulations!', 'success');
