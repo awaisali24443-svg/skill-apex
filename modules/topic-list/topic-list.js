@@ -7,16 +7,17 @@ let appState;
 let searchInput, topicGrid, customTopicContainer, template;
 let allTopics = [];
 
-async function startJourney(topic) {
+async function startJourney(topic, forceCreate = false) {
     // A simple loading state by disabling the search bar
     searchInput.disabled = true;
-    showToast(`Checking for journey: "${topic}"...`, 'info');
-
-    let path = learningPathService.getPathByGoal(topic);
     
-    if (path) {
-        window.location.hash = `#/learning-path/${path.id}`;
-        return; // No need to re-enable searchInput, as we are navigating away
+    if (!forceCreate) {
+        showToast(`Checking for journey: "${topic}"...`, 'info');
+        let path = learningPathService.getPathByGoal(topic);
+        if (path) {
+            window.location.hash = `#/learning-path/${path.id}`;
+            return; // No need to re-enable searchInput, as we are navigating away
+        }
     }
 
     showToast(`Generating a new learning journey for "${topic}"...`);
@@ -83,7 +84,8 @@ async function handleGridClick(event) {
     const card = event.target.closest('.topic-card');
     if (!card) return;
     const topic = card.dataset.topic;
-    await startJourney(topic);
+    const isCustom = card.classList.contains('custom-generator-card');
+    await startJourney(topic, isCustom);
 }
 
 async function handleGridKeydown(event) {
@@ -92,7 +94,8 @@ async function handleGridKeydown(event) {
         if (!card) return;
         event.preventDefault(); // Prevent space from scrolling
         const topic = card.dataset.topic;
-        await startJourney(topic);
+        const isCustom = card.classList.contains('custom-generator-card');
+        await startJourney(topic, isCustom);
     }
 }
 

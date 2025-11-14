@@ -8,7 +8,7 @@ let path;
 let elements;
 let currentModalStep = null;
 
-function startQuiz(index) {
+function startQuiz(index, learningContext = null) {
     if (index < 0 || index >= path.path.length) return;
 
     const step = path.path[index];
@@ -17,7 +17,8 @@ function startQuiz(index) {
         numQuestions: 5,
         difficulty: 'medium',
         learningPathId: path.id,
-        learningPathStepIndex: index
+        learningPathStepIndex: index,
+        learningContext: learningContext
     };
     window.location.hash = '/loading';
 }
@@ -153,12 +154,13 @@ async function handleLearn() {
     modalImageContainer.classList.remove('loading');
 
     if (contentResult.status === 'fulfilled') {
-        modalTextContent.innerHTML = markdownService.render(contentResult.value.summary);
+        const summaryText = contentResult.value.summary;
+        modalTextContent.innerHTML = markdownService.render(summaryText);
         elements.modalFooter.innerHTML = `
             <button class="btn btn-primary" id="modal-quiz-btn">Start Quiz</button>
         `;
         const index = path.path.findIndex(step => step.name === currentModalStep.name);
-        document.getElementById('modal-quiz-btn').onclick = () => startQuiz(index);
+        document.getElementById('modal-quiz-btn').onclick = () => startQuiz(index, summaryText);
     } else {
         modalTextContent.innerHTML = `<p>Error generating content. Please try again.</p>`;
         modalImageContainer.style.display = 'none';
