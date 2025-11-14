@@ -27,7 +27,7 @@ const APP_SHELL_URLS = [
     'assets/sounds/click.mp3',
     'assets/sounds/start.mp3',
     'assets/sounds/finish.mp3',
-    'https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Inter:wght@400;600&family=Roboto+Mono:wght@400;500&display.swap',
+    'https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Inter:wght@400;600&family=Roboto+Mono:wght@400;500&display=swap',
     'services/apiService.js',
     'services/backgroundService.js',
     'services/configService.js',
