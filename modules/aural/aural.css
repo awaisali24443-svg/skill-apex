@@ -9,10 +9,18 @@
     position: relative;
 }
 
+.aural-header-controls {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    z-index: 10;
+}
+
 .transcription-log {
     flex-grow: 1;
     overflow-y: auto;
     padding: var(--space-lg);
+    padding-top: 5rem; /* Space for back button */
     display: flex;
     flex-direction: column-reverse; /* Newest messages at the bottom */
 }

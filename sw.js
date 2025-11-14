@@ -36,6 +36,7 @@ const APP_SHELL_URLS = [
     'services/historyService.js',
     'services/learningPathService.js',
     'services/libraryService.js',
+    'services/markdownService.js',
     'services/modalService.js',
     'services/quizStateService.js',
     'services/searchService.js',

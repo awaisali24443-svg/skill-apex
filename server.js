@@ -1,7 +1,7 @@
 // --- IMPORTS & SETUP ---
 import express from 'express';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, URL } from 'url';
 import 'dotenv/config';
 import { GoogleGenAI, Type, Modality } from '@google/genai';
 import rateLimit from 'express-rate-limit';
@@ -74,9 +74,8 @@ const learningContentSchema = {
     properties: {
         title: { type: Type.STRING, description: "A concise, engaging title for the learning summary." },
         summary: {
-            type: Type.ARRAY,
-            description: "An array of paragraphs that summarize the key concepts of the topic.",
-            items: { type: Type.STRING }
+            type: Type.STRING,
+            description: "A summary of the key concepts of the topic, formatted in Markdown. Use headings (#), lists (*), and bold text (**) to structure the content.",
         }
     },
     required: ["title", "summary"]
@@ -149,7 +148,7 @@ async function generateLearningPathContent(goal) {
  */
 async function generateLearningContent(topic) {
     if (!ai) throw new Error("AI Service not initialized. Check server configuration.");
-    const prompt = `Provide a concise summary of the key concepts for the topic: '${topic}'. The summary should be easy to understand for a beginner and cover the most important points. Make it engaging and educational. Structure the output as a JSON object with a 'title' and 'summary' field, where 'summary' is an array of paragraphs.`;
+    const prompt = `Provide a concise summary of the key concepts for the topic: '${topic}'. The summary should be easy to understand for a beginner and cover the most important points. Format the summary using Markdown, including headings (#), bulleted lists (*), and bold text (**) to make it readable and structured. The output must be a JSON object with a 'title' and a 'summary' field.`;
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
@@ -267,8 +266,9 @@ const wss = new WebSocketServer({ server });
 /**
  * Handles a new WebSocket client connection for aural conversation.
  * @param {import('ws').WebSocket} ws - The WebSocket instance for the client.
+ * @param {import('http').IncomingMessage} req - The HTTP request that initiated the connection.
  */
-function setupWebSocketConnection(ws) {
+function setupWebSocketConnection(ws, req) {
     console.log('Client connected to WebSocket');
 
     if (!ai) {
@@ -277,8 +277,22 @@ function setupWebSocketConnection(ws) {
         return;
     }
 
-    let sessionPromise;
+    const defaultInstruction = 'You are a helpful and friendly AI tutor. Your goal is to assist the user with their questions in a clear and concise manner.';
+    let systemInstruction = defaultInstruction;
 
+    // Extract system instruction from query parameters
+    try {
+        const requestUrl = new URL(req.url, `ws://${req.headers.host}`);
+        const instructionParam = requestUrl.searchParams.get('systemInstruction');
+        if (instructionParam) {
+            systemInstruction = decodeURIComponent(instructionParam);
+            console.log('Using custom system instruction for Aural Tutor.');
+        }
+    } catch (e) {
+        console.warn('Could not parse system instruction from URL, using default.');
+    }
+
+    let sessionPromise;
     try {
         sessionPromise = ai.live.connect({
             model: 'gemini-2.5-flash-native-audio-preview-09-2025',
@@ -288,10 +302,10 @@ function setupWebSocketConnection(ws) {
                 outputAudioTranscription: {},
                 speechConfig: {
                     voiceConfig: {
-                        prebuiltVoiceConfig: { voiceName: 'Zephyr' }, // Changed to a more neutral voice
+                        prebuiltVoiceConfig: { voiceName: 'Zephyr' },
                     },
                 },
-                systemInstruction: 'You are a helpful and friendly AI tutor. Your goal is to assist the user with their questions in a clear and concise manner.',
+                systemInstruction: systemInstruction,
             },
             callbacks: {
                 onopen: () => ws.send(JSON.stringify({ type: 'socket_open' })),
@@ -304,7 +318,7 @@ function setupWebSocketConnection(ws) {
         ws.on('message', async (message) => {
             try {
                 const data = JSON.parse(message.toString());
-                if (data.type === 'audio_input') {
+                if (data.type === 'audio_input' && sessionPromise) {
                     const session = await sessionPromise;
                     session.sendRealtimeInput({ media: data.payload });
                 }

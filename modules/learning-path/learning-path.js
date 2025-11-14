@@ -1,6 +1,7 @@
 import * as learningPathService from '../../services/learningPathService.js';
 import * as apiService from '../../services/apiService.js';
 import { showConfirmationModal } from '../../services/modalService.js';
+import * as markdownService from '../../services/markdownService.js';
 
 let appState;
 let path;
@@ -160,14 +161,27 @@ async function loadLearnStage() {
         stepSession.stage = 'learn';
         const contentHtml = `
             <div class="modal-view-content learn-view">
-                ${stepSession.learningContent.summary.map(p => `<p>${p}</p>`).join('')}
+                ${markdownService.render(stepSession.learningContent.summary)}
                 <div class="learn-view-footer">
+                    <button class="btn" id="ask-tutor-btn">
+                        <svg class="icon"><use href="/assets/icons/feather-sprite.svg#mic"/></svg>
+                        <span>Ask the Tutor</span>
+                    </button>
                     <button class="btn btn-primary" id="ready-for-quiz-btn">I'm Ready for the Quiz!</button>
                 </div>
             </div>
         `;
         setModalContent(stepSession.learningContent.title, contentHtml);
         elements.modalContainer.querySelector('#ready-for-quiz-btn').addEventListener('click', () => loadQuizStage());
+        elements.modalContainer.querySelector('#ask-tutor-btn').addEventListener('click', () => {
+            appState.context.auralContext = {
+                from: `learning-path/${path.id}`,
+                systemInstruction: `You are an expert AI tutor helping a user with the topic: "${step.name}". The user has just read a lesson about it. Be ready to answer specific questions they might have.`
+            };
+            window.location.hash = '/aural';
+            closeModal();
+        });
+
     } catch (error) {
         setModalContent('Error', `<p>Could not load learning content. Please try again.</p>`);
     }
@@ -195,13 +209,13 @@ async function loadQuizStage(context = {}) {
             difficulty = 'hard';
             learningContext = (await Promise.all(
                 relevantSteps.map(step => apiService.generateLearningContent({ topic: step.topic }))
-            )).map(content => content.summary.join(' ')).join(' ');
+            )).map(content => content.summary).join(' ');
         } else {
             const step = path.path[stepSession.stepIndex];
             topic = step.topic;
             numQuestions = 5;
             difficulty = 'medium';
-            learningContext = stepSession.learningContent.summary.join(' ');
+            learningContext = stepSession.learningContent.summary;
         }
 
         const quizData = await apiService.generateQuiz({ topic, numQuestions, difficulty, learningContext });
@@ -322,7 +336,7 @@ async function handleDeletePath() {
     });
     if (confirmed) {
         learningPathService.deletePath(path.id);
-        window.location.hash = '/learning-path-generator';
+        window.location.hash = '/profile';
     }
 }
 
@@ -349,7 +363,7 @@ export function init(globalState) {
     path = learningPathService.getPathById(pathId);
 
     if (!path) {
-        window.location.hash = '/learning-path-generator';
+        window.location.hash = '/topics';
         return;
     }
 

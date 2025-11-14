@@ -13,6 +13,7 @@ let socket, mediaStream, inputAudioContext, outputAudioContext, scriptProcessor,
 let nextStartTime = 0;
 let sources = new Set();
 let currentInputTranscription = '', currentOutputTranscription = '';
+let appState; // Store appState globally in this module
 
 // --- DOM Elements ---
 let elements = {};
@@ -129,7 +130,11 @@ async function startConversation() {
         outputAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
         
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        socket = new WebSocket(`${protocol}//${window.location.host}`);
+        const { auralContext } = appState.context;
+        const systemInstruction = auralContext?.systemInstruction || '';
+        const socketUrl = `${protocol}//${window.location.host}/?systemInstruction=${encodeURIComponent(systemInstruction)}`;
+        socket = new WebSocket(socketUrl);
+
 
         socket.onopen = () => {
             clearTimeout(connectionTimeout);
@@ -263,7 +268,8 @@ function handleMicClick() {
 }
 
 // --- Module Lifecycle ---
-export function init(appState) {
+export function init(globalState) {
+    appState = globalState;
     elements = {
         log: document.getElementById('transcription-log'),
         placeholder: document.getElementById('aural-placeholder'),
@@ -271,7 +277,22 @@ export function init(appState) {
         status: document.getElementById('aural-status'),
         micBtn: document.getElementById('aural-mic-btn'),
         error: document.getElementById('aural-error'),
+        headerControls: document.getElementById('aural-header-controls'),
     };
+
+    const { auralContext } = appState.context;
+    if (auralContext && auralContext.from) {
+        const backBtn = document.createElement('a');
+        backBtn.href = `#/${auralContext.from}`;
+        backBtn.className = 'btn';
+        backBtn.innerHTML = `
+            <svg class="icon" width="18" height="18" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+            <span>Back to Lesson</span>
+        `;
+        elements.headerControls.appendChild(backBtn);
+    }
+
+
     elements.micBtn.addEventListener('click', handleMicClick);
     updateUI(STATE.IDLE);
 }
@@ -280,5 +301,9 @@ export function destroy() {
     stopConversation();
     if(elements.micBtn) {
         elements.micBtn.removeEventListener('click', handleMicClick);
+    }
+    // Clean up the context when leaving the module
+    if (appState && appState.context.auralContext) {
+        delete appState.context.auralContext;
     }
 }
