@@ -1,0 +1,94 @@
+
+
+.quiz-levels-container {
+    max-width: 800px;
+}
+
+.levels-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+}
+
+.level-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    cursor: pointer;
+    padding: var(--space-lg);
+    animation: fade-slide-in 0.3s ease-out forwards;
+    opacity: 0;
+    transform: translateY(10px);
+    --level-color: var(--color-primary); /* Default color */
+}
+
+.level-card:hover {
+    border-color: var(--level-color);
+}
+
+.level-card:nth-child(2) { animation-delay: 0.1s; }
+.level-card:nth-child(3) { animation-delay: 0.2s; }
+.level-card:nth-child(4) { animation-delay: 0.3s; }
+
+.level-icon {
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: var(--color-surface-hover);
+    color: var(--level-color);
+    transition: all var(--transition-speed-fast) ease;
+}
+
+.level-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.level-card:hover .level-icon {
+    background-color: var(--level-color);
+    color: #fff;
+    transform: scale(1.1);
+    box-shadow: 0 0 15px -2px var(--level-color);
+}
+
+.level-info {
+    flex-grow: 1;
+}
+
+.level-info h3 {
+    color: var(--color-text);
+    margin: 0 0 var(--space-xs) 0;
+}
+
+.level-info p {
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+/* Level-specific designs */
+.level-card[data-level="novice"] {
+    --level-color: var(--color-primary); /* Teal */
+}
+.level-card[data-level="apprentice"] {
+    --level-color: var(--color-secondary); /* Violet */
+}
+.level-card[data-level="expert"] {
+    --level-color: var(--color-accent); /* Hot Pink */
+}
+.level-card[data-level="master"] {
+    --level-color: var(--color-error); /* Red */
+}
+
+
+.quiz-levels-footer {
+    margin-top: var(--space-xl);
+    text-align: center;
+}
+
+#back-to-topics-btn {
+    margin: 0 auto;
+}

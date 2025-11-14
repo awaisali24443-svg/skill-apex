@@ -94,10 +94,14 @@ function handleAiResponse(response) {
 
 function endSession({ assessment, passed }) {
     updateUI(STATE.ENDED);
+    const passIcon = passed ? 'check-circle' : 'x-circle';
 
     const assessmentHTML = `
         <div class="assessment-card ${passed ? 'passed' : 'failed'}">
-            <h3>${passed ? 'Great Job!' : 'Good Effort!'}</h3>
+            <h3>
+                <svg class="icon" width="24" height="24"><use href="/assets/icons/feather-sprite.svg#${passIcon}"/></svg>
+                ${passed ? 'Great Job!' : 'Good Effort!'}
+            </h3>
             <p>${assessment}</p>
         </div>
         <div class="conclusion-actions">
@@ -111,10 +115,12 @@ function endSession({ assessment, passed }) {
     if (passed) {
         soundService.playSound('finish');
         showToast('Level passed! Well done.');
+        learningPathService.recordStepScore(socraticContext.learningPathId, socraticContext.learningPathStepIndex, 1, 1); // Record a "pass"
         learningPathService.completeStep(socraticContext.learningPathId);
     } else {
         soundService.playSound('incorrect');
         showToast('Keep practicing! You\'ll get it.');
+        learningPathService.recordStepScore(socraticContext.learningPathId, socraticContext.learningPathStepIndex, 0, 1); // Record a "fail"
     }
 }
 

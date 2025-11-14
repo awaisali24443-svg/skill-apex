@@ -80,6 +80,7 @@ export function addQuizAttempt(quizState) {
         topic: quizState.topic,
         score: quizState.score,
         totalQuestions: quizState.questions.length,
+        difficulty: quizState.difficulty || 'medium', // Add difficulty
         date: new Date(quizState.endTime).toISOString(),
     };
 

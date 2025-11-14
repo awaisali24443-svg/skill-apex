@@ -318,15 +318,15 @@ async function generateSocraticResponse(summary, history) {
 async function analyzeUserPerformance(history) {
     if (!ai) throw new Error("AI Service not initialized. Check server configuration.");
 
-    const historySummary = history.map(item =>
+    const historySummary = history.map(item => 
         `Topic: "${item.topic}", Score: ${item.score}/${item.totalQuestions}`
     ).join('; ');
 
-    const prompt = `Analyze the following user quiz history to identify areas for improvement. Based on the data, determine the top 2-3 topics where the user has the lowest average score or seems to be struggling the most. If all scores are high, return an empty array. History: [${historySummary}]. Return only a JSON object matching the provided schema.`;
+    const prompt = `Analyze the following user quiz history: "${historySummary}". Identify up to 3 topics where the user consistently has the lowest scores (as a percentage). Focus on topics where they have multiple attempts or low scores on high-question-count quizzes. Do not suggest topics where they have a high score.`;
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-pro',
+            model: 'gemini-2.5-flash',
             contents: prompt,
             config: {
                 responseMimeType: 'application/json',
@@ -341,255 +341,190 @@ async function analyzeUserPerformance(history) {
 }
 
 
-// --- EXPRESS APP SETUP ---
+// --- EXPRESS ROUTER ---
 const app = express();
 const server = http.createServer(app);
+const wss = new WebSocketServer({ server });
 
-// --- MIDDLEWARE ---
-app.set('trust proxy', 1);
-app.use(express.json({ limit: '2mb' })); // Increase limit for history payload
+app.use(express.json());
+app.use(express.static(path.join(__dirname)));
+
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many requests from this IP, please try again after 15 minutes' },
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    standardHeaders: true,
+    legacyHeaders: false,
 });
-app.use('/api/', apiLimiter);
-app.use(express.static(path.join(__dirname, '/')));
 
+app.use('/api', apiLimiter);
 
-// --- API ROUTE HANDLERS ---
-/**
- * Handles GET /api/topics
- */
-async function handleGetTopics(req, res, next) {
+// --- API ENDPOINTS ---
+app.get('/api/topics', async (req, res) => {
     if (topicsCache) {
         return res.json(topicsCache);
     }
     try {
-        const topicsPath = path.join(__dirname, 'data', 'topics.json');
-        const data = await fs.readFile(topicsPath, 'utf8');
+        const filePath = path.join(__dirname, 'data', 'topics.json');
+        const data = await fs.readFile(filePath, 'utf8');
         topicsCache = JSON.parse(data);
         res.json(topicsCache);
-    } catch (error) {
-        console.error('Error reading topics.json:', error);
-        next(new Error('Failed to load topics.'));
+    } catch (err) {
+        console.error('Failed to read topics.json:', err);
+        res.status(500).json({ error: 'Failed to load topic data.' });
     }
-}
+});
 
-/**
- * Handles POST /api/generate
- */
-async function handleGenerateQuiz(req, res, next) {
+app.post('/api/generate', async (req, res) => {
     const { topic, numQuestions, difficulty, learningContext } = req.body;
     if (!topic || !numQuestions || !difficulty) {
-        return res.status(400).json({ error: 'Missing required parameters: topic, numQuestions, difficulty.' });
+        return res.status(400).json({ error: 'Missing required parameters.' });
     }
     try {
         const quizData = await generateQuizContent(topic, numQuestions, difficulty, learningContext);
         res.json(quizData);
     } catch (error) {
-        next(error);
+        res.status(500).json({ error: error.message });
     }
-}
+});
 
-/**
- * Handles POST /api/generate-path
- */
-async function handleGeneratePath(req, res, next) {
+app.post('/api/generate-path', async (req, res) => {
     const { goal } = req.body;
     if (!goal) {
-        return res.status(400).json({ error: 'Missing required parameter: goal.' });
+        return res.status(400).json({ error: 'Missing goal parameter.' });
     }
     try {
         const pathData = await generateLearningPathContent(goal);
         res.json(pathData);
     } catch (error) {
-        next(error);
+        res.status(500).json({ error: error.message });
     }
-}
+});
 
-/**
- * Handles POST /api/generate-synthesis
- */
-async function handleGenerateSynthesis(req, res, next) {
+app.post('/api/generate-synthesis', async (req, res) => {
     const { topic } = req.body;
     if (!topic) {
-        return res.status(400).json({ error: 'Missing required parameter: topic.' });
+        return res.status(400).json({ error: 'Missing topic parameter.' });
     }
     try {
-        const contentData = await generateSynthesisContent(topic);
-        res.json(contentData);
+        const synthesisData = await generateSynthesisContent(topic);
+        res.json(synthesisData);
     } catch (error) {
-        next(error);
+        res.status(500).json({ error: error.message });
     }
-}
+});
 
-
-/**
- * Handles POST /api/generate-speech
- */
-async function handleGenerateSpeech(req, res, next) {
+app.post('/api/generate-speech', async (req, res) => {
     const { text } = req.body;
     if (!text) {
-        return res.status(400).json({ error: 'Missing required parameter: text.' });
+        return res.status(400).json({ error: 'Missing text parameter.' });
     }
     try {
         const audioData = await generateSpeechContent(text);
-        res.json({ audioData }); // Send as base64 string
+        res.json({ audioData });
     } catch (error) {
-        next(error);
+        res.status(500).json({ error: error.message });
     }
-}
+});
 
-/**
- * Handles POST /api/socratic-chat
- */
-async function handleSocraticChat(req, res, next) {
+app.post('/api/socratic-chat', async (req, res) => {
     const { summary, history } = req.body;
     if (!summary || !history) {
-        return res.status(400).json({ error: 'Missing required parameters: summary, history.' });
+        return res.status(400).json({ error: 'Missing summary or history.' });
     }
     try {
-        const responseData = await generateSocraticResponse(summary, history);
-        res.json(responseData);
+        const socraticData = await generateSocraticResponse(summary, history);
+        res.json(socraticData);
     } catch (error) {
-        next(error);
+        res.status(500).json({ error: error.message });
     }
-}
+});
 
 
-/**
- * Handles POST /api/analyze-performance
- */
-async function handleAnalyzePerformance(req, res, next) {
+app.post('/api/analyze-performance', async (req, res) => {
     const { history } = req.body;
     if (!history || !Array.isArray(history)) {
-        return res.status(400).json({ error: 'Missing or invalid required parameter: history.' });
+        return res.status(400).json({ error: 'Missing or invalid history.' });
     }
     try {
         const analysisData = await analyzeUserPerformance(history);
         res.json(analysisData);
     } catch (error) {
-        next(error);
+        res.status(500).json({ error: error.message });
     }
-}
+});
 
-
-// --- API ROUTER ---
-const apiRouter = express.Router();
-apiRouter.get('/topics', handleGetTopics);
-apiRouter.post('/generate', handleGenerateQuiz);
-apiRouter.post('/generate-path', handleGeneratePath);
-apiRouter.post('/generate-synthesis', handleGenerateSynthesis);
-apiRouter.post('/generate-speech', handleGenerateSpeech);
-apiRouter.post('/socratic-chat', handleSocraticChat);
-apiRouter.post('/analyze-performance', handleAnalyzePerformance);
-app.use('/api', apiRouter);
-
-
-// --- WEBSOCKET SERVER LOGIC ---
-const wss = new WebSocketServer({ server });
-
-/**
- * Handles a new WebSocket client connection for aural conversation.
- * @param {import('ws').WebSocket} ws - The WebSocket instance for the client.
- * @param {import('http').IncomingMessage} req - The HTTP request that initiated the connection.
- */
-function setupWebSocketConnection(ws, req) {
+// --- WEBSOCKET AURAL MODE ---
+wss.on('connection', async (ws, req) => {
+    let session;
     console.log('Client connected to WebSocket');
 
-    if (!ai) {
-        ws.send(JSON.stringify({ type: 'error', message: 'Server not configured with API key.' }));
+    try {
+        const url = new URL(req.url, `http://${req.headers.host}`);
+        const systemInstruction = url.searchParams.get('systemInstruction') || 'You are a helpful AI tutor.';
+
+        if (!ai) {
+             ws.send(JSON.stringify({ type: 'error', message: 'AI Service is not initialized on the server.' }));
+             ws.close();
+             return;
+        }
+
+        session = await ai.live.connect({
+            model: 'gemini-2.5-flash-native-audio-preview-09-2025',
+            config: {
+                responseModalities: [Modality.AUDIO],
+                speechConfig: {
+                    voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } },
+                },
+                inputAudioTranscription: {},
+                outputAudioTranscription: {},
+                systemInstruction: systemInstruction,
+            },
+            callbacks: {
+                onmessage: (message) => {
+                    ws.send(JSON.stringify({ type: 'gemini_message', message }));
+                },
+                onerror: (e) => {
+                    console.error('WebSocket session error:', e);
+                    ws.send(JSON.stringify({ type: 'error', message: 'An error occurred in the AI session.' }));
+                },
+                onclose: () => {
+                    console.log('WebSocket session closed.');
+                },
+            },
+        });
+    } catch (error) {
+        console.error('Failed to create Live session:', error);
+        ws.send(JSON.stringify({ type: 'error', message: 'Failed to connect to the AI service.' }));
         ws.close();
         return;
     }
 
-    const defaultInstruction = 'You are a helpful and friendly AI tutor. Your goal is to assist the user with their questions in a clear and concise manner.';
-    let systemInstruction = defaultInstruction;
-
-    // Extract system instruction from query parameters
-    try {
-        const requestUrl = new URL(req.url, `ws://${req.headers.host}`);
-        const instructionParam = requestUrl.searchParams.get('systemInstruction');
-        if (instructionParam) {
-            systemInstruction = decodeURIComponent(instructionParam);
-            console.log('Using custom system instruction for Aural Tutor.');
+    ws.on('message', async (message) => {
+        try {
+            const data = JSON.parse(message);
+            if (data.type === 'audio_input') {
+                await session.sendRealtimeInput({ media: data.payload });
+            }
+        } catch (error) {
+            console.error('Error processing client message:', error);
         }
-    } catch (e) {
-        console.warn('Could not parse system instruction from URL, using default.');
-    }
+    });
 
-    let sessionPromise;
-    try {
-        sessionPromise = ai.live.connect({
-            model: 'gemini-2.5-flash-native-audio-preview-09-2025',
-            config: {
-                responseModalities: [Modality.AUDIO],
-                inputAudioTranscription: {},
-                outputAudioTranscription: {},
-                speechConfig: {
-                    voiceConfig: {
-                        prebuiltVoiceConfig: { voiceName: 'Zephyr' },
-                    },
-                },
-                systemInstruction: systemInstruction,
-            },
-            callbacks: {
-                onopen: () => ws.send(JSON.stringify({ type: 'socket_open' })),
-                onmessage: (message) => ws.send(JSON.stringify({ type: 'gemini_message', message })),
-                onerror: (e) => ws.send(JSON.stringify({ type: 'error', message: e.message || 'An unknown error occurred' })),
-                onclose: () => ws.send(JSON.stringify({ type: 'gemini_closed' })),
-            }
-        });
-
-        ws.on('message', async (message) => {
-            try {
-                const data = JSON.parse(message.toString());
-                if (data.type === 'audio_input' && sessionPromise) {
-                    const session = await sessionPromise;
-                    session.sendRealtimeInput({ media: data.payload });
-                }
-            } catch (e) {
-                console.error('Error processing client message:', e);
-            }
-        });
-
-        ws.on('close', async () => {
-            console.log('Client disconnected');
-            try {
-                if (sessionPromise) {
-                    const session = await sessionPromise;
-                    session.close();
-                }
-            } catch (e) {
-                console.error('Error closing Gemini session:', e);
-            }
-        });
-
-    } catch (err) {
-        console.error('Failed to connect to Gemini Live:', err);
-        ws.send(JSON.stringify({ type: 'error', message: `Failed to connect to AI: ${err.message}` }));
-        ws.close();
-    }
-}
-
-wss.on('connection', setupWebSocketConnection);
-
-
-// --- SPA FALLBACK & ERROR HANDLING ---
-app.get(/^\/.*/, (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    ws.on('close', () => {
+        console.log('Client disconnected');
+        if (session) {
+            session.close();
+        }
+    });
 });
 
-// Centralized error handler
-app.use((err, req, res, next) => {
-    console.error('Central Error Handler:', err.stack);
-    res.status(500).json({ error: err.message || 'An internal server error occurred.' });
+
+// Fallback for SPA routing
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // --- SERVER START ---
 server.listen(PORT, () => {
-    console.log(`Server listening at http://localhost:${PORT}`);
+    console.log(`Server is running on http://localhost:${PORT}`);
 });

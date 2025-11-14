@@ -16,7 +16,7 @@ function startQuickQuiz() {
     appState.context = {
         topic: activeTopic.name,
         numQuestions: 10,
-        difficulty: activeTopic.difficulty?.toLowerCase() || 'medium',
+        difficulty: 'medium',
     };
     window.location.hash = '/loading';
     closeModal();

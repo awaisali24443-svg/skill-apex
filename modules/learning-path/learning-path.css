@@ -156,6 +156,12 @@
 .level-card.available {
     border-color: var(--color-primary);
     box-shadow: 0 0 15px var(--color-primary-transparent);
+    animation: fade-in-up 0.5s ease-out forwards, pulse-glow 2s infinite;
+}
+@keyframes pulse-glow {
+    0% { box-shadow: 0 0 15px var(--color-primary-transparent); }
+    50% { box-shadow: 0 0 25px var(--color-primary-transparent-heavy); }
+    100% { box-shadow: 0 0 15px var(--color-primary-transparent); }
 }
 .level-card.available:hover {
     box-shadow: 0 0 25px var(--color-primary-transparent-heavy);

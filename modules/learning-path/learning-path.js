@@ -8,7 +8,7 @@ let path;
 let elements;
 let currentModalStepIndex = null;
 let synthesisContent = null;
-let audioContext, audioBuffer;
+let audioContext, audioBuffer, audioSourceNode;
 
 // --- Audio Decoding ---
 function decode(base64) {
@@ -34,7 +34,7 @@ async function decodeAudioData(data, ctx) {
 
 function startSocraticTest(index) {
     if (index < 0 || index >= path.path.length || !synthesisContent) return;
-
+    closeModal();
     const step = path.path[index];
     appState.context.socraticContext = {
         topic: step.topic,
@@ -43,6 +43,21 @@ function startSocraticTest(index) {
         learningPathStepIndex: index
     };
     window.location.hash = '/socratic';
+}
+
+function startKnowledgeCheck(index) {
+    if (index < 0 || index >= path.path.length || !synthesisContent) return;
+    closeModal();
+    const step = path.path[index];
+    appState.context = {
+        topic: step.topic,
+        numQuestions: 5,
+        difficulty: 'medium',
+        learningContext: synthesisContent.summary, // Base quiz on the summary
+        learningPathId: path.id,
+        learningPathStepIndex: index,
+    };
+    window.location.hash = '/loading';
 }
 
 
@@ -121,18 +136,25 @@ function renderMindMap(node) {
 
 async function playAudio() {
     if (!audioBuffer) return;
+    if (audioSourceNode) { // If it's already playing, stop it
+        audioSourceNode.stop();
+        audioSourceNode = null;
+        elements.playAudioBtn.classList.remove('playing');
+        return;
+    }
     if (!audioContext || audioContext.state === 'closed') {
         audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
     }
     
-    const source = audioContext.createBufferSource();
-    source.buffer = audioBuffer;
-    source.connect(audioContext.destination);
-    source.start(0);
+    audioSourceNode = audioContext.createBufferSource();
+    audioSourceNode.buffer = audioBuffer;
+    audioSourceNode.connect(audioContext.destination);
+    audioSourceNode.start(0);
 
     elements.playAudioBtn.classList.add('playing');
-    source.onended = () => {
+    audioSourceNode.onended = () => {
         elements.playAudioBtn.classList.remove('playing');
+        audioSourceNode = null;
     };
 }
 
@@ -182,15 +204,18 @@ async function openLevelModal(index) {
         elements.modalLoadingState.style.display = 'none';
         elements.modalBody.style.display = 'block';
 
-        const isCompleted = index < path.currentStep;
-        const buttonText = isCompleted ? 'Retake Test' : 'Test My Understanding';
         elements.modalFooter.innerHTML = `
-            <button class="btn btn-primary" id="modal-socratic-btn">
+            <button class="btn" id="modal-socratic-btn">
                  <svg class="icon"><use href="/assets/icons/feather-sprite.svg#message-circle"/></svg>
-                <span>${buttonText}</span>
+                <span>Socratic Gauntlet</span>
+            </button>
+            <button class="btn btn-primary" id="modal-quiz-btn">
+                 <svg class="icon"><use href="/assets/icons/feather-sprite.svg#zap"/></svg>
+                <span>Knowledge Check</span>
             </button>
         `;
         document.getElementById('modal-socratic-btn').onclick = () => startSocraticTest(index);
+        document.getElementById('modal-quiz-btn').onclick = () => startKnowledgeCheck(index);
     }
 }
 
@@ -199,6 +224,9 @@ function closeModal() {
     elements.modal.style.display = 'none';
     currentModalStepIndex = null;
     synthesisContent = null;
+    if (audioSourceNode) {
+        audioSourceNode.stop();
+    }
     if (audioContext && audioContext.state !== 'closed') {
         audioContext.close();
     }

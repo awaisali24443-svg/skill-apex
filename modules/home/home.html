@@ -8,14 +8,15 @@
     </header>
     <div class="dashboard-grid">
         <div class="dashboard-main">
-            <a href="/#/topics" class="card home-card primary-action">
+            <!-- This card is now dynamically populated by home.js -->
+            <a id="primary-action-card" href="#" class="card home-card primary-action">
                 <div class="card-content">
-                    <div class="card-icon">
+                    <div id="primary-action-icon" class="card-icon">
                         <svg><use href="/assets/icons/feather-sprite.svg#grid"/></svg>
                     </div>
                     <div>
-                        <h2>Start a New Journey</h2>
-                        <p>Search for any topic to begin a step-by-step learning path.</p>
+                        <h2 id="primary-action-title">Start a New Journey</h2>
+                        <p id="primary-action-description">Search for any topic to begin a step-by-step learning path.</p>
                     </div>
                 </div>
             </a>

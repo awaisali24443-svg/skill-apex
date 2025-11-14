@@ -19,27 +19,24 @@ function renderStreak() {
     }
 }
 
-function renderContinueLearning() {
+function renderPrimaryAction() {
     const path = learningPathService.getLatestInProgressPath();
-    const container = document.getElementById('continue-learning-container');
-    if (!path || !container) {
-        if(container) container.style.display = 'none';
-        return;
-    }
+    const card = document.getElementById('primary-action-card');
+    const icon = document.getElementById('primary-action-icon');
+    const title = document.getElementById('primary-action-title');
+    const description = document.getElementById('primary-action-description');
 
-    const progress = (path.currentStep / path.path.length) * 100;
-    container.innerHTML = `
-        <h3>Continue Learning</h3>
-        <a href="/#/learning-path/${path.id}" class="card dashboard-card">
-            <h4>${path.goal}</h4>
-            <p>Next up: ${path.path[path.currentStep].name}</p>
-            <div class="progress-bar">
-                <div class="progress-bar-fill" style="width: ${progress}%;"></div>
-            </div>
-            <span>${path.currentStep} / ${path.path.length} steps completed</span>
-        </a>
-    `;
-    container.style.display = 'block';
+    if (path) {
+        card.href = `/#/learning-path/${path.id}`;
+        icon.innerHTML = `<svg><use href="/assets/icons/feather-sprite.svg#git-branch"/></svg>`;
+        title.textContent = 'Continue Your Journey';
+        description.textContent = `Next up in "${path.goal}": ${path.path[path.currentStep].name}`;
+    } else {
+        card.href = '/#/topics';
+        icon.innerHTML = `<svg><use href="/assets/icons/feather-sprite.svg#grid"/></svg>`;
+        title.textContent = 'Start a New Journey';
+        description.textContent = 'Search for any topic to begin a step-by-step learning path.';
+    }
 }
 
 function renderRecentHistory(appState) {
@@ -54,7 +51,7 @@ function renderRecentHistory(appState) {
         <div class="card dashboard-card-small">
             <p>${item.topic}</p>
             <span>${item.score}/${item.totalQuestions}</span>
-            <button class="btn retry-btn" data-topic="${item.topic}">Retry</button>
+            <button class="btn retry-btn" data-topic="${item.topic}" data-difficulty="${item.difficulty || 'medium'}">Retry</button>
         </div>
     `).join('');
     container.style.display = 'block';
@@ -62,10 +59,11 @@ function renderRecentHistory(appState) {
     historyClickHandler = (e) => {
         if(e.target.classList.contains('retry-btn')) {
             const topic = e.target.dataset.topic;
+            const difficulty = e.target.dataset.difficulty;
             appState.context = {
                 topic,
                 numQuestions: 10,
-                difficulty: 'medium',
+                difficulty,
             };
             window.location.hash = '/loading';
         }
@@ -77,7 +75,7 @@ function renderRecentHistory(appState) {
 export function init(appState) {
     renderStreak();
     if (FEATURES.LEARNING_PATHS) {
-        renderContinueLearning();
+        renderPrimaryAction();
     }
     renderRecentHistory(appState);
 }

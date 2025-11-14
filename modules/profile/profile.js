@@ -102,7 +102,7 @@ function renderSmartReviewCard(topics) {
     const template = document.getElementById('smart-review-template');
     
     const card = template.content.cloneNode(true);
-    card.querySelector('.smart-review-description').textContent = "The AI has analyzed your quiz history and suggests reviewing these topics:";
+    card.querySelector('.smart-review-description').textContent = "The AI has analyzed your quiz history and suggests creating a custom quiz to review these topics:";
     
     const topicsList = card.querySelector('.weak-topics-list');
     topics.forEach(topic => {
@@ -114,7 +114,7 @@ function renderSmartReviewCard(topics) {
 
     card.querySelector('.start-review-btn').addEventListener('click', () => {
         appState.context = {
-            topic: topics.join(', '),
+            topic: `Personalized Review: ${topics.join(', ')}`,
             numQuestions: 10,
             difficulty: 'medium',
             learningContext: `This is a personalized review quiz focusing on topics the user has struggled with. The questions should test foundational concepts from these topics: ${topics.join(', ')}.`
