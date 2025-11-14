@@ -1,56 +1,62 @@
 <div class="page-container view-path-container">
-    <header class="page-header">
-        <h1 id="path-goal-title">Loading Learning Path...</h1>
-        <p id="path-progress-summary"></p>
-        <div class="path-actions">
+    <header class="path-header">
+        <h1 id="path-goal-title"></h1>
+        <div class="progress-container">
+            <p id="progress-text"></p>
+            <div class="progress-bar">
+                <div id="progress-bar-fill"></div>
+            </div>
+        </div>
+         <div class="path-actions">
              <button id="delete-path-btn" class="btn">
                 <svg class="icon"><use href="/assets/icons/feather-sprite.svg#trash-2"/></svg>
-                <span>Delete Path</span>
+                <span class="sr-only">Delete Path</span>
             </button>
         </div>
     </header>
-    <div id="galaxy-map" class="galaxy-map">
-        <!-- Galaxy map will be rendered here by JS -->
+    <main id="levels-grid" class="levels-grid">
+        <!-- Level cards will be rendered here by JS -->
+    </main>
+    <footer class="path-footer">
+        <button id="back-btn" class="btn">
+            <svg class="icon"><use href="/assets/icons/feather-sprite.svg#arrow-left"/></svg>
+            <span>Back to Journeys</span>
+        </button>
+        <button id="start-level-btn" class="btn btn-primary">
+            <svg class="icon"><use href="/assets/icons/feather-sprite.svg#play"/></svg>
+            <span id="start-level-btn-text">Start Level</span>
+        </button>
+    </footer>
+
+    <!-- Level Detail Modal -->
+    <div id="level-modal" class="level-modal-container" style="display: none;">
+        <div id="modal-backdrop" class="modal-backdrop"></div>
+        <div class="modal-content card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <header class="modal-header">
+                <h2 id="modal-title"></h2>
+                <button id="modal-close-btn" class="btn" aria-label="Close modal">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#x-circle"/></svg>
+                </button>
+            </header>
+            <main id="modal-body" class="modal-body">
+                <!-- Content injected by JS -->
+            </main>
+            <footer id="modal-footer" class="modal-footer">
+                <!-- Buttons injected by JS -->
+            </footer>
+        </div>
     </div>
 </div>
 
-<div id="step-modal-container"></div>
-
-<template id="cluster-template">
-    <div class="cluster-group">
-        <h2 class="cluster-title"></h2>
-        <div class="cluster-steps"></div>
-    </div>
-</template>
-
-<template id="step-node-template">
-    <div class="step-node" tabindex="0" role="button">
-        <div class="step-node-core">
-            <svg class="icon"><use/></svg>
+<template id="level-card-template">
+    <div class="level-card" tabindex="0">
+        <div class="level-icon">
+             <svg class="icon"><use/></svg>
         </div>
-        <div class="step-node-label"></div>
-    </div>
-</template>
-
-<template id="cluster-review-template">
-     <div class="cluster-review-node" tabindex="0" role="button">
-        <div class="review-node-core">
-            <svg class="icon"><use href="/assets/icons/feather-sprite.svg#award"/></svg>
+        <div class="level-info">
+            <span class="level-number"></span>
+            <p class="level-name"></p>
         </div>
-        <div class="review-node-label"></div>
-    </div>
-</template>
-
-
-<template id="step-modal-template">
-    <div class="modal-backdrop"></div>
-    <div class="step-modal-content" role="dialog" aria-modal="true">
-        <button class="step-modal-close-btn" aria-label="Close">&times;</button>
-        <div class="step-modal-header">
-            <h2 id="step-modal-title"></h2>
-        </div>
-        <div id="step-modal-body" class="step-modal-body">
-            <!-- Content for learn/quiz/results will be injected here -->
-        </div>
+        <span class="level-status"></span>
     </div>
 </template>

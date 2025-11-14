@@ -67,7 +67,7 @@ function renderLearningJourneys() {
             
             card.querySelector('.journey-goal').textContent = path.goal;
             const progress = path.currentStep / path.path.length;
-            card.querySelector('.journey-details').textContent = `${path.path.length} chapters • Created on ${new Date(path.createdAt).toLocaleDateString()}`;
+            card.querySelector('.journey-details').textContent = `${path.path.length} levels • Created on ${new Date(path.createdAt).toLocaleDateString()}`;
             card.querySelector('.progress-bar-fill').style.width = `${progress * 100}%`;
             card.querySelector('.progress-text').textContent = `Progress: ${path.currentStep} / ${path.path.length}`;
 

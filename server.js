@@ -53,32 +53,22 @@ const quizGenerationSchema = {
 const learningPathSchema = {
     type: Type.OBJECT,
     properties: {
-        clusters: {
+        path: {
             type: Type.ARRAY,
-            description: "An array of logical topic clusters, forming the learning path.",
+            description: "A comprehensive, granular array of learning steps.",
             items: {
                 type: Type.OBJECT,
                 properties: {
-                    name: { type: Type.STRING, description: "The name of this topic cluster (e.g., 'Variables and Data Types')." },
-                    steps: {
-                        type: Type.ARRAY,
-                        description: "An array of individual learning steps within this cluster.",
-                        items: {
-                            type: Type.OBJECT,
-                            properties: {
-                                name: { type: Type.STRING, description: "The name of the learning step." },
-                                topic: { type: Type.STRING, description: "A concise, URL-friendly slug or keyword for the topic of this step." }
-                            },
-                            required: ["name", "topic"]
-                        }
-                    }
+                    name: { type: Type.STRING, description: "The name of the learning step/level." },
+                    topic: { type: Type.STRING, description: "A concise, URL-friendly slug or keyword for the topic of this step." }
                 },
-                required: ["name", "steps"]
+                required: ["name", "topic"]
             }
         }
     },
-    required: ["clusters"]
+    required: ["path"]
 };
+
 
 const learningContentSchema = {
     type: Type.OBJECT,
@@ -135,7 +125,7 @@ async function generateQuizContent(topic, numQuestions, difficulty, learningCont
  */
 async function generateLearningPathContent(goal) {
     if (!ai) throw new Error("AI Service not initialized. Check server configuration.");
-    const prompt = `Create a structured, step-by-step learning path for the goal: "${goal}". Organize the path into logical clusters of related topics. Each cluster should have a name and contain between 2 to 5 individual learning steps. For each step, provide a name and a concise, URL-friendly topic keyword. The entire path should consist of 2 to 4 clusters.`;
+    const prompt = `Create a comprehensive, highly granular, step-by-step learning path for the goal: "${goal}". Break the topic down into at least 30 small, distinct, and logically ordered learning levels. For each level, provide a name and a concise, URL-friendly topic keyword. The output should be a single flat array of these levels. Do not group them into clusters.`;
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',

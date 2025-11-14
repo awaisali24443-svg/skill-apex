@@ -22,8 +22,8 @@ async function startJourney(topic) {
     showToast(`Generating a new learning journey for "${topic}"...`);
     try {
         const result = await apiService.generateLearningPath({ goal: topic });
-        if (result && result.clusters) {
-            const newPath = learningPathService.addPath(topic, result.clusters);
+        if (result && result.path) {
+            const newPath = learningPathService.addPath(topic, result.path);
             window.location.hash = `#/learning-path/${newPath.id}`;
         } else {
             throw new Error("The AI failed to generate a valid path. Please try a different topic.");
