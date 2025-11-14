@@ -75,7 +75,7 @@ body::after {
     opacity: 0.5;
     z-index: -1;
     pointer-events: none;
-    animation: move-glows 45s linear infinite;
+    animation: move-glows 25s ease-in-out infinite alternate;
 }
 
 @keyframes pan-grid {
@@ -84,11 +84,12 @@ body::after {
 }
 
 @keyframes move-glows {
-    0% { background-position: 0% 50%, 50% 100%; }
-    25% { background-position: 50% 100%, 100% 50%; }
-    50% { background-position: 100% 0%, 50% 0%; }
-    75% { background-position: 50% 0%, 0% 50%; }
-    100% { background-position: 0% 50%, 50% 100%; }
+    from {
+        background-position: 0% 50%, 50% 100%;
+    }
+    to {
+        background-position: 100% 50%, 50% 0%;
+    }
 }
 
 /* --- App Layout --- */
@@ -220,7 +221,7 @@ body::after {
     height: 24px;
     margin-right: 24px;
     transition: filter var(--transition-speed-fast), transform var(--transition-speed-fast);
-    stroke: currentColor;
+    stroke: currentColor; /* Ensures icon color matches text color */
 }
 
 .sidebar-link:hover .icon,

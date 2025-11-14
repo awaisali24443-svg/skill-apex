@@ -1,6 +1,8 @@
 let canvas, ctx, particles, animationFrameId, configSvc;
-let particleColor = 'rgba(0, 184, 212, 0.5)';
-let lineColor = 'rgba(0, 184, 212, 0.3)';
+// Store RGB color parts for performance, avoiding string parsing in the animation loop.
+let particleColorRgb = '0, 184, 212';
+let lineColorRgb = '0, 184, 212';
+
 
 const PARTICLE_CONFIG = {
     count: 80,
@@ -30,7 +32,7 @@ class Particle {
     draw() {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = particleColor;
+        ctx.fillStyle = `rgba(${particleColorRgb}, 0.5)`;
         ctx.fill();
     }
 }
@@ -51,21 +53,11 @@ function connectParticles() {
 
             if (distance < PARTICLE_CONFIG.lineDistance) {
                 const opacity = 1 - (distance / PARTICLE_CONFIG.lineDistance);
-                try {
-                    const baseColorMatch = lineColor.match(/rgba\((\d+,\s*\d+,\s*\d+),/);
-                    if (baseColorMatch && baseColorMatch[1]) {
-                        const baseColor = baseColorMatch[1];
-                        ctx.beginPath();
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.strokeStyle = `rgba(${baseColor}, ${opacity * 0.3})`;
-                        ctx.stroke();
-                    }
-                } catch (e) {
-                    // fallback if regex fails
-                    ctx.strokeStyle = `rgba(0, 184, 212, ${opacity * 0.1})`;
-                    ctx.stroke();
-                }
+                ctx.beginPath();
+                ctx.moveTo(particles[i].x, particles[i].y);
+                ctx.lineTo(particles[j].x, particles[j].y);
+                ctx.strokeStyle = `rgba(${lineColorRgb}, ${opacity * 0.3})`;
+                ctx.stroke();
             }
         }
     }
@@ -110,22 +102,29 @@ function updateColors() {
     try {
         if (primaryColor.startsWith('#')) {
             const hex = primaryColor.substring(1);
-            r = parseInt(hex.substring(0, 2), 16);
-            g = parseInt(hex.substring(2, 4), 16);
-            b = parseInt(hex.substring(4, 6), 16);
+            if (hex.length === 3) { // Handle shorthand hex
+                r = parseInt(hex[0] + hex[0], 16);
+                g = parseInt(hex[1] + hex[1], 16);
+                b = parseInt(hex[2] + hex[2], 16);
+            } else {
+                r = parseInt(hex.substring(0, 2), 16);
+                g = parseInt(hex.substring(2, 4), 16);
+                b = parseInt(hex.substring(4, 6), 16);
+            }
         } else if (primaryColor.startsWith('rgb')) {
             [r, g, b] = primaryColor.match(/\d+/g).map(Number);
         } else {
-            // Fallback for named colors, etc.
-            throw new Error('Unsupported color format');
+            // This is a simplified fallback and won't cover all CSS color formats
+            throw new Error('Unsupported color format for particle canvas.');
         }
 
-        particleColor = `rgba(${r}, ${g}, ${b}, 0.5)`;
-        lineColor = `rgba(${r}, ${g}, ${b}, 0.3)`;
+        particleColorRgb = `${r}, ${g}, ${b}`;
+        lineColorRgb = `${r}, ${g}, ${b}`;
     } catch (e) {
         console.warn("Could not parse color from CSS variable:", primaryColor, e);
-        particleColor = 'rgba(0, 184, 212, 0.5)';
-        lineColor = 'rgba(0, 184, 212, 0.3)';
+        // Fallback to a default color if parsing fails
+        particleColorRgb = '0, 184, 212';
+        lineColorRgb = '0, 184, 212';
     }
 }
 
@@ -168,10 +167,11 @@ function updateAnimationState() {
 
 function onSettingsChanged() {
     // The theme CSS might take a moment to apply.
+    // This allows the browser to compute the new CSS variable values.
     setTimeout(() => {
         updateColors();
         updateAnimationState();
-    }, 100);
+    }, 50);
 }
 
 export function init(configService) {
