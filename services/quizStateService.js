@@ -16,6 +16,7 @@ const defaultState = {
  * @param {Array<object>} quizData.questions - The array of question objects.
  * @param {string} [quizData.topic] - The topic of the quiz.
  * @param {string} [quizData.learningPathId] - Optional ID if the quiz is part of a learning path.
+ * @param {number} [quizData.learningPathStepIndex] - Optional index if the quiz is part of a learning path.
  */
 export function startQuiz(quizData) {
     quizState = {
@@ -28,6 +29,10 @@ export function startQuiz(quizData) {
     // If a learning path is in context, store its ID with the quiz state
     if(quizData.learningPathId) {
         quizState.learningPathId = quizData.learningPathId;
+    }
+    // Store step index if provided
+    if(quizData.learningPathStepIndex !== undefined) {
+        quizState.learningPathStepIndex = quizData.learningPathStepIndex;
     }
 }
 

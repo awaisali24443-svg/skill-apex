@@ -50,6 +50,16 @@ export function getHistory() {
 }
 
 /**
+ * Retrieves the most recent quiz attempts.
+ * @param {number} [count=3] - The number of recent attempts to retrieve.
+ * @returns {Array<object>} An array of the most recent quiz attempt objects.
+ */
+export function getRecentHistory(count = 3) {
+    return getHistory().slice(0, count);
+}
+
+
+/**
  * Adds a completed quiz attempt to the history.
  * @param {object} quizState - The final state object of the completed quiz from quizStateService.
  */

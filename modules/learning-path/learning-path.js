@@ -20,12 +20,21 @@ function renderPath() {
         const iconUse = item.querySelector('.step-icon use');
         
         item.querySelector('.step-name').textContent = step.name;
-        const button = item.querySelector('.start-topic-btn');
-        button.dataset.topic = step.topic;
+        const learnButton = item.querySelector('.learn-btn');
+        const testButton = item.querySelector('.test-btn');
+        learnButton.dataset.index = index;
+        testButton.dataset.index = index;
+
+        const score = path.stepScores ? path.stepScores[index] : null;
 
         if (index < path.currentStep) {
             card.classList.add('completed');
             iconUse.setAttribute('href', '/assets/icons/feather-sprite.svg#check-circle');
+            if (score) {
+                const scoreEl = item.querySelector('.step-score');
+                scoreEl.textContent = `Score: ${score.score}/${score.totalQuestions}`;
+                scoreEl.style.display = 'block';
+            }
         } else if (index === path.currentStep) {
             card.classList.add('current');
             iconUse.setAttribute('href', '/assets/icons/feather-sprite.svg#target');
@@ -50,15 +59,24 @@ export function init(globalState) {
     renderPath();
 
     clickHandler = (event) => {
-        const button = event.target.closest('.start-topic-btn');
+        const button = event.target.closest('.learn-btn, .test-btn');
         if (button) {
+            const stepIndex = parseInt(button.dataset.index, 10);
+            const step = path.path[stepIndex];
+
             appState.context = {
-                topic: button.dataset.topic,
-                numQuestions: 10,
-                difficulty: 'medium',
+                topic: step.topic,
                 learningPathId: path.id,
+                learningPathStepIndex: stepIndex,
             };
-            window.location.hash = '/loading';
+
+            if (button.classList.contains('learn-btn')) {
+                 window.location.hash = '/learn';
+            } else { // test-btn
+                appState.context.numQuestions = 10;
+                appState.context.difficulty = 'medium';
+                window.location.hash = '/loading';
+            }
         }
     };
     stepsList.addEventListener('click', clickHandler);

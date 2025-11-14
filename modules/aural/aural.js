@@ -101,6 +101,9 @@ function updateUI(newState, message = '') {
 
 function addTranscriptionEntry(text, type) {
     if (!text.trim()) return;
+    if (elements.placeholder) {
+        elements.placeholder.style.display = 'none';
+    }
     const entry = document.createElement('div');
     entry.className = `transcription-entry ${type}`;
     entry.textContent = text;
@@ -109,7 +112,7 @@ function addTranscriptionEntry(text, type) {
 
 // --- Core Conversation Logic ---
 async function startConversation() {
-    if (currentState !== STATE.IDLE) return;
+    if (currentState !== STATE.IDLE && currentState !== STATE.ERROR) return;
     updateUI(STATE.CONNECTING);
     elements.error.style.display = 'none';
 
@@ -207,7 +210,11 @@ async function startConversation() {
     } catch (err) {
         console.error("Error starting conversation:", err);
         clearTimeout(connectionTimeout);
-        updateUI(STATE.ERROR, `Could not start microphone: ${err.message}`);
+        let message = `Could not start microphone: ${err.message}`;
+        if (err.name === 'NotAllowedError') {
+            message = 'Microphone permission denied. Please allow microphone access in your browser settings.';
+        }
+        updateUI(STATE.ERROR, message);
     }
 }
 
@@ -239,6 +246,11 @@ function stopConversation() {
         outputAudioContext.close().catch(e => {});
         outputAudioContext = null;
     }
+
+    if (elements.log && elements.log.childElementCount <= 1 && elements.placeholder) {
+        elements.placeholder.style.display = 'flex';
+    }
+
     updateUI(STATE.IDLE);
 }
 
@@ -254,6 +266,7 @@ function handleMicClick() {
 export function init(appState) {
     elements = {
         log: document.getElementById('transcription-log'),
+        placeholder: document.getElementById('aural-placeholder'),
         orb: document.getElementById('orb'),
         status: document.getElementById('aural-status'),
         micBtn: document.getElementById('aural-mic-btn'),

@@ -50,16 +50,10 @@ function animateScore(scorePercent) {
 function renderSummary(scorePercent) {
     const title = document.getElementById('summary-title');
     const details = document.getElementById('summary-details');
+    const actions = document.getElementById('results-actions');
 
     if (scorePercent === 100) {
         title.textContent = "Perfect Score!";
-        // If this was part of a learning path, mark step as complete
-        if(quizState.learningPathId) {
-            learningPathService.completeStep(quizState.learningPathId);
-            const nextPath = learningPathService.getPathById(quizState.learningPathId);
-            const actions = document.getElementById('results-actions');
-            actions.innerHTML = `<a href="/#/learning-path/${nextPath.id}" class="btn btn-primary">Next Step</a>`;
-        }
     } else if (scorePercent >= 80) {
         title.textContent = "Excellent Job!";
     } else if (scorePercent >= 50) {
@@ -75,7 +69,27 @@ function renderSummary(scorePercent) {
     const seconds = ((durationMs % 60000) / 1000).toFixed(0);
     const durationFormatted = `${minutes}:${seconds.padStart(2, '0')}`;
     document.getElementById('summary-time').textContent = durationFormatted;
+
+    // Handle Learning Path logic
+    if (quizState.learningPathId && quizState.learningPathStepIndex !== undefined) {
+        // Record score for this step
+        learningPathService.recordStepScore(quizState.learningPathId, quizState.learningPathStepIndex, quizState.score, quizState.questions.length);
+
+        if (scorePercent >= 80) {
+            learningPathService.completeStep(quizState.learningPathId);
+            const nextPath = learningPathService.getPathById(quizState.learningPathId);
+            
+            if (nextPath && nextPath.currentStep < nextPath.path.length) {
+                actions.innerHTML = `<a href="/#/learning-path/${nextPath.id}" class="btn btn-primary">Continue to Next Step</a>`;
+            } else {
+                actions.innerHTML = `<a href="/#/learning-path/${nextPath.id}" class="btn btn-primary">Path Complete!</a>`;
+            }
+        } else {
+            actions.innerHTML = `<a href="/#/learning-path/${quizState.learningPathId}" class="btn btn-primary">Try Step Again</a> <a href="/#/home" class="btn">Go Home</a>`;
+        }
+    }
 }
+
 
 function renderReview() {
     reviewContainer = document.getElementById('review-container');

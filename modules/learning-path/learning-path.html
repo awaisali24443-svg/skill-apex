@@ -14,8 +14,19 @@
              <svg><use/></svg>
         </div>
         <div class="step-content">
-            <h3 class="step-name"></h3>
-            <button class="btn start-topic-btn">Start Topic</button>
+            <div class="step-details">
+                 <h3 class="step-name"></h3>
+                 <span class="step-score" style="display: none;"></span>
+            </div>
+            <div class="step-actions">
+                 <button class="btn learn-btn">
+                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#book-open"/></svg>
+                    <span>Learn</span>
+                </button>
+                <button class="btn btn-primary test-btn">
+                    <span>Test Knowledge</span>
+                </button>
+            </div>
         </div>
     </div>
 </template>
