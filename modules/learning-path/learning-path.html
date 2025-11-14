@@ -2,11 +2,19 @@
     <header class="page-header">
         <h1 id="path-goal-title">Loading Learning Path...</h1>
         <p id="path-progress-summary"></p>
+        <div class="path-actions">
+             <button id="delete-path-btn" class="btn">
+                <svg class="icon"><use href="/assets/icons/feather-sprite.svg#trash-2"/></svg>
+                <span>Delete Path</span>
+            </button>
+        </div>
     </header>
     <div id="path-steps-list" class="steps-list">
-        <!-- Learning path steps will be rendered here -->
+        <!-- Learning path steps and overall tests will be rendered here -->
     </div>
 </div>
+
+<div id="step-modal-container"></div>
 
 <template id="step-item-template">
     <div class="step-item card">
@@ -19,14 +27,38 @@
                  <span class="step-score" style="display: none;"></span>
             </div>
             <div class="step-actions">
-                 <button class="btn learn-btn">
-                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#book-open"/></svg>
-                    <span>Learn</span>
-                </button>
-                <button class="btn btn-primary test-btn">
-                    <span>Test Knowledge</span>
-                </button>
+                 <!-- Button will be injected by JS based on step state -->
             </div>
+        </div>
+    </div>
+</template>
+
+<template id="overall-test-item-template">
+    <div class="step-item card overall-test-item">
+        <div class="step-icon">
+             <svg><use href="/assets/icons/feather-sprite.svg#award"/></svg>
+        </div>
+        <div class="step-content">
+            <div class="step-details">
+                 <h3 class="step-name"></h3>
+                 <span class="step-score" style="display: none;"></span>
+            </div>
+            <div class="step-actions">
+                 <!-- Button will be injected by JS -->
+            </div>
+        </div>
+    </div>
+</template>
+
+<template id="step-modal-template">
+    <div class="modal-backdrop"></div>
+    <div class="step-modal-content" role="dialog" aria-modal="true">
+        <button class="step-modal-close-btn" aria-label="Close">&times;</button>
+        <div class="step-modal-header">
+            <h2 id="step-modal-title"></h2>
+        </div>
+        <div id="step-modal-body" class="step-modal-body">
+            <!-- Content for learn/quiz/results will be injected here -->
         </div>
     </div>
 </template>

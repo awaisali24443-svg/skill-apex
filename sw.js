@@ -50,7 +50,7 @@ const APP_SHELL_URLS = [
     'modules/loading/loading.html', 'modules/loading/loading.css', 'modules/loading/loading.js',
     'modules/quiz/quiz.html', 'modules/quiz/quiz.css', 'modules/quiz/quiz.js',
     'modules/results/results.html', 'modules/results/results.css', 'modules/results/results.js',
-    'modules/library/library.html', 'modules/library/library.css', 'modules/library/library.js',
+    'modules/library/library.html', 'modules/library/library.css', 'modules/library/js',
     'modules/history/history.html', 'modules/history/history.css', 'modules/history/history.js',
     'modules/study/study.html', 'modules/study/study.css', 'modules/study/study.js',
     'modules/aural/aural.html', 'modules/aural/aural.css', 'modules/aural/aural.js',
@@ -158,10 +158,25 @@ self.addEventListener('fetch', (event) => {
         }
     }
     
-    // 3. App Shell & Local Assets: Use the Stale-While-Revalidate strategy.
-    // This provides a fast "from-cache" experience while ensuring assets
-    // are updated in the background for the user's next visit.
+    // 3. App Shell, Navigation, and Local Assets
     if (url.origin === self.location.origin) {
+        // For navigation requests (loading a page), use a "Network falling back to Cache"
+        // strategy. This is crucial for a Single Page App (SPA) to work offline.
+        // It ensures the user gets the latest version if online, but the app still
+        // loads from the cached HTML shell if they are offline.
+        if (request.mode === 'navigate') {
+            event.respondWith(
+                fetch(request).catch(() => {
+                    // The catch is triggered when the network request fails,
+                    // which is a good indicator that the user is offline.
+                    return caches.match('/index.html', { cacheName: CACHE_NAME });
+                })
+            );
+            return;
+        }
+
+        // For all other local assets (JS, CSS, images, etc.), use the
+        // Stale-While-Revalidate strategy for optimal performance and freshness.
         event.respondWith(staleWhileRevalidate(CACHE_NAME, request));
         return;
     }

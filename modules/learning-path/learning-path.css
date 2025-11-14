@@ -1,3 +1,22 @@
+.page-header {
+    position: relative;
+}
+.path-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+.path-actions .btn {
+    background: transparent;
+    border-color: var(--color-border);
+}
+.path-actions .btn:hover {
+    background-color: var(--color-error-bg);
+    border-color: var(--color-error-border);
+    color: var(--color-error);
+}
+
+
 .steps-list {
     display: grid;
     gap: var(--space-lg);
@@ -77,13 +96,6 @@
     background-color: var(--color-primary);
     color: #fff;
 }
-.step-item.current .learn-btn {
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-}
-.step-item.current .learn-btn:hover {
-     background-color: var(--color-primary-transparent);
-}
 
 /* Completed Step */
 .step-item.completed { opacity: 0.8; }
@@ -108,4 +120,88 @@
 }
 .step-item.locked .step-actions .btn {
     cursor: not-allowed;
+}
+
+/* --- Overall Test --- */
+.overall-test-item {
+    border-style: dashed;
+    border-width: 2px;
+}
+.overall-test-item.current {
+    border-color: var(--color-secondary);
+}
+.overall-test-item.current .step-icon {
+    background-color: var(--color-secondary);
+    color: #fff;
+}
+.overall-test-item.completed {
+    border-color: var(--color-success);
+}
+
+/* --- Step Modal --- */
+#step-modal-container {
+    position: fixed; inset: 0; z-index: 1000;
+    pointer-events: none;
+}
+#step-modal-container.visible {
+    pointer-events: auto;
+}
+.step-modal-content {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%; max-width: 700px;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    display: flex; flex-direction: column;
+    max-height: 90vh;
+    animation: scale-in 0.3s ease;
+}
+.step-modal-close-btn {
+    position: absolute; top: 1rem; right: 1rem;
+    background: none; border: none; font-size: 2rem;
+    color: var(--color-text-secondary); cursor: pointer;
+    line-height: 1; padding: 0.5rem;
+}
+.step-modal-header {
+    padding: var(--space-lg) var(--space-xl);
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+.step-modal-header h2 { margin: 0; }
+.step-modal-body {
+    padding: var(--space-xl);
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+/* --- Modal Content Specific Styles --- */
+.modal-view-content { animation: fade-in 0.3s ease; }
+.modal-view-content.loading { text-align: center; }
+
+/* Learn View */
+.learn-view p { font-size: 1.1rem; line-height: 1.7; margin-bottom: var(--space-lg); }
+.learn-view-footer { margin-top: var(--space-lg); text-align: center; }
+
+/* Quiz View */
+.step-quiz-question { font-size: var(--fs-h3); margin-bottom: var(--space-xl); }
+.step-quiz-options { display: grid; gap: var(--space-md); }
+.step-quiz-option-btn { width: 100%; text-align: left; }
+.step-quiz-feedback { margin-top: var(--space-lg); padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.step-quiz-feedback p { font-style: italic; color: var(--color-text-secondary); margin-bottom: var(--space-md); }
+.step-quiz-feedback .btn { width: 100%; }
+/* Use styles from quiz.css for correct/incorrect option buttons */
+.step-quiz-option-btn.correct { background-color: var(--color-success-bg); border-color: var(--color-success-border); color: var(--color-success); }
+.step-quiz-option-btn.incorrect { background-color: var(--color-error-bg); border-color: var(--color-error-border); color: var(--color-error); }
+.step-quiz-option-btn:disabled:not(.correct):not(.incorrect) { opacity: 0.6; }
+
+/* Results View */
+.step-results-view { text-align: center; }
+.step-results-view h3 { font-size: 2rem; color: var(--color-primary); }
+.step-results-view p { font-size: 1.2rem; }
+.step-results-view .btn-group { display: flex; justify-content: center; gap: var(--space-md); margin-top: var(--space-lg); }
+
+@media (max-width: 600px) {
+    .step-content { flex-direction: column; align-items: stretch; }
+    .step-actions { justify-content: center; }
 }

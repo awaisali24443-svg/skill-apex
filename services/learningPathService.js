@@ -78,6 +78,7 @@ export function addPath(goal, path) {
         createdAt: new Date().toISOString(),
         currentStep: 0,
         stepScores: {},
+        overallTestScores: {},
     };
     learningPaths.unshift(newPath); // Add to the beginning for chronological display
     savePaths();
@@ -100,6 +101,24 @@ export function recordStepScore(pathId, stepIndex, score, totalQuestions) {
             path.stepScores = {};
         }
         path.stepScores[stepIndex] = { score, totalQuestions };
+        savePaths();
+    }
+}
+
+/**
+ * Records the user's score for a cumulative "Overall Test".
+ * @param {string} pathId - The ID of the learning path.
+ * @param {number} testIndex - The 1-based index of the overall test.
+ * @param {number} score - The number of correct answers.
+ * @param {number} totalQuestions - The total number of questions in the quiz.
+ */
+export function recordOverallTestScore(pathId, testIndex, score, totalQuestions) {
+    const path = getPathById(pathId);
+    if (path) {
+        if (!path.overallTestScores) {
+            path.overallTestScores = {};
+        }
+        path.overallTestScores[testIndex] = { score, totalQuestions };
         savePaths();
     }
 }
