@@ -286,7 +286,12 @@ function setupWebSocketConnection(ws) {
                 responseModalities: [Modality.AUDIO],
                 inputAudioTranscription: {},
                 outputAudioTranscription: {},
-                systemInstruction: 'You are a helpful assistant. You must converse only in Urdu. Do not use Hindi.',
+                speechConfig: {
+                    voiceConfig: {
+                        prebuiltVoiceConfig: { voiceName: 'Kore' },
+                    },
+                },
+                systemInstruction: 'You are a friendly and empathetic assistant. Converse with natural human emotion in your voice. You must converse only in Urdu. Do not use Hindi.',
             },
             callbacks: {
                 onopen: () => ws.send(JSON.stringify({ type: 'socket_open' })),
