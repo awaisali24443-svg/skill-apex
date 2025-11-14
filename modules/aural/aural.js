@@ -202,7 +202,7 @@ async function startConversation() {
         };
         
         socket.onerror = (err) => updateUI(STATE.ERROR, `WebSocket error. Check console.`);
-        socket.onclose = () => { if(currentState !== STATE.IDLE) stopConversation(); };
+        socket.onclose = () => stopConversation();
 
     } catch (err) {
         console.error("Error starting conversation:", err);

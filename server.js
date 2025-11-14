@@ -96,7 +96,7 @@ async function generateQuizContent(topic, numQuestions, difficulty, learningCont
     if (!ai) throw new Error("AI Service not initialized. Check server configuration.");
 
     let prompt;
-    if (learningContext) {
+    if (learningContext && learningContext.trim()) {
         prompt = `Generate a ${difficulty} level multiple-choice quiz with exactly ${numQuestions} questions about "${topic}". The questions must be based *only* on the information provided in the following text: "${learningContext}". For each question, provide 4 options, the 0-based index of the correct answer, and a brief explanation. Ensure the content is accurate and educational.`;
     } else {
         prompt = `Generate a ${difficulty} level multiple-choice quiz with exactly ${numQuestions} questions about "${topic}". For each question, provide 4 options, the 0-based index of the correct answer, and a brief explanation. Ensure the content is accurate and educational.`;
