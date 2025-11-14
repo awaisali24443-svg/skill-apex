@@ -1,88 +1,95 @@
-.categories-grid {
+
+
+.search-bar-container {
+    margin-bottom: var(--space-xxl);
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+}
+
+.search-icon {
+    position: absolute;
+    left: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    color: var(--color-text-secondary);
+    pointer-events: none;
+}
+
+#search-input {
+    padding: 1rem 1.5rem 1rem 4rem;
+    font-size: 1.1rem;
+    border-radius: 50px;
+}
+
+.topic-grid {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: var(--space-lg);
 }
 
-.category-card {
-    animation: fade-slide-in 0.5s ease-out forwards;
+.topic-card {
+    cursor: pointer;
+    animation: fade-slide-in 0.3s ease-out forwards;
+    opacity: 0;
+    transform: translateY(10px);
 }
 
-/* --- Skeleton Loader Styles --- */
-.skeleton { pointer-events: none; }
-.skeleton .skeleton-line {
-    background: linear-gradient(90deg, var(--color-surface-hover) 25%, var(--color-surface-active) 50%, var(--color-surface-hover) 75%);
-    background-size: 200% 100%;
-    animation: skeleton-loading 1.5s infinite linear;
-    border-radius: 6px;
-    color: transparent;
-}
-.skeleton:hover { transform: none; box-shadow: none; border-color: var(--color-border); }
-
-.skeleton .icon { width: 40px; height: 40px; border-radius: 50%; }
-.skeleton .title { height: 28px; width: 60%; margin-bottom: 0; }
-.skeleton .text { height: 16px; width: 100%; margin-top: var(--space-md); }
-.skeleton .topic-buttons { margin-top: var(--space-lg); display: flex; flex-wrap: wrap; gap: var(--space-sm); }
-.skeleton .button { height: 36px; width: 100px; }
-
-@keyframes skeleton-loading {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
-/* --- End Skeleton Styles --- */
-
-
-.category-header {
+.topic-card .card-content {
     display: flex;
-    align-items: center;
-    gap: var(--space-md);
-    border-bottom: 1px solid var(--color-border);
-    padding-bottom: var(--space-md);
+    flex-direction: column;
+    height: 100%;
+}
+
+.topic-name {
+    flex-grow: 1;
     margin-bottom: var(--space-md);
+    color: var(--color-text);
+    font-size: 1.2rem;
 }
 
-.category-icon {
-    width: 40px;
-    height: 40px;
-    flex-shrink: 0;
-    background: var(--brand-gradient, linear-gradient(45deg, var(--color-primary), var(--color-secondary)));
-    border-radius: 50%;
+.topic-tags {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 10px var(--color-secondary-transparent-heavy);
-}
-.category-icon svg {
-    width: 24px;
-    height: 24px;
-    color: #fff;
-}
-
-.category-title {
-    margin-bottom: 0;
-}
-
-.topic-buttons {
-    display: flex;
-    flex-wrap: wrap;
     gap: var(--space-sm);
-    margin-top: var(--space-lg);
-}
-
-.topic-button {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    background-color: var(--color-surface-hover);
-    border: 1px solid var(--color-border);
-    border-radius: 50px;
-    color: var(--color-text-secondary);
-    text-decoration: none;
-    transition: all var(--transition-speed-fast) ease;
+    font-family: var(--font-family-mono);
     font-size: var(--fs-sm);
 }
-.topic-button:hover {
-    background-color: var(--color-primary);
-    color: #fff;
+
+.category-tag {
+    background-color: var(--color-primary-transparent);
+    color: var(--color-primary);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: 6px;
+}
+
+.difficulty-tag {
+    background-color: var(--color-secondary-transparent);
+    color: var(--color-secondary);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: 6px;
+}
+
+/* Custom Generator Card */
+#custom-topic-container {
+    grid-column: 1 / -1; /* Span full width of the grid */
+}
+
+.custom-generator-card {
+    text-align: center;
+    border-style: dashed;
     border-color: var(--color-primary);
-    transform: translateY(-2px);
+}
+
+.custom-generator-card h3 {
+    font-size: 1.5rem;
+    color: var(--color-text);
+    margin-bottom: var(--space-sm);
+}
+
+.custom-generator-card p {
+    color: var(--color-text-secondary);
+    margin-bottom: 0;
 }

@@ -1,7 +1,7 @@
 {
   "name": "knowledge-tester",
-  "version": "2.5.8",
-  "description": "A high-performance, vanilla JavaScript quiz application powered by the Gemini API.",
+  "version": "2.6.0",
+  "description": "An AI-powered learning journey application using vanilla JavaScript and the Gemini API.",
   "main": "server.js",
   "type": "module",
   "scripts": {

@@ -31,7 +31,6 @@ export function renderSidebar(container) {
     
     // Filter links based on feature flags for progressive feature rollout.
     const filteredMainLinks = mainLinks.filter(r => {
-        if (r.module === 'learning-path-generator' && !FEATURES.LEARNING_PATHS) return false;
         if (r.module === 'aural' && !FEATURES.AURAL_MODE) return false;
         return true;
     });

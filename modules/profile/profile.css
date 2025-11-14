@@ -70,11 +70,12 @@
     color: var(--color-text-secondary);
 }
 
-.achievements-section {
+.achievements-section, .learning-journeys-section {
     animation: fade-slide-in 0.5s ease-out 0.2s forwards;
     opacity: 0;
+    margin-bottom: var(--space-xxl);
 }
-.achievements-section h2 {
+.achievements-section h2, .learning-journeys-section h2 {
     text-align: center;
     margin-bottom: var(--space-lg);
 }
@@ -184,6 +185,57 @@
     border-color: var(--color-border-hover);
     transform: translateY(-4px);
 }
+
+/* --- Journeys List --- */
+.journeys-list {
+    display: grid;
+    gap: var(--space-lg);
+}
+
+.journey-item-card {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.journey-goal { color: var(--color-text); }
+.journey-details {
+    font-size: var(--fs-sm);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-lg);
+}
+.journey-progress .progress-bar {
+    margin-top: var(--space-xs);
+    height: 8px;
+}
+.journey-progress .progress-text {
+    font-size: var(--fs-sm);
+    font-family: var(--font-family-mono);
+    color: var(--color-text-secondary);
+}
+
+/* --- Empty State --- */
+.empty-state {
+    text-align: center;
+    margin-top: 2rem;
+    padding: var(--space-xl);
+    background-color: var(--color-surface);
+    border-radius: var(--border-radius);
+    border: 1px dashed var(--color-border);
+}
+.empty-state-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto var(--space-lg) auto;
+    background: var(--brand-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.empty-state-icon svg { width: 30px; height: 30px; color: #fff; }
+.empty-state h2 { margin-bottom: var(--space-sm); }
+.empty-state p { margin-bottom: var(--space-lg); }
 
 @media (max-width: 600px) {
     .level-info {

@@ -37,6 +37,21 @@
         </div>
     </div>
 
+    <section class="learning-journeys-section">
+        <h2>My Learning Journeys</h2>
+        <div id="journeys-list" class="journeys-list">
+            <!-- Saved learning paths will be rendered here -->
+        </div>
+        <div id="no-journeys-message" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">
+                 <svg><use href="/assets/icons/feather-sprite.svg#git-branch"/></svg>
+            </div>
+            <h2>No Journeys Yet</h2>
+            <p>Start a new journey from the 'Journeys' tab to begin learning.</p>
+            <a href="/#/topics" class="btn">Explore Journeys</a>
+        </div>
+    </section>
+
     <section class="achievements-section">
         <h2>Achievements</h2>
         <div id="achievements-grid" class="achievements-grid">
@@ -55,4 +70,19 @@
         <h3 class="achievement-name"></h3>
         <p class="achievement-description"></p>
     </div>
+</template>
+
+<template id="journey-item-template">
+    <a class="card journey-item-card">
+        <div class="card-content">
+            <h3 class="journey-goal"></h3>
+            <p class="journey-details"></p>
+            <div class="journey-progress">
+                <span class="progress-text"></span>
+                <div class="progress-bar">
+                    <div class="progress-bar-fill"></div>
+                </div>
+            </div>
+        </div>
+    </a>
 </template>

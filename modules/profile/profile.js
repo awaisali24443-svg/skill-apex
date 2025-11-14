@@ -1,5 +1,6 @@
 import * as gamificationService from '../../services/gamificationService.js';
 import * as historyService from '../../services/historyService.js';
+import * as learningPathService from '../../services/learningPathService.js';
 import { getXpForNextLevel } from '../../services/gamificationService.js';
 
 function renderStats() {
@@ -47,8 +48,37 @@ function renderAchievements() {
     });
 }
 
+function renderLearningJourneys() {
+    const paths = learningPathService.getAllPaths();
+    const listContainer = document.getElementById('journeys-list');
+    const noPathsMessage = document.getElementById('no-journeys-message');
+    const template = document.getElementById('journey-item-template');
+    
+    listContainer.innerHTML = '';
+    
+    if (paths.length === 0) {
+        noPathsMessage.style.display = 'block';
+    } else {
+        noPathsMessage.style.display = 'none';
+        paths.forEach(path => {
+            const card = template.content.cloneNode(true);
+            const cardLink = card.querySelector('.journey-item-card');
+            cardLink.href = `/#/learning-path/${path.id}`;
+            
+            card.querySelector('.journey-goal').textContent = path.goal;
+            const progress = path.currentStep / path.path.length;
+            card.querySelector('.journey-details').textContent = `${path.path.length} chapters • Created on ${new Date(path.createdAt).toLocaleDateString()}`;
+            card.querySelector('.progress-bar-fill').style.width = `${progress * 100}%`;
+            card.querySelector('.progress-text').textContent = `Progress: ${path.currentStep} / ${path.path.length}`;
+
+            listContainer.appendChild(card);
+        });
+    }
+}
+
 export function init(appState) {
     renderStats();
+    renderLearningJourneys();
     renderAchievements();
 }
 

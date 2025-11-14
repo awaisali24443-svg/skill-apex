@@ -55,6 +55,18 @@ export function getPathById(id) {
 }
 
 /**
+ * Finds a specific learning path by its goal (case-insensitive).
+ * @param {string} goal - The goal of the learning path.
+ * @returns {object|undefined} The found learning path object, or undefined.
+ */
+export function getPathByGoal(goal) {
+    if (!goal) return undefined;
+    const lowerCaseGoal = goal.toLowerCase();
+    return learningPaths.find(p => p.goal.toLowerCase() === lowerCaseGoal);
+}
+
+
+/**
  * Finds the most recently created learning path that is not yet completed.
  * @returns {object|undefined} The found learning path object, or undefined.
  */

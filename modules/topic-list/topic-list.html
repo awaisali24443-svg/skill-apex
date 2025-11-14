@@ -1,65 +1,28 @@
+
+
 <div class="page-container topic-list-container">
     <header class="page-header">
-        <h1>Browse Topics</h1>
-        <p>Select a topic to start a quiz with default settings.</p>
+        <h1>Explore Journeys</h1>
+        <p>Discover a new skill. Select any topic to begin a step-by-step learning journey.</p>
     </header>
-    <div id="topic-categories-container" class="categories-grid">
-        <!-- Skeleton Loader -->
-        <div class="category-card card skeleton">
-            <div class="card-content">
-                <div class="category-header">
-                    <div class="skeleton-line icon"></div>
-                    <div class="skeleton-line title"></div>
-                </div>
-                <div class="skeleton-line text"></div>
-                <div class="topic-buttons">
-                    <div class="skeleton-line button"></div>
-                    <div class="skeleton-line button"></div>
-                    <div class="skeleton-line button"></div>
-                </div>
-            </div>
-        </div>
-        <div class="category-card card skeleton">
-            <div class="card-content">
-                <div class="category-header">
-                    <div class="skeleton-line icon"></div>
-                    <div class="skeleton-line title"></div>
-                </div>
-                <div class="skeleton-line text"></div>
-                <div class="topic-buttons">
-                    <div class="skeleton-line button"></div>
-                    <div class="skeleton-line button"></div>
-                </div>
-            </div>
-        </div>
-        <div class="category-card card skeleton">
-             <div class="card-content">
-                <div class="category-header">
-                    <div class="skeleton-line icon"></div>
-                    <div class="skeleton-line title"></div>
-                </div>
-                <div class="skeleton-line text"></div>
-                <div class="topic-buttons">
-                    <div class="skeleton-line button"></div>
-                    <div class="skeleton-line button"></div>
-                    <div class="skeleton-line button"></div>
-                </div>
-            </div>
-        </div>
+    <div class="search-bar-container">
+        <svg class="search-icon" viewBox="0 0 24 24"><use href="/assets/icons/feather-sprite.svg#search"/></svg>
+        <input type="search" id="search-input" class="form-input" placeholder="Search for any topic..." autocomplete="off">
+    </div>
+    <div id="topic-grid-container" class="topic-grid">
+        <!-- Topic cards will be rendered here -->
+        <div id="custom-topic-container"></div>
     </div>
 </div>
 
-<template id="category-template">
-    <div class="category-card card">
+<template id="topic-card-template">
+    <div class="card topic-card" tabindex="0">
         <div class="card-content">
-            <header class="category-header">
-                <div class="category-icon">
-                    <svg><use/></svg>
-                </div>
-                <h2 class="category-title"></h2>
-            </header>
-            <p class="category-description"></p>
-            <div class="topic-buttons"></div>
+            <h3 class="topic-name"></h3>
+            <div class="topic-tags">
+                <span class="category-tag"></span>
+                <span class="difficulty-tag"></span>
+            </div>
         </div>
     </div>
 </template>

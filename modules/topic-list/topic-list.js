@@ -1,67 +1,114 @@
-import { fetchTopics } from '../../services/apiService.js';
 
-let container;
-let clickHandler;
 
-function renderTopics(appState) {
-    container = document.getElementById('topic-categories-container');
-    const template = document.getElementById('category-template');
+import * as apiService from '../../services/apiService.js';
+import * as searchService from '../../services/searchService.js';
+import * as learningPathService from '../../services/learningPathService.js';
+import { showToast } from '../../services/toastService.js';
 
-    fetchTopics().then(categories => {
-        container.innerHTML = ''; // Clear spinner
+let appState;
+let searchInput, topicGrid, customTopicContainer, template;
+let allTopics = [];
 
-        categories.forEach(category => {
-            const card = template.content.cloneNode(true);
+async function startJourney(topic) {
+    // A simple loading state by disabling the search bar
+    searchInput.disabled = true;
+    showToast(`Checking for journey: "${topic}"...`, 'info');
 
-            const iconUse = card.querySelector('.category-icon use');
-            if (category.icon) {
-                iconUse.setAttribute('href', `/assets/icons/feather-sprite.svg#${category.icon}`);
-            } else {
-                card.querySelector('.category-icon').style.display = 'none';
-            }
-            
-            card.querySelector('.category-title').textContent = category.category;
-            card.querySelector('.category-description').textContent = category.description;
+    let path = learningPathService.getPathByGoal(topic);
+    
+    if (path) {
+        window.location.hash = `#/learning-path/${path.id}`;
+        return; // No need to re-enable searchInput, as we are navigating away
+    }
 
-            const buttonsContainer = card.querySelector('.topic-buttons');
-            category.topics.forEach(topic => {
-                const button = document.createElement('a');
-                button.href = '#';
-                button.className = 'topic-button';
-                button.textContent = topic.name;
-                button.dataset.topic = topic.name;
-                button.dataset.difficulty = topic.difficulty;
-                buttonsContainer.appendChild(button);
-            });
+    showToast(`Generating a new learning journey for "${topic}"...`);
+    try {
+        const result = await apiService.generateLearningPath({ goal: topic });
+        if (result && result.path) {
+            const newPath = learningPathService.addPath(topic, result.path);
+            window.location.hash = `#/learning-path/${newPath.id}`;
+        } else {
+            throw new Error("The AI failed to generate a valid path. Please try a different topic.");
+        }
+    } catch (error) {
+        showToast(error.message, 'error');
+        searchInput.disabled = false; // Re-enable on failure
+    }
+}
 
-            container.appendChild(card);
-        });
+function renderTopics(topics, query = '') {
+    topicGrid.innerHTML = '';
+    customTopicContainer.innerHTML = '';
+    
+    if (topics.length === 0 && query) {
+        customTopicContainer.innerHTML = `
+            <div class="card topic-card custom-generator-card" data-topic="${query}" tabindex="0">
+                <div class="card-content">
+                    <h3>Create a Journey for "${query}"</h3>
+                    <p>The AI will build a brand new, step-by-step path for this topic.</p>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    topics.forEach((topic, index) => {
+        const card = template.content.cloneNode(true);
+        const cardEl = card.querySelector('.topic-card');
+        cardEl.dataset.topic = topic.name;
+        cardEl.style.animationDelay = `${index * 20}ms`;
         
-        clickHandler = (event) => {
-            if (event.target.classList.contains('topic-button')) {
-                event.preventDefault();
-                const topic = event.target.dataset.topic;
-                appState.context = {
-                    topic: topic,
-                    numQuestions: 10,
-                    difficulty: event.target.dataset.difficulty || 'medium',
-                };
-                window.location.hash = '/loading';
-            }
-        };
-        container.addEventListener('click', clickHandler);
-
-    }).catch(error => {
-        container.innerHTML = `<p class="error-message">Could not load topics. Please try again later.</p>`;
+        card.querySelector('.topic-name').textContent = topic.name;
+        card.querySelector('.category-tag').textContent = topic.category;
+        card.querySelector('.difficulty-tag').textContent = topic.difficulty;
+        
+        topicGrid.appendChild(card);
     });
 }
 
-export function init(appState) {
-    renderTopics(appState);
+function handleSearch() {
+    const query = searchInput.value.toLowerCase().trim();
+    const originalQuery = searchInput.value.trim();
+
+    if (!query) {
+        renderTopics(allTopics);
+        return;
+    }
+    const filteredTopics = allTopics.filter(topic =>
+        topic.name.toLowerCase().includes(query) ||
+        topic.category.toLowerCase().includes(query)
+    );
+    renderTopics(filteredTopics, originalQuery);
+}
+
+async function handleGridClick(event) {
+    const card = event.target.closest('.topic-card');
+    if (!card) return;
+    const topic = card.dataset.topic;
+    await startJourney(topic);
+}
+
+export async function init(globalState) {
+    appState = globalState;
+    searchInput = document.getElementById('search-input');
+    topicGrid = document.getElementById('topic-grid-container');
+    customTopicContainer = document.getElementById('custom-topic-container');
+    template = document.getElementById('topic-card-template');
+
+    searchInput.addEventListener('input', handleSearch);
+    topicGrid.addEventListener('click', handleGridClick);
+    customTopicContainer.addEventListener('click', handleGridClick);
+
+    try {
+        allTopics = searchService.getIndex();
+        renderTopics(allTopics);
+    } catch (error) {
+        topicGrid.innerHTML = `<p class="error-message">Could not load topics. Please try again later.</p>`;
+    }
 }
 
 export function destroy() {
-    if (container && clickHandler) {
-        container.removeEventListener('click', clickHandler);
-    }
+    if (searchInput) searchInput.removeEventListener('input', handleSearch);
+    if (topicGrid) topicGrid.removeEventListener('click', handleGridClick);
+    if (customTopicContainer) customTopicContainer.removeEventListener('click', handleGridClick);
 }

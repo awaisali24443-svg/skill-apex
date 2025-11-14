@@ -1,7 +1,7 @@
 // A version number is injected into the cache name.
 // Bump this version when you want to force an update of the service worker
 // and clear the old caches. This is essential after deploying new assets.
-const CACHE_NAME = 'knowledge-tester-v2.5.8';
+const CACHE_NAME = 'knowledge-tester-v2.6.0';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 // The list of assets to cache during installation.
@@ -45,17 +45,13 @@ const APP_SHELL_URLS = [
     'services/toastService.js',
     'modules/home/home.html', 'modules/home/home.css', 'modules/home/home.js',
     'modules/topic-list/topic-list.html', 'modules/topic-list/topic-list.css', 'modules/topic-list/topic-list.js',
-    'modules/explore-topics/explore-topics.html', 'modules/explore-topics/explore-topics.css', 'modules/explore-topics/explore-topics.js',
-    'modules/optional-quiz-generator/optional-quiz-generator.html', 'modules/optional-quiz-generator/optional-quiz-generator.css', 'modules/optional-quiz-generator/optional-quiz-generator.js',
     'modules/loading/loading.html', 'modules/loading/loading.css', 'modules/loading/loading.js',
     'modules/quiz/quiz.html', 'modules/quiz/quiz.css', 'modules/quiz/quiz.js',
     'modules/results/results.html', 'modules/results/results.css', 'modules/results/results.js',
-    'modules/library/library.html', 'modules/library/library.css', 'modules/library/js',
+    'modules/library/library.html', 'modules/library/library.css', 'modules/library/library.js',
     'modules/history/history.html', 'modules/history/history.css', 'modules/history/history.js',
     'modules/study/study.html', 'modules/study/study.css', 'modules/study/study.js',
     'modules/aural/aural.html', 'modules/aural/aural.css', 'modules/aural/aural.js',
-    'modules/learn/learn.html', 'modules/learn/learn.css', 'modules/learn/learn.js',
-    'modules/learning-path-generator/learning-path-generator.html', 'modules/learning-path-generator/learning-path-generator.css', 'modules/learning-path-generator/learning-path-generator.js',
     'modules/learning-path/learning-path.html', 'modules/learning-path/learning-path.css', 'modules/learning-path/learning-path.js',
     'modules/settings/settings.html', 'modules/settings/settings.css', 'modules/settings/settings.js',
     'modules/profile/profile.html', 'modules/profile/profile.css', 'modules/profile/profile.js',
