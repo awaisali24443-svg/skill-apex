@@ -2,6 +2,7 @@ import * as configService from '../../services/configService.js';
 import { showConfirmationModal } from '../../services/modalService.js';
 import { LOCAL_STORAGE_KEYS } from '../../constants.js';
 import { showToast } from '../../services/toastService.js';
+import * as levelCacheService from '../../services/levelCacheService.js';
 
 let elements = {};
 const animationLevels = ['off', 'subtle', 'full'];
@@ -103,6 +104,7 @@ async function handleClearData() {
         Object.values(LOCAL_STORAGE_KEYS).forEach(key => {
             localStorage.removeItem(key);
         });
+        levelCacheService.clearAllLevels();
         showToast('All application data has been cleared.', 'success');
         setTimeout(() => window.location.reload(), 1000);
     }

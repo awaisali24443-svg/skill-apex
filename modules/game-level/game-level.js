@@ -3,6 +3,7 @@ import * as learningPathService from '../../services/learningPathService.js';
 import * as markdownService from '../../services/markdownService.js';
 import * as soundService from '../../services/soundService.js';
 import * as historyService from '../../services/historyService.js';
+import * as levelCacheService from '../../services/levelCacheService.js';
 
 let appState;
 let levelData;
@@ -26,12 +27,35 @@ async function startLevel() {
     
     elements.loadingTitle.textContent = `Level ${level}: ${topic}`;
     switchState('level-loading-state');
+
+    // Try cache first
+    const cachedLevel = levelCacheService.getLevel(topic, level);
+    if (cachedLevel) {
+        console.log(`Level ${level} for "${topic}" loaded from cache.`);
+        levelData = cachedLevel;
+        renderLesson();
+        switchState('level-lesson-state');
+        return;
+    }
+
+    // If not in cache and offline, show error
+    if (!navigator.onLine) {
+        elements.loadingTitle.textContent = 'You are Offline';
+        elements.loadingTitle.nextElementSibling.textContent = 'This level is not cached for offline use. Please connect to the internet to play it for the first time.';
+        elements.loadingTitle.parentElement.querySelector('.spinner').style.display = 'none';
+        elements.cancelBtn.textContent = 'Back to Map';
+        return;
+    }
     
+    // If online, fetch from API
     try {
         levelData = await apiService.generateLevel({ topic, level });
         if (!levelData || !levelData.lesson || !levelData.questions || levelData.questions.length === 0) {
             throw new Error("AI failed to generate valid level content.");
         }
+        // Save to cache on success
+        levelCacheService.saveLevel(topic, level, levelData);
+
         renderLesson();
         switchState('level-lesson-state');
     } catch (error) {

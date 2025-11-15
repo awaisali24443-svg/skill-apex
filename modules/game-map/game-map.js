@@ -4,6 +4,13 @@ let appState;
 let journey;
 let elements = {};
 
+function scrollToCurrent() {
+    const currentNode = elements.path.querySelector('.level-node.current');
+    if (currentNode) {
+        currentNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
 function render() {
     elements.title.textContent = journey.goal;
     elements.progressText.textContent = `Completed ${journey.currentLevel - 1} of ${journey.totalLevels} levels`;
@@ -35,11 +42,8 @@ function render() {
         elements.path.appendChild(wrapper);
     }
     
-    // Scroll to the current level
-    const currentNode = elements.path.querySelector('.level-node.current');
-    if (currentNode) {
-        currentNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+    // Scroll to the current level, with a timeout to ensure rendering is complete
+    setTimeout(scrollToCurrent, 100);
 }
 
 function handlePathClick(event) {
@@ -71,11 +75,13 @@ export function init(globalState) {
         title: document.getElementById('game-map-title'),
         progressText: document.getElementById('game-map-progress-text'),
         path: document.getElementById('game-map-path'),
+        jumpBtn: document.getElementById('jump-to-current-btn'),
     };
 
     render();
     
     elements.path.addEventListener('click', handlePathClick);
+    elements.jumpBtn.addEventListener('click', scrollToCurrent);
 }
 
 export function destroy() {

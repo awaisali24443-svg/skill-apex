@@ -35,6 +35,7 @@ const APP_SHELL_URLS = [
     'services/gamificationService.js',
     'services/historyService.js',
     'services/learningPathService.js',
+    'services/levelCacheService.js',
     'services/libraryService.js',
     'services/markdownService.js',
     'services/modalService.js',
