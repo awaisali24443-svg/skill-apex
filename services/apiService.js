@@ -75,24 +75,3 @@ export async function analyzePerformance(history) {
         throw error;
     }
 }
-
-/**
- * Sends a message to the Socratic chat endpoint.
- * @param {string} summary - The lesson summary for context.
- * @param {Array<object>} history - The current chat history.
- * @returns {Promise<object>} A promise that resolves to the AI's response.
- * @throws {Error} If the request fails.
- */
-export async function sendSocraticMessage({ summary, history }) {
-    try {
-        const response = await fetch('/api/socratic-chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ summary, history })
-        });
-        return await handleResponse(response);
-    } catch (error) {
-        // Let the Socratic module handle displaying the error
-        throw error;
-    }
-}
