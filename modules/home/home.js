@@ -20,17 +20,19 @@ function renderStreak() {
 }
 
 function renderPrimaryAction() {
-    const path = learningPathService.getLatestInProgressPath();
+    const journeys = learningPathService.getAllJourneys();
+    const path = journeys.find(j => j.currentLevel <= j.totalLevels);
+
     const card = document.getElementById('primary-action-card');
     const icon = document.getElementById('primary-action-icon');
     const title = document.getElementById('primary-action-title');
     const description = document.getElementById('primary-action-description');
 
     if (path) {
-        card.href = `/#/learning-path/${path.id}`;
+        card.href = `/#/game/${encodeURIComponent(path.goal)}`;
         icon.innerHTML = `<svg><use href="/assets/icons/feather-sprite.svg#git-branch"/></svg>`;
         title.textContent = 'Continue Your Journey';
-        description.textContent = `Next up in "${path.goal}": ${path.path[path.currentStep].name}`;
+        description.textContent = `Next up in "${path.goal}": Level ${path.currentLevel}`;
     } else {
         card.href = '/#/topics';
         icon.innerHTML = `<svg><use href="/assets/icons/feather-sprite.svg#grid"/></svg>`;
@@ -47,11 +49,13 @@ function renderRecentHistory(appState) {
         return;
     }
     
+    const cleanTopic = (topic) => topic.replace(/ - Level \d+$/, '').trim();
+
     container.innerHTML = '<h3>Recent Activity</h3>' + history.map(item => `
         <div class="card dashboard-card-small">
-            <p>${item.topic}</p>
+            <p>${cleanTopic(item.topic)}</p>
             <span>${item.score}/${item.totalQuestions}</span>
-            <button class="btn retry-btn" data-topic="${item.topic}" data-difficulty="${item.difficulty || 'medium'}">Retry</button>
+            <button class="btn retry-btn" data-topic="${cleanTopic(item.topic)}">Retry</button>
         </div>
     `).join('');
     container.style.display = 'block';
@@ -59,13 +63,8 @@ function renderRecentHistory(appState) {
     historyClickHandler = (e) => {
         if(e.target.classList.contains('retry-btn')) {
             const topic = e.target.dataset.topic;
-            const difficulty = e.target.dataset.difficulty;
-            appState.context = {
-                topic,
-                numQuestions: 10,
-                difficulty,
-            };
-            window.location.hash = '/loading';
+            appState.context = { topic };
+            window.location.hash = `#/game/${encodeURIComponent(topic)}`;
         }
     };
     container.addEventListener('click', historyClickHandler);
@@ -74,9 +73,7 @@ function renderRecentHistory(appState) {
 
 export function init(appState) {
     renderStreak();
-    if (FEATURES.LEARNING_PATHS) {
-        renderPrimaryAction();
-    }
+    renderPrimaryAction();
     renderRecentHistory(appState);
 }
 

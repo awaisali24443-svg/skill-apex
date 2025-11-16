@@ -24,31 +24,40 @@ function render() {
         const nodeEl = node.querySelector('.level-node');
         
         nodeEl.dataset.level = i;
+        wrapper.style.animationDelay = `${(i -1) * 20}ms`;
+
+        const iconUse = nodeEl.querySelector('.level-node-icon use');
+        const numberEl = nodeEl.querySelector('.level-node-number');
+        const statusEl = nodeEl.querySelector('.level-node-status');
+
+        numberEl.textContent = `Level ${i}`;
 
         if (i < journey.currentLevel) {
             nodeEl.classList.add('completed');
-            nodeEl.querySelector('.level-node-icon use').setAttribute('href', 'assets/icons/feather-sprite.svg#check-circle');
-            nodeEl.setAttribute('aria-label', `Level ${i}: Completed`);
+            iconUse.setAttribute('href', 'assets/icons/feather-sprite.svg#check-circle');
+            statusEl.textContent = 'Replay';
+            nodeEl.setAttribute('aria-label', `Level ${i}: Replay`);
         } else if (i === journey.currentLevel) {
             nodeEl.classList.add('current');
-            nodeEl.querySelector('.level-node-number').textContent = i;
+            iconUse.setAttribute('href', 'assets/icons/feather-sprite.svg#play');
+            statusEl.textContent = 'Start Level';
             nodeEl.setAttribute('aria-label', `Level ${i}: Start`);
         } else {
             nodeEl.classList.add('locked');
-            nodeEl.querySelector('.level-node-number').textContent = i;
+            iconUse.setAttribute('href', 'assets/icons/feather-sprite.svg#lock');
+            statusEl.textContent = 'Locked';
             nodeEl.setAttribute('aria-label', `Level ${i}: Locked`);
         }
         
         elements.path.appendChild(wrapper);
     }
     
-    // Scroll to the current level, with a timeout to ensure rendering is complete
     setTimeout(scrollToCurrent, 100);
 }
 
 function handlePathClick(event) {
     const node = event.target.closest('.level-node');
-    if (node && node.classList.contains('current')) {
+    if (node && !node.classList.contains('locked')) {
         const level = parseInt(node.dataset.level, 10);
         appState.context = {
             topic: journey.goal,

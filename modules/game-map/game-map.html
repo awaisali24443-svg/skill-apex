@@ -28,10 +28,13 @@
 
 <template id="level-node-template">
     <div class="level-node-wrapper">
-        <div class="level-node" tabindex="0" role="button">
-            <span class="level-node-number"></span>
+        <div class="level-node card" tabindex="0" role="button">
             <div class="level-node-icon">
                 <svg class="icon"><use/></svg>
+            </div>
+            <div class="level-node-info">
+                <span class="level-node-number"></span>
+                <p class="level-node-status"></p>
             </div>
         </div>
     </div>

@@ -11,6 +11,8 @@ let gridClickHandler; // To store the handler for removal in destroy
 function renderHistory() {
     const history = historyService.getHistory();
     container.innerHTML = '';
+    
+    const cleanTopic = (topic) => topic.replace(/ - Level \d+$/, '').trim();
 
     if (history.length === 0) {
         emptyMessage.style.display = 'block';
@@ -22,7 +24,7 @@ function renderHistory() {
         history.forEach(item => {
             const card = template.content.cloneNode(true);
             const historyItemDiv = card.querySelector('.history-item');
-            historyItemDiv.dataset.topic = item.topic; 
+            historyItemDiv.dataset.topic = cleanTopic(item.topic); 
 
             const scorePercent = item.totalQuestions > 0 ? Math.round((item.score / item.totalQuestions) * 100) : 0;
             
@@ -57,12 +59,8 @@ function handleGridClick(event) {
             const topic = historyItem.dataset.topic;
 
             if (topic && appStateRef) {
-                appStateRef.context = {
-                    topic: topic,
-                    numQuestions: 10, // Default for retries
-                    difficulty: 'medium' // Default for retries
-                };
-                window.location.hash = '/loading';
+                appStateRef.context = { topic };
+                window.location.hash = `#/game/${encodeURIComponent(topic)}`;
             }
         }
     }
@@ -78,7 +76,6 @@ export function init(appState) {
 
     clearBtn.addEventListener('click', handleClearHistory);
     
-    // Add event listener for retaking quizzes from the grid
     gridClickHandler = handleGridClick;
     container.addEventListener('click', gridClickHandler);
     

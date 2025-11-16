@@ -162,8 +162,13 @@ function showResults() {
         elements.resultsIcon.className = 'results-icon passed';
         elements.resultsTitle.textContent = `Level ${appState.context.level} Complete!`;
         elements.resultsDetails.textContent = `You scored ${score} out of ${totalQuestions}. Great job!`;
-        elements.resultsActions.innerHTML = `<a href="#/game/${encodeURIComponent(appState.context.topic)}" class="btn btn-primary">Continue to Next Level</a>`;
-        learningPathService.completeLevel(appState.context.journeyId);
+        elements.resultsActions.innerHTML = `<a href="#/game/${encodeURIComponent(appState.context.topic)}" class="btn btn-primary">Continue Journey</a>`;
+        
+        // Only advance the journey if the user passed their CURRENT level.
+        const currentJourneyState = learningPathService.getJourneyById(appState.context.journeyId);
+        if (currentJourneyState && currentJourneyState.currentLevel === appState.context.level) {
+            learningPathService.completeLevel(appState.context.journeyId);
+        }
     } else {
         elements.resultsIcon.innerHTML = `<svg><use href="/assets/icons/feather-sprite.svg#x-circle"/></svg>`;
         elements.resultsIcon.className = 'results-icon failed';
