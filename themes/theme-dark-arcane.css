@@ -1,32 +1,32 @@
 :root {
-    /* --- Color Palette: Cyber Green --- */
+    /* --- Color Palette: Arcane --- */
 
     /* Primary Colors */
-    --color-primary: #00ff87;   /* Matrix Green */
+    --color-primary: #d4af37;   /* Muted Gold */
     --color-secondary: #00b8d4; /* Electric Teal */
-    --color-accent: #f0ff40;    /* Neon Lime */
+    --color-accent: #9c27b0;    /* Vibrant Violet */
 
     /* Background & Surface Colors */
-    --color-background: #0a0a0a; /* Pitch Black */
-    --color-surface: #141414;
-    --color-card-background: rgba(20, 20, 20, 0.7);
-    --color-surface-hover: #1f1f1f;
-    --color-surface-active: #292929;
+    --color-background: #1a143b; /* Deep Plum */
+    --color-surface: #2c244d;
+    --color-card-background: rgba(44, 36, 77, 0.7);
+    --color-surface-hover: #3a3163;
+    --color-surface-active: #483d7a;
 
     /* Text Colors */
-    --color-text: #e0e0e0;
-    --color-text-secondary: #a0a0a0;
+    --color-text: #e0e0f0;       /* Lavender White */
+    --color-text-secondary: #a0a0c0;
 
     /* Border & Accent Colors */
-    --color-border: #004d40;
+    --color-border: #4a407c;
 
     /* Transparent Variants for Glows & Gradients */
-    --color-primary-transparent: rgba(0, 255, 135, 0.15);
-    --color-primary-transparent-heavy: rgba(0, 255, 135, 0.3);
+    --color-primary-transparent: rgba(212, 175, 55, 0.15);
+    --color-primary-transparent-heavy: rgba(212, 175, 55, 0.3);
     --color-secondary-transparent: rgba(0, 184, 212, 0.15);
     --color-secondary-transparent-heavy: rgba(0, 184, 212, 0.3);
-    --color-accent-transparent: rgba(240, 255, 64, 0.15);
-    --color-surface-transparent: rgba(0, 77, 64, 0.3);
+    --color-accent-transparent: rgba(156, 39, 176, 0.2);
+    --color-surface-transparent: rgba(74, 64, 124, 0.3);
 
     /* Feedback Colors */
     --color-success: #4caf50;

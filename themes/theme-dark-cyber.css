@@ -25,6 +25,7 @@
     --color-primary-transparent-heavy: rgba(0, 184, 212, 0.4);
     --color-secondary-transparent: rgba(156, 39, 176, 0.2);
     --color-secondary-transparent-heavy: rgba(156, 39, 176, 0.4);
+    --color-accent-transparent: rgba(255, 64, 129, 0.2);
     --color-surface-transparent: rgba(56, 66, 110, 0.3);
 
     /* Feedback Colors */

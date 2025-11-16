@@ -5,11 +5,15 @@ const THEMES = {
     },
     'dark': {
         path: '/themes/theme-dark.css',
-        color: '#121212'
+        color: '#0a0a0a'
     },
     'dark-cyber': {
         path: '/themes/theme-dark-cyber.css',
         color: '#0c0e1a'
+    },
+    'dark-arcane': {
+        path: '/themes/theme-dark-arcane.css',
+        color: '#1a143b'
     },
 };
 
