@@ -1,4 +1,6 @@
 
+
+
 export const LOCAL_STORAGE_KEYS = {
     CONFIG: 'knowledge-tester-config',
     LIBRARY: 'knowledge-tester-library',
@@ -9,7 +11,6 @@ export const LOCAL_STORAGE_KEYS = {
 
 // Re-enabling all features and routes for the full application experience.
 export const FEATURES = {
-    LEARNING_PATHS: true,
     AURAL_MODE: true,
 };
 
@@ -22,12 +23,9 @@ export const ROUTES = [
     { path: '/aural', module: 'aural', name: 'Aural Tutor', icon: 'mic', nav: true, fullBleed: true },
 
     // Footer/Settings routes
-    { path: '/profile', module: 'profile', name: 'Settings', icon: 'settings', nav: true, footer: true },
+    { path: '/settings', module: 'settings', name: 'Settings', icon: 'settings', nav: true, footer: true },
 
     // Non-navigational routes (part of application flow)
-    { path: '/loading', module: 'loading', name: 'Loading', nav: false },
-    { path: '/quiz', module: 'quiz', name: 'Quiz', nav: false },
-    { path: '/results', module: 'results', name: 'Results', nav: false },
     { path: '/study', module: 'study', name: 'Study Session', nav: false },
     { path: '/game/:topic', module: 'game-map', name: 'Game Map', nav: false },
     { path: '/level', module: 'game-level', name: 'Game Level', nav: false, fullBleed: true },

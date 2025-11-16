@@ -1,4 +1,5 @@
 
+
 import { ROUTES } from './constants.js';
 import * as configService from './services/configService.js';
 import { renderSidebar } from './services/sidebarService.js';
@@ -8,15 +9,11 @@ import * as learningPathService from './services/learningPathService.js';
 import * as historyService from './services/historyService.js';
 import * as themeService from './services/themeService.js';
 import * as gamificationService from './services/gamificationService.js';
-
-// appState holds the current module and a context object for passing data between modules.
-const appState = {
-    currentModule: null,
-    context: {},
-};
+import * as stateService from './services/stateService.js';
 
 // Caches loaded modules to avoid redundant network requests.
 const moduleCache = new Map();
+let currentModule = null; // To track the current module for destroy()
 
 /**
  * Fetches the HTML, CSS, and JS for a given module.
@@ -83,9 +80,9 @@ async function loadModule(route) {
     const styleTagId = 'module-style';
 
     // 1. Destroy the previous module if it has a destroy function.
-    if (appState.currentModule && appState.currentModule.js.destroy) {
+    if (currentModule && currentModule.js.destroy) {
         try {
-            appState.currentModule.js.destroy();
+            currentModule.js.destroy();
         } catch (e) {
             console.error('Error destroying module:', e);
         }
@@ -107,12 +104,12 @@ async function loadModule(route) {
     });
 
     try {
-        // Pass route params into the app state context for the new module.
-        appState.context.params = route.params;
+        // Update the route in the state service. This makes params available to the new module.
+        stateService.setCurrentRoute(route);
 
         // 3. Fetch the new module's assets.
         const moduleData = await fetchModule(route.module);
-        appState.currentModule = moduleData;
+        currentModule = moduleData;
 
         // 4. Prepare the DOM for the new module.
         appContainer.innerHTML = '';
@@ -132,8 +129,11 @@ async function loadModule(route) {
 
         // 7. Initialize the new module's JavaScript.
         if (moduleData.js.init) {
-            await moduleData.js.init(appState);
+            await moduleData.js.init();
         }
+        
+        // After module init, clear one-time navigation context.
+        stateService.clearNavigationContext();
 
         // 8. Update the active state in the sidebar navigation.
         document.querySelectorAll('.sidebar-link').forEach(link => {
@@ -147,6 +147,13 @@ async function loadModule(route) {
         
         // Reset scroll position for the new view.
         document.getElementById('app-container').scrollTop = 0;
+
+        // Accessibility: Set focus to the main heading of the new page
+        const mainHeading = appContainer.querySelector('h1');
+        if (mainHeading) {
+            mainHeading.setAttribute('tabindex', '-1'); // Make it focusable programmatically
+            mainHeading.focus({ preventScroll: true }); // Prevent scroll jump
+        }
 
 
     } catch (error) {
@@ -207,6 +214,7 @@ async function main() {
         learningPathService.init();
         historyService.init();
         gamificationService.init();
+        stateService.initState();
 
         // Register service worker for PWA capabilities and offline functionality.
         if ('serviceWorker' in navigator) {

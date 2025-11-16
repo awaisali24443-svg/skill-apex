@@ -1,3 +1,4 @@
+
 import * as configService from '../../services/configService.js';
 import { showConfirmationModal } from '../../services/modalService.js';
 import { LOCAL_STORAGE_KEYS } from '../../constants.js';
@@ -110,7 +111,7 @@ async function handleClearData() {
     }
 }
 
-export function init(appState) {
+export function init() {
     elements = {
         soundToggle: document.getElementById('sound-toggle'),
         animationSlider: document.getElementById('animation-slider'),

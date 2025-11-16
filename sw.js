@@ -1,17 +1,19 @@
+
+
 // A version number is injected into the cache name.
 // Bump this version when you want to force an update of the service worker
 // and clear the old caches. This is essential after deploying new assets.
-const CACHE_NAME = 'knowledge-tester-v2.8.10';
+const CACHE_NAME = 'knowledge-tester-v3.1.0';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 // The list of assets to cache during installation.
 const APP_SHELL_URLS = [
     '/',
     'index.html',
-    'index.js', // App entry point is now JavaScript
+    'index.js',
     'constants.js',
     'manifest.json',
-    'data/topics.json', // Added topics data for offline access
+    'data/topics.json',
     'global/global.css',
     'global/global.js',
     'themes/theme-dark-cyber.css',
@@ -37,7 +39,6 @@ const APP_SHELL_URLS = [
     'services/apiService.js',
     'services/configService.js',
     'services/errorService.js',
-    'services/feedbackService.js',
     'services/gamificationService.js',
     'services/historyService.js',
     'services/learningPathService.js',
@@ -45,13 +46,11 @@ const APP_SHELL_URLS = [
     'services/libraryService.js',
     'services/markdownService.js',
     'services/modalService.js',
-    'services/quizStateService.js',
-    'services/searchService.js',
     'services/sidebarService.js',
     'services/soundService.js',
+    'services/stateService.js',
     'services/themeService.js',
     'services/toastService.js',
-    'services/backgroundService.js',
     // Current Modules
     'modules/home/home.html', 'modules/home/home.css', 'modules/home/home.js',
     'modules/topic-list/topic-list.html', 'modules/topic-list/topic-list.css', 'modules/topic-list/topic-list.js',
@@ -59,12 +58,9 @@ const APP_SHELL_URLS = [
     'modules/history/history.html', 'modules/history/history.css', 'modules/history/history.js',
     'modules/study/study.html', 'modules/study/study.css', 'modules/study/study.js',
     'modules/aural/aural.html', 'modules/aural/aural.css', 'modules/aural/aural.js',
-    'modules/profile/profile.html', 'modules/profile/profile.css', 'modules/profile/profile.js',
+    'modules/settings/settings.html', 'modules/settings/settings.css', 'modules/settings/settings.js',
     'modules/game-map/game-map.html', 'modules/game-map/game-map.css', 'modules/game-map/game-map.js',
     'modules/game-level/game-level.html', 'modules/game-level/game-level.css', 'modules/game-level/game-level.js',
-    'modules/loading/loading.html', 'modules/loading/loading.css', 'modules/loading/loading.js',
-    'modules/quiz/quiz.html', 'modules/quiz/quiz.css', 'modules/quiz/quiz.js',
-    'modules/results/results.html', 'modules/results/results.css', 'modules/results/results.js',
 ];
 
 /**

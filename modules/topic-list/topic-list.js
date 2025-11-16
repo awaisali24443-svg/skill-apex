@@ -1,7 +1,8 @@
 
-import * as apiService from '../../services/apiService.js';
 
-let appState;
+import * as apiService from '../../services/apiService.js';
+import * as stateService from '../../services/stateService.js';
+
 let topicGrid, template;
 
 // --- UI Rendering & Event Listeners ---
@@ -38,12 +39,11 @@ function handleGridInteraction(event) {
     const topic = card.dataset.topic;
     
     // Set context and navigate to the game map for the selected topic
-    appState.context = { topic };
+    stateService.setNavigationContext({ topic });
     window.location.hash = `#/game/${encodeURIComponent(topic)}`;
 }
 
-export async function init(globalState) {
-    appState = globalState;
+export async function init() {
     topicGrid = document.getElementById('topic-grid-container');
     template = document.getElementById('topic-card-template');
 

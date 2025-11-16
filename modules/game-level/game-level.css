@@ -160,7 +160,7 @@
 }
 
 .option-btn::before {
-    content: counter(option-counter);
+    content: counter(option-counter, upper-alpha);
     counter-increment: option-counter;
     width: 24px;
     height: 24px;
@@ -176,10 +176,6 @@
     font-size: 0.9rem;
 }
 .options-grid { counter-reset: option-counter; }
-.options-grid .option-btn:nth-child(1) { counter-set: option-counter 65; } /* A */
-.options-grid .option-btn:nth-child(2) { counter-set: option-counter 66; } /* B */
-.options-grid .option-btn:nth-child(3) { counter-set: option-counter 67; } /* C */
-.options-grid .option-btn:nth-child(4) { counter-set: option-counter 68; } /* D */
 
 
 .option-btn.correct { background-color: var(--color-success-bg); border-color: var(--color-success); color: var(--color-success); }

@@ -1,4 +1,5 @@
 
+
 import * as apiService from '../../services/apiService.js';
 import * as learningPathService from '../../services/learningPathService.js';
 import * as markdownService from '../../services/markdownService.js';
@@ -6,8 +7,8 @@ import * as soundService from '../../services/soundService.js';
 import * as historyService from '../../services/historyService.js';
 import * as levelCacheService from '../../services/levelCacheService.js';
 import { showConfirmationModal } from '../../services/modalService.js';
+import * as stateService from '../../services/stateService.js';
 
-let appState;
 let levelData;
 let currentQuestionIndex = 0;
 let score = 0;
@@ -16,9 +17,18 @@ let elements = {};
 let selectedAnswerIndex = null;
 let timerInterval = null;
 let timeLeft = 60;
+let levelContext = {};
 
 const PASS_THRESHOLD = 0.8; // 80% to pass
 const LEVELS_PER_CHAPTER = 50; // Align with game-map logic
+
+function announce(message, polite = false) {
+    const region = polite ? elements.timerAnnouncer : elements.announcer;
+    if (region) {
+        region.textContent = message;
+    }
+}
+
 
 function switchState(targetStateId) {
     document.querySelectorAll('.game-level-state').forEach(s => s.classList.remove('active'));
@@ -26,7 +36,7 @@ function switchState(targetStateId) {
 }
 
 async function startLevel() {
-    const { topic, level, journeyId, isBoss } = appState.context;
+    const { topic, level, journeyId, isBoss } = levelContext;
     if (!topic || !level || !journeyId) {
         window.location.hash = '/topics';
         return;
@@ -88,7 +98,7 @@ async function startLevel() {
 
 
 function renderLesson() {
-    elements.lessonTitle.textContent = `Level ${appState.context.level}: ${appState.context.topic}`;
+    elements.lessonTitle.textContent = `Level ${levelContext.level}: ${levelContext.topic}`;
     elements.lessonBody.innerHTML = markdownService.render(levelData.lesson);
     switchState('level-lesson-state');
 }
@@ -112,7 +122,7 @@ function renderQuestion() {
     
     elements.quizQuestionText.textContent = question.question;
     elements.quizOptionsContainer.innerHTML = '';
-    const optionLetters = ['A', 'B', 'C', 'D'];
+    
     question.options.forEach((optionText, index) => {
         const button = document.createElement('button');
         button.className = 'btn option-btn';
@@ -126,7 +136,8 @@ function renderQuestion() {
 
     elements.submitAnswerBtn.disabled = true;
     elements.submitAnswerBtn.textContent = 'Submit Answer';
-    
+
+    announce(`Question ${currentQuestionIndex + 1}: ${question.question}`);
     startTimer();
 }
 
@@ -138,6 +149,11 @@ function startTimer() {
         timeLeft--;
         const seconds = String(timeLeft % 60).padStart(2, '0');
         elements.timerText.textContent = `00:${seconds}`;
+        
+        if (timeLeft > 0 && timeLeft % 15 === 0) {
+            announce(`${timeLeft} seconds remaining`, true);
+        }
+
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
             handleTimeUp();
@@ -149,6 +165,7 @@ function handleTimeUp() {
     // Treat as incorrect answer and move on
     soundService.playSound('incorrect');
     selectedAnswerIndex = -1; // Indicate no answer was selected
+    announce('Time is up.');
     handleSubmitAnswer();
 }
 
@@ -180,8 +197,11 @@ function handleSubmitAnswer() {
     if (isCorrect) {
         score++;
         soundService.playSound('correct');
+        announce('Correct!');
     } else {
         soundService.playSound('incorrect');
+        const correctAnswerText = question.options[question.correctAnswerIndex];
+        announce(`Incorrect. The correct answer was: ${correctAnswerText}`);
     }
 
     elements.quizOptionsContainer.querySelectorAll('.option-btn').forEach(btn => {
@@ -194,7 +214,7 @@ function handleSubmitAnswer() {
         btn.disabled = true;
     });
 
-    elements.submitAnswerBtn.textContent = 'Next Question';
+    elements.submitAnswerBtn.textContent = currentQuestionIndex < levelData.questions.length - 1 ? 'Next Question' : 'Show Results';
     elements.submitAnswerBtn.disabled = false;
     elements.submitAnswerBtn.focus();
 }
@@ -216,7 +236,7 @@ function showResults() {
     soundService.playSound('finish');
     
     historyService.addQuizAttempt({
-        topic: `${appState.context.topic} - Level ${appState.context.level}`,
+        topic: `${levelContext.topic} - Level ${levelContext.level}`,
         score: score,
         totalQuestions: totalQuestions,
         startTime: Date.now() - (totalQuestions * 60000), // Approximate
@@ -226,24 +246,29 @@ function showResults() {
     if (passed) {
         elements.resultsIcon.innerHTML = `<svg><use href="/assets/icons/feather-sprite.svg#check-circle"/></svg>`;
         elements.resultsIcon.className = 'results-icon passed';
-        elements.resultsTitle.textContent = `Level ${appState.context.level} Complete!`;
-        elements.resultsDetails.textContent = `You scored ${score} out of ${totalQuestions}. Great job!`;
-        elements.resultsActions.innerHTML = `<a href="#/game/${encodeURIComponent(appState.context.topic)}" class="btn btn-primary">Continue Journey</a>`;
+        elements.resultsTitle.textContent = `Level ${levelContext.level} Complete!`;
+        const resultText = `You scored ${score} out of ${totalQuestions}. Great job!`;
+        elements.resultsDetails.textContent = resultText;
+        elements.resultsActions.innerHTML = `<a href="#/game/${encodeURIComponent(levelContext.topic)}" class="btn btn-primary">Continue Journey</a>`;
         
-        const journey = learningPathService.getJourneyById(appState.context.journeyId);
-        if (journey && journey.currentLevel === appState.context.level) {
-            learningPathService.completeLevel(appState.context.journeyId);
+        announce(`Level Complete! ${resultText}`);
+
+        const journey = learningPathService.getJourneyById(levelContext.journeyId);
+        if (journey && journey.currentLevel === levelContext.level) {
+            learningPathService.completeLevel(levelContext.journeyId);
         }
     } else {
         elements.resultsIcon.innerHTML = `<svg><use href="/assets/icons/feather-sprite.svg#x-circle"/></svg>`;
         elements.resultsIcon.className = 'results-icon failed';
         elements.resultsTitle.textContent = 'Keep Practicing!';
-        elements.resultsDetails.textContent = `You scored ${score} out of ${totalQuestions}. Review the lesson and try again.`;
+        const resultText = `You scored ${score} out of ${totalQuestions}. Review the lesson and try again.`;
+        elements.resultsDetails.textContent = resultText;
         elements.resultsActions.innerHTML = `
-            <a href="#/game/${encodeURIComponent(appState.context.topic)}" class="btn">Back to Map</a>
+            <a href="#/game/${encodeURIComponent(levelContext.topic)}" class="btn">Back to Map</a>
             <button id="retry-level-btn" class="btn btn-primary">Try Again</button>
         `;
         document.getElementById('retry-level-btn').addEventListener('click', startQuiz);
+        announce(`Quiz finished. ${resultText}`);
     }
     switchState('level-results-state');
 }
@@ -257,7 +282,7 @@ async function handleQuit() {
         danger: true,
     });
     if (confirmed) {
-        window.location.hash = `#/game/${encodeURIComponent(appState.context.topic)}`;
+        window.location.hash = `#/game/${encodeURIComponent(levelContext.topic)}`;
     }
 }
 
@@ -265,15 +290,22 @@ function goHome() {
     window.location.hash = `/#/`;
 }
 
-export function init(globalState) {
-    appState = globalState;
+export function init() {
+    const { navigationContext } = stateService.getState();
+    levelContext = navigationContext;
+
     elements = {
+        // Announcers
+        announcer: document.getElementById('announcer-region'),
+        timerAnnouncer: document.getElementById('timer-announcer-region'),
+        // Loading
         loadingTitle: document.getElementById('loading-title'),
         cancelBtn: document.getElementById('cancel-generation-btn'),
+        // Lesson
         lessonTitle: document.getElementById('lesson-title'),
         lessonBody: document.getElementById('lesson-body'),
         startQuizBtn: document.getElementById('start-quiz-btn'),
-        // New Quiz Elements
+        // Quiz
         quitBtn: document.getElementById('quit-btn'),
         homeBtn: document.getElementById('home-btn'),
         timerText: document.getElementById('timer-text'),
@@ -282,7 +314,7 @@ export function init(globalState) {
         quizQuestionText: document.getElementById('quiz-question-text'),
         quizOptionsContainer: document.getElementById('quiz-options-container'),
         submitAnswerBtn: document.getElementById('submit-answer-btn'),
-        // Results Elements
+        // Results
         resultsIcon: document.getElementById('results-icon'),
         resultsTitle: document.getElementById('results-title'),
         resultsDetails: document.getElementById('results-details'),

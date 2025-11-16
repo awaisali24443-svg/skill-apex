@@ -35,29 +35,6 @@ export async function fetchTopics() {
 }
 
 /**
- * Sends a request to the backend to generate a standard quiz.
- * @param {object} params - The quiz generation parameters.
- * @param {string} params.topic - The topic of the quiz.
- * @param {number} params.numQuestions - The number of questions.
- * @param {string} params.difficulty - The difficulty level ('easy', 'medium', 'hard').
- * @returns {Promise<object>} A promise that resolves to the generated quiz data.
- */
-export async function generateQuiz({ topic, numQuestions, difficulty }) {
-    try {
-        const response = await fetch('/api/generate-quiz', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, numQuestions, difficulty })
-        });
-        return await handleResponse(response);
-    } catch (error) {
-        // Error will be handled by the loading module
-        throw error;
-    }
-}
-
-
-/**
  * Sends a request to the backend to generate content for a specific game level.
  * @param {object} params - The level generation parameters.
  * @param {string} params.topic - The topic of the game.

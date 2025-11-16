@@ -1,3 +1,6 @@
+
+import * as stateService from '../../services/stateService.js';
+
 // --- State Management ---
 const STATE = {
   IDLE: 'IDLE',
@@ -13,7 +16,6 @@ let socket, mediaStream, inputAudioContext, outputAudioContext, scriptProcessor,
 let nextStartTime = 0;
 let sources = new Set();
 let currentInputTranscription = '', currentOutputTranscription = '';
-let appState; // Store appState globally in this module
 
 // --- DOM Elements ---
 let elements = {};
@@ -130,7 +132,8 @@ async function startConversation() {
         outputAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
         
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const { auralContext } = appState.context;
+        const { navigationContext } = stateService.getState();
+        const { auralContext } = navigationContext;
         const systemInstruction = auralContext?.systemInstruction || '';
         const socketUrl = `${protocol}//${window.location.host}/?systemInstruction=${encodeURIComponent(systemInstruction)}`;
         socket = new WebSocket(socketUrl);
@@ -268,8 +271,7 @@ function handleMicClick() {
 }
 
 // --- Module Lifecycle ---
-export function init(globalState) {
-    appState = globalState;
+export function init() {
     elements = {
         log: document.getElementById('transcription-log'),
         placeholder: document.getElementById('aural-placeholder'),
@@ -280,7 +282,8 @@ export function init(globalState) {
         headerControls: document.getElementById('aural-header-controls'),
     };
 
-    const { auralContext } = appState.context;
+    const { navigationContext } = stateService.getState();
+    const { auralContext } = navigationContext;
     if (auralContext && auralContext.from) {
         const backBtn = document.createElement('a');
         backBtn.href = `#/${auralContext.from}`;
@@ -301,9 +304,5 @@ export function destroy() {
     stopConversation();
     if(elements.micBtn) {
         elements.micBtn.removeEventListener('click', handleMicClick);
-    }
-    // Clean up the context when leaving the module
-    if (appState && appState.context.auralContext) {
-        delete appState.context.auralContext;
     }
 }

@@ -1,11 +1,13 @@
+
+
 import * as historyService from '../../services/historyService.js';
 import { showConfirmationModal } from '../../services/modalService.js';
+import * as stateService from '../../services/stateService.js';
 
 let container;
 let clearBtn;
 let emptyMessage;
 let template;
-let appStateRef; // To store appState for click handler
 let gridClickHandler; // To store the handler for removal in destroy
 
 function renderHistory() {
@@ -58,8 +60,8 @@ function handleGridClick(event) {
         if (historyItem) {
             const topic = historyItem.dataset.topic;
 
-            if (topic && appStateRef) {
-                appStateRef.context = { topic };
+            if (topic) {
+                stateService.setNavigationContext({ topic });
                 window.location.hash = `#/game/${encodeURIComponent(topic)}`;
             }
         }
@@ -67,8 +69,7 @@ function handleGridClick(event) {
 }
 
 
-export function init(appState) {
-    appStateRef = appState;
+export function init() {
     container = document.getElementById('history-grid');
     clearBtn = document.getElementById('clear-history-btn');
     emptyMessage = document.getElementById('empty-history-message');

@@ -1,8 +1,12 @@
+
+
 import * as learningPathService from '../../services/learningPathService.js';
+import * as stateService from '../../services/stateService.js';
 
 const LEVELS_PER_CHAPTER = 50;
-let appState, journey, elements;
+let journey, elements;
 let currentChapter = null; // null for chapter view, or chapter number for level view
+let keyboardNavHandler;
 
 // --- Render Functions ---
 
@@ -115,16 +119,23 @@ function renderLevels(chapter) {
 
 function navigateToLevel(level) {
     const isBoss = (level % LEVELS_PER_CHAPTER === 0) || (level === journey.totalLevels);
-    appState.context = {
+    stateService.setNavigationContext({
         topic: journey.goal,
         level: level,
         journeyId: journey.id,
         isBoss: isBoss,
-    };
+    });
     window.location.hash = '#/level';
 }
 
 function handleInteraction(event) {
+    if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
+    
+    const targetCard = event.target.closest('.chapter-card, .level-card');
+    if (!targetCard) return;
+    
+    event.preventDefault();
+
     if (currentChapter === null) { // We are in chapter view
         const chapterCard = event.target.closest('.chapter-card');
         if (chapterCard && !chapterCard.classList.contains('locked')) {
@@ -139,6 +150,48 @@ function handleInteraction(event) {
         }
     }
 }
+
+function handleKeyboardNavigation(e) {
+    const validKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+    if (!validKeys.includes(e.key)) return;
+    
+    e.preventDefault();
+
+    const focusable = Array.from(elements.grid.querySelectorAll('.card:not(.locked)'));
+    const currentFocus = document.activeElement;
+    let currentIndex = focusable.indexOf(currentFocus);
+    
+    if (currentIndex === -1) {
+        focusable[0]?.focus();
+        return;
+    }
+    
+    const gridStyle = window.getComputedStyle(elements.grid);
+    const columns = gridStyle.getPropertyValue('grid-template-columns').split(' ').length;
+
+    let nextIndex;
+    switch (e.key) {
+        case 'ArrowUp':
+            nextIndex = currentIndex - columns;
+            break;
+        case 'ArrowDown':
+            nextIndex = currentIndex + columns;
+            break;
+        case 'ArrowLeft':
+            nextIndex = currentIndex - 1;
+            break;
+        case 'ArrowRight':
+            nextIndex = currentIndex + 1;
+            break;
+    }
+
+    if (nextIndex >= 0 && nextIndex < focusable.length) {
+        const nextElement = focusable[nextIndex];
+        nextElement.focus({ preventScroll: true });
+        nextElement.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+    }
+}
+
 
 function handleFooterBackClick() {
     if (currentChapter === null) {
@@ -166,9 +219,9 @@ function handleFooterPrimaryClick() {
 
 // --- Lifecycle ---
 
-export function init(globalState) {
-    appState = globalState;
-    const topic = appState.context.params.topic || appState.context.topic;
+export function init() {
+    const { routeParams, navigationContext } = stateService.getState();
+    const topic = routeParams.topic || navigationContext.topic;
 
     if (!topic) {
         console.error("No topic found for game map, redirecting.");
@@ -193,18 +246,22 @@ export function init(globalState) {
     };
 
     // Decide initial view
-    currentChapter = appState.context.chapter || null;
+    currentChapter = navigationContext.chapter || null;
 
     render();
     
     elements.grid.addEventListener('click', handleInteraction);
+    elements.grid.addEventListener('keydown', handleInteraction);
+    
+    keyboardNavHandler = handleKeyboardNavigation;
+    document.addEventListener('keydown', keyboardNavHandler);
+    
     elements.backBtn.addEventListener('click', handleFooterBackClick);
     elements.primaryActionBtn.addEventListener('click', handleFooterPrimaryClick);
 }
 
 export function destroy() {
-    // Reset context
-    if (appState.context) {
-      appState.context.chapter = null;
+    if (keyboardNavHandler) {
+        document.removeEventListener('keydown', keyboardNavHandler);
     }
 }

@@ -55,27 +55,6 @@ const levelGenerationSchema = {
     required: ["lesson", "questions"]
 };
 
-const quizGenerationSchema = {
-    type: Type.OBJECT,
-    properties: {
-        questions: {
-            type: Type.ARRAY,
-            description: "An array of multiple-choice questions.",
-            items: {
-                type: Type.OBJECT,
-                properties: {
-                    question: { type: Type.STRING },
-                    options: { type: Type.ARRAY, items: { type: Type.STRING }, description: "An array of 4 possible answers." },
-                    correctAnswerIndex: { type: Type.INTEGER },
-                    explanation: { type: Type.STRING }
-                },
-                required: ["question", "options", "correctAnswerIndex", "explanation"]
-            }
-        }
-    },
-    required: ["questions"]
-};
-
 const bossBattleGenerationSchema = {
     type: Type.OBJECT,
     properties: {
@@ -135,33 +114,6 @@ async function generateLevelContent(topic, level) {
 }
 
 /**
- * Generates a standard quiz using the Gemini API.
- * @param {string} topic 
- * @param {number} numQuestions 
- * @param {string} difficulty 
- * @returns {Promise<object>} The parsed quiz data.
- */
-async function generateQuizContent(topic, numQuestions, difficulty) {
-    if (!ai) throw new Error("AI Service not initialized.");
-    const prompt = `Generate a ${difficulty} quiz with ${numQuestions} multiple-choice questions about "${topic}". Each question must have exactly 4 options. Provide a brief explanation for the correct answer. Your tone must be that of a fun, encouraging quiz master.`;
-
-    try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: quizGenerationSchema,
-            }
-        });
-        return JSON.parse(response.text);
-    } catch (error) {
-        console.error(`Gemini API Error (Quiz Generation for ${topic}):`, error);
-        throw new Error('Failed to generate the quiz. The AI may be busy or the topic is restricted.');
-    }
-}
-
-/**
  * Generates a cumulative "Boss Battle" quiz for a chapter.
  * @param {string} topic - The overall topic.
  * @param {number} chapter - The chapter number.
@@ -185,7 +137,7 @@ async function generateBossBattleContent(topic, chapter) {
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-2.5-pro',
             contents: prompt,
             config: {
                 responseMimeType: 'application/json',
@@ -218,19 +170,6 @@ const apiLimiter = rateLimit({
 app.use('/api', apiLimiter);
 
 // --- API Endpoints ---
-
-app.post('/api/generate-quiz', async (req, res) => {
-    const { topic, numQuestions, difficulty } = req.body;
-    if (!topic || !numQuestions || !difficulty) {
-        return res.status(400).json({ error: 'Missing required parameters: topic, numQuestions, difficulty' });
-    }
-    try {
-        const quiz = await generateQuizContent(topic, numQuestions, difficulty);
-        res.json(quiz);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
 
 app.post('/api/generate-level', async (req, res) => {
     const { topic, level } = req.body;

@@ -1,3 +1,4 @@
+
 import * as libraryService from '../../services/libraryService.js';
 import * as soundService from '../../services/soundService.js';
 
@@ -33,7 +34,7 @@ function showPrevCard() {
     }
 }
 
-export function init(appState) {
+export function init() {
     questions = libraryService.getQuestionsForStudy();
     
     elements = {

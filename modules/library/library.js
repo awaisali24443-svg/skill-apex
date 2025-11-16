@@ -1,3 +1,4 @@
+
 import * as libraryService from '../../services/libraryService.js';
 
 let container;
@@ -30,7 +31,7 @@ function renderLibrary() {
     }
 }
 
-export function init(appState) {
+export function init() {
     renderLibrary();
 
     clickHandler = (event) => {

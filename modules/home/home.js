@@ -1,7 +1,10 @@
+
+
 import { FEATURES } from '../../constants.js';
 import * as gamificationService from '../../services/gamificationService.js';
 import * as historyService from '../../services/historyService.js';
 import * as learningPathService from '../../services/learningPathService.js';
+import * as stateService from '../../services/stateService.js';
 
 let historyClickHandler;
 
@@ -41,7 +44,7 @@ function renderPrimaryAction() {
     }
 }
 
-function renderRecentHistory(appState) {
+function renderRecentHistory() {
     const history = historyService.getRecentHistory(2);
     const container = document.getElementById('recent-history-container');
     if (history.length === 0 || !container) {
@@ -63,7 +66,7 @@ function renderRecentHistory(appState) {
     historyClickHandler = (e) => {
         if(e.target.classList.contains('retry-btn')) {
             const topic = e.target.dataset.topic;
-            appState.context = { topic };
+            stateService.setNavigationContext({ topic });
             window.location.hash = `#/game/${encodeURIComponent(topic)}`;
         }
     };
@@ -71,10 +74,10 @@ function renderRecentHistory(appState) {
 }
 
 
-export function init(appState) {
+export function init() {
     renderStreak();
     renderPrimaryAction();
-    renderRecentHistory(appState);
+    renderRecentHistory();
 }
 
 export function destroy() {
