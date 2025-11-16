@@ -9,6 +9,7 @@
     /* Background & Surface Colors */
     --color-background: #f5f7fa; /* Cool Light Gray */
     --color-surface: #ffffff;
+    --color-card-background: rgba(255, 255, 255, 0.7);
     --color-surface-hover: #f8f9fa;
     --color-surface-active: #e9ecef;
 

@@ -1,7 +1,7 @@
 // A version number is injected into the cache name.
 // Bump this version when you want to force an update of the service worker
 // and clear the old caches. This is essential after deploying new assets.
-const CACHE_NAME = 'knowledge-tester-v3.1.5';
+const CACHE_NAME = 'knowledge-tester-v3.1.6';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 // The list of assets to cache during installation.
@@ -123,26 +123,27 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// Fetch: Apply caching strategies based on the request type.
+// Fetch: Intercept network requests and apply caching strategies.
 self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
 
-    // 1. Google Fonts: Use Stale-While-Revalidate for both the CSS and font files.
+    // Strategy 1: Stale-While-Revalidate for Google Fonts.
+    // Serve from cache for speed, update in background.
     if (url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com') {
         event.respondWith(staleWhileRevalidate(FONT_CACHE_NAME, request));
         return;
     }
 
-    // 2. API Requests: Handle differently based on the method.
+    // Strategy 2: Handle API requests.
     if (url.pathname.startsWith('/api/')) {
-        // Use Stale-While-Revalidate for the GET request to fetch topics.
+        // For GET /api/topics, use Stale-While-Revalidate for fast, offline-first data.
         if (request.method === 'GET' && url.pathname === '/api/topics') {
             event.respondWith(staleWhileRevalidate(CACHE_NAME, request));
             return;
         }
-        // For POST requests (like generating a quiz), try the network first.
-        // If offline, return a custom JSON error response.
+        // For POST requests, go network-first. If offline, return a structured error.
+        // This allows the frontend to gracefully handle offline mutations.
         if (request.method === 'POST') {
             event.respondWith(
                 fetch(request).catch(() => {
@@ -158,31 +159,31 @@ self.addEventListener('fetch', (event) => {
             );
             return;
         }
+        // Other API GET requests will pass through to the network by default.
+        return;
     }
     
-    // 3. App Shell, Navigation, and Local Assets
+    // Strategy 3: Handle App Shell, Navigation, and Local Assets.
     if (url.origin === self.location.origin) {
-        // For navigation requests (loading a page), use a "Network falling back to Cache"
-        // strategy. This is crucial for a Single Page App (SPA) to work offline.
-        // It ensures the user gets the latest version if online, but the app still
-        // loads from the cached HTML shell if they are offline.
+        // For navigation requests (e.g., loading the page), use a "Network falling back to Cache" strategy.
+        // This ensures the user gets the latest version of the app shell if online, but the app still
+        // loads from cache if they are offline, making it a reliable PWA.
         if (request.mode === 'navigate') {
             event.respondWith(
                 fetch(request).catch(() => {
-                    // The catch is triggered when the network request fails,
-                    // which is a good indicator that the user is offline.
+                    // Fallback to the cached index.html for any failed navigation.
                     return caches.match('/index.html', { cacheName: CACHE_NAME });
                 })
             );
             return;
         }
 
-        // For all other local assets (JS, CSS, images, etc.), use the
-        // Stale-While-Revalidate strategy for optimal performance and freshness.
+        // For all other local assets (JS, CSS, images), use Stale-While-Revalidate.
+        // This provides the best performance by serving assets from cache immediately.
         event.respondWith(staleWhileRevalidate(CACHE_NAME, request));
         return;
     }
     
-    // For any other requests (e.g., CDN scripts from importmap), let the browser handle them.
-    // The default behavior is to fetch from the network.
+    // For any other cross-origin requests, let the browser handle them.
+    // The default behavior is to fetch from the network without caching here.
 });
