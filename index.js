@@ -7,7 +7,6 @@ import * as soundService from './services/soundService.js';
 import * as learningPathService from './services/learningPathService.js';
 import * as historyService from './services/historyService.js';
 import * as themeService from './services/themeService.js';
-import * as backgroundService from './services/backgroundService.js';
 import * as gamificationService from './services/gamificationService.js';
 
 // appState holds the current module and a context object for passing data between modules.
@@ -197,7 +196,6 @@ async function main() {
         // Initialize all core services
         configService.init();
         applyAppSettings(configService.getConfig()); // Apply theme & animations on startup
-        backgroundService.init(configService);
         soundService.init(configService);
         learningPathService.init();
         historyService.init();

@@ -93,15 +93,6 @@ body::after {
 }
 
 /* --- App Layout --- */
-#particle-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -3;
-}
-
 #app-wrapper {
     display: flex;
     height: 100%;
@@ -559,7 +550,7 @@ body.animations-subtle::before, body.animations-subtle::after { animation: none;
 body.animations-off *, body.animations-off *::before, body.animations-off *::after {
     transition: none !important; animation: none !important;
 }
-body.animations-off::before, body.animations-off::after, body.animations-off #particle-canvas { display: none; }
+body.animations-off::before, body.animations-off::after { display: none; }
 
 /* --- Responsive Design --- */
 @media (max-width: 768px) {
