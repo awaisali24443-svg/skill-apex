@@ -82,15 +82,15 @@ const quizGenerationSchema = {
 /**
  * Generates a game level (lesson + quiz) using the Gemini API.
  * @param {string} topic - The overall topic.
- * @param {number} level - The level number (1-100).
+ * @param {number} level - The level number (1-500).
  * @returns {Promise<object>} The parsed level data.
  */
 async function generateLevelContent(topic, level) {
     if (!ai) throw new Error("AI Service not initialized.");
-    const prompt = `You are a friendly and encouraging AI tutor creating a 100-level learning game about "${topic}". The user, who is a complete beginner, is on Level ${level}.
+    const prompt = `You are a friendly and encouraging AI tutor creating a 500-level learning game about "${topic}". The user is on Level ${level} and is a complete beginner.
     
     RULES:
-    1. The difficulty must increase very gradually. Level 1 should be extremely simple. Level 100 should be for an expert.
+    1. The difficulty must increase extremely gradually from Level 1 to 500. Level 1 must be incredibly simple, assuming zero prior knowledge. For example, for "C++", Level 1 should explain what a programming language is, who created C++, and its primary purpose. Level 500 should cover expert-level concepts.
     2. Generate a bite-sized, single-paragraph lesson for Level ${level}. This lesson MUST build upon the knowledge of the previous levels and introduce ONE new, small concept.
     3. Generate 2-3 simple multiple-choice questions that test understanding of *only the concepts in this specific lesson*.
     4. Your tone must be super encouraging, like a game.

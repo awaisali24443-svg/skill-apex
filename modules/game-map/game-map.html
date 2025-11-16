@@ -1,6 +1,7 @@
 <div class="page-container game-map-container">
     <header class="page-header">
-        <h1 id="game-map-title">Level 1 of 20</h1>
+        <h1 id="game-map-topic-title"></h1> <!-- For the main topic title -->
+        <h2 id="game-map-subtitle"></h2> <!-- For chapter/progress info -->
         <div class="progress-container">
             <div class="progress-bar">
                 <div id="progress-bar-fill"></div>
@@ -8,24 +9,39 @@
             <span id="progress-percent-text">0%</span>
         </div>
     </header>
-    <main id="levels-grid" class="levels-grid">
-        <!-- Level cards will be rendered here by JS -->
+    <main id="map-grid" class="map-grid">
+        <!-- Chapter or Level cards will be rendered here -->
     </main>
     <footer class="game-map-footer">
-        <a href="#/topics" class="btn">
+        <button id="back-btn" class="btn">
             <svg class="icon"><use href="/assets/icons/feather-sprite.svg#arrow-left"/></svg>
-            <span>Back to Topics</span>
-        </a>
-        <button id="start-level-btn" class="btn btn-primary">
+            <span id="back-btn-text">Back to Topics</span>
+        </button>
+        <button id="primary-action-btn" class="btn btn-primary">
             <svg class="icon"><use href="/assets/icons/feather-sprite.svg#play"/></svg>
-            <span id="start-level-btn-text">Start Level 1</span>
+            <span id="primary-action-btn-text">Start</span>
         </button>
     </footer>
 </div>
 
+<!-- Template for level nodes -->
 <template id="level-node-template">
     <div class="level-card card" tabindex="0" role="button">
         <span class="level-number"></span>
         <p class="level-status"></p>
+    </div>
+</template>
+
+<!-- New template for chapter cards -->
+<template id="chapter-card-template">
+    <div class="chapter-card card" tabindex="0" role="button">
+        <div class="chapter-card-header">
+            <h3 class="chapter-title"></h3>
+            <span class="chapter-status"></span>
+        </div>
+        <p class="chapter-levels"></p>
+        <div class="chapter-progress-bar">
+            <div class="chapter-progress-bar-fill"></div>
+        </div>
     </div>
 </template>

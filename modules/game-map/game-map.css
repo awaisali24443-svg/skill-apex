@@ -8,8 +8,15 @@
     flex-shrink: 0;
 }
 
-#game-map-title {
+#game-map-topic-title {
+    margin-bottom: var(--space-xs);
+}
+
+#game-map-subtitle {
+    font-size: 1.2rem;
+    color: var(--color-text-secondary);
     margin-bottom: var(--space-md);
+    font-weight: 400;
 }
 
 .progress-container {
@@ -42,14 +49,21 @@
     color: var(--color-text-secondary);
 }
 
-.levels-grid {
+.map-grid {
     flex-grow: 1;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: var(--space-lg);
     overflow-y: auto;
     padding: var(--space-lg);
     margin: 0 calc(-1 * var(--page-padding));
+    display: grid;
+    gap: var(--space-lg);
+}
+
+/* --- View-specific grid layouts --- */
+.map-grid.levels-view {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+}
+.map-grid.chapters-view {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 }
 
 .level-card {
@@ -57,13 +71,13 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 1 / 1;
     text-align: center;
     cursor: pointer;
     transition: all var(--transition-speed-fast) ease;
     animation: node-appear 0.5s ease-out forwards;
     opacity: 0;
-    padding: var(--space-md);
+    padding: var(--space-sm);
 }
 
 @keyframes node-appear {
@@ -72,7 +86,7 @@
 }
 
 .level-number {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: 700;
     font-family: var(--font-family-heading);
     color: var(--color-text);
@@ -80,7 +94,7 @@
 }
 
 .level-status {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: var(--color-text-secondary);
     margin: 0;
 }
@@ -117,6 +131,72 @@
     transform: translateY(-4px) scale(1.03);
     box-shadow: 0 0 25px var(--color-primary-transparent-heavy);
 }
+
+/* --- Chapter Card Styles --- */
+.chapter-card {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-lg);
+    cursor: pointer;
+    animation: node-appear 0.5s ease-out forwards;
+    opacity: 0;
+}
+.chapter-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: var(--space-sm);
+}
+.chapter-title {
+    color: var(--color-text);
+    margin: 0;
+}
+.chapter-status {
+    font-size: var(--fs-sm);
+    font-family: var(--font-family-mono);
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+.chapter-levels {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-lg);
+}
+.chapter-progress-bar {
+    width: 100%;
+    height: 6px;
+    background-color: var(--color-surface-hover);
+    border-radius: 3px;
+}
+.chapter-progress-bar-fill {
+    height: 100%;
+    background: var(--brand-gradient);
+    border-radius: 3px;
+    width: 0%;
+    transition: width var(--transition-speed-med) ease;
+}
+
+/* Chapter Card States */
+.chapter-card.locked {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+.chapter-card.locked .chapter-status {
+    background-color: var(--color-surface-hover);
+    color: var(--color-text-secondary);
+}
+.chapter-card.completed .chapter-status {
+    background-color: var(--color-primary-transparent);
+    color: var(--color-primary);
+}
+.chapter-card.current {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 15px var(--color-primary-transparent-heavy);
+}
+.chapter-card.current .chapter-status {
+    background-color: var(--color-primary);
+    color: #fff;
+}
+
 
 .game-map-footer {
     display: flex;

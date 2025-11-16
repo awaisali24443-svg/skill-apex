@@ -1,7 +1,7 @@
 import { LOCAL_STORAGE_KEYS } from '../constants.js';
 
 let gameProgress = [];
-const TOTAL_LEVELS = 20;
+const TOTAL_LEVELS = 500;
 
 /**
  * Loads game progress from localStorage.
@@ -73,6 +73,11 @@ export function getJourneyByGoal(goal) {
 export function startOrGetJourney(goal) {
     let journey = getJourneyByGoal(goal);
     if (journey) {
+        // Ensure existing journeys are updated to the new total levels
+        if (journey.totalLevels !== TOTAL_LEVELS) {
+            journey.totalLevels = TOTAL_LEVELS;
+            saveProgress();
+        }
         return journey;
     }
     
