@@ -132,6 +132,36 @@
     box-shadow: 0 0 25px var(--color-primary-transparent-heavy);
 }
 
+/* --- Boss Battle Card Styles --- */
+.level-card.boss {
+    --glow-color: var(--color-error);
+    border-color: var(--glow-color);
+}
+.level-card.current.boss {
+    box-shadow: 0 0 15px var(--glow-color);
+    animation: node-appear 0.5s ease-out forwards, boss-pulse 2s infinite;
+}
+
+@keyframes boss-pulse {
+    0% { box-shadow: 0 0 15px var(--glow-color); }
+    50% { box-shadow: 0 0 25px var(--glow-color); transform: scale(1.02); }
+    100% { box-shadow: 0 0 15px var(--glow-color); }
+}
+
+.level-card.boss .level-number {
+    font-size: 2.5rem;
+    color: var(--glow-color);
+}
+.level-card.boss .level-number .icon {
+    width: 1.5em;
+    height: 1.5em;
+}
+
+.level-card.boss .level-status {
+    color: var(--glow-color);
+}
+
+
 /* --- Chapter Card Styles --- */
 .chapter-card {
     display: flex;

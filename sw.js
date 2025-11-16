@@ -1,16 +1,17 @@
 // A version number is injected into the cache name.
 // Bump this version when you want to force an update of the service worker
 // and clear the old caches. This is essential after deploying new assets.
-const CACHE_NAME = 'knowledge-tester-v2.8.9';
+const CACHE_NAME = 'knowledge-tester-v2.8.10';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 // The list of assets to cache during installation.
 const APP_SHELL_URLS = [
     '/',
     'index.html',
-    'index.js',
+    'index.tsx', // App entry point is now TypeScript
     'constants.js',
     'manifest.json',
+    'data/topics.json', // Added topics data for offline access
     'global/global.css',
     'global/global.js',
     'themes/theme-dark-cyber.css',
@@ -48,6 +49,7 @@ const APP_SHELL_URLS = [
     'services/themeService.js',
     'services/toastService.js',
     'services/backgroundService.js',
+    // Current Modules
     'modules/home/home.html', 'modules/home/home.css', 'modules/home/home.js',
     'modules/topic-list/topic-list.html', 'modules/topic-list/topic-list.css', 'modules/topic-list/topic-list.js',
     'modules/library/library.html', 'modules/library/library.css', 'modules/library/library.js',
@@ -60,14 +62,6 @@ const APP_SHELL_URLS = [
     'modules/loading/loading.html', 'modules/loading/loading.css', 'modules/loading/loading.js',
     'modules/quiz/quiz.html', 'modules/quiz/quiz.css', 'modules/quiz/quiz.js',
     'modules/results/results.html', 'modules/results/results.css', 'modules/results/results.js',
-    'modules/explore-topics/explore-topics.html', 'modules/explore-topics/explore-topics.css', 'modules/explore-topics/explore-topics.js',
-    'modules/optional-quiz-generator/optional-quiz-generator.html', 'modules/optional-quiz-generator/optional-quiz-generator.css', 'modules/optional-quiz-generator/optional-quiz-generator.js',
-    'modules/learn/learn.html', 'modules/learn/learn.css', 'modules/learn/learn.js',
-    'modules/learning-path-generator/learning-path-generator.html', 'modules/learning-path-generator/learning-path-generator.css', 'modules/learning-path-generator/learning-path-generator.js',
-    'modules/learning-path/learning-path.html', 'modules/learning-path/learning-path.css', 'modules/learning-path/learning-path.js',
-    'modules/socratic/socratic.html', 'modules/socratic/socratic.css', 'modules/socratic/socratic.js',
-    'modules/quiz-levels/quiz-levels.html', 'modules/quiz-levels/quiz-levels.css', 'modules/quiz-levels/quiz-levels.js',
-    'modules/settings/settings.html', 'modules/settings/settings.css', 'modules/settings/settings.js',
 ];
 
 /**

@@ -12,7 +12,7 @@ import { WebSocketServer } from 'ws';
 // --- CONSTANTS & CONFIG ---
 const PORT = process.env.PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(path.filename);
+const __dirname = path.dirname(__filename);
 let topicsCache = null;
 
 // --- GEMINI API SETUP ---
@@ -61,6 +61,27 @@ const quizGenerationSchema = {
         questions: {
             type: Type.ARRAY,
             description: "An array of multiple-choice questions.",
+            items: {
+                type: Type.OBJECT,
+                properties: {
+                    question: { type: Type.STRING },
+                    options: { type: Type.ARRAY, items: { type: Type.STRING }, description: "An array of 4 possible answers." },
+                    correctAnswerIndex: { type: Type.INTEGER },
+                    explanation: { type: Type.STRING }
+                },
+                required: ["question", "options", "correctAnswerIndex", "explanation"]
+            }
+        }
+    },
+    required: ["questions"]
+};
+
+const bossBattleGenerationSchema = {
+    type: Type.OBJECT,
+    properties: {
+        questions: {
+            type: Type.ARRAY,
+            description: "An array of 10 challenging multiple-choice questions.",
             items: {
                 type: Type.OBJECT,
                 properties: {
@@ -140,6 +161,44 @@ async function generateQuizContent(topic, numQuestions, difficulty) {
     }
 }
 
+/**
+ * Generates a cumulative "Boss Battle" quiz for a chapter.
+ * @param {string} topic - The overall topic.
+ * @param {number} chapter - The chapter number.
+ * @returns {Promise<object>} The parsed boss battle data.
+ */
+async function generateBossBattleContent(topic, chapter) {
+    if (!ai) throw new Error("AI Service not initialized.");
+    const startLevel = (chapter - 1) * 50 + 1;
+    const endLevel = chapter * 50;
+    
+    const prompt = `You are a tough but fair AI quiz master creating a "Boss Battle" for a learning game about "${topic}". This is a cumulative test for Chapter ${chapter}, which covers levels ${startLevel} to ${endLevel}.
+    
+    RULES:
+    1. Generate exactly 10 challenging multiple-choice questions.
+    2. The questions MUST cover a wide range of concepts from across the entire chapter (levels ${startLevel}-${endLevel}), not just one specific topic.
+    3. The difficulty should be higher than a regular level, designed to truly test the user's understanding of the chapter's content.
+    4. DO NOT generate a lesson. This is a quiz-only challenge.
+    5. Your tone should be that of an epic final boss in a video game.
+    
+    Generate the 10 questions based on these rules and the provided JSON schema.`;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+            config: {
+                responseMimeType: 'application/json',
+                responseSchema: bossBattleGenerationSchema,
+            }
+        });
+        return JSON.parse(response.text);
+    } catch (error) {
+        console.error(`Gemini API Error (Boss Battle Generation for ${topic} Ch. ${chapter}):`, error);
+        throw new Error('Failed to generate the boss battle. The AI may be busy or the topic is restricted.');
+    }
+}
+
 
 // --- EXPRESS ROUTER ---
 const app = express();
@@ -181,6 +240,19 @@ app.post('/api/generate-level', async (req, res) => {
     try {
         const levelContent = await generateLevelContent(topic, level);
         res.json(levelContent);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/generate-boss-battle', async (req, res) => {
+    const { topic, chapter } = req.body;
+    if (!topic || !chapter) {
+        return res.status(400).json({ error: 'Missing required parameters: topic, chapter' });
+    }
+    try {
+        const bossContent = await generateBossBattleContent(topic, chapter);
+        res.json(bossContent);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

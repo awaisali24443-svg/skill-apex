@@ -78,3 +78,24 @@ export async function generateLevel({ topic, level }) {
         throw error;
     }
 }
+
+/**
+ * Sends a request to the backend to generate a cumulative "Boss Battle" for a chapter.
+ * @param {object} params - The boss battle parameters.
+ * @param {string} params.topic - The topic of the game.
+ * @param {number} params.chapter - The chapter number.
+ * @returns {Promise<object>} A promise that resolves to the generated boss battle questions.
+ * @throws {Error} If the generation fails.
+ */
+export async function generateBossBattle({ topic, chapter }) {
+    try {
+        const response = await fetch('/api/generate-boss-battle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topic, chapter })
+        });
+        return await handleResponse(response);
+    } catch (error) {
+        throw error;
+    }
+}

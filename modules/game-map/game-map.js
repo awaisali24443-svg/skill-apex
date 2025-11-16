@@ -81,8 +81,16 @@ function renderLevels(chapter) {
         nodeEl.dataset.level = i;
         nodeEl.style.animationDelay = `${(i - startLevel) * 15}ms`;
 
-        nodeEl.querySelector('.level-number').textContent = i;
+        const numberEl = nodeEl.querySelector('.level-number');
         const statusEl = nodeEl.querySelector('.level-status');
+        
+        const isBoss = i % LEVELS_PER_CHAPTER === 0 || i === journey.totalLevels;
+        if (isBoss) {
+            nodeEl.classList.add('boss');
+            numberEl.innerHTML = `<svg class="icon"><use href="/assets/icons/feather-sprite.svg#shield"/></svg>`;
+        } else {
+            numberEl.textContent = i;
+        }
 
         if (i < journey.currentLevel) {
             nodeEl.classList.add('completed');
@@ -106,10 +114,12 @@ function renderLevels(chapter) {
 // --- Event Handlers ---
 
 function navigateToLevel(level) {
+    const isBoss = (level % LEVELS_PER_CHAPTER === 0) || (level === journey.totalLevels);
     appState.context = {
         topic: journey.goal,
         level: level,
         journeyId: journey.id,
+        isBoss: isBoss,
     };
     window.location.hash = '#/level';
 }
