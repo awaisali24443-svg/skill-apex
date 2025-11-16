@@ -1,10 +1,7 @@
-
-
-
 // A version number is injected into the cache name.
 // Bump this version when you want to force an update of the service worker
 // and clear the old caches. This is essential after deploying new assets.
-const CACHE_NAME = 'knowledge-tester-v3.1.0';
+const CACHE_NAME = 'knowledge-tester-v3.1.1';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 // The list of assets to cache during installation.
