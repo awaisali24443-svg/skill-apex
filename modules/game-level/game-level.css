@@ -29,7 +29,7 @@
 
 .state-content {
     width: 100%;
-    max-width: 800px;
+    max-width: 900px;
     padding: var(--space-xl);
     text-align: center;
     animation: fade-slide-in 0.5s ease-out;
@@ -136,7 +136,7 @@
 
 .new-quiz-content {
     width: 100%;
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
 }
 
@@ -253,7 +253,7 @@
 
 .new-quiz-footer {
     width: 100%;
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
     padding: var(--space-md) var(--space-lg);
     display: flex;

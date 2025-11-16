@@ -174,3 +174,9 @@
         grid-template-columns: 1fr;
     }
 }
+
+@media (min-width: 1200px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr 400px;
+    }
+}

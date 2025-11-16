@@ -6,7 +6,7 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--space-md);
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
 }
 

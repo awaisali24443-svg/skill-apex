@@ -1,10 +1,27 @@
+/**
+ * @file Service Worker for Knowledge Tester PWA
+ * @version 3.1.0
+ *
+ * This service worker implements a robust offline-first caching strategy.
+ * Key features:
+ * - App Shell Caching: Core assets are cached on install for instant loading.
+ * - Stale-While-Revalidate: For non-critical assets (like fonts, local assets),
+ *   the app serves from cache first for speed, then updates in the background.
+ * - Network Falling Back to Cache: For navigation, it tries the network first
+ *   to get the latest version, but falls back to the cached app shell if offline.
+ * - API Caching: Caches static API data (`/api/topics`) and provides a graceful
+ *   offline error response for mutating requests (POST).
+ * - Automatic Cache Cleaning: Old caches are removed on activation to save space.
+ */
+
 // A version number is injected into the cache name.
-// Bump this version when you want to force an update of the service worker
-// and clear the old caches. This is essential after deploying new assets.
-const CACHE_NAME = 'knowledge-tester-v3.1.8';
+// IMPORTANT: Bump this version when deploying new assets to force an update
+// of the service worker and clear old caches. This should match the app version.
+const CACHE_NAME = 'knowledge-tester-v3.1.0';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
-// The list of assets to cache during installation.
+// The list of assets that make up the "app shell" - the minimal resources
+// needed for the app to run. These are cached during installation.
 const APP_SHELL_URLS = [
     '/',
     'index.html',
@@ -35,6 +52,7 @@ const APP_SHELL_URLS = [
     'assets/sounds/achievement.mp3',
     'assets/sounds/flip.mp3',
     'https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Inter:wght@400;600&family=Roboto+Mono:wght@400;500&display=swap',
+    // Core Services
     'services/apiService.js',
     'services/configService.js',
     'services/errorService.js',
@@ -50,14 +68,14 @@ const APP_SHELL_URLS = [
     'services/stateService.js',
     'services/themeService.js',
     'services/toastService.js',
-    // Current Modules
+    // App Modules
     'modules/home/home.html', 'modules/home/home.css', 'modules/home/home.js',
     'modules/topic-list/topic-list.html', 'modules/topic-list/topic-list.css', 'modules/topic-list/topic-list.js',
     'modules/library/library.html', 'modules/library/library.css', 'modules/library/library.js',
     'modules/history/history.html', 'modules/history/history.css', 'modules/history/history.js',
     'modules/study/study.html', 'modules/study/study.css', 'modules/study/study.js',
     'modules/aural/aural.html', 'modules/aural/aural.css', 'modules/aural/aural.js',
-    'modules/settings/settings.html', 'modules/settings/settings.css', 'modules/settings/js',
+    'modules/settings/settings.html', 'modules/settings/settings.css', 'modules/settings/settings.js',
     'modules/game-map/game-map.html', 'modules/game-map/game-map.css', 'modules/game-map/game-map.js',
     'modules/game-level/game-level.html', 'modules/game-level/game-level.css', 'modules/game-level/game-level.js',
     'modules/profile/profile.html', 'modules/profile/profile.css', 'modules/profile/profile.js',
@@ -68,7 +86,8 @@ const APP_SHELL_URLS = [
  * Implements a Stale-While-Revalidate caching strategy.
  * This strategy serves content from the cache immediately for speed,
  * then fetches an updated version from the network in the background
- * to be used for the next visit.
+ * to be used for the next visit. Ideal for assets that are not critical
+ * for the initial render but should be kept up-to-date.
  * @param {string} cacheName - The name of the cache to use.
  * @param {Request} request - The request to handle.
  * @returns {Promise<Response>}
@@ -77,41 +96,47 @@ const staleWhileRevalidate = async (cacheName, request) => {
     const cache = await caches.open(cacheName);
     const cachedResponse = await cache.match(request);
     const fetchPromise = fetch(request).then((networkResponse) => {
-        // Don't cache opaque responses (e.g., from no-cors requests) or errors
+        // Don't cache opaque responses (e.g., from no-cors requests) or server errors.
         if (networkResponse.ok) {
            cache.put(request, networkResponse.clone());
         }
         return networkResponse;
     }).catch(err => {
-        // If fetch fails (e.g., user is offline) and we have a cached response, return it.
+        // If the network fetch fails (e.g., user is offline) and we have a cached
+        // response, return it. This makes the strategy robust to network failures.
         if (cachedResponse) {
             return cachedResponse;
         }
-        // Re-throw if there's no cached version available.
+        // If there's no cached version, the error must be propagated.
         throw err;
     });
     return cachedResponse || fetchPromise;
 };
 
-// Install: Cache the application shell and take control immediately.
+// 'install' event: Caches the application shell and takes control immediately.
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             console.log('Service Worker: Caching app shell');
+            // addAll is atomic: if one asset fails, the entire cache operation fails.
+            // This ensures the app shell is always complete.
             return cache.addAll(APP_SHELL_URLS);
         }).then(() => {
+            // Force the waiting service worker to become the active service worker.
             return self.skipWaiting();
-        }).catch(err => console.error("Cache addAll or skipWaiting failed: ", err))
+        }).catch(err => console.error("Service Worker install failed: ", err))
     );
 });
 
-// Activate: Clean up old caches and claim clients.
+// 'activate' event: Cleans up old caches and claims clients.
 self.addEventListener('activate', (event) => {
+    // List of caches that should be kept.
     const allowedCaches = [CACHE_NAME, FONT_CACHE_NAME];
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
                 cacheNames.map((cacheName) => {
+                    // If a cache is not in our allowed list, delete it.
                     if (!allowedCaches.includes(cacheName)) {
                         console.log('Service Worker: Deleting old cache:', cacheName);
                         return caches.delete(cacheName);
@@ -119,41 +144,37 @@ self.addEventListener('activate', (event) => {
                 })
             );
         }).then(() => {
+            // Take control of all open clients without waiting for a reload.
             return self.clients.claim();
         })
     );
 });
 
-// Fetch: Intercept network requests and apply caching strategies.
+// 'fetch' event: Intercepts network requests and applies caching strategies.
 self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
 
     // --- Caching Strategy Router ---
-    // The logic below determines the appropriate caching strategy based on the request type.
 
-    // Strategy 1: Stale-While-Revalidate for external, non-critical assets (Google Fonts).
-    // This serves fonts from the cache immediately for fast rendering, then updates them
-    // in the background. This ensures the UI is usable quickly without waiting for fonts.
+    // Strategy 1: Stale-While-Revalidate for Google Fonts.
+    // Serves fonts from cache for fast rendering, then updates in the background.
     if (url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com') {
         event.respondWith(staleWhileRevalidate(FONT_CACHE_NAME, request));
         return;
     }
 
     // Strategy 2: API Request Handling.
-    // API calls require specific online/offline handling.
     if (url.pathname.startsWith('/api/')) {
-        // For GET /api/topics, use Stale-While-Revalidate. This is static data that doesn't
-        // change often, so serving from cache first makes the app feel faster and work offline.
+        // For GET /api/topics, use Stale-While-Revalidate. This static data is ideal for
+        // caching to make the app feel faster and work offline.
         if (request.method === 'GET' && url.pathname === '/api/topics') {
             event.respondWith(staleWhileRevalidate(CACHE_NAME, request));
             return;
         }
         
-        // For POST requests (and other non-GET API calls), always go to the network first.
-        // These requests modify data, so they must not be served from a cache.
-        // If the network fails (offline), we return a structured JSON error response,
-        // which the frontend can parse and use to display a user-friendly message.
+        // For POST requests, always go to the network. These are mutating operations
+        // and must not be served from a cache. If offline, return a structured error.
         if (request.method === 'POST') {
             event.respondWith(
                 fetch(request).catch(() => {
@@ -170,37 +191,34 @@ self.addEventListener('fetch', (event) => {
             return;
         }
         
-        // For any other API GET requests, we let them pass through to the network without caching.
-        // This is the default safe behavior for API data that might be dynamic.
-        return; // This falls through to the browser's default network handling.
+        // Let other API GET requests pass through to the network without caching.
+        // This is the default safe behavior for potentially dynamic API data.
+        return;
     }
     
     // Strategy 3: App Shell, Navigation, and Local Assets (same origin).
-    // This is the core logic for making the app work offline.
     if (url.origin === self.location.origin) {
         
-        // For navigation requests (e.g., loading the page itself or navigating to a new URL),
-        // we use a "Network falling back to Cache" strategy. This ensures the user always gets
-        // the latest version of the app if they are online, but the app still loads from the
-        // cache if they are offline, making it a reliable PWA.
+        // For navigation requests, use "Network falling back to Cache".
+        // This ensures users get the latest version if online, but the app
+        // still loads from cache if offline, making it a reliable PWA.
         if (request.mode === 'navigate') {
             event.respondWith(
                 fetch(request).catch(() => {
-                    // If the network fetch fails, we serve the main entry point from the cache.
+                    // If network fails, serve the main entry point from the cache.
+                    // This makes the app load even when offline.
                     return caches.match('/', { cacheName: CACHE_NAME });
                 })
             );
             return;
         }
 
-        // For all other local assets (JS, CSS, images, etc.), use Stale-While-Revalidate.
-        // This provides the best performance by serving assets from cache immediately, making
-        // subsequent page loads and interactions feel instant. The assets are updated
-        // in the background for the next visit.
+        // For all other local assets (JS, CSS, images), use Stale-While-Revalidate.
+        // This provides the best performance by serving from cache immediately,
+        // making subsequent interactions feel instant.
         event.respondWith(staleWhileRevalidate(CACHE_NAME, request));
         return;
     }
     
-    // For any other cross-origin requests that haven't been handled, let the browser handle them.
-    // The default behavior is to fetch from the network without involving the service worker's cache.
+    // For any other cross-origin requests, let the browser handle them by default.
 });
