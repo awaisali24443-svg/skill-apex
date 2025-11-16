@@ -1,48 +1,43 @@
 
 [
   {
-    "name": "Programming & AI",
-    "description": "Dive into algorithms, machine learning, and advanced coding concepts. Test your knowledge in Python, C++, and AI frameworks.",
+    "name": "AI & Machine Learning",
+    "description": "From neural networks to LLMs. Master Python, TensorFlow, and PyTorch to build intelligent systems of the future.",
     "styleClass": "topic-programming"
   },
   {
-    "name": "Biology & Genetics",
-    "description": "Explore the mysteries of life, from cellular structures to advanced genetic engineering and ecosystems. Test your biological insights.",
-    "styleClass": "topic-biology"
-  },
-  {
-    "name": "Cosmology & Space",
-    "description": "Journey through the cosmos, studying black holes, distant galaxies, and the origins of the universe. Explore cosmic phenomena.",
+    "name": "Cybersecurity & Ethical Hacking",
+    "description": "Become a digital defender. Learn penetration testing, network security, and cryptography to protect against modern threats.",
     "styleClass": "topic-space"
   },
   {
-    "name": "Robotics & Automation",
-    "description": "Delve into the world of smart machines, automation principles, and future technological advancements. Design and control robotic systems.",
-    "styleClass": "topic-robotics"
-  },
-  {
-    "name": "Business & Finance",
-    "description": "Master economic theories, market trends, and strategic business management. Analyze financial data and investment strategies.",
-    "styleClass": "topic-finance"
-  },
-  {
-    "name": "Arts & Culture",
-    "description": "Explore art history, diverse cultural movements, and creative expressions across different civilizations. Uncover artistic legacies.",
-    "styleClass": "topic-arts"
-  },
-  {
-    "name": "Medicine & Health",
-    "description": "Understand human anatomy, physiology, and modern medical practices. Explore diseases, treatments, and public health initiatives.",
+    "name": "Cloud Native & DevOps",
+    "description": "Architect scalable systems. Dive into AWS/GCP, Docker, Kubernetes, and CI/CD pipelines for modern infrastructure.",
     "styleClass": "topic-medicine"
   },
   {
-    "name": "Environment & Ecology",
-    "description": "Learn about environmental science, climate change, and sustainable practices. Protect our planet and its biodiversity.",
-    "styleClass": "topic-ecology"
+    "name": "Data Science & Analytics",
+    "description": "Turn raw data into actionable insights. Explore data analysis, visualization, statistical modeling, and big data technologies.",
+    "styleClass": "topic-biology"
   },
   {
-    "name": "Logic & Philosophy",
-    "description": "Challenge your mind with logical puzzles, critical thinking, and philosophical debates. Understand fundamental questions.",
+    "name": "Full-Stack Web Development",
+    "description": "Build complete web apps from server to screen. Master JavaScript, React, Node.js, and modern database technologies.",
+    "styleClass": "topic-arts"
+  },
+  {
+    "name": "Mobile App Development",
+    "description": "Create applications for billions of users. Learn Swift for iOS or Kotlin for Android and build the next big app.",
+    "styleClass": "topic-finance"
+  },
+  {
+    "name": "Game Development & Design",
+    "description": "Bring virtual worlds to life. Master game engines like Unity or Unreal, C#, and the principles of interactive design.",
     "styleClass": "topic-philosophy"
+  },
+  {
+    "name": "Blockchain & Web3",
+    "description": "Explore the decentralized future. Understand cryptocurrencies, smart contracts, and build DApps on the blockchain.",
+    "styleClass": "topic-robotics"
   }
 ]
