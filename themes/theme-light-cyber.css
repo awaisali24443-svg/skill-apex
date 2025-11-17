@@ -1,32 +1,32 @@
 :root {
-    /* --- Color Palette: Cyber Light --- */
+    /* --- Color Palette: Daylight --- */
 
     /* Primary Colors */
-    --color-primary: #ff6f00;   /* Vibrant Orange */
-    --color-secondary: #0d47a1; /* Deep Blue */
-    --color-accent: #00e5ff;    /* Bright Cyan */
+    --color-primary: #007bff;   /* Professional Blue */
+    --color-secondary: #17a2b8; /* Cool Teal */
+    --color-accent: #6f42c1;    /* Modern Purple */
 
     /* Background & Surface Colors */
-    --color-background: #f5f7fa; /* Cool Light Gray */
+    --color-background: #f8f9fa; /* Very Light Gray */
     --color-surface: #ffffff;
     --color-card-background: rgba(255, 255, 255, 0.7);
-    --color-surface-hover: #f8f9fa;
+    --color-surface-hover: #f1f3f5;
     --color-surface-active: #e9ecef;
 
     /* Text Colors */
-    --color-text: #1d2129;
-    --color-text-secondary: #5f6774;
+    --color-text: #212529;
+    --color-text-secondary: #6c757d;
 
     /* Border & Accent Colors */
-    --color-border: #e0e6ed;
+    --color-border: #dee2e6;
 
     /* Transparent Variants for Glows & Gradients */
-    --color-primary-transparent: rgba(255, 111, 0, 0.1);
-    --color-primary-transparent-heavy: rgba(255, 111, 0, 0.2);
-    --color-secondary-transparent: rgba(13, 71, 161, 0.1);
-    --color-secondary-transparent-heavy: rgba(13, 71, 161, 0.2);
-    --color-accent-transparent: rgba(0, 229, 255, 0.15);
-    --color-surface-transparent: rgba(224, 230, 237, 0.5);
+    --color-primary-transparent: rgba(0, 123, 255, 0.1);
+    --color-primary-transparent-heavy: rgba(0, 123, 255, 0.2);
+    --color-secondary-transparent: rgba(23, 162, 184, 0.1);
+    --color-secondary-transparent-heavy: rgba(23, 162, 184, 0.2);
+    --color-accent-transparent: rgba(111, 66, 193, 0.1);
+    --color-surface-transparent: rgba(222, 226, 230, 0.5);
 
     /* Feedback Colors */
     --color-success: #198754;

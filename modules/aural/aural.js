@@ -1,4 +1,3 @@
-
 import * as stateService from '../../services/stateService.js';
 
 // --- State Management ---
@@ -15,7 +14,7 @@ let currentState = STATE.IDLE;
 let socket, mediaStream, inputAudioContext, outputAudioContext, scriptProcessor, connectionTimeout;
 let nextStartTime = 0;
 let sources = new Set();
-let currentInputTranscription = '', currentOutputTranscription = '';
+let liveTranscriptionElement = null;
 
 // --- DOM Elements ---
 let elements = {};
@@ -102,15 +101,31 @@ function updateUI(newState, message = '') {
     }
 }
 
-function addTranscriptionEntry(text, type) {
-    if (!text.trim()) return;
-    if (elements.placeholder) {
+function updateLiveTranscription(type, textChunk) {
+    if (elements.placeholder && elements.placeholder.style.display !== 'none') {
         elements.placeholder.style.display = 'none';
     }
-    const entry = document.createElement('div');
-    entry.className = `transcription-entry ${type}`;
-    entry.textContent = text;
-    elements.log.prepend(entry);
+
+    if (!liveTranscriptionElement || liveTranscriptionElement.dataset.type !== type) {
+        // Finalize the previous entry if it exists and is of a different type
+        if (liveTranscriptionElement) {
+            liveTranscriptionElement.classList.remove('live');
+        }
+
+        // Create a new entry
+        liveTranscriptionElement = document.createElement('div');
+        liveTranscriptionElement.className = `transcription-entry live ${type}`;
+        liveTranscriptionElement.dataset.type = type;
+        elements.log.prepend(liveTranscriptionElement);
+    }
+    liveTranscriptionElement.textContent += textChunk;
+}
+
+function finalizeLiveTranscription() {
+    if (liveTranscriptionElement) {
+        liveTranscriptionElement.classList.remove('live');
+        liveTranscriptionElement = null;
+    }
 }
 
 // --- Core Conversation Logic ---
@@ -168,11 +183,37 @@ async function startConversation() {
                 sources.forEach(source => source.stop());
                 sources.clear();
                 nextStartTime = 0;
+                finalizeLiveTranscription();
             }
 
+            // Handle live input transcription
+            const inputTranscription = geminiMessage.serverContent?.inputTranscription?.text;
+            if (inputTranscription) {
+                if (currentState === STATE.LISTENING) {
+                    updateUI(STATE.THINKING);
+                }
+                updateLiveTranscription('user', inputTranscription);
+            }
+
+            // Handle live output transcription
+            const outputTranscription = geminiMessage.serverContent?.outputTranscription?.text;
+            if (outputTranscription) {
+                if (liveTranscriptionElement && liveTranscriptionElement.dataset.type === 'user') {
+                    finalizeLiveTranscription();
+                }
+                updateLiveTranscription('model', outputTranscription);
+            }
+            
             const audioData = geminiMessage.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
             if (audioData) {
-                updateUI(STATE.SPEAKING);
+                if (currentState !== STATE.SPEAKING) {
+                    updateUI(STATE.SPEAKING);
+                }
+                // Also finalize user transcription when model starts speaking audio
+                if (liveTranscriptionElement && liveTranscriptionElement.dataset.type === 'user') {
+                    finalizeLiveTranscription();
+                }
+
                 const decoded = decode(audioData);
                 const audioBuffer = await decodeAudioData(decoded, outputAudioContext, 24000, 1);
                 
@@ -185,26 +226,16 @@ async function startConversation() {
                 nextStartTime += audioBuffer.duration;
                 sources.add(source);
             }
-
-            if (geminiMessage.serverContent?.outputTranscription?.text) {
-                currentOutputTranscription += geminiMessage.serverContent.outputTranscription.text;
-            }
-            if (geminiMessage.serverContent?.inputTranscription?.text) {
-                currentInputTranscription += geminiMessage.serverContent.inputTranscription.text;
-            }
+            
             if(geminiMessage.serverContent?.turnComplete) {
-                addTranscriptionEntry(currentInputTranscription, 'user');
-                addTranscriptionEntry(currentOutputTranscription, 'model');
-                currentInputTranscription = '';
-                currentOutputTranscription = '';
+                finalizeLiveTranscription();
                 
-                // Wait for any queued audio to finish playing before switching back to LISTENING
                 const checkPlaybackAndSetListening = () => {
-                    // Check if context exists and if current time has passed the scheduled end time
-                    if (outputAudioContext && outputAudioContext.currentTime + 0.1 >= nextStartTime) {
-                        updateUI(STATE.LISTENING);
+                    if (!outputAudioContext || outputAudioContext.currentTime + 0.1 >= nextStartTime) {
+                         if (currentState !== STATE.IDLE && currentState !== STATE.ERROR) {
+                            updateUI(STATE.LISTENING);
+                        }
                     } else {
-                        // If audio is still playing, check again shortly
                         setTimeout(checkPlaybackAndSetListening, 100);
                     }
                 };
@@ -212,8 +243,14 @@ async function startConversation() {
             }
         };
         
-        socket.onerror = (err) => updateUI(STATE.ERROR, `WebSocket error. Check console.`);
-        socket.onclose = () => stopConversation();
+        socket.onerror = (err) => {
+            finalizeLiveTranscription();
+            updateUI(STATE.ERROR, `WebSocket error. Check console.`);
+        };
+        socket.onclose = () => {
+            finalizeLiveTranscription();
+            stopConversation();
+        };
 
     } catch (err) {
         console.error("Error starting conversation:", err);
@@ -230,6 +267,7 @@ function stopConversation() {
     if (currentState === STATE.IDLE) return;
     
     clearTimeout(connectionTimeout);
+    finalizeLiveTranscription();
 
     if (socket) {
         socket.close();
@@ -255,7 +293,7 @@ function stopConversation() {
         outputAudioContext = null;
     }
 
-    if (elements.log && elements.log.childElementCount <= 1 && elements.placeholder) {
+    if (elements.log && elements.log.childElementCount === 0 && elements.placeholder) {
         elements.placeholder.style.display = 'flex';
     }
 

@@ -77,6 +77,19 @@
     border: 1px solid var(--color-border);
 }
 
+.transcription-entry.live::after {
+    content: '▋';
+    animation: blink 1s step-end infinite;
+    display: inline-block;
+    margin-left: 2px;
+    vertical-align: baseline;
+}
+
+@keyframes blink {
+    50% { opacity: 0; }
+}
+
+
 .aural-footer {
     flex-shrink: 0;
     position: relative;

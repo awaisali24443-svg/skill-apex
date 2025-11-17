@@ -303,6 +303,42 @@ async function generateHint(topic, question, options) {
     }
 }
 
+/**
+ * Generates speech from text using the Gemini API.
+ * @param {string} text - The text to convert to speech.
+ * @returns {Promise<string>} A promise that resolves to the base64 encoded audio data.
+ */
+async function generateSpeech(text) {
+    if (!ai) throw new Error("AI Service not initialized.");
+    if (!text || text.trim().length === 0) {
+        throw new Error("Text for speech generation cannot be empty.");
+    }
+    
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash-preview-tts",
+            contents: [{ parts: [{ text: text }] }],
+            config: {
+                responseModalities: [Modality.AUDIO],
+                speechConfig: {
+                    voiceConfig: {
+                        prebuiltVoiceConfig: { voiceName: 'Kore' }, // A calm, clear voice for lessons
+                    },
+                },
+            },
+        });
+        
+        const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+        if (!base64Audio) {
+            throw new Error("AI did not return audio data.");
+        }
+        return base64Audio;
+    } catch (error) {
+        console.error(`Gemini API Error (Speech Generation):`, error);
+        throw new Error('Failed to generate speech. The AI may be busy or the request was invalid.');
+    }
+}
+
 
 // --- EXPRESS ROUTER ---
 const app = express();
@@ -384,6 +420,19 @@ app.post('/api/generate-hint', async (req, res) => {
     try {
         const hint = await generateHint(topic, question, options);
         res.json(hint);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/generate-speech', async (req, res) => {
+    const { text } = req.body;
+    if (!text) {
+        return res.status(400).json({ error: 'Missing required parameter: text' });
+    }
+    try {
+        const audioContent = await generateSpeech(text);
+        res.json({ audioContent });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

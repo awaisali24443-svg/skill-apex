@@ -20,6 +20,8 @@ let levelContext = {};
 let userAnswers = [];
 let hintUsedThisQuestion = false;
 let xpGainedThisLevel = 0;
+let outputAudioContext = null;
+let currentAudioSource = null;
 
 const PASS_THRESHOLD = 0.8; // 80% to pass
 const LEVELS_PER_CHAPTER = 50; // Align with game-map logic
@@ -31,8 +33,36 @@ function announce(message, polite = false) {
     }
 }
 
+// --- Audio Utilities ---
+function decode(base64) {
+    const binaryString = atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
+}
+
+async function decodeAudioData(data, ctx, sampleRate, numChannels) {
+    const dataInt16 = new Int16Array(data.buffer);
+    const frameCount = dataInt16.length / numChannels;
+    const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
+
+    for (let channel = 0; channel < numChannels; channel++) {
+        const channelData = buffer.getChannelData(channel);
+        for (let i = 0; i < frameCount; i++) {
+            channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
+        }
+    }
+    return buffer;
+}
+
 
 function switchState(targetStateId) {
+    if (targetStateId !== 'level-lesson-state' && currentAudioSource) {
+        stopAudio();
+    }
     document.querySelectorAll('.game-level-state').forEach(s => s.classList.remove('active'));
     document.getElementById(targetStateId)?.classList.add('active');
 }
@@ -102,6 +132,7 @@ async function startLevel() {
 function renderLesson() {
     elements.lessonTitle.textContent = `Level ${levelContext.level}: ${levelContext.topic}`;
     elements.lessonBody.innerHTML = markdownService.render(levelData.lesson);
+    if(elements.readAloudBtn) elements.readAloudBtn.disabled = false;
     switchState('level-lesson-state');
 }
 
@@ -357,6 +388,76 @@ async function handleHintClick() {
     }
 }
 
+async function handleReadAloudClick() {
+    if (currentAudioSource) {
+        stopAudio();
+        return;
+    }
+
+    const btn = elements.readAloudBtn;
+    const originalContent = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<div class="btn-spinner"></div> <span>Synthesizing...</span>`;
+    btn.classList.add('loading');
+
+    try {
+        const lessonText = elements.lessonBody.textContent;
+        if (!lessonText.trim()) {
+            throw new Error("No text to read.");
+        }
+
+        const response = await apiService.generateSpeech(lessonText);
+        const audioData = response.audioContent;
+        
+        if (!outputAudioContext) {
+            outputAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+        } else if (outputAudioContext.state === 'suspended') {
+            await outputAudioContext.resume();
+        }
+
+        const decoded = decode(audioData);
+        const audioBuffer = await decodeAudioData(decoded, outputAudioContext, 24000, 1);
+        
+        currentAudioSource = outputAudioContext.createBufferSource();
+        currentAudioSource.buffer = audioBuffer;
+        currentAudioSource.connect(outputAudioContext.destination);
+        
+        currentAudioSource.onended = () => {
+            stopAudio();
+        };
+        
+        currentAudioSource.start();
+        soundService.playSound('click');
+        
+        btn.disabled = false;
+        btn.innerHTML = `<svg class="icon"><use href="/assets/icons/feather-sprite.svg#square"/></svg> <span>Stop</span>`;
+        btn.classList.remove('loading');
+        btn.classList.add('playing');
+
+    } catch (error) {
+        console.error("Error generating or playing speech:", error);
+        showToast(error.message, 'error');
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+        btn.classList.remove('loading');
+    }
+}
+
+function stopAudio() {
+    if (currentAudioSource) {
+        currentAudioSource.stop();
+        currentAudioSource.disconnect();
+        currentAudioSource = null;
+    }
+    
+    const btn = elements.readAloudBtn;
+    if (btn) {
+        btn.classList.remove('loading', 'playing');
+        btn.disabled = false;
+        btn.innerHTML = `<svg class="icon"><use href="/assets/icons/feather-sprite.svg#volume-2"/></svg> <span>Read Aloud</span>`;
+    }
+}
+
 function goHome() {
     window.location.hash = `/#/`;
 }
@@ -376,6 +477,7 @@ export function init() {
         lessonTitle: document.getElementById('lesson-title'),
         lessonBody: document.getElementById('lesson-body'),
         startQuizBtn: document.getElementById('start-quiz-btn'),
+        readAloudBtn: document.getElementById('read-aloud-btn'),
         // Quiz
         quitBtn: document.getElementById('quit-btn'),
         homeBtn: document.getElementById('home-btn'),
@@ -396,6 +498,8 @@ export function init() {
 
     elements.cancelBtn.addEventListener('click', () => window.history.back());
     elements.startQuizBtn.addEventListener('click', startQuiz);
+    elements.readAloudBtn.addEventListener('click', handleReadAloudClick);
+    elements.readAloudBtn.disabled = true; // Disable until lesson is loaded
     elements.quizOptionsContainer.addEventListener('click', handleOptionClick);
     elements.submitAnswerBtn.addEventListener('click', handleSubmitAnswer);
     elements.quitBtn.addEventListener('click', handleQuit);
@@ -407,4 +511,9 @@ export function init() {
 
 export function destroy() {
     clearInterval(timerInterval);
+    stopAudio();
+    if (outputAudioContext) {
+        outputAudioContext.close().catch(e => console.error("Error closing AudioContext:", e));
+        outputAudioContext = null;
+    }
 }

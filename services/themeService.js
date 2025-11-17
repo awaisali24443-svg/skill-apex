@@ -1,11 +1,15 @@
 const THEMES = {
     'light-cyber': {
         path: '/themes/theme-light-cyber.css',
-        color: '#f0f2f8'
+        color: '#f8f9fa'
+    },
+    'light-solar': {
+        path: '/themes/theme-light-solar.css',
+        color: '#fffbf5'
     },
     'dark': {
         path: '/themes/theme-dark.css',
-        color: '#0a0a0a'
+        color: '#101410'
     },
     'dark-cyber': {
         path: '/themes/theme-dark-cyber.css',
@@ -14,6 +18,10 @@ const THEMES = {
     'dark-arcane': {
         path: '/themes/theme-dark-arcane.css',
         color: '#1a143b'
+    },
+    'dark-nebula': {
+        path: '/themes/theme-dark-nebula.css',
+        color: '#0d1117'
     },
 };
 

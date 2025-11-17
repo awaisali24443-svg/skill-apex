@@ -140,3 +140,22 @@ export async function generateHint({ topic, question, options }) {
         throw error;
     }
 }
+
+/**
+ * Sends a request to the backend to generate speech from text.
+ * @param {string} text - The text to synthesize.
+ * @returns {Promise<object>} A promise that resolves to the object containing the audio data.
+ * @throws {Error} If the generation fails.
+ */
+export async function generateSpeech(text) {
+    try {
+        const response = await fetch('/api/generate-speech', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+        });
+        return await handleResponse(response);
+    } catch (error) {
+        throw error;
+    }
+}
