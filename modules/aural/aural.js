@@ -170,76 +170,81 @@ async function startConversation() {
         };
 
         socket.onmessage = async (event) => {
-            const serverMessage = JSON.parse(event.data);
-            if (serverMessage.type === 'error') {
-                updateUI(STATE.ERROR, serverMessage.message);
-                return;
-            }
-
-            const geminiMessage = serverMessage.message;
-            if (!geminiMessage) return;
-
-            if (geminiMessage.serverContent?.interrupted) {
-                sources.forEach(source => source.stop());
-                sources.clear();
-                nextStartTime = 0;
-                finalizeLiveTranscription();
-            }
-
-            // Handle live input transcription
-            const inputTranscription = geminiMessage.serverContent?.inputTranscription?.text;
-            if (inputTranscription) {
-                if (currentState === STATE.LISTENING) {
-                    updateUI(STATE.THINKING);
+            try {
+                const serverMessage = JSON.parse(event.data);
+                if (serverMessage.type === 'error') {
+                    updateUI(STATE.ERROR, serverMessage.message);
+                    return;
                 }
-                updateLiveTranscription('user', inputTranscription);
-            }
 
-            // Handle live output transcription
-            const outputTranscription = geminiMessage.serverContent?.outputTranscription?.text;
-            if (outputTranscription) {
-                if (liveTranscriptionElement && liveTranscriptionElement.dataset.type === 'user') {
-                    finalizeLiveTranscription();
-                }
-                updateLiveTranscription('model', outputTranscription);
-            }
-            
-            const audioData = geminiMessage.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
-            if (audioData) {
-                if (currentState !== STATE.SPEAKING) {
-                    updateUI(STATE.SPEAKING);
-                }
-                // Also finalize user transcription when model starts speaking audio
-                if (liveTranscriptionElement && liveTranscriptionElement.dataset.type === 'user') {
+                const geminiMessage = serverMessage.message;
+                if (!geminiMessage) return;
+
+                if (geminiMessage.serverContent?.interrupted) {
+                    sources.forEach(source => source.stop());
+                    sources.clear();
+                    nextStartTime = 0;
                     finalizeLiveTranscription();
                 }
 
-                const decoded = decode(audioData);
-                const audioBuffer = await decodeAudioData(decoded, outputAudioContext, 24000, 1);
-                
-                nextStartTime = Math.max(nextStartTime, outputAudioContext.currentTime);
-                const source = outputAudioContext.createBufferSource();
-                source.buffer = audioBuffer;
-                source.connect(outputAudioContext.destination);
-                source.addEventListener('ended', () => sources.delete(source));
-                source.start(nextStartTime);
-                nextStartTime += audioBuffer.duration;
-                sources.add(source);
-            }
-            
-            if(geminiMessage.serverContent?.turnComplete) {
-                finalizeLiveTranscription();
-                
-                const checkPlaybackAndSetListening = () => {
-                    if (!outputAudioContext || outputAudioContext.state === 'closed' || outputAudioContext.currentTime + 0.1 >= nextStartTime) {
-                         if (currentState !== STATE.IDLE && currentState !== STATE.ERROR) {
-                            updateUI(STATE.LISTENING);
-                        }
-                    } else {
-                        setTimeout(checkPlaybackAndSetListening, 100);
+                // Handle live input transcription
+                const inputTranscription = geminiMessage.serverContent?.inputTranscription?.text;
+                if (inputTranscription) {
+                    if (currentState === STATE.LISTENING) {
+                        updateUI(STATE.THINKING);
                     }
-                };
-                checkPlaybackAndSetListening();
+                    updateLiveTranscription('user', inputTranscription);
+                }
+
+                // Handle live output transcription
+                const outputTranscription = geminiMessage.serverContent?.outputTranscription?.text;
+                if (outputTranscription) {
+                    if (liveTranscriptionElement && liveTranscriptionElement.dataset.type === 'user') {
+                        finalizeLiveTranscription();
+                    }
+                    updateLiveTranscription('model', outputTranscription);
+                }
+                
+                const audioData = geminiMessage.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
+                if (audioData) {
+                    if (currentState !== STATE.SPEAKING) {
+                        updateUI(STATE.SPEAKING);
+                    }
+                    // Also finalize user transcription when model starts speaking audio
+                    if (liveTranscriptionElement && liveTranscriptionElement.dataset.type === 'user') {
+                        finalizeLiveTranscription();
+                    }
+
+                    const decoded = decode(audioData);
+                    const audioBuffer = await decodeAudioData(decoded, outputAudioContext, 24000, 1);
+                    
+                    nextStartTime = Math.max(nextStartTime, outputAudioContext.currentTime);
+                    const source = outputAudioContext.createBufferSource();
+                    source.buffer = audioBuffer;
+                    source.connect(outputAudioContext.destination);
+                    source.addEventListener('ended', () => sources.delete(source));
+                    source.start(nextStartTime);
+                    nextStartTime += audioBuffer.duration;
+                    sources.add(source);
+                }
+                
+                if(geminiMessage.serverContent?.turnComplete) {
+                    finalizeLiveTranscription();
+                    
+                    const checkPlaybackAndSetListening = () => {
+                        if (!outputAudioContext || outputAudioContext.state === 'closed' || outputAudioContext.currentTime + 0.1 >= nextStartTime) {
+                             if (currentState !== STATE.IDLE && currentState !== STATE.ERROR) {
+                                updateUI(STATE.LISTENING);
+                            }
+                        } else {
+                            setTimeout(checkPlaybackAndSetListening, 100);
+                        }
+                    };
+                    checkPlaybackAndSetListening();
+                }
+            } catch (e) {
+                console.error("Failed to parse server message:", e);
+                updateUI(STATE.ERROR, 'Received a malformed message from the server.');
             }
         };
         
