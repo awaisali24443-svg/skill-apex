@@ -61,53 +61,39 @@ body {
     animation: fade-in 0.3s ease-in-out both;
 }
 
-/* Background Effects - ENHANCED "Data Stream" */
+/* --- WORLD CLASS BACKGROUND SYSTEM --- */
+
+/* Layer 1: Film Grain / Noise Texture (Tactile Feel) */
 body::before {
-    content: '';
+    content: "";
     position: fixed;
     inset: 0;
-    background-image:
-        linear-gradient(to right, var(--color-surface-transparent) 1px, transparent 1px);
-    background-size: 50px 50px;
-    z-index: -2;
-    opacity: 0.5;
-}
-
-body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-        /* Glows */
-        radial-gradient(ellipse at 70% 20%, var(--color-primary-transparent-heavy) 0%, transparent 40%),
-        radial-gradient(ellipse at 30% 80%, var(--color-secondary-transparent) 0%, transparent 40%),
-        /* Data streams (multiple layers) */
-        linear-gradient(0deg, transparent 0%, var(--color-primary-transparent) 50%, transparent 100%),
-        linear-gradient(0deg, transparent 0%, var(--color-secondary-transparent) 50%, transparent 100%),
-        linear-gradient(0deg, transparent 0%, var(--color-surface-transparent) 50%, transparent 100%);
-    background-size:
-        /* Glows */
-        150% 150%, 120% 120%,
-        /* Data streams */
-        3px 100%, 2px 100%, 1px 100%;
-    background-repeat: no-repeat, no-repeat, repeat, repeat, repeat;
-    background-position: 0 0, 0 0, 10% 0, 50% 0, 80% 0; /* Staggered start positions */
     z-index: -1;
+    /* SVG Noise Data URI */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
     pointer-events: none;
-    animation: move-glows 20s ease-in-out infinite alternate,
-               data-stream 10s linear infinite;
+    opacity: 0.6;
 }
 
-@keyframes move-glows {
-    from { background-position: 0% 50%, 50% 100%, 10% 0, 50% 0, 80% 0; }
-    to { background-position: 100% 50%, 50% 0%, 10% 0, 50% 0, 80% 0; }
+/* Layer 2: Nebula Gradients (Organic Motion) */
+body::after {
+    content: "";
+    position: fixed;
+    inset: -50%;
+    z-index: -2;
+    background: 
+        radial-gradient(circle at 50% 50%, var(--color-primary-transparent) 0%, transparent 50%),
+        radial-gradient(circle at 85% 15%, var(--color-secondary-transparent) 0%, transparent 50%),
+        radial-gradient(circle at 15% 85%, var(--color-accent-transparent) 0%, transparent 50%);
+    filter: blur(80px);
+    animation: nebula-breathe 20s ease-in-out infinite alternate;
+    opacity: 0.7;
 }
 
-@keyframes data-stream {
-    from { background-position: 0% 50%, 50% 100%, 10% 0, 50% 0, 80% 0; }
-    to {
-        background-position: 0% 50%, 50% 100%, 10% -150vh, 50% -100vh, 80% -200vh;
-    }
+@keyframes nebula-breathe {
+    0% { transform: scale(1) rotate(0deg); opacity: 0.5; }
+    50% { transform: scale(1.1) rotate(5deg); opacity: 0.7; }
+    100% { transform: scale(1) rotate(0deg); opacity: 0.5; }
 }
 
 /* --- Global Keyframe Animations --- */
@@ -150,7 +136,9 @@ body::after {
 
 #sidebar {
     width: var(--sidebar-width-collapsed);
-    background-color: var(--color-surface);
+    background-color: rgba(22, 26, 46, 0.6); /* More transparent for nebula effect */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border-right: 1px solid var(--color-border);
     transition: width var(--transition-speed-med) ease, background-color var(--transition-speed-med) ease, box-shadow var(--transition-speed-med) ease;
     flex-shrink: 0;
@@ -164,6 +152,7 @@ body::after {
 #sidebar:hover {
     width: var(--sidebar-width-expanded);
     box-shadow: 0 0 30px rgba(0,0,0,0.3);
+    background-color: rgba(22, 26, 46, 0.9);
 }
 
 #app-container {
@@ -228,6 +217,7 @@ body::after {
     width: 40px;
     flex-shrink: 0;
     transition: transform var(--transition-speed-med) ease;
+    filter: drop-shadow(0 0 8px var(--color-primary-transparent-heavy));
 }
 
 .sidebar-logo-text {
@@ -274,7 +264,7 @@ body::after {
 }
 
 .sidebar-link.active {
-    color: var(--color-primary);
+    color: var(--color-text); /* Icon keeps its color, text becomes white */
     background-color: var(--color-surface-active);
     position: relative;
 }
@@ -287,6 +277,7 @@ body::after {
     width: 4px;
     background-color: var(--color-primary);
     border-radius: 0 4px 4px 0;
+    box-shadow: 0 0 8px var(--color-primary);
 }
 
 #sidebar .sidebar-link .icon {
@@ -298,10 +289,19 @@ body::after {
     stroke: currentColor;
 }
 
+/* --- Colorful Icons --- */
+.icon-color-1 { color: #00b8d4; } /* Teal */
+.icon-color-2 { color: #d500f9; } /* Violet */
+.icon-color-3 { color: #ff4081; } /* Pink */
+.icon-color-4 { color: #ff9100; } /* Orange */
+.icon-color-5 { color: #00e676; } /* Green */
+.icon-color-6 { color: #2979ff; } /* Blue */
+
 .sidebar-link:hover .icon,
 .sidebar-link.active .icon {
     transform: scale(1.1);
-    filter: drop-shadow(0 0 5px var(--color-primary-transparent)) drop-shadow(0 0 8px var(--color-primary-transparent-heavy));
+    /* Add a glow based on the current color */
+    filter: drop-shadow(0 0 5px currentColor); 
 }
 
 .sidebar-link .text {
@@ -322,7 +322,7 @@ body::after {
     align-items: center;
     justify-content: center;
     background-color: rgba(0,0,0,0.7);
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(10px);
     z-index: 1000;
     opacity: 0;
     transition: opacity 0.4s ease;
@@ -375,18 +375,16 @@ a:hover { text-decoration: underline; }
 
 .card {
     background: var(--color-card-background, linear-gradient(145deg, var(--color-surface), hsl(from var(--color-surface) h s l+2)));
-    background-image: linear-gradient(145deg, var(--color-surface), hsl(from var(--color-surface) h s l+2)),
-                      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='10' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
     background-blend-mode: overlay;
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(15px);
+    backdrop-filter: blur(15px);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius);
     padding: var(--space-lg);
     position: relative;
     overflow: hidden;
     transition: transform var(--transition-speed-fast) ease, box-shadow var(--transition-speed-fast) ease, border-color var(--transition-speed-fast) ease;
-    box-shadow: inset 0 0 2px 0 var(--color-surface-transparent);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1), inset 0 0 2px 0 var(--color-surface-transparent);
 }
 
 .card::after {
@@ -589,11 +587,11 @@ a:hover { text-decoration: underline; }
 @media (max-width: 768px) {
     :root { --sidebar-width-collapsed: 0px; --page-padding: 1rem; --fs-h1: 2rem; }
     #app-wrapper { flex-direction: column-reverse; }
-    #sidebar { width: 100%; height: var(--bottom-nav-height); flex-direction: row; border-right: none; border-top: 1px solid var(--color-border); padding: 0; justify-content: space-around; }
+    #sidebar { width: 100%; height: var(--bottom-nav-height); flex-direction: row; border-right: none; border-top: 1px solid var(--color-border); padding: 0; justify-content: space-around; background-color: var(--color-surface); }
     #sidebar:hover { width: 100%; }
     .sidebar-logo { display: none; }
     .sidebar-link { padding: 0; justify-content: center; flex-direction: column; height: 100%; width: 100%; }
     .sidebar-link .icon { margin-right: 0; margin-bottom: 4px; }
     .sidebar-link .text { font-size: 0.7rem; opacity: 1; }
-    .sidebar-link.active::before { top: 0; left: 20%; right: 20%; bottom: auto; width: auto; height: 3px; border-radius: 0 0 3px 3px; }
+    .sidebar-link.active::before { top: 0; left: 20%; right: 20%; bottom: auto; width: auto; height: 3px; border-radius: 0 0 3px 3px; box-shadow: none; }
 }
