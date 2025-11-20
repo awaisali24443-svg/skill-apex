@@ -62,6 +62,13 @@
                 <img src="assets/icons/favicon.svg" alt="Knowledge Tester Logo" class="sidebar-logo-img">
                 <span class="sidebar-logo-text">AI Quiz Nexus</span>
             </a>
+            <!-- Boss Health Bar (Hidden by default) -->
+            <div id="boss-health-container" class="boss-health-container" style="display: none;">
+                <span class="boss-label">BOSS HP</span>
+                <div class="boss-health-bar">
+                    <div id="boss-health-fill" class="boss-health-fill" style="width: 100%;"></div>
+                </div>
+            </div>
             <div class="quiz-header-actions">
                 <button id="quit-btn" class="btn btn-danger">Quit</button>
             </div>
@@ -79,7 +86,7 @@
                     </div>
                 </div>
             </div>
-            <div class="card main-question-card">
+            <div id="question-container" class="card main-question-card">
                 <h2 id="quiz-question-text">Loading question...</h2>
                 <div id="quiz-options-container" class="options-grid">
                     <!-- Options will be injected here -->

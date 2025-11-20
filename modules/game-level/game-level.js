@@ -23,6 +23,10 @@ let xpGainedThisLevel = 0;
 let outputAudioContext = null;
 let currentAudioSource = null;
 
+// Boss Battle State
+let bossHp = 100;
+let damagePerHit = 10;
+
 const PASS_THRESHOLD = 0.8;
 const LEVELS_PER_CHAPTER = 50;
 
@@ -112,6 +116,19 @@ async function startLevel() {
 function renderLesson() {
     elements.lessonTitle.textContent = `Level ${levelContext.level}: ${levelContext.topic}`;
     elements.lessonBody.innerHTML = markdownService.render(levelData.lesson);
+    
+    // Render mermaid diagrams if any
+    if (window.mermaid) {
+        // Small timeout to ensure DOM insertion is complete before mermaid tries to find nodes
+        setTimeout(() => {
+            try {
+                mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+            } catch(e) {
+                console.error("Mermaid rendering error:", e);
+            }
+        }, 100);
+    }
+
     if(elements.readAloudBtn) elements.readAloudBtn.disabled = false;
     switchState('level-lesson-state');
 }
@@ -121,6 +138,17 @@ function startQuiz() {
     score = 0;
     userAnswers = [];
     xpGainedThisLevel = 0;
+    
+    // Boss Battle Init
+    if (levelContext.isBoss) {
+        bossHp = 100;
+        damagePerHit = 100 / levelData.questions.length;
+        elements.bossHealthContainer.style.display = 'flex';
+        elements.bossHealthFill.style.width = '100%';
+    } else {
+        elements.bossHealthContainer.style.display = 'none';
+    }
+
     renderQuestion();
     switchState('level-quiz-state');
     soundService.playSound('start');
@@ -184,6 +212,10 @@ function handleTimeUp() {
 function handleOptionClick(event) {
     const button = event.target.closest('.option-btn');
     if (answered || !button) return;
+    
+    // Tactile feedback on selection
+    soundService.playSound('click');
+
     elements.quizOptionsContainer.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
     button.classList.add('selected');
     selectedAnswerIndex = parseInt(button.dataset.index, 10);
@@ -208,10 +240,27 @@ function handleSubmitAnswer() {
         xpGainedThisLevel += xpForThisQuestion;
         soundService.playSound('correct');
         announce('Correct!');
+
+        // Boss Battle Damage Logic
+        if (levelContext.isBoss) {
+            bossHp = Math.max(0, bossHp - damagePerHit);
+            elements.bossHealthFill.style.width = `${bossHp}%`;
+            
+            // Screen Shake Effect
+            document.body.classList.add('shake');
+            setTimeout(() => document.body.classList.remove('shake'), 500);
+        }
+
     } else {
         soundService.playSound('incorrect');
         const correctAnswerText = question.options[question.correctAnswerIndex];
         announce(`Incorrect. The correct answer was: ${correctAnswerText}`);
+        
+        // Boss Battle Taking Damage Logic
+        if (levelContext.isBoss) {
+            document.body.classList.add('damage-flash');
+            setTimeout(() => document.body.classList.remove('damage-flash'), 500);
+        }
     }
 
     elements.quizOptionsContainer.querySelectorAll('.option-btn').forEach(btn => {
@@ -274,16 +323,30 @@ function showResults() {
     if (passed) {
         elements.resultsIcon.innerHTML = `<svg><use href="/assets/icons/feather-sprite.svg#check-circle"/></svg>`;
         elements.resultsIcon.className = 'results-icon passed';
-        elements.resultsTitle.textContent = `Level ${levelContext.level} Complete!`;
-        elements.resultsDetails.textContent = `You scored ${score} out of ${totalQuestions}. Great job!`;
+        
+        if (levelContext.isBoss) {
+             elements.resultsTitle.textContent = `Boss Defeated!`;
+             elements.resultsDetails.textContent = `You dealt final damage and conquered Chapter ${Math.ceil(levelContext.level / LEVELS_PER_CHAPTER)}!`;
+        } else {
+             elements.resultsTitle.textContent = `Level ${levelContext.level} Complete!`;
+             elements.resultsDetails.textContent = `You scored ${score} out of ${totalQuestions}. Great job!`;
+        }
+        
         elements.resultsActions.innerHTML = `<a href="#/game/${encodeURIComponent(levelContext.topic)}" class="btn btn-primary">Continue Journey</a> ${reviewBtnHTML}`;
         const journey = learningPathService.getJourneyById(levelContext.journeyId);
         if (journey && journey.currentLevel === levelContext.level) learningPathService.completeLevel(levelContext.journeyId);
     } else {
         elements.resultsIcon.innerHTML = `<svg><use href="/assets/icons/feather-sprite.svg#x-circle"/></svg>`;
         elements.resultsIcon.className = 'results-icon failed';
-        elements.resultsTitle.textContent = 'Keep Practicing!';
-        elements.resultsDetails.textContent = `You scored ${score} out of ${totalQuestions}. Review the lesson and try again.`;
+        
+        if (levelContext.isBoss) {
+             elements.resultsTitle.textContent = 'Boss Fight Failed';
+             elements.resultsDetails.textContent = `The boss has ${Math.ceil(bossHp)}% HP remaining. Review your strategy and try again.`;
+        } else {
+             elements.resultsTitle.textContent = 'Keep Practicing!';
+             elements.resultsDetails.textContent = `You scored ${score} out of ${totalQuestions}. Review the lesson and try again.`;
+        }
+       
         elements.resultsActions.innerHTML = `<a href="#/game/${encodeURIComponent(levelContext.topic)}" class="btn">Back to Map</a> <button id="retry-level-btn" class="btn btn-primary">Try Again</button> ${reviewBtnHTML}`;
         document.getElementById('retry-level-btn').addEventListener('click', startQuiz);
     }
@@ -307,6 +370,9 @@ async function handleQuit() {
 
 async function handleHintClick() {
     if (elements.hintBtn.disabled) return;
+    
+    soundService.playSound('click');
+    
     elements.hintBtn.disabled = true;
     elements.hintBtn.innerHTML = `<div class="btn-spinner"></div><span>Generating...</span>`;
     try {
@@ -425,6 +491,8 @@ export function init() {
         resultsDetails: document.getElementById('results-details'),
         resultsActions: document.getElementById('results-actions'),
         xpGainText: document.getElementById('xp-gain-text'),
+        bossHealthContainer: document.getElementById('boss-health-container'),
+        bossHealthFill: document.getElementById('boss-health-fill'),
     };
 
     elements.cancelBtn.addEventListener('click', () => window.history.back());

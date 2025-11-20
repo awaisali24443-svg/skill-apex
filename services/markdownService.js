@@ -6,6 +6,7 @@
  * - Bold text (e.g., **important**)
  * - Inline code (e.g., `my_function()`)
  * - Fenced code blocks (e.g., ```javascript ... ```)
+ * - Mermaid Diagrams (```mermaid ... ```)
  * @param {string} markdown - The Markdown string to parse.
  * @returns {string} The resulting HTML string.
  */
@@ -23,7 +24,12 @@ export function render(markdown) {
         if (line.trim().startsWith('```')) {
             if (inCodeBlock) {
                 // End of code block
-                html += `<pre data-lang="${codeBlockLang}"><code class="language-${codeBlockLang}">${codeBlockContent.join('\n')}</code></pre>`;
+                if (codeBlockLang === 'mermaid') {
+                    // Render as a mermaid div instead of a pre block
+                    html += `<div class="mermaid">${codeBlockContent.join('\n')}</div>`;
+                } else {
+                    html += `<pre data-lang="${codeBlockLang}"><code class="language-${codeBlockLang}">${codeBlockContent.join('\n')}</code></pre>`;
+                }
                 inCodeBlock = false;
                 codeBlockContent = [];
                 codeBlockLang = '';
@@ -40,9 +46,14 @@ export function render(markdown) {
         }
 
         if (inCodeBlock) {
-            // Basic HTML escaping for code content
-            const escapedLine = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            codeBlockContent.push(escapedLine);
+            // If mermaid, don't escape yet, let the library handle it or raw text
+            if (codeBlockLang === 'mermaid') {
+                codeBlockContent.push(line);
+            } else {
+                // Basic HTML escaping for code content
+                const escapedLine = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                codeBlockContent.push(escapedLine);
+            }
             continue;
         }
 
@@ -82,7 +93,11 @@ export function render(markdown) {
         html += '</ul>';
     }
      if (inCodeBlock) { // Close any dangling code block
-        html += `<pre data-lang="${codeBlockLang}"><code class="language-${codeBlockLang}">${codeBlockContent.join('\n')}</code></pre>`;
+         if (codeBlockLang === 'mermaid') {
+             html += `<div class="mermaid">${codeBlockContent.join('\n')}</div>`;
+         } else {
+            html += `<pre data-lang="${codeBlockLang}"><code class="language-${codeBlockLang}">${codeBlockContent.join('\n')}</code></pre>`;
+         }
     }
 
 

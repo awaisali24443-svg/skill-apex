@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,6 +21,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Inter:wght@400;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     
+    <!-- Mermaid.js for diagrams -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+
     <link id="theme-stylesheet" rel="stylesheet" href="themes/theme-dark-cyber.css">
     <link rel="stylesheet" href="global/global.css">
 <script type="importmap">
@@ -86,5 +88,16 @@
     </div>
 
     <script type="module" src="index.js"></script>
+    <script>
+        // Initialize Mermaid with a dark theme configuration
+        document.addEventListener('DOMContentLoaded', () => {
+            mermaid.initialize({ 
+                startOnLoad: false, 
+                theme: 'dark',
+                securityLevel: 'loose',
+                fontFamily: 'Inter'
+            });
+        });
+    </script>
 </body>
 </html>

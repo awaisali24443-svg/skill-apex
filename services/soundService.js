@@ -54,10 +54,38 @@ export function init(configService) {
 
 /**
  * Plays a sound if sound effects are enabled in the settings.
+ * Also triggers haptic feedback if available.
  * @param {'correct'|'incorrect'|'click'|'start'|'finish'|'hover'|'achievement'|'flip'} soundName - The name of the sound to play.
  */
 export function playSound(soundName) {
     const { enableSound } = configSvc.getConfig();
+    
+    // Haptic Feedback
+    if (navigator.vibrate) {
+        switch (soundName) {
+            case 'click':
+                navigator.vibrate(10); // Light tap
+                break;
+            case 'hover':
+                // No vibrate on hover, too annoying
+                break;
+            case 'correct':
+                navigator.vibrate([50, 30, 50]); // Double tap
+                break;
+            case 'incorrect':
+                navigator.vibrate(200); // Heavy buzz
+                break;
+            case 'achievement':
+                navigator.vibrate([100, 50, 100, 50, 100]); // Triple tap
+                break;
+            case 'start':
+            case 'finish':
+                navigator.vibrate(50);
+                break;
+        }
+    }
+
+    // Audio
     if (enableSound && sounds[soundName]) {
         sounds[soundName].currentTime = 0;
         sounds[soundName].play().catch(e => console.error("Error playing sound:", e));

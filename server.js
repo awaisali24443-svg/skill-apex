@@ -62,7 +62,7 @@ const levelGenerationSchema = {
     properties: {
         lesson: {
             type: Type.STRING,
-            description: "A very short, single-paragraph lesson for this specific level, formatted in Markdown. It should build upon previous levels and be very focused."
+            description: "A very short, single-paragraph lesson for this specific level, formatted in Markdown. If a process, flow, or hierarchy is described, you MUST include a mermaid.js diagram code block (```mermaid ... ```) to visualize it."
         },
         questions: {
             type: Type.ARRAY,
@@ -194,8 +194,9 @@ async function generateLevelContent(topic, level, totalLevels) {
     RULES:
     1. The difficulty must increase gradually. Level 1 is for complete beginners.
     2. Generate a bite-sized, single-paragraph lesson for Level ${level}. Introduce ONE new concept.
-    3. Generate 2-3 simple multiple-choice questions that test understanding of *only the concepts in this specific lesson*.
-    4. Tone: Encouraging, gamified.
+    3. VISUALIZATION: If the concept involves a process, flow, hierarchy, or relationship, you MUST include a Mermaid.js diagram code block (starting with \`\`\`mermaid) to visualize it.
+    4. Generate 2-3 simple multiple-choice questions that test understanding of *only the concepts in this specific lesson*.
+    5. Tone: Encouraging, gamified.
     
     Generate the lesson and questions based on these rules and the provided JSON schema.`;
 
