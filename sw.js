@@ -1,6 +1,7 @@
+
 /**
  * @file Service Worker for Knowledge Tester PWA
- * @version 3.3.0
+ * @version 3.3.1
  *
  * This service worker implements a robust offline-first caching strategy.
  * Key features:
@@ -17,7 +18,7 @@
 // A version number is injected into the cache name.
 // IMPORTANT: Bump this version when deploying new assets to force an update
 // of the service worker and clear old caches. This should match the app version.
-const CACHE_NAME = 'knowledge-tester-v3.3.0';
+const CACHE_NAME = 'knowledge-tester-v3.3.1';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 // The list of assets that make up the "app shell" - the minimal resources
@@ -45,14 +46,6 @@ const APP_SHELL_URLS = [
     'assets/images/icon-512.png',
     'assets/images/avatar-placeholder.png',
     'assets/images/circuit-bg.svg',
-    'assets/sounds/correct.mp3',
-    'assets/sounds/incorrect.mp3',
-    'assets/sounds/click.mp3',
-    'assets/sounds/start.mp3',
-    'assets/sounds/finish.mp3',
-    'assets/sounds/hover.mp3',
-    'assets/sounds/achievement.mp3',
-    'assets/sounds/flip.mp3',
     'https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Inter:wght@400;600&family=Roboto+Mono:wght@400;500&display=swap',
     // Core Services
     'services/apiService.js',
