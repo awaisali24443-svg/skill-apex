@@ -23,8 +23,8 @@ let xpGainedThisLevel = 0;
 let outputAudioContext = null;
 let currentAudioSource = null;
 
-const PASS_THRESHOLD = 0.8; // 80% to pass
-const LEVELS_PER_CHAPTER = 50; // Align with game-map logic
+const PASS_THRESHOLD = 0.8;
+const LEVELS_PER_CHAPTER = 50;
 
 function announce(message, polite = false) {
     const region = polite ? elements.timerAnnouncer : elements.announcer;
@@ -33,7 +33,6 @@ function announce(message, polite = false) {
     }
 }
 
-// --- Audio Utilities ---
 function decode(base64) {
     const binaryString = atob(base64);
     const len = binaryString.length;
@@ -48,7 +47,6 @@ async function decodeAudioData(data, ctx, sampleRate, numChannels) {
     const dataInt16 = new Int16Array(data.buffer, data.byteOffset, data.byteLength / 2);
     const frameCount = dataInt16.length / numChannels;
     const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
-
     for (let channel = 0; channel < numChannels; channel++) {
         const channelData = buffer.getChannelData(channel);
         for (let i = 0; i < frameCount; i++) {
@@ -57,7 +55,6 @@ async function decodeAudioData(data, ctx, sampleRate, numChannels) {
     }
     return buffer;
 }
-
 
 function switchState(targetStateId) {
     if (targetStateId !== 'level-lesson-state' && currentAudioSource) {
@@ -74,16 +71,8 @@ async function startLevel() {
         return;
     }
     
-    // Update loading screen text based on whether it's a boss battle
-    if (isBoss) {
-        elements.loadingTitle.textContent = `Boss Battle!`;
-        elements.loadingTitle.nextElementSibling.textContent = 'Prepare for a cumulative challenge!';
-    } else {
-        elements.loadingTitle.textContent = `Level ${level}: ${topic}`;
-    }
     switchState('level-loading-state');
 
-    // Check cache first. A cached boss battle will not have a 'lesson' property.
     const cachedLevel = levelCacheService.getLevel(topic, level);
     if (cachedLevel) {
         levelData = cachedLevel;
@@ -96,10 +85,8 @@ async function startLevel() {
     }
 
     if (!navigator.onLine) {
-        elements.loadingTitle.textContent = 'You are Offline';
-        elements.loadingTitle.nextElementSibling.textContent = 'This level is not cached. Please connect to the internet to play.';
-        elements.loadingTitle.parentElement.querySelector('.spinner').style.display = 'none';
-        elements.cancelBtn.textContent = 'Back to Map';
+        showToast("You are offline", "error");
+        window.history.back();
         return;
     }
     
@@ -107,27 +94,20 @@ async function startLevel() {
         if (isBoss) {
             const chapter = Math.ceil(level / LEVELS_PER_CHAPTER);
             levelData = await apiService.generateBossBattle({ topic, chapter });
-            if (!levelData || !levelData.questions || levelData.questions.length === 0) {
-                 throw new Error("AI failed to generate a valid boss battle.");
-            }
+            if (!levelData || !levelData.questions) throw new Error("AI failed to generate a valid boss battle.");
             levelCacheService.saveLevel(topic, level, levelData);
-            startQuiz(); // Boss battles go straight to the quiz
+            startQuiz();
         } else {
             levelData = await apiService.generateLevel({ topic, level, totalLevels });
-            if (!levelData || !levelData.lesson || !levelData.questions || levelData.questions.length === 0) {
-                throw new Error("AI failed to generate valid level content.");
-            }
+            if (!levelData || !levelData.lesson || !levelData.questions) throw new Error("AI failed to generate valid level content.");
             levelCacheService.saveLevel(topic, level, levelData);
             renderLesson();
         }
     } catch (error) {
-        elements.loadingTitle.textContent = 'Error';
-        elements.loadingTitle.nextElementSibling.textContent = error.message;
-        elements.loadingTitle.parentElement.querySelector('.spinner').style.display = 'none';
-        elements.cancelBtn.textContent = 'Back to Map';
+        showToast(error.message, "error");
+        window.history.back();
     }
 }
-
 
 function renderLesson() {
     elements.lessonTitle.textContent = `Level ${levelContext.level}: ${levelContext.topic}`;
@@ -140,7 +120,7 @@ function startQuiz() {
     currentQuestionIndex = 0;
     score = 0;
     userAnswers = [];
-    xpGainedThisLevel = 0; // Reset XP for the level
+    xpGainedThisLevel = 0;
     renderQuestion();
     switchState('level-quiz-state');
     soundService.playSound('start');
@@ -149,7 +129,7 @@ function startQuiz() {
 function renderQuestion() {
     answered = false;
     selectedAnswerIndex = null;
-    hintUsedThisQuestion = false; // Reset hint for new question
+    hintUsedThisQuestion = false;
     const question = levelData.questions[currentQuestionIndex];
     
     elements.quizProgressText.textContent = `Question ${currentQuestionIndex + 1} / ${levelData.questions.length}`;
@@ -162,7 +142,6 @@ function renderQuestion() {
     question.options.forEach((optionText, index) => {
         const button = document.createElement('button');
         button.className = 'btn option-btn';
-        // The letter is now handled by CSS counters
         const textSpan = document.createElement('span');
         textSpan.textContent = optionText;
         button.appendChild(textSpan);
@@ -172,12 +151,8 @@ function renderQuestion() {
 
     elements.submitAnswerBtn.disabled = true;
     elements.submitAnswerBtn.textContent = 'Submit Answer';
-    
     elements.hintBtn.disabled = false;
-    elements.hintBtn.innerHTML = `
-        <svg class="icon"><use href="/assets/icons/feather-sprite.svg#lightbulb"/></svg>
-        <span>Hint</span>
-    `;
+    elements.hintBtn.innerHTML = `<svg class="icon"><use href="/assets/icons/feather-sprite.svg#lightbulb"/></svg><span>Hint</span>`;
 
     announce(`Question ${currentQuestionIndex + 1}: ${question.question}`);
     startTimer();
@@ -191,11 +166,7 @@ function startTimer() {
         timeLeft--;
         const seconds = String(timeLeft % 60).padStart(2, '0');
         elements.timerText.textContent = `00:${seconds}`;
-        
-        if (timeLeft > 0 && timeLeft % 15 === 0) {
-            announce(`${timeLeft} seconds remaining`, true);
-        }
-
+        if (timeLeft > 0 && timeLeft % 15 === 0) announce(`${timeLeft} seconds remaining`, true);
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
             handleTimeUp();
@@ -204,22 +175,16 @@ function startTimer() {
 }
 
 function handleTimeUp() {
-    // Treat as incorrect answer and move on
     soundService.playSound('incorrect');
-    selectedAnswerIndex = -1; // Indicate no answer was selected
+    selectedAnswerIndex = -1;
     announce('Time is up.');
     handleSubmitAnswer();
 }
 
-
 function handleOptionClick(event) {
     const button = event.target.closest('.option-btn');
     if (answered || !button) return;
-
-    // Deselect others
     elements.quizOptionsContainer.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
-    
-    // Select clicked
     button.classList.add('selected');
     selectedAnswerIndex = parseInt(button.dataset.index, 10);
     elements.submitAnswerBtn.disabled = false;
@@ -251,15 +216,12 @@ function handleSubmitAnswer() {
 
     elements.quizOptionsContainer.querySelectorAll('.option-btn').forEach(btn => {
         const index = parseInt(btn.dataset.index, 10);
-        if (index === question.correctAnswerIndex) {
-            btn.classList.add('correct');
-        } else if (index === selectedAnswerIndex) {
-            btn.classList.add('incorrect');
-        }
+        if (index === question.correctAnswerIndex) btn.classList.add('correct');
+        else if (index === selectedAnswerIndex) btn.classList.add('incorrect');
         btn.disabled = true;
     });
 
-    elements.hintBtn.disabled = true; // Disable hint button after answering
+    elements.hintBtn.disabled = true;
     elements.submitAnswerBtn.textContent = currentQuestionIndex < levelData.questions.length - 1 ? 'Next Question' : 'Show Results';
     elements.submitAnswerBtn.disabled = false;
     elements.submitAnswerBtn.focus();
@@ -294,7 +256,7 @@ function showResults() {
         topic: `${levelContext.topic} - Level ${levelContext.level}`,
         score: score,
         totalQuestions: totalQuestions,
-        startTime: Date.now() - (totalQuestions * 60000), // Approximate
+        startTime: Date.now() - (totalQuestions * 60000),
         endTime: Date.now(),
         xpGained: xpGainedThisLevel,
     });
@@ -313,29 +275,17 @@ function showResults() {
         elements.resultsIcon.innerHTML = `<svg><use href="/assets/icons/feather-sprite.svg#check-circle"/></svg>`;
         elements.resultsIcon.className = 'results-icon passed';
         elements.resultsTitle.textContent = `Level ${levelContext.level} Complete!`;
-        const resultText = `You scored ${score} out of ${totalQuestions}. Great job!`;
-        elements.resultsDetails.textContent = resultText;
+        elements.resultsDetails.textContent = `You scored ${score} out of ${totalQuestions}. Great job!`;
         elements.resultsActions.innerHTML = `<a href="#/game/${encodeURIComponent(levelContext.topic)}" class="btn btn-primary">Continue Journey</a> ${reviewBtnHTML}`;
-        
-        announce(`Level Complete! ${resultText}`);
-
         const journey = learningPathService.getJourneyById(levelContext.journeyId);
-        if (journey && journey.currentLevel === levelContext.level) {
-            learningPathService.completeLevel(levelContext.journeyId);
-        }
+        if (journey && journey.currentLevel === levelContext.level) learningPathService.completeLevel(levelContext.journeyId);
     } else {
         elements.resultsIcon.innerHTML = `<svg><use href="/assets/icons/feather-sprite.svg#x-circle"/></svg>`;
         elements.resultsIcon.className = 'results-icon failed';
         elements.resultsTitle.textContent = 'Keep Practicing!';
-        const resultText = `You scored ${score} out of ${totalQuestions}. Review the lesson and try again.`;
-        elements.resultsDetails.textContent = resultText;
-        elements.resultsActions.innerHTML = `
-            <a href="#/game/${encodeURIComponent(levelContext.topic)}" class="btn">Back to Map</a>
-            <button id="retry-level-btn" class="btn btn-primary">Try Again</button>
-            ${reviewBtnHTML}
-        `;
+        elements.resultsDetails.textContent = `You scored ${score} out of ${totalQuestions}. Review the lesson and try again.`;
+        elements.resultsActions.innerHTML = `<a href="#/game/${encodeURIComponent(levelContext.topic)}" class="btn">Back to Map</a> <button id="retry-level-btn" class="btn btn-primary">Try Again</button> ${reviewBtnHTML}`;
         document.getElementById('retry-level-btn').addEventListener('click', startQuiz);
-        announce(`Quiz finished. ${resultText}`);
     }
     
     document.getElementById('review-answers-btn').addEventListener('click', handleReviewAnswers);
@@ -357,34 +307,37 @@ async function handleQuit() {
 
 async function handleHintClick() {
     if (elements.hintBtn.disabled) return;
-
     elements.hintBtn.disabled = true;
     elements.hintBtn.innerHTML = `<div class="btn-spinner"></div><span>Generating...</span>`;
-
     try {
         const question = levelData.questions[currentQuestionIndex];
-        const hintData = await apiService.generateHint({
-            topic: levelContext.topic,
-            question: question.question,
-            options: question.options
-        });
-
+        const hintData = await apiService.generateHint({ topic: levelContext.topic, question: question.question, options: question.options });
         if (hintData && hintData.hint) {
-            showToast(`Hint: ${hintData.hint}`, 'info', 5000); // Show for 5 seconds
+            showToast(`Hint: ${hintData.hint}`, 'info', 5000);
             hintUsedThisQuestion = true;
-        } else {
-            throw new Error("Received an empty hint from the AI.");
         }
     } catch (error) {
         showToast(error.message, 'error');
-        // Re-enable the button if hint generation fails
         elements.hintBtn.disabled = false;
     } finally {
-        // Restore button text but keep it disabled for this question
-        elements.hintBtn.innerHTML = `
-            <svg class="icon"><use href="/assets/icons/feather-sprite.svg#lightbulb"/></svg>
-            <span>Hint</span>
-        `;
+        elements.hintBtn.innerHTML = `<svg class="icon"><use href="/assets/icons/feather-sprite.svg#lightbulb"/></svg><span>Hint</span>`;
+    }
+}
+
+async function handleAskAI() {
+    const selection = window.getSelection().toString().trim();
+    const concept = selection || prompt("What concept would you like explained?");
+    
+    if (!concept) return;
+
+    elements.askAiContainer.style.display = 'block';
+    elements.askAiAnswer.innerHTML = '<div class="spinner"></div> Analyzing...';
+    
+    try {
+        const result = await apiService.explainConcept(levelContext.topic, concept, levelData.lesson);
+        elements.askAiAnswer.textContent = result.explanation;
+    } catch (e) {
+        elements.askAiAnswer.textContent = "Could not generate explanation. Please try again.";
     }
 }
 
@@ -393,7 +346,6 @@ async function handleReadAloudClick() {
         stopAudio();
         return;
     }
-
     const btn = elements.readAloudBtn;
     const originalContent = btn.innerHTML;
     btn.disabled = true;
@@ -402,40 +354,25 @@ async function handleReadAloudClick() {
 
     try {
         const lessonText = elements.lessonBody.textContent;
-        if (!lessonText.trim()) {
-            throw new Error("No text to read.");
-        }
-
         const response = await apiService.generateSpeech(lessonText);
         const audioData = response.audioContent;
         
-        if (!outputAudioContext) {
-            outputAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
-        } else if (outputAudioContext.state === 'suspended') {
-            await outputAudioContext.resume();
-        }
+        if (!outputAudioContext) outputAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+        else if (outputAudioContext.state === 'suspended') await outputAudioContext.resume();
 
         const decoded = decode(audioData);
         const audioBuffer = await decodeAudioData(decoded, outputAudioContext, 24000, 1);
-        
         currentAudioSource = outputAudioContext.createBufferSource();
         currentAudioSource.buffer = audioBuffer;
         currentAudioSource.connect(outputAudioContext.destination);
-        
-        currentAudioSource.onended = () => {
-            stopAudio();
-        };
-        
+        currentAudioSource.onended = () => stopAudio();
         currentAudioSource.start();
-        soundService.playSound('click');
         
         btn.disabled = false;
         btn.innerHTML = `<svg class="icon"><use href="/assets/icons/feather-sprite.svg#square"/></svg> <span>Stop</span>`;
         btn.classList.remove('loading');
         btn.classList.add('playing');
-
     } catch (error) {
-        console.error("Error generating or playing speech:", error);
         showToast(error.message, 'error');
         btn.innerHTML = originalContent;
         btn.disabled = false;
@@ -449,7 +386,6 @@ function stopAudio() {
         currentAudioSource.disconnect();
         currentAudioSource = null;
     }
-    
     const btn = elements.readAloudBtn;
     if (btn) {
         btn.classList.remove('loading', 'playing');
@@ -458,27 +394,23 @@ function stopAudio() {
     }
 }
 
-function goHome() {
-    window.location.hash = `/#/`;
-}
-
 export function init() {
     const { navigationContext } = stateService.getState();
     levelContext = navigationContext;
 
     elements = {
-        // Announcers
         announcer: document.getElementById('announcer-region'),
         timerAnnouncer: document.getElementById('timer-announcer-region'),
-        // Loading
         loadingTitle: document.getElementById('loading-title'),
         cancelBtn: document.getElementById('cancel-generation-btn'),
-        // Lesson
         lessonTitle: document.getElementById('lesson-title'),
         lessonBody: document.getElementById('lesson-body'),
         startQuizBtn: document.getElementById('start-quiz-btn'),
         readAloudBtn: document.getElementById('read-aloud-btn'),
-        // Quiz
+        askAiBtn: document.getElementById('ask-ai-btn'),
+        askAiContainer: document.getElementById('ask-ai-container'),
+        askAiAnswer: document.getElementById('ask-ai-answer'),
+        closeAskAiBtn: document.getElementById('close-ask-ai-btn'),
         quitBtn: document.getElementById('quit-btn'),
         homeBtn: document.getElementById('home-btn'),
         hintBtn: document.getElementById('hint-btn'),
@@ -488,7 +420,6 @@ export function init() {
         quizQuestionText: document.getElementById('quiz-question-text'),
         quizOptionsContainer: document.getElementById('quiz-options-container'),
         submitAnswerBtn: document.getElementById('submit-answer-btn'),
-        // Results
         resultsIcon: document.getElementById('results-icon'),
         resultsTitle: document.getElementById('results-title'),
         resultsDetails: document.getElementById('results-details'),
@@ -499,11 +430,13 @@ export function init() {
     elements.cancelBtn.addEventListener('click', () => window.history.back());
     elements.startQuizBtn.addEventListener('click', startQuiz);
     elements.readAloudBtn.addEventListener('click', handleReadAloudClick);
-    elements.readAloudBtn.disabled = true; // Disable until lesson is loaded
+    elements.readAloudBtn.disabled = true;
+    elements.askAiBtn.addEventListener('click', handleAskAI);
+    elements.closeAskAiBtn.addEventListener('click', () => elements.askAiContainer.style.display = 'none');
     elements.quizOptionsContainer.addEventListener('click', handleOptionClick);
     elements.submitAnswerBtn.addEventListener('click', handleSubmitAnswer);
     elements.quitBtn.addEventListener('click', handleQuit);
-    elements.homeBtn.addEventListener('click', goHome);
+    elements.homeBtn.addEventListener('click', () => window.location.hash = '/#/');
     elements.hintBtn.addEventListener('click', handleHintClick);
 
     startLevel();
@@ -513,7 +446,7 @@ export function destroy() {
     clearInterval(timerInterval);
     stopAudio();
     if (outputAudioContext) {
-        outputAudioContext.close().catch(e => console.error("Error closing AudioContext:", e));
+        outputAudioContext.close().catch(e => console.error(e));
         outputAudioContext = null;
     }
 }

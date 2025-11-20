@@ -15,7 +15,12 @@
 
 <template id="review-item-template">
     <div class="card review-item">
-        <h2 class="review-question-text"></h2>
+        <div class="review-header-row">
+             <h2 class="review-question-text"></h2>
+             <button class="btn save-question-btn" title="Save to Library">
+                 <svg class="icon"><use href="/assets/icons/feather-sprite.svg#book"/></svg>
+             </button>
+        </div>
         <div class="review-options">
             <!-- Options will be injected here -->
         </div>

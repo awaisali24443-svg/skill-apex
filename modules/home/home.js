@@ -1,5 +1,3 @@
-
-
 import { FEATURES } from '../../constants.js';
 import * as gamificationService from '../../services/gamificationService.js';
 import * as historyService from '../../services/historyService.js';
@@ -20,6 +18,30 @@ function renderStreak() {
     } else {
         streakCounter.style.display = 'none';
     }
+}
+
+function renderDailyQuests() {
+    const quests = gamificationService.getDailyQuests();
+    const container = document.getElementById('daily-quests-container');
+    const list = document.getElementById('daily-quests-list');
+    
+    if (!quests || quests.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+
+    list.innerHTML = quests.map(quest => `
+        <div class="quest-item ${quest.completed ? 'completed' : ''}">
+            <div class="quest-info">
+                <div class="quest-icon">
+                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#${quest.completed ? 'check-circle' : 'circle'}"/></svg>
+                </div>
+                <span class="quest-text">${quest.text}</span>
+            </div>
+            <span class="quest-xp">+${quest.xp} XP</span>
+        </div>
+    `).join('');
+    container.style.display = 'block';
 }
 
 function renderPrimaryAction() {
@@ -76,6 +98,7 @@ function renderRecentHistory() {
 
 export function init() {
     renderStreak();
+    renderDailyQuests();
     renderPrimaryAction();
     renderRecentHistory();
 }

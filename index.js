@@ -1,6 +1,3 @@
-
-
-
 import { ROUTES, LOCAL_STORAGE_KEYS } from './constants.js';
 import * as configService from './services/configService.js';
 import { renderSidebar } from './services/sidebarService.js';
@@ -12,16 +9,9 @@ import * as themeService from './services/themeService.js';
 import * as gamificationService from './services/gamificationService.js';
 import * as stateService from './services/stateService.js';
 
-// Caches loaded modules to avoid redundant network requests.
 const moduleCache = new Map();
-let currentModule = null; // To track the current module for destroy()
+let currentModule = null;
 
-/**
- * Fetches the HTML, CSS, and JS for a given module.
- * Caches the module artifacts for subsequent loads.
- * @param {string} moduleName - The name of the module to load.
- * @returns {Promise<object>} An object containing the module's html, css, and js module.
- */
 async function fetchModule(moduleName) {
     if (moduleCache.has(moduleName)) {
         return moduleCache.get(moduleName);
@@ -41,13 +31,6 @@ async function fetchModule(moduleName) {
     }
 }
 
-
-/**
- * Matches a given path (e.g., from location.hash) to a defined route.
- * Supports dynamic route parameters like '/learning-path/:id'.
- * @param {string} path - The path to match.
- * @returns {object|null} The matched route object with params, or null if no match.
- */
 function matchRoute(path) {
     for (const route of ROUTES) {
         const paramNames = [];
@@ -69,18 +52,10 @@ function matchRoute(path) {
     return null;
 }
 
-/**
- * Core function to load and render a module into the DOM.
- * Handles module lifecycle (destroying old, initializing new), styling, and page transitions.
- * @param {object} route - The route object returned by matchRoute.
- */
 async function loadModule(route) {
     const appContainer = document.getElementById('app');
     if (!appContainer) return;
 
-    const styleTagId = 'module-style';
-
-    // 1. Destroy the previous module if it has a destroy function.
     if (currentModule && currentModule.js.destroy) {
         try {
             currentModule.js.destroy();
@@ -89,93 +64,84 @@ async function loadModule(route) {
         }
     }
 
-    // 2. Animate the page out using a more robust method.
-    await new Promise(resolve => {
-        const handler = (event) => {
-            // Ensure the event is for the appContainer itself
-            if (event.target === appContainer) {
-                appContainer.removeEventListener('transitionend', handler);
-                resolve();
+    const renderNewModule = async () => {
+        try {
+            stateService.setCurrentRoute(route);
+            const moduleData = await fetchModule(route.module);
+            currentModule = moduleData;
+
+            appContainer.innerHTML = '';
+            document.getElementById('app-container')?.classList.toggle('full-bleed-container', !!route.fullBleed);
+            
+            let styleTag = document.getElementById('module-style');
+            if (!styleTag) {
+                styleTag = document.createElement('style');
+                styleTag.id = 'module-style';
+                document.head.appendChild(styleTag);
             }
-        };
-        appContainer.addEventListener('transitionend', handler);
-        appContainer.classList.add('fade-out');
-        // Fallback timer in case transitionend doesn't fire (e.g., element is hidden)
-        setTimeout(resolve, 350);
-    });
+            styleTag.textContent = moduleData.css;
 
-    try {
-        // Update the route in the state service. This makes params available to the new module.
-        stateService.setCurrentRoute(route);
+            appContainer.innerHTML = moduleData.html;
 
-        // 3. Fetch the new module's assets.
-        const moduleData = await fetchModule(route.module);
-        currentModule = moduleData;
-
-        // 4. Prepare the DOM for the new module.
-        appContainer.innerHTML = '';
-        document.getElementById('app-container')?.classList.toggle('full-bleed-container', !!route.fullBleed);
-        
-        // 5. Apply module-specific styles.
-        let styleTag = document.getElementById(styleTagId);
-        if (!styleTag) {
-            styleTag = document.createElement('style');
-            styleTag.id = styleTagId;
-            document.head.appendChild(styleTag);
-        }
-        styleTag.textContent = moduleData.css;
-
-        // 6. Inject the module's HTML.
-        appContainer.innerHTML = moduleData.html;
-
-        // 7. Initialize the new module's JavaScript.
-        if (moduleData.js.init) {
-            await moduleData.js.init();
-        }
-        
-        // After module init, clear one-time navigation context.
-        stateService.clearNavigationContext();
-
-        // 8. Update the active state in the sidebar navigation.
-        document.querySelectorAll('.sidebar-link').forEach(link => {
-            link.classList.remove('active');
-            // Use startsWith to handle dynamic routes like /learning-path/:id
-            const linkPath = link.getAttribute('href')?.slice(1) || '';
-            if (route.path.startsWith(linkPath) && (linkPath !== '/' || route.path === '/')) {
-                link.classList.add('active');
+            if (moduleData.js.init) {
+                await moduleData.js.init();
             }
+            
+            stateService.clearNavigationContext();
+
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.remove('active');
+                const linkPath = link.getAttribute('href')?.slice(1) || '';
+                if (route.path.startsWith(linkPath) && (linkPath !== '/' || route.path === '/')) {
+                    link.classList.add('active');
+                }
+            });
+            
+            document.getElementById('app-container').scrollTop = 0;
+
+            const mainHeading = appContainer.querySelector('h1');
+            if (mainHeading) {
+                mainHeading.setAttribute('tabindex', '-1');
+                mainHeading.focus({ preventScroll: true });
+            }
+
+        } catch (error) {
+            console.error("Failed to load module:", error);
+            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+            appContainer.innerHTML = `
+                <div class="error-page card">
+                    <h2>Error Loading Module</h2>
+                    <p>${errorMessage}</p>
+                    <a href="#" class="btn">Go Home</a>
+                </div>
+            `;
+        }
+    };
+
+    // View Transitions API
+    if (document.startViewTransition) {
+        const transition = document.startViewTransition(async () => {
+             await renderNewModule();
+        });
+    } else {
+        // Fallback for older browsers
+        await new Promise(resolve => {
+            const handler = (event) => {
+                if (event.target === appContainer) {
+                    appContainer.removeEventListener('transitionend', handler);
+                    resolve();
+                }
+            };
+            appContainer.addEventListener('transitionend', handler);
+            appContainer.classList.add('fade-out');
+            setTimeout(resolve, 350);
         });
         
-        // Reset scroll position for the new view.
-        document.getElementById('app-container').scrollTop = 0;
-
-        // Accessibility: Set focus to the main heading of the new page
-        const mainHeading = appContainer.querySelector('h1');
-        if (mainHeading) {
-            mainHeading.setAttribute('tabindex', '-1'); // Make it focusable programmatically
-            mainHeading.focus({ preventScroll: true }); // Prevent scroll jump
-        }
-
-
-    } catch (error) {
-        console.error("Failed to load module:", error);
-        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
-        appContainer.innerHTML = `
-            <div class="error-page card">
-                <h2>Error Loading Module</h2>
-                <p>${errorMessage}</p>
-                <a href="#" class="btn">Go Home</a>
-            </div>
-        `;
-    } finally {
-        // 9. Animate the new page in.
+        await renderNewModule();
         appContainer.classList.remove('fade-out');
     }
 }
 
-/**
- * Handles the hashchange event to navigate between modules.
- */
 function handleRouteChange() {
     const path = window.location.hash.slice(1) || '/';
     const route = matchRoute(path);
@@ -183,34 +149,24 @@ function handleRouteChange() {
     if (route) {
         loadModule(route);
     } else {
-        // Handle 404 by redirecting to the home page.
         const homeRoute = ROUTES.find(r => r.path === '/');
         if(homeRoute) {
             loadModule(homeRoute);
         }
-        console.warn(`No route found for path: ${path}. Redirecting to home.`);
     }
 }
 
-/**
- * Applies global settings from the config object to the DOM.
- * @param {object} config - The application configuration object.
- */
 function applyAppSettings(config) {
     themeService.applyTheme(config.theme);
     themeService.applyAnimationSetting(config.animationIntensity);
 }
 
-/**
- * Shows the one-time welcome screen for new users.
- */
 function showWelcomeScreen() {
     const welcomeScreen = document.getElementById('welcome-screen');
     const startBtn = document.getElementById('welcome-get-started-btn');
     if (!welcomeScreen || !startBtn) return;
 
     welcomeScreen.style.display = 'flex';
-    // Use a timeout to allow the display property to apply before adding the class for transition
     setTimeout(() => {
         welcomeScreen.classList.add('visible');
     }, 10);
@@ -223,7 +179,6 @@ function showWelcomeScreen() {
             welcomeScreen.remove();
         }, { once: true });
         
-        // Fallback removal
         setTimeout(() => {
             if (document.body.contains(welcomeScreen)) {
                 welcomeScreen.remove();
@@ -232,51 +187,36 @@ function showWelcomeScreen() {
     }, { once: true });
 }
 
-
-/**
- * The main entry point for the application.
- * Initializes services, renders static UI, sets up routing, and hides the splash screen.
- */
 async function main() {
     try {
-        // Initialize all core services
         configService.init();
-        applyAppSettings(configService.getConfig()); // Apply theme & animations on startup
+        applyAppSettings(configService.getConfig());
         soundService.init(configService);
         learningPathService.init();
         historyService.init();
         gamificationService.init();
         stateService.initState();
 
-        // Register service worker for PWA capabilities and offline functionality.
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('Service Worker registered', reg))
-                    .catch(err => console.error('Service Worker registration failed', err));
+                navigator.serviceWorker.register('sw.js');
             });
         }
 
-        // Render static UI elements like the sidebar.
         renderSidebar(document.getElementById('sidebar'));
 
-        // Set up event listeners for routing and global settings changes.
         window.addEventListener('hashchange', handleRouteChange);
         window.addEventListener('settings-changed', (e) => applyAppSettings(e.detail));
         window.addEventListener('achievement-unlocked', () => {
             soundService.playSound('achievement');
         });
 
-        
-        // Global click sound handler
         document.body.addEventListener('click', (event) => {
-            // Play sound for specific interactive elements
             if (event.target.closest('.btn, .sidebar-link, .topic-button, .option-btn, .flashcard, .topic-card')) {
                 soundService.playSound('click');
             }
         });
         
-        // Global hover sound handler
         document.body.addEventListener('mouseover', (event) => {
             const target = event.target;
             if (target.closest('.btn:not(:disabled), .sidebar-link, .topic-card, .level-card:not(.locked), .chapter-card:not(.locked), .flashcard')) {
@@ -284,8 +224,6 @@ async function main() {
             }
         });
 
-
-        // Offline status indicator
         const offlineIndicator = document.getElementById('offline-indicator');
         function updateOnlineStatus() {
             if (offlineIndicator) {
@@ -298,19 +236,14 @@ async function main() {
         }
         window.addEventListener('online', updateOnlineStatus);
         window.addEventListener('offline', updateOnlineStatus);
-        updateOnlineStatus(); // Initial check
+        updateOnlineStatus();
 
-
-        // Initial page load. Data is now fetched by modules on-demand.
         handleRouteChange();
 
-
-        // Hide and then remove the splash screen once the app is ready.
         const splashScreen = document.getElementById('splash-screen');
         if (splashScreen) {
             const onTransitionEnd = () => {
                 splashScreen.remove();
-                // Check if we need to show the welcome screen
                 const hasBeenWelcomed = localStorage.getItem(LOCAL_STORAGE_KEYS.WELCOME_COMPLETED);
                 if (!hasBeenWelcomed) {
                     showWelcomeScreen();
@@ -319,12 +252,11 @@ async function main() {
             splashScreen.addEventListener('transitionend', onTransitionEnd, { once: true });
             splashScreen.classList.add('hidden');
             
-            // Fallback in case transitionend doesn't fire (e.g., animations disabled)
             setTimeout(() => {
                 if (document.body.contains(splashScreen)) {
                      onTransitionEnd();
                 }
-            }, 600); // Duration should be slightly longer than the CSS transition
+            }, 600);
         }
 
     } catch (error) {
@@ -333,5 +265,4 @@ async function main() {
     }
 }
 
-// Start the application.
 main();

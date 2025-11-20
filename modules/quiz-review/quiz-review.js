@@ -1,4 +1,6 @@
 import * as stateService from '../../services/stateService.js';
+import * as libraryService from '../../services/libraryService.js';
+import * as gamificationService from '../../services/gamificationService.js';
 
 let context;
 let elements = {};
@@ -8,7 +10,7 @@ function render() {
     elements.subtitle.textContent = context.topic;
     elements.backBtn.href = `#/game/${encodeURIComponent(context.topic)}`;
 
-    elements.content.innerHTML = ''; // Clear previous content
+    elements.content.innerHTML = '';
 
     context.questions.forEach((question, index) => {
         const itemNode = elements.template.content.cloneNode(true);
@@ -16,6 +18,35 @@ function render() {
         
         itemEl.querySelector('.review-question-text').textContent = question.question;
         itemEl.querySelector('.review-explanation p').textContent = question.explanation;
+        
+        const saveBtn = itemEl.querySelector('.save-question-btn');
+        if (libraryService.isQuestionSaved(question)) {
+            saveBtn.classList.add('saved');
+        }
+
+        saveBtn.addEventListener('click', () => {
+            // Optimistic UI Toggle
+            const isSaved = saveBtn.classList.contains('saved');
+            
+            if (isSaved) {
+                // Remove logic (not fully implemented in library service by object yet, so assume add only for this quest context usually)
+                // But for now, let's just support saving.
+                saveBtn.classList.remove('saved');
+                const id = libraryService.hashQuestion(question.question);
+                libraryService.removeQuestion(id);
+            } else {
+                saveBtn.classList.add('saved');
+                // Pop animation
+                saveBtn.animate([
+                    { transform: 'scale(1)' },
+                    { transform: 'scale(1.4)' },
+                    { transform: 'scale(1)' }
+                ], { duration: 300 });
+                
+                libraryService.saveQuestion(question);
+                gamificationService.checkQuestProgress({ type: 'save_question' });
+            }
+        });
         
         const optionsContainer = itemEl.querySelector('.review-options');
         const userAnswer = context.userAnswers[index];
@@ -35,7 +66,6 @@ function render() {
                 optionEl.classList.add('incorrect');
                 iconHtml = `<svg class="icon"><use href="/assets/icons/feather-sprite.svg#x-circle"/></svg>`;
             } else {
-                // Neutral state for other incorrect options
                 iconHtml = `<svg class="icon" style="color: var(--color-text-secondary);"><use href="/assets/icons/feather-sprite.svg#circle"/></svg>`;
             }
             
@@ -51,9 +81,7 @@ export function init() {
     const { navigationContext } = stateService.getState();
     context = navigationContext;
 
-    // Guard against direct navigation to this page
     if (!context || !context.questions || !context.userAnswers) {
-        console.warn('No review context found, redirecting to home.');
         window.location.hash = '/';
         return;
     }
@@ -69,6 +97,4 @@ export function init() {
     render();
 }
 
-export function destroy() {
-    // No event listeners to clean up
-}
+export function destroy() {}

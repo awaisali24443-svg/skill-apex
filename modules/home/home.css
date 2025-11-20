@@ -29,7 +29,7 @@
 .streak-counter svg {
     width: 20px;
     height: 20px;
-    color: #ff9800; /* Orange color for the flame */
+    color: #ff9800;
 }
 
 /* New Dashboard Layout */
@@ -56,6 +56,55 @@
     padding-left: var(--space-sm);
     color: var(--color-text-secondary);
     font-size: 1.1rem;
+}
+
+/* Quests Styles */
+.quests-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.quest-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-sm);
+    border-radius: var(--border-radius);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    transition: all 0.2s ease;
+}
+
+.quest-item.completed {
+    border-color: var(--color-success);
+    background-color: var(--color-success-bg);
+}
+
+.quest-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.quest-icon {
+    color: var(--color-text-secondary);
+}
+.quest-item.completed .quest-icon {
+    color: var(--color-success);
+}
+
+.quest-text {
+    font-weight: 500;
+}
+
+.quest-xp {
+    font-family: var(--font-family-mono);
+    font-size: var(--fs-sm);
+    color: var(--color-primary);
+    background: var(--color-primary-transparent);
+    padding: 2px 6px;
+    border-radius: 4px;
 }
 
 .home-card {
@@ -106,7 +155,6 @@
     margin-bottom: 0;
 }
 
-/* Dashboard Sidebar Cards */
 .dashboard-card, .dashboard-card-small {
     text-decoration: none;
     color: var(--color-text);

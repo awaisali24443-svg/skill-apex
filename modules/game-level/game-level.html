@@ -2,13 +2,23 @@
     <div class="sr-only" id="announcer-region" role="alert" aria-live="assertive"></div>
     <div class="sr-only" id="timer-announcer-region" role="status" aria-live="polite"></div>
     
-    <!-- State 1: Loading -->
+    <!-- State 1: Loading (Skeleton) -->
     <div id="level-loading-state" class="game-level-state active">
-        <div class="state-content">
-            <h1 id="loading-title"></h1>
-            <p>The AI is crafting your next challenge...</p>
-            <div class="spinner"></div>
-            <button id="cancel-generation-btn" class="btn">Cancel</button>
+        <div class="state-content card">
+             <div class="skeleton-header">
+                <div class="skeleton" style="width: 60%; height: 32px; margin-bottom: 20px;"></div>
+             </div>
+             <div class="skeleton-body">
+                <div class="skeleton" style="width: 100%; height: 16px; margin-bottom: 10px;"></div>
+                <div class="skeleton" style="width: 90%; height: 16px; margin-bottom: 10px;"></div>
+                <div class="skeleton" style="width: 95%; height: 16px; margin-bottom: 10px;"></div>
+                <div class="skeleton" style="width: 80%; height: 16px; margin-bottom: 20px;"></div>
+                <div class="skeleton" style="width: 40%; height: 40px;"></div>
+             </div>
+             <div id="loading-text-container" style="margin-top: 20px;">
+                 <p>The AI is crafting your next challenge...</p>
+                 <button id="cancel-generation-btn" class="btn">Cancel</button>
+             </div>
         </div>
     </div>
 
@@ -19,7 +29,20 @@
                 <h1 id="lesson-title"></h1>
             </header>
             <main id="lesson-body" class="lesson-body"></main>
+            
+            <div id="ask-ai-container" class="ask-ai-container" style="display:none;">
+                <div class="ask-ai-content">
+                    <h3>AI Deep Dive</h3>
+                    <p id="ask-ai-answer"></p>
+                    <button id="close-ask-ai-btn" class="btn">Close</button>
+                </div>
+            </div>
+
             <footer class="lesson-footer">
+                <button id="ask-ai-btn" class="btn" title="Select text to ask about it">
+                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#search"/></svg>
+                    <span>Deep Dive</span>
+                </button>
                 <button id="read-aloud-btn" class="btn">
                     <svg class="icon"><use href="/assets/icons/feather-sprite.svg#volume-2"/></svg>
                     <span>Read Aloud</span>
@@ -32,7 +55,7 @@
         </div>
     </div>
 
-    <!-- State 3: Quiz (New Design) -->
+    <!-- State 3: Quiz -->
     <div id="level-quiz-state" class="game-level-state">
         <header class="new-quiz-header">
             <a href="/#/" class="sidebar-logo" aria-label="Knowledge Tester Home">
@@ -41,7 +64,6 @@
             </a>
             <div class="quiz-header-actions">
                 <button id="quit-btn" class="btn btn-danger">Quit</button>
-                <img src="assets/images/avatar-placeholder.png" alt="User Avatar" class="profile-avatar">
             </div>
         </header>
         <div class="new-quiz-content">

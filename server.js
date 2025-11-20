@@ -114,14 +114,20 @@ const hintGenerationSchema = {
     required: ["hint"]
 };
 
+const explanationSchema = {
+    type: Type.OBJECT,
+    properties: {
+        explanation: {
+            type: Type.STRING,
+            description: "A clear, Socratic explanation of the concept. Use an analogy if possible."
+        }
+    },
+    required: ["explanation"]
+};
+
 
 // --- GEMINI SERVICE FUNCTIONS ---
 
-/**
- * Analyzes a topic to determine the optimal number of levels for a learning journey.
- * @param {string} topic - The topic to analyze.
- * @returns {Promise<object>} An object with totalLevels and description.
- */
 async function generateJourneyPlan(topic) {
     if (!ai) throw new Error("AI Service not initialized.");
     const prompt = `You are an expert curriculum designer. Analyze the topic "${topic}".
@@ -147,16 +153,10 @@ async function generateJourneyPlan(topic) {
         return JSON.parse(response.text);
     } catch (error) {
         console.error(`Gemini API Error (Journey Plan for ${topic}):`, error);
-        throw new Error('Failed to generate a learning plan. The AI may be busy or the topic is restricted.');
+        throw new Error('Failed to generate a learning plan.');
     }
 }
 
-/**
- * Generates a curriculum outline for a topic.
- * @param {string} topic - The topic for the curriculum.
- * @param {number} totalLevels - The total number of levels for the journey.
- * @returns {Promise<object>} An object with an array of chapter titles.
- */
 async function generateCurriculumOutline(topic, totalLevels) {
     if (!ai) throw new Error("AI Service not initialized.");
     const numChapters = Math.ceil(totalLevels / 50);
@@ -166,8 +166,8 @@ async function generateCurriculumOutline(topic, totalLevels) {
     
     RULES:
     1. Provide an array of exactly ${numChapters} chapter titles.
-    2. Each title should be concise and descriptive, representing a major unit of study.
-    3. The chapters must be in a logical, progressive order, from beginner to advanced.
+    2. Each title should be concise and descriptive.
+    3. The chapters must be in a logical, progressive order.
     
     Return the list of chapter titles in the provided JSON schema.`;
     
@@ -187,23 +187,15 @@ async function generateCurriculumOutline(topic, totalLevels) {
     }
 }
 
-
-/**
- * Generates a game level (lesson + quiz) using the Gemini API.
- * @param {string} topic - The overall topic.
- * @param {number} level - The current level number.
- * @param {number} totalLevels - The total levels in this journey.
- * @returns {Promise<object>} The parsed level data.
- */
 async function generateLevelContent(topic, level, totalLevels) {
     if (!ai) throw new Error("AI Service not initialized.");
-    const prompt = `You are a friendly and encouraging AI tutor creating a ${totalLevels}-level learning game about "${topic}". The user is on Level ${level} and is a complete beginner.
+    const prompt = `You are a friendly and encouraging AI tutor creating a ${totalLevels}-level learning game about "${topic}". The user is on Level ${level}.
     
     RULES:
-    1. The difficulty must increase extremely gradually from Level 1 to ${totalLevels}. Level 1 must be incredibly simple, assuming zero prior knowledge. For example, for "C++", Level 1 should explain what a programming language is, who created C++, and its primary purpose. Level ${totalLevels} should cover expert-level concepts.
-    2. Generate a bite-sized, single-paragraph lesson for Level ${level}. This lesson MUST build upon the knowledge of the previous levels and introduce ONE new, small concept.
+    1. The difficulty must increase gradually. Level 1 is for complete beginners.
+    2. Generate a bite-sized, single-paragraph lesson for Level ${level}. Introduce ONE new concept.
     3. Generate 2-3 simple multiple-choice questions that test understanding of *only the concepts in this specific lesson*.
-    4. Your tone must be super encouraging, like a game.
+    4. Tone: Encouraging, gamified.
     
     Generate the lesson and questions based on these rules and the provided JSON schema.`;
 
@@ -219,29 +211,23 @@ async function generateLevelContent(topic, level, totalLevels) {
         return JSON.parse(response.text);
     } catch (error) {
         console.error(`Gemini API Error (Level ${level} Generation for ${topic}):`, error);
-        throw new Error('Failed to generate the next level. The AI may be busy or the topic is restricted.');
+        throw new Error('Failed to generate the next level.');
     }
 }
 
-/**
- * Generates a cumulative "Boss Battle" quiz for a chapter.
- * @param {string} topic - The overall topic.
- * @param {number} chapter - The chapter number.
- * @returns {Promise<object>} The parsed boss battle data.
- */
 async function generateBossBattleContent(topic, chapter) {
     if (!ai) throw new Error("AI Service not initialized.");
     const startLevel = (chapter - 1) * 50 + 1;
     const endLevel = chapter * 50;
     
-    const prompt = `You are a tough but fair AI quiz master creating a "Boss Battle" for a learning game about "${topic}". This is a cumulative test for Chapter ${chapter}, which covers levels ${startLevel} to ${endLevel}.
+    const prompt = `You are a tough but fair AI quiz master creating a "Boss Battle" for a learning game about "${topic}". This is a cumulative test for Chapter ${chapter} (levels ${startLevel}-${endLevel}).
     
     RULES:
     1. Generate exactly 10 challenging multiple-choice questions.
-    2. The questions MUST cover a wide range of concepts from across the entire chapter (levels ${startLevel}-${endLevel}), not just one specific topic.
-    3. The difficulty should be higher than a regular level, designed to truly test the user's understanding of the chapter's content.
-    4. DO NOT generate a lesson. This is a quiz-only challenge.
-    5. Your tone should be that of an epic final boss in a video game.
+    2. Cover concepts from across the entire chapter.
+    3. Difficulty: Challenging.
+    4. NO lesson text. Quiz only.
+    5. Tone: Epic final boss.
     
     Generate the 10 questions based on these rules and the provided JSON schema.`;
 
@@ -257,17 +243,10 @@ async function generateBossBattleContent(topic, chapter) {
         return JSON.parse(response.text);
     } catch (error) {
         console.error(`Gemini API Error (Boss Battle Generation for ${topic} Ch. ${chapter}):`, error);
-        throw new Error('Failed to generate the boss battle. The AI may be busy or the topic is restricted.');
+        throw new Error('Failed to generate the boss battle.');
     }
 }
 
-/**
- * Generates a hint for a quiz question.
- * @param {string} topic - The overall topic.
- * @param {string} question - The quiz question.
- * @param {Array<string>} options - The array of possible answers.
- * @returns {Promise<object>} The parsed hint data.
- */
 async function generateHint(topic, question, options) {
     if (!ai) throw new Error("AI Service not initialized.");
     
@@ -282,8 +261,8 @@ async function generateHint(topic, question, options) {
     
     RULES:
     1. Generate a single, short, helpful hint.
-    2. The hint MUST NOT reveal the correct answer directly.
-    3. The hint should gently guide the user's thinking process towards the correct concept. For example, if the question is "What is the capital of France?", a good hint would be "Think about the city famous for the Eiffel Tower," not "The answer starts with 'P'."
+    2. DO NOT reveal the correct answer directly.
+    3. Guide the user's thinking.
     
     Return the hint in the provided JSON schema.`;
 
@@ -299,15 +278,10 @@ async function generateHint(topic, question, options) {
         return JSON.parse(response.text);
     } catch (error) {
         console.error(`Gemini API Error (Hint Generation for ${topic}):`, error);
-        throw new Error('Failed to generate a hint. The AI may be busy.');
+        throw new Error('Failed to generate a hint.');
     }
 }
 
-/**
- * Generates speech from text using the Gemini API.
- * @param {string} text - The text to convert to speech.
- * @returns {Promise<string>} A promise that resolves to the base64 encoded audio data.
- */
 async function generateSpeech(text) {
     if (!ai) throw new Error("AI Service not initialized.");
     if (!text || text.trim().length === 0) {
@@ -322,7 +296,7 @@ async function generateSpeech(text) {
                 responseModalities: [Modality.AUDIO],
                 speechConfig: {
                     voiceConfig: {
-                        prebuiltVoiceConfig: { voiceName: 'Kore' }, // A calm, clear voice for lessons
+                        prebuiltVoiceConfig: { voiceName: 'Kore' },
                     },
                 },
             },
@@ -335,7 +309,38 @@ async function generateSpeech(text) {
         return base64Audio;
     } catch (error) {
         console.error(`Gemini API Error (Speech Generation):`, error);
-        throw new Error('Failed to generate speech. The AI may be busy or the request was invalid.');
+        throw new Error('Failed to generate speech.');
+    }
+}
+
+async function explainConcept(topic, concept, context) {
+    if (!ai) throw new Error("AI Service not initialized.");
+    const prompt = `You are a Socratic AI tutor. 
+    Topic: ${topic}
+    Context: ${context}
+    
+    The student is asking about: "${concept}"
+    
+    RULES:
+    1. Explain this specific concept clearly and concisely (max 3 sentences).
+    2. Use a simple analogy if possible to make it "click".
+    3. Be encouraging.
+    
+    Return the explanation in the provided JSON schema.`;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+            config: {
+                responseMimeType: 'application/json',
+                responseSchema: explanationSchema,
+            }
+        });
+        return JSON.parse(response.text);
+    } catch (error) {
+        console.error(`Gemini API Error (Explain Concept):`, error);
+        throw new Error('Failed to generate explanation.');
     }
 }
 
@@ -349,8 +354,8 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
 const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
+    windowMs: 15 * 60 * 1000, 
+    max: 100,
     standardHeaders: true,
     legacyHeaders: false,
 });
@@ -361,9 +366,7 @@ app.use('/api', apiLimiter);
 
 app.post('/api/generate-journey-plan', async (req, res) => {
     const { topic } = req.body;
-    if (!topic) {
-        return res.status(400).json({ error: 'Missing required parameter: topic' });
-    }
+    if (!topic) return res.status(400).json({ error: 'Missing required parameter: topic' });
     try {
         const plan = await generateJourneyPlan(topic);
         res.json(plan);
@@ -374,9 +377,7 @@ app.post('/api/generate-journey-plan', async (req, res) => {
 
 app.post('/api/generate-curriculum-outline', async (req, res) => {
     const { topic, totalLevels } = req.body;
-    if (!topic || !totalLevels) {
-        return res.status(400).json({ error: 'Missing required parameters: topic, totalLevels' });
-    }
+    if (!topic || !totalLevels) return res.status(400).json({ error: 'Missing required parameters' });
     try {
         const outline = await generateCurriculumOutline(topic, totalLevels);
         res.json(outline);
@@ -385,12 +386,9 @@ app.post('/api/generate-curriculum-outline', async (req, res) => {
     }
 });
 
-
 app.post('/api/generate-level', async (req, res) => {
     const { topic, level, totalLevels } = req.body;
-    if (!topic || !level || !totalLevels) {
-        return res.status(400).json({ error: 'Missing required parameters: topic, level, totalLevels' });
-    }
+    if (!topic || !level || !totalLevels) return res.status(400).json({ error: 'Missing required parameters' });
     try {
         const levelContent = await generateLevelContent(topic, level, totalLevels);
         res.json(levelContent);
@@ -401,9 +399,7 @@ app.post('/api/generate-level', async (req, res) => {
 
 app.post('/api/generate-boss-battle', async (req, res) => {
     const { topic, chapter } = req.body;
-    if (!topic || !chapter) {
-        return res.status(400).json({ error: 'Missing required parameters: topic, chapter' });
-    }
+    if (!topic || !chapter) return res.status(400).json({ error: 'Missing required parameters' });
     try {
         const bossContent = await generateBossBattleContent(topic, chapter);
         res.json(bossContent);
@@ -414,9 +410,7 @@ app.post('/api/generate-boss-battle', async (req, res) => {
 
 app.post('/api/generate-hint', async (req, res) => {
     const { topic, question, options } = req.body;
-    if (!topic || !question || !options) {
-        return res.status(400).json({ error: 'Missing required parameters: topic, question, options' });
-    }
+    if (!topic || !question || !options) return res.status(400).json({ error: 'Missing required parameters' });
     try {
         const hint = await generateHint(topic, question, options);
         res.json(hint);
@@ -427,12 +421,21 @@ app.post('/api/generate-hint', async (req, res) => {
 
 app.post('/api/generate-speech', async (req, res) => {
     const { text } = req.body;
-    if (!text || text.trim().length === 0) {
-        return res.status(400).json({ error: 'Missing or empty required parameter: text' });
-    }
+    if (!text || text.trim().length === 0) return res.status(400).json({ error: 'Missing text' });
     try {
         const audioContent = await generateSpeech(text);
         res.json({ audioContent });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/explain-concept', async (req, res) => {
+    const { topic, concept, context } = req.body;
+    if (!topic || !concept) return res.status(400).json({ error: 'Missing topic or concept' });
+    try {
+        const result = await explainConcept(topic, concept, context || '');
+        res.json(result);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -453,7 +456,6 @@ app.get('/api/topics', async (req, res) => {
 
 
 // --- WEBSOCKETS ---
-// WebSocket logic for aural mode remains but is currently unused by the simplified front-end.
 wss.on('connection', (ws, req) => {
     console.log('WebSocket Client connected');
     const url = new URL(req.url, `http://${req.headers.host}`);
@@ -462,9 +464,7 @@ wss.on('connection', (ws, req) => {
     let sessionPromise;
 
     try {
-        if (!ai) {
-            throw new Error("AI Service not initialized.");
-        }
+        if (!ai) throw new Error("AI Service not initialized.");
         sessionPromise = ai.live.connect({
             model: 'gemini-2.5-flash-native-audio-preview-09-2025',
             config: {
@@ -485,7 +485,6 @@ wss.on('connection', (ws, req) => {
             }
         });
     } catch (error) {
-        console.error('Failed to connect to Gemini Live:', error);
         ws.send(JSON.stringify({ type: 'error', message: error.message }));
         ws.close();
         return;

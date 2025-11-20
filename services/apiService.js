@@ -1,5 +1,3 @@
-
-
 import { showToast } from './toastService.js';
 
 /**
@@ -19,11 +17,6 @@ async function handleResponse(response) {
     return response.json();
 }
 
-/**
- * Fetches the list of quiz topics and categories.
- * @returns {Promise<Array<object>>} A promise that resolves to the topics data.
- * @throws {Error} If the fetch fails.
- */
 export async function fetchTopics() {
     try {
         const response = await fetch('/api/topics');
@@ -34,12 +27,6 @@ export async function fetchTopics() {
     }
 }
 
-/**
- * Sends a request to the backend to generate a dynamic learning journey plan.
- * @param {string} topic - The topic for the journey.
- * @returns {Promise<object>} A promise resolving to { totalLevels, description }.
- * @throws {Error} If the generation fails.
- */
 export async function generateJourneyPlan(topic) {
     try {
         const response = await fetch('/api/generate-journey-plan', {
@@ -53,14 +40,6 @@ export async function generateJourneyPlan(topic) {
     }
 }
 
-/**
- * Sends a request to the backend to generate a curriculum outline for a journey.
- * @param {object} params - The curriculum parameters.
- * @param {string} params.topic - The topic for the journey.
- * @param {number} params.totalLevels - The total levels for the journey.
- * @returns {Promise<object>} A promise resolving to the curriculum outline.
- * @throws {Error} If the generation fails.
- */
 export async function generateCurriculumOutline({ topic, totalLevels }) {
     try {
         const response = await fetch('/api/generate-curriculum-outline', {
@@ -74,16 +53,6 @@ export async function generateCurriculumOutline({ topic, totalLevels }) {
     }
 }
 
-
-/**
- * Sends a request to the backend to generate content for a specific game level.
- * @param {object} params - The level generation parameters.
- * @param {string} params.topic - The topic of the game.
- * @param {number} params.level - The level number.
- * @param {number} params.totalLevels - The total levels in the journey.
- * @returns {Promise<object>} A promise that resolves to the generated level data (lesson and questions).
- * @throws {Error} If the generation fails.
- */
 export async function generateLevel({ topic, level, totalLevels }) {
     try {
         const response = await fetch('/api/generate-level', {
@@ -93,19 +62,10 @@ export async function generateLevel({ topic, level, totalLevels }) {
         });
         return await handleResponse(response);
     } catch (error) {
-        // Errors will be handled by the calling game-level module
         throw error;
     }
 }
 
-/**
- * Sends a request to the backend to generate a cumulative "Boss Battle" for a chapter.
- * @param {object} params - The boss battle parameters.
- * @param {string} params.topic - The topic of the game.
- * @param {number} params.chapter - The chapter number.
- * @returns {Promise<object>} A promise that resolves to the generated boss battle questions.
- * @throws {Error} If the generation fails.
- */
 export async function generateBossBattle({ topic, chapter }) {
     try {
         const response = await fetch('/api/generate-boss-battle', {
@@ -119,15 +79,6 @@ export async function generateBossBattle({ topic, chapter }) {
     }
 }
 
-/**
- * Sends a request to the backend to generate a hint for a quiz question.
- * @param {object} params - The hint parameters.
- * @param {string} params.topic - The topic of the game.
- * @param {string} params.question - The question text.
- * @param {Array<string>} params.options - The answer options.
- * @returns {Promise<object>} A promise that resolves to the generated hint data.
- * @throws {Error} If the generation fails.
- */
 export async function generateHint({ topic, question, options }) {
     try {
         const response = await fetch('/api/generate-hint', {
@@ -141,18 +92,32 @@ export async function generateHint({ topic, question, options }) {
     }
 }
 
-/**
- * Sends a request to the backend to generate speech from text.
- * @param {string} text - The text to synthesize.
- * @returns {Promise<object>} A promise that resolves to the object containing the audio data.
- * @throws {Error} If the generation fails.
- */
 export async function generateSpeech(text) {
     try {
         const response = await fetch('/api/generate-speech', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text })
+        });
+        return await handleResponse(response);
+    } catch (error) {
+        throw error;
+    }
+}
+
+/**
+ * Sends a request to the backend to explain a specific concept (Socratic Deep Dive).
+ * @param {string} topic - The main topic.
+ * @param {string} concept - The specific concept/text to explain.
+ * @param {string} context - The surrounding context (e.g., the full lesson text).
+ * @returns {Promise<object>} Resolves to { explanation }.
+ */
+export async function explainConcept(topic, concept, context) {
+    try {
+        const response = await fetch('/api/explain-concept', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topic, concept, context })
         });
         return await handleResponse(response);
     } catch (error) {
