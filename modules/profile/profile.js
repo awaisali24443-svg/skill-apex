@@ -29,8 +29,14 @@ function renderAchievements() {
         card.className = `card achievement-card ${ach.unlocked ? 'unlocked' : ''}`;
         card.setAttribute('title', ach.description);
 
+        // Apply dynamic gradient if unlocked
+        let iconStyle = '';
+        if (ach.unlocked && ach.color) {
+            iconStyle = `background: ${ach.color}; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3);`;
+        }
+
         card.innerHTML = `
-            <div class="achievement-icon">
+            <div class="achievement-icon" style="${iconStyle}">
                 <svg><use href="/assets/icons/feather-sprite.svg#${ach.icon}"/></svg>
             </div>
             <div class="achievement-info">

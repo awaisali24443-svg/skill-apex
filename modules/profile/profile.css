@@ -140,12 +140,15 @@
     justify-content: center;
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 .achievement-card.unlocked .achievement-icon {
-    background: var(--brand-gradient);
-    color: #fff;
-    border: none;
+    color: #fff; /* Make icon white to contrast with gradients */
 }
+.achievement-card.unlocked:hover .achievement-icon {
+    transform: scale(1.1);
+}
+
 .achievement-icon svg {
     width: 24px;
     height: 24px;
@@ -157,7 +160,7 @@
     margin-bottom: var(--space-xs);
 }
 .achievement-card.unlocked .achievement-name {
-    color: var(--color-primary);
+    color: var(--color-text); /* Use text color instead of brand color to keep it clean */
 }
 .achievement-description {
     font-size: var(--fs-sm);

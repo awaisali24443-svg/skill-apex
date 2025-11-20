@@ -13,19 +13,61 @@ let stats = { ...defaultStats };
 
 const ACHIEVEMENTS = {
     // Quiz Completion Achievements
-    novice: { name: "Novice", description: "Complete your first quiz.", icon: "award", condition: (s, h) => h.length >= 1 },
-    scholar: { name: "Scholar", description: "Complete 10 quizzes.", icon: "award", condition: (s, h) => h.length >= 10 },
-    master: { name: "Master", description: "Complete 50 quizzes.", icon: "award", condition: (s, h) => h.length >= 50 },
+    novice: { 
+        name: "Novice", 
+        description: "Complete your first quiz.", 
+        icon: "award", 
+        color: "linear-gradient(135deg, #cd7f32 0%, #e6ac7c 100%)", // Bronze
+        condition: (s, h) => h.length >= 1 
+    },
+    scholar: { 
+        name: "Scholar", 
+        description: "Complete 10 quizzes.", 
+        icon: "award", 
+        color: "linear-gradient(135deg, #757F9A 0%, #D7DDE8 100%)", // Silver/Metallic
+        condition: (s, h) => h.length >= 10 
+    },
+    master: { 
+        name: "Master", 
+        description: "Complete 50 quizzes.", 
+        icon: "award", 
+        color: "linear-gradient(135deg, #F2994A 0%, #F2C94C 100%)", // Gold
+        condition: (s, h) => h.length >= 50 
+    },
     
     // Performance Achievements
-    perfectionist: { name: "Perfectionist", description: "Get a 100% score on a quiz.", icon: "star", condition: (s, h, q) => q && q.totalQuestions > 0 && q.score / q.totalQuestions === 1 },
+    perfectionist: { 
+        name: "Perfectionist", 
+        description: "Get a 100% score on a quiz.", 
+        icon: "star", 
+        color: "linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%)", // Deep Purple/Blue
+        condition: (s, h, q) => q && q.totalQuestions > 0 && q.score / q.totalQuestions === 1 
+    },
     
     // Streak Achievements
-    hot_streak: { name: "Hot Streak", description: "Maintain a 3-day streak.", icon: "zap", condition: (s) => s.currentStreak >= 3 },
-    unstoppable: { name: "Unstoppable", description: "Maintain a 7-day streak.", icon: "zap", condition: (s) => s.currentStreak >= 7 },
+    hot_streak: { 
+        name: "Hot Streak", 
+        description: "Maintain a 3-day streak.", 
+        icon: "zap", 
+        color: "linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%)", // Hot Red/Orange
+        condition: (s) => s.currentStreak >= 3 
+    },
+    unstoppable: { 
+        name: "Unstoppable", 
+        description: "Maintain a 7-day streak.", 
+        icon: "zap", 
+        color: "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)", // Electric Green
+        condition: (s) => s.currentStreak >= 7 
+    },
     
     // Category Mastery (Example - can be expanded)
-    tech_guru: { name: "Tech Guru", description: "Complete 5 quizzes on Technology topics.", icon: "cpu", condition: (s, h) => h.filter(item => item.topic && item.topic.toLowerCase().includes('machine learning') || item.topic.toLowerCase().includes('cybersecurity')).length >= 5 },
+    tech_guru: { 
+        name: "Tech Guru", 
+        description: "Complete 5 quizzes on Technology topics.", 
+        icon: "cpu", 
+        color: "linear-gradient(135deg, #00b09b 0%, #96c93d 100%)", // Cyber Green/Teal
+        condition: (s, h) => h.filter(item => item.topic && (item.topic.toLowerCase().includes('machine learning') || item.topic.toLowerCase().includes('cybersecurity'))).length >= 5 
+    },
 };
 
 
