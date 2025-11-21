@@ -1,6 +1,7 @@
+
 {
   "name": "knowledge-tester",
-  "version": "3.3.4",
+  "version": "3.3.5",
   "description": "An AI-powered learning journey application using vanilla JavaScript and the Gemini API.",
   "main": "server.js",
   "type": "module",
