@@ -226,10 +226,11 @@ async function generateBossBattleContent(topic, chapter) {
     
     RULES:
     1. Generate exactly 10 challenging multiple-choice questions.
-    2. Concepts: Identify common pitfalls and misconceptions related to this chapter's material and test them specifically.
-    3. Difficulty: Challenging. Avoid obvious distractors.
-    4. NO lesson text. Quiz only.
-    5. Tone: Epic final boss.
+    2. Focus on tricky edge cases, common misconceptions, and synthesizing multiple concepts from this chapter.
+    3. Questions should require critical thinking, not just memorization.
+    4. Difficulty: Hard. Distractors should be plausible.
+    5. NO lesson text. Quiz only.
+    6. Tone: Epic final boss. The user must prove their mastery.
     
     Generate the 10 questions based on these rules and the provided JSON schema.`;
 
