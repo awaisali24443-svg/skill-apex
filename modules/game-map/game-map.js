@@ -1,11 +1,10 @@
 
-
 import * as learningPathService from '../../services/learningPathService.js';
 import * as stateService from '../../services/stateService.js';
 
 const LEVELS_PER_CHAPTER = 50;
 let journey, elements;
-let currentChapter = 1; // Start with a default, will be updated in init
+let currentChapter = 1; 
 let keyboardNavHandler;
 
 // --- Render Functions ---
@@ -22,12 +21,11 @@ function render() {
 
 
 function renderLevels(chapter) {
-    elements.grid.className = 'map-grid'; // Simplified, only one view now
+    elements.grid.className = 'map-grid'; 
     elements.grid.innerHTML = '';
 
     const template = elements.levelNodeTemplate.content;
     const startLevel = (chapter - 1) * LEVELS_PER_CHAPTER + 1;
-    // Ensure we don't render levels beyond the journey's total
     const endLevel = Math.min(chapter * LEVELS_PER_CHAPTER, journey.totalLevels);
 
 
@@ -61,7 +59,6 @@ function renderLevels(chapter) {
         elements.grid.appendChild(node);
     }
 
-    // Update footer button text
     elements.primaryActionBtn.disabled = journey.currentLevel > journey.totalLevels;
     elements.primaryActionBtnText.textContent = `Start Level ${journey.currentLevel}`;
 }
@@ -163,11 +160,9 @@ function handleFooterPrimaryClick() {
     
     const nextLevelChapter = Math.ceil(journey.currentLevel / LEVELS_PER_CHAPTER);
     if (currentChapter !== nextLevelChapter) {
-        // If user is viewing a different chapter, switch to the correct one before starting
         currentChapter = nextLevelChapter;
         render();
     }
-    // Now that we're on the right chapter, navigate to the level
     navigateToLevel(journey.currentLevel);
 }
 
@@ -186,6 +181,7 @@ export async function init() {
     
     elements = {
         loadingState: document.getElementById('journey-loading-state'),
+        skeletonState: document.getElementById('journey-skeleton-state'),
         journeyContent: document.getElementById('journey-content'),
         topicTitle: document.getElementById('game-map-topic-title'),
         progressFill: document.getElementById('progress-bar-fill'),
@@ -201,10 +197,21 @@ export async function init() {
     };
     
     try {
+        // 1. Check if we need to fetch (API call) or if it's likely instant
+        const isCached = learningPathService.getJourneyByGoal(decodeURIComponent(topic));
+        
+        if (!isCached) {
+            elements.loadingState.style.display = 'flex'; // Show spinner for new generation
+        } else {
+            elements.skeletonState.style.display = 'flex'; // Show skeleton for quick DB/LocalStorage fetch
+            elements.loadingState.style.display = 'none';
+        }
+
         journey = await learningPathService.startOrGetJourney(decodeURIComponent(topic));
         
         elements.loadingState.style.display = 'none';
-        elements.journeyContent.style.visibility = 'visible';
+        elements.skeletonState.style.display = 'none';
+        elements.journeyContent.style.display = 'flex'; // Show real content
         
         const initialChapter = Math.ceil(journey.currentLevel / LEVELS_PER_CHAPTER);
         currentChapter = navigationContext.chapter || initialChapter;
@@ -226,6 +233,7 @@ export async function init() {
     } catch (error) {
         console.error('Failed to initialize journey:', error);
         elements.loadingState.innerHTML = `<p class="error-message">Could not create journey: ${error.message}</p><a href="#/topics" class="btn">Back to Topics</a>`;
+        elements.skeletonState.style.display = 'none';
     }
 }
 

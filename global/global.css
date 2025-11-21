@@ -1,3 +1,4 @@
+
 /* --- Base Styles & Resets --- */
 *, *::before, *::after {
     box-sizing: border-box;
@@ -86,6 +87,8 @@ body::after {
         radial-gradient(circle at 15% 50%, var(--color-primary-transparent) 0%, transparent 50%),
         radial-gradient(circle at 85% 30%, var(--color-secondary-transparent) 0%, transparent 50%);
     pointer-events: none;
+    /* PERFORMANCE OPTIMIZATION: Promote to GPU layer */
+    will-change: transform, opacity;
     animation: aurora-pulse 10s ease-in-out infinite alternate;
 }
 

@@ -1,10 +1,40 @@
+
 <div class="page-container game-map-container">
+    
+    <!-- Loading State with Spinner (Initial) -->
     <div id="journey-loading-state" class="journey-loading-state">
         <div class="spinner"></div>
         <p>The AI is analyzing the topic and designing a custom learning path...</p>
     </div>
 
-    <div id="journey-content" class="journey-content" style="visibility: hidden;">
+    <!-- Skeleton State (Transition) -->
+    <div id="journey-skeleton-state" class="journey-content" style="display: none;">
+        <header class="page-header">
+            <div class="skeleton" style="width: 50%; height: 40px; margin-bottom: 20px;"></div>
+            <div class="progress-container">
+                <div class="skeleton" style="width: 100%; height: 8px; border-radius: 4px;"></div>
+            </div>
+            <div class="chapter-navigator" style="margin-top: 30px; justify-content: center;">
+                <div class="skeleton" style="width: 40px; height: 40px; border-radius: 50%;"></div>
+                <div class="skeleton" style="width: 150px; height: 30px; margin: 0 20px;"></div>
+                <div class="skeleton" style="width: 40px; height: 40px; border-radius: 50%;"></div>
+            </div>
+        </header>
+        <main class="map-grid">
+            <!-- Generate 12 skeleton nodes -->
+            <div class="skeleton" style="aspect-ratio: 1; border-radius: 50%;"></div>
+            <div class="skeleton" style="aspect-ratio: 1; border-radius: 50%;"></div>
+            <div class="skeleton" style="aspect-ratio: 1; border-radius: 50%;"></div>
+            <div class="skeleton" style="aspect-ratio: 1; border-radius: 50%;"></div>
+            <div class="skeleton" style="aspect-ratio: 1; border-radius: 50%;"></div>
+            <div class="skeleton" style="aspect-ratio: 1; border-radius: 50%;"></div>
+            <div class="skeleton" style="aspect-ratio: 1; border-radius: 50%;"></div>
+            <div class="skeleton" style="aspect-ratio: 1; border-radius: 50%;"></div>
+        </main>
+    </div>
+
+    <!-- Loaded Content -->
+    <div id="journey-content" class="journey-content" style="display: none;">
         <header class="page-header">
             <h1 id="game-map-topic-title"></h1> <!-- For the main topic title -->
             <div class="progress-container">
@@ -13,7 +43,6 @@
                 </div>
                 <span id="progress-percent-text">0%</span>
             </div>
-            <!-- New chapter navigator -->
             <div class="chapter-navigator">
                 <button id="prev-chapter-btn" class="btn" aria-label="Previous Chapter">
                     <svg class="icon"><use href="/assets/icons/feather-sprite.svg#arrow-left"/></svg>

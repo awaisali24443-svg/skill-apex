@@ -1,3 +1,4 @@
+
 .game-map-container {
     display: flex;
     flex-direction: column;
@@ -60,6 +61,7 @@
     background: var(--brand-gradient, linear-gradient(45deg, var(--color-primary), var(--color-secondary)));
     border-radius: 4px;
     transition: width var(--transition-speed-med) ease-out;
+    will-change: width; /* Optimization */
 }
 
 #progress-percent-text {
@@ -101,6 +103,12 @@
     grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
 }
 
+/* Skeleton Styles specific to map grid */
+.map-grid .skeleton {
+    background-color: var(--color-surface);
+    opacity: 0.5;
+}
+
 .level-card {
     display: flex;
     flex-direction: column;
@@ -113,6 +121,7 @@
     animation: node-appear 0.5s ease-out forwards;
     opacity: 0;
     padding: var(--space-sm);
+    will-change: transform, opacity; /* Optimization */
 }
 
 @keyframes node-appear {

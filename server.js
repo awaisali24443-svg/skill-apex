@@ -1,3 +1,4 @@
+
 // --- IMPORTS & SETUP ---
 import express from 'express';
 import path from 'path';
@@ -225,8 +226,8 @@ async function generateBossBattleContent(topic, chapter) {
     
     RULES:
     1. Generate exactly 10 challenging multiple-choice questions.
-    2. Cover concepts from across the entire chapter.
-    3. Difficulty: Challenging.
+    2. Concepts: Identify common pitfalls and misconceptions related to this chapter's material and test them specifically.
+    3. Difficulty: Challenging. Avoid obvious distractors.
     4. NO lesson text. Quiz only.
     5. Tone: Epic final boss.
     

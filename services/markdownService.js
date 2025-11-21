@@ -1,3 +1,4 @@
+
 /**
  * Renders a Markdown string into a basic HTML string.
  * This is a lightweight parser designed for the AI's output. It supports:
@@ -7,13 +8,24 @@
  * - Inline code (e.g., `my_function()`)
  * - Fenced code blocks (e.g., ```javascript ... ```)
  * - Mermaid Diagrams (```mermaid ... ```)
+ * 
+ * SECURITY: Includes basic output sanitization to prevent XSS.
+ * 
  * @param {string} markdown - The Markdown string to parse.
  * @returns {string} The resulting HTML string.
  */
 export function render(markdown) {
     if (!markdown) return '';
 
-    const lines = markdown.split('\n');
+    // 1. Basic Sanitization (Pre-render)
+    // Remove script tags and dangerous attributes
+    let safeMarkdown = markdown
+        .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
+        .replace(/<iframe\b[^>]*>([\s\S]*?)<\/iframe>/gim, "")
+        .replace(/<object\b[^>]*>([\s\S]*?)<\/object>/gim, "")
+        .replace(/ on\w+="[^"]*"/g, ""); // Remove event handlers like onclick="..."
+
+    const lines = safeMarkdown.split('\n');
     let html = '';
     let inCodeBlock = false;
     let inList = false;
@@ -25,7 +37,8 @@ export function render(markdown) {
             if (inCodeBlock) {
                 // End of code block
                 if (codeBlockLang === 'mermaid') {
-                    // Render as a mermaid div instead of a pre block
+                    // Render as a mermaid div
+                    // Note: Mermaid library handles its own sanitization/parsing usually
                     html += `<div class="mermaid">${codeBlockContent.join('\n')}</div>`;
                 } else {
                     html += `<pre data-lang="${codeBlockLang}"><code class="language-${codeBlockLang}">${codeBlockContent.join('\n')}</code></pre>`;
@@ -40,17 +53,20 @@ export function render(markdown) {
                     inList = false;
                 }
                 inCodeBlock = true;
-                codeBlockLang = line.trim().substring(3).trim(); // Get language
+                // Sanitize lang attribute
+                codeBlockLang = line.trim().substring(3).trim().replace(/[^a-zA-Z0-9-]/g, ''); 
             }
             continue; // Move to next line
         }
 
         if (inCodeBlock) {
-            // If mermaid, don't escape yet, let the library handle it or raw text
+            // If mermaid, pass through (Mermaid needs raw text)
             if (codeBlockLang === 'mermaid') {
-                codeBlockContent.push(line);
+                // Basic check to prevent breaking out of div
+                const cleanLine = line.replace(/<\/div>/gi, ''); 
+                codeBlockContent.push(cleanLine);
             } else {
-                // Basic HTML escaping for code content
+                // HTML escaping for code content
                 const escapedLine = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 codeBlockContent.push(escapedLine);
             }
@@ -73,15 +89,16 @@ export function render(markdown) {
         }
         
         if (processedLine.startsWith('# ')) {
-            if (inList) { // Close list before a heading
+            if (inList) { 
                 html += '</ul>';
                 inList = false;
             }
+            // Simple Heading
             html += `<h3>${processedLine.substring(2)}</h3>`;
         } else if (isListItem) {
             html += `<li>${processedLine.substring(2)}</li>`;
         } else if (processedLine) {
-             if (inList) { // Close list before a paragraph
+             if (inList) {
                 html += '</ul>';
                 inList = false;
             }
@@ -89,17 +106,16 @@ export function render(markdown) {
         }
     }
 
-    if (inList) { // Close any dangling list
+    if (inList) {
         html += '</ul>';
     }
-     if (inCodeBlock) { // Close any dangling code block
+     if (inCodeBlock) {
          if (codeBlockLang === 'mermaid') {
              html += `<div class="mermaid">${codeBlockContent.join('\n')}</div>`;
          } else {
             html += `<pre data-lang="${codeBlockLang}"><code class="language-${codeBlockLang}">${codeBlockContent.join('\n')}</code></pre>`;
          }
     }
-
 
     return html;
 }

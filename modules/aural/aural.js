@@ -1,4 +1,7 @@
+
 import * as stateService from '../../services/stateService.js';
+import * as historyService from '../../services/historyService.js';
+import { showToast } from '../../services/toastService.js';
 
 // --- State Management ---
 const STATE = {
@@ -11,13 +14,43 @@ const STATE = {
 };
 
 let currentState = STATE.IDLE;
-let socket, mediaStream, inputAudioContext, outputAudioContext, scriptProcessor, connectionTimeout;
+let socket, mediaStream, inputAudioContext, outputAudioContext, connectionTimeout;
+let audioWorkletNode;
 let nextStartTime = 0;
 let sources = new Set();
 let liveTranscriptionElement = null;
 
+// Session Data
+let sessionStartTime = 0;
+let transcriptLog = []; 
+
 // --- DOM Elements ---
 let elements = {};
+
+// --- Audio Worklet Code (Inline Blob) ---
+// We use a Blob URL to load the worklet without needing a separate file on the server.
+const workletCode = `
+class PCMProcessor extends AudioWorkletProcessor {
+  process(inputs, outputs, parameters) {
+    const input = inputs[0];
+    if (input.length > 0) {
+      const float32Data = input[0];
+      const int16Data = new Int16Array(float32Data.length);
+      
+      // Convert Float32 to Int16 PCM
+      for (let i = 0; i < float32Data.length; i++) {
+        const s = Math.max(-1, Math.min(1, float32Data[i]));
+        int16Data[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+      }
+      
+      // Send data to main thread
+      this.port.postMessage(int16Data.buffer, [int16Data.buffer]);
+    }
+    return true;
+  }
+}
+registerProcessor('pcm-processor', PCMProcessor);
+`;
 
 // --- Audio Utilities ---
 function encode(bytes) {
@@ -49,21 +82,11 @@ async function decodeAudioData(data, ctx, sampleRate, numChannels) {
   }
   return buffer;
 }
-function createBlob(data) {
-    const int16 = new Int16Array(data.length);
-    for (let i = 0; i < data.length; i++) {
-        int16[i] = data[i] * 32768;
-    }
-    return {
-        data: encode(new Uint8Array(int16.buffer)),
-        mimeType: 'audio/pcm;rate=16000',
-    };
-}
 
 // --- UI & State Updates ---
 function updateUI(newState, message = '') {
     currentState = newState;
-    elements.orb.className = 'orb'; // Reset classes
+    elements.orb.className = 'orb'; 
 
     switch (currentState) {
         case STATE.IDLE:
@@ -107,12 +130,14 @@ function updateLiveTranscription(type, textChunk) {
     }
 
     if (!liveTranscriptionElement || liveTranscriptionElement.dataset.type !== type) {
-        // Finalize the previous entry if it exists and is of a different type
         if (liveTranscriptionElement) {
             liveTranscriptionElement.classList.remove('live');
+            const previousText = liveTranscriptionElement.textContent;
+            if (previousText.trim()) {
+                transcriptLog.push({ sender: liveTranscriptionElement.dataset.type, text: previousText });
+            }
         }
 
-        // Create a new entry
         liveTranscriptionElement = document.createElement('div');
         liveTranscriptionElement.className = `transcription-entry live ${type}`;
         liveTranscriptionElement.dataset.type = type;
@@ -124,6 +149,10 @@ function updateLiveTranscription(type, textChunk) {
 function finalizeLiveTranscription() {
     if (liveTranscriptionElement) {
         liveTranscriptionElement.classList.remove('live');
+        const text = liveTranscriptionElement.textContent;
+        if (text.trim()) {
+            transcriptLog.push({ sender: liveTranscriptionElement.dataset.type, text: text });
+        }
         liveTranscriptionElement = null;
     }
 }
@@ -131,6 +160,13 @@ function finalizeLiveTranscription() {
 // --- Core Conversation Logic ---
 async function startConversation() {
     if (currentState !== STATE.IDLE && currentState !== STATE.ERROR) return;
+    
+    // Reset session data
+    transcriptLog = [];
+    sessionStartTime = Date.now();
+    elements.log.innerHTML = ''; 
+    elements.placeholder.style.display = 'flex'; 
+
     updateUI(STATE.CONNECTING);
     elements.error.style.display = 'none';
 
@@ -139,12 +175,17 @@ async function startConversation() {
             updateUI(STATE.ERROR, 'Connection timed out. Please try again.');
             stopConversation();
         }
-    }, 8000); // 8-second timeout
+    }, 10000); 
 
     try {
         mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         inputAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
         outputAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+        
+        // --- Worklet Setup ---
+        const blob = new Blob([workletCode], { type: 'application/javascript' });
+        const workletUrl = URL.createObjectURL(blob);
+        await inputAudioContext.audioWorklet.addModule(workletUrl);
         
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const { navigationContext } = stateService.getState();
@@ -153,20 +194,29 @@ async function startConversation() {
         const socketUrl = `${protocol}//${window.location.host}/?systemInstruction=${encodeURIComponent(systemInstruction)}`;
         socket = new WebSocket(socketUrl);
 
-
         socket.onopen = () => {
             clearTimeout(connectionTimeout);
             updateUI(STATE.LISTENING);
+            
             const source = inputAudioContext.createMediaStreamSource(mediaStream);
-            scriptProcessor = inputAudioContext.createScriptProcessor(4096, 1, 1);
-            scriptProcessor.onaudioprocess = (event) => {
-                if (socket.readyState !== WebSocket.OPEN) return;
-                const inputData = event.inputBuffer.getChannelData(0);
-                const pcmBlob = createBlob(inputData);
-                socket.send(JSON.stringify({ type: 'audio_input', payload: pcmBlob }));
+            audioWorkletNode = new AudioWorkletNode(inputAudioContext, 'pcm-processor');
+            
+            audioWorkletNode.port.onmessage = (event) => {
+                if (socket.readyState === WebSocket.OPEN) {
+                    const pcmBuffer = event.data;
+                    const base64Audio = encode(new Uint8Array(pcmBuffer));
+                    socket.send(JSON.stringify({ 
+                        type: 'audio_input', 
+                        payload: { 
+                            data: base64Audio, 
+                            mimeType: 'audio/pcm;rate=16000' 
+                        } 
+                    }));
+                }
             };
-            source.connect(scriptProcessor);
-            scriptProcessor.connect(inputAudioContext.destination);
+
+            source.connect(audioWorkletNode);
+            audioWorkletNode.connect(inputAudioContext.destination); // Need to connect to destination for worklet to run, even if silent
         };
 
         socket.onmessage = async (event) => {
@@ -210,7 +260,6 @@ async function startConversation() {
                     if (currentState !== STATE.SPEAKING) {
                         updateUI(STATE.SPEAKING);
                     }
-                    // Also finalize user transcription when model starts speaking audio
                     if (liveTranscriptionElement && liveTranscriptionElement.dataset.type === 'user') {
                         finalizeLiveTranscription();
                     }
@@ -230,7 +279,6 @@ async function startConversation() {
                 
                 if(geminiMessage.serverContent?.turnComplete) {
                     finalizeLiveTranscription();
-                    
                     const checkPlaybackAndSetListening = () => {
                         if (!outputAudioContext || outputAudioContext.state === 'closed' || outputAudioContext.currentTime + 0.1 >= nextStartTime) {
                              if (currentState !== STATE.IDLE && currentState !== STATE.ERROR) {
@@ -274,14 +322,31 @@ function stopConversation() {
     clearTimeout(connectionTimeout);
     finalizeLiveTranscription();
 
+    // --- Save to History ---
+    if (transcriptLog.length > 0) {
+        const durationSeconds = Math.round((Date.now() - sessionStartTime) / 1000);
+        const xpGained = Math.min(50, Math.floor(durationSeconds / 2)); 
+        
+        historyService.addAuralSession({
+            transcript: transcriptLog,
+            duration: durationSeconds,
+            xpGained: xpGained
+        });
+        
+        if (xpGained > 0) {
+            showToast(`Session saved! +${xpGained} XP`, 'success');
+        } else {
+            showToast('Session saved to history.', 'info');
+        }
+    }
+
     if (socket) {
         socket.close();
         socket = null;
     }
-    if (scriptProcessor) {
-        scriptProcessor.disconnect();
-        scriptProcessor.onaudioprocess = null;
-        scriptProcessor = null;
+    if (audioWorkletNode) {
+        audioWorkletNode.disconnect();
+        audioWorkletNode = null;
     }
     if (mediaStream) {
         mediaStream.getTracks().forEach(track => track.stop());
@@ -337,7 +402,6 @@ export function init() {
         `;
         elements.headerControls.appendChild(backBtn);
     }
-
 
     elements.micBtn.addEventListener('click', handleMicClick);
     updateUI(STATE.IDLE);
