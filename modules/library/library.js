@@ -1,4 +1,3 @@
-
 import * as libraryService from '../../services/libraryService.js';
 
 let container;
@@ -20,12 +19,18 @@ function renderLibrary() {
     } else {
         emptyMessage.style.display = 'none';
         studyBtn.disabled = false;
-        questions.forEach(q => {
-            const card = template.content.cloneNode(true);
-            const cardElement = card.querySelector('.library-item');
-            cardElement.dataset.id = q.id;
+        
+        questions.forEach((q, index) => {
+            const clone = template.content.cloneNode(true);
+            const card = clone.querySelector('.library-item');
+            
+            // Stagger animation
+            card.style.animationDelay = `${index * 50}ms`;
+            card.dataset.id = q.id;
+            
             card.querySelector('.library-question-text').textContent = q.question;
             card.querySelector('.remove-btn').dataset.id = q.id;
+            
             container.appendChild(card);
         });
     }
@@ -41,9 +46,10 @@ export function init() {
             const card = document.querySelector(`.library-item[data-id="${questionId}"]`);
             if(card) {
                 card.classList.add('removing');
+                // Wait for animation to finish before removing from state
                 setTimeout(() => {
                     libraryService.removeQuestion(questionId);
-                    renderLibrary(); // Re-render to reflect the change
+                    renderLibrary();
                 }, 300);
             }
         }
@@ -61,5 +67,4 @@ export function destroy() {
     if (container && clickHandler) {
         container.removeEventListener('click', clickHandler);
     }
-    // No need to remove listener from studyBtn as it's part of the module's static HTML
 }

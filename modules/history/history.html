@@ -1,42 +1,52 @@
 <div class="page-container history-container">
     <header class="page-header history-header">
-        <h1>Quiz History</h1>
-        <p>Review your past quiz performances.</p>
+        <h1>Mission Log</h1>
+        <p>A timeline of your learning conquests.</p>
         <div class="history-actions">
             <button id="clear-history-btn" class="btn" disabled>
                  <svg class="icon"><use href="/assets/icons/feather-sprite.svg#trash-2"/></svg>
-                 <span>Clear History</span>
+                 <span>Clear Log</span>
             </button>
         </div>
     </header>
-    <div id="history-grid">
-        <!-- Saved quizzes will be rendered here -->
+    
+    <div id="history-timeline" class="history-timeline">
+        <!-- History items injected here -->
     </div>
+
     <div id="empty-history-message" class="empty-state" style="display: none;">
          <div class="empty-state-icon">
-             <svg><use href="/assets/icons/feather-sprite.svg#archive"/></svg>
+             <svg><use href="/assets/icons/feather-sprite.svg#clock"/></svg>
         </div>
-        <h2>No History Yet</h2>
-        <p>Your completed quizzes will appear here.</p>
-        <a href="/#/topics" class="btn">Take a Quiz</a>
+        <h2>No Missions Recorded</h2>
+        <p>Complete quizzes to generate your performance history.</p>
+        <a href="/#/topics" class="btn btn-primary">Start a Mission</a>
     </div>
 </div>
 
 <template id="history-item-template">
-    <div class="card history-item">
-        <div class="card-content">
-            <div class="history-item-header">
-                <h3 class="history-topic"></h3>
-                <span class="history-date"></span>
-            </div>
-            <div class="history-item-body">
-                <p class="history-score"></p>
-                <div class="score-bar">
-                    <div class="score-bar-fill"></div>
+    <div class="history-entry">
+        <div class="history-marker"></div>
+        <div class="card history-card">
+            <div class="history-main">
+                <div class="history-info">
+                    <span class="history-date"></span>
+                    <h3 class="history-topic"></h3>
+                    <span class="history-meta"></span>
+                </div>
+                <div class="history-score-badge">
+                    <svg viewBox="0 0 36 36" class="circular-chart">
+                        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path class="circle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                    <span class="percentage"></span>
                 </div>
             </div>
-            <div class="history-item-actions">
-                <button class="btn retry-btn">Retry Quiz</button>
+            <div class="history-footer">
+                <button class="btn-small retry-btn">
+                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#rotate-ccw"/></svg> 
+                    Retry
+                </button>
             </div>
         </div>
     </div>

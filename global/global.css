@@ -63,42 +63,37 @@ body {
 
 /* --- WORLD CLASS BACKGROUND SYSTEM: ILLUMINATED GRID --- */
 
-/* Layer 1: Structural Data Grid */
-/* Uses --color-text to adapt: white dots in dark mode, dark dots in light mode */
+/* Layer 1: Structural Dot Grid (Visible on top of gradients) */
 body::before {
     content: "";
     position: fixed;
     inset: 0;
-    z-index: -1;
+    z-index: -1; /* Behind content, in front of gradients */
+    /* Adaptive dots: uses text color so it works on light & dark themes */
     background-image: radial-gradient(var(--color-text) 1px, transparent 1px);
     background-size: 40px 40px;
-    opacity: 0.15; /* Subtle but visible */
+    opacity: 0.07; /* Subtle texture */
     pointer-events: none;
-    mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
-    -webkit-mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
 }
 
-/* Layer 2: Flowing Aurora (Living Gradient) */
+/* Layer 2: Fluid Aurora (Background Gradient) */
 body::after {
     content: "";
     position: fixed;
-    inset: -50%;
-    z-index: -2;
+    inset: 0;
+    z-index: -2; /* Behind everything */
     background: 
-        radial-gradient(circle at 20% 30%, var(--color-primary-transparent-heavy) 0%, transparent 40%),
-        radial-gradient(circle at 80% 70%, var(--color-secondary-transparent-heavy) 0%, transparent 40%),
-        radial-gradient(circle at 40% 80%, var(--color-accent-transparent) 0%, transparent 50%);
-    filter: blur(80px);
-    animation: aurora-flow 20s ease-in-out infinite alternate;
-    opacity: 0.5;
+        radial-gradient(circle at 15% 50%, var(--color-primary-transparent) 0%, transparent 50%),
+        radial-gradient(circle at 85% 30%, var(--color-secondary-transparent) 0%, transparent 50%);
+    pointer-events: none;
+    animation: aurora-pulse 10s ease-in-out infinite alternate;
 }
 
-@keyframes aurora-flow {
-    0% { transform: scale(1) translate(0, 0) rotate(0deg); }
-    33% { transform: scale(1.1) translate(-2%, 2%) rotate(2deg); }
-    66% { transform: scale(0.95) translate(2%, -2%) rotate(-1deg); }
-    100% { transform: scale(1) translate(0, 0) rotate(0deg); }
+@keyframes aurora-pulse {
+    0% { opacity: 0.5; transform: scale(1); }
+    100% { opacity: 0.8; transform: scale(1.1); }
 }
+
 
 /* --- Global Keyframe Animations --- */
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
@@ -290,11 +285,11 @@ body::after {
     height: 24px;
     margin-right: 24px;
     transition: filter var(--transition-speed-fast), transform var(--transition-speed-fast);
-    stroke: currentColor; /* Will be overridden by explicit classes below */
+    stroke: currentColor; 
 }
 
 /* --- Colorful Icons: Forced Visibility --- */
-/* We use !important to override 'currentColor' inheritance from the parent link */
+/* IMPORTANT: Using specific colors and overriding inherited currentColor to ensure they pop in ALL themes */
 .sidebar-link .icon.icon-color-1 { stroke: #00e5ff !important; } /* Cyan */
 .sidebar-link .icon.icon-color-2 { stroke: #d500f9 !important; } /* Violet */
 .sidebar-link .icon.icon-color-3 { stroke: #ff4081 !important; } /* Pink */

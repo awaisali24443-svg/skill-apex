@@ -1,37 +1,127 @@
 .library-header {
-    margin-bottom: var(--space-xxl);
+    margin-bottom: var(--space-xl);
+    text-align: center;
 }
 
 #library-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: var(--space-lg);
+    padding-bottom: var(--space-xxl);
 }
 
+/* Data Shard Card Style */
 .library-item {
     display: flex;
     flex-direction: column;
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    height: 100%;
+    background: rgba(22, 27, 34, 0.6); /* Semi-transparent */
+    border: 1px solid var(--color-border);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.library-item:hover {
+    transform: translateY(-5px);
+    border-color: var(--color-primary);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 0 1px var(--color-primary-transparent);
 }
 
 .library-item.removing {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.8);
+    pointer-events: none;
 }
 
-.library-item .card-content {
+.library-card-header {
     display: flex;
-    flex-direction: column;
     justify-content: space-between;
-    height: 100%;
+    align-items: center;
+    margin-bottom: var(--space-md);
+}
+
+.question-badge {
+    width: 32px;
+    height: 32px;
+    background: var(--color-surface-active);
+    color: var(--color-primary);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-family-heading);
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+/* Icon-only Remove Button */
+.btn-icon {
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+    background-color: var(--color-error-bg);
+    color: var(--color-error);
+    transform: rotate(10deg);
+}
+.btn-icon svg { width: 18px; height: 18px; }
+
+.card-content {
+    flex-grow: 1;
 }
 
 .library-question-text {
-    flex-grow: 1;
-    margin-bottom: var(--space-lg);
+    font-size: 1.1rem;
+    line-height: 1.6;
     color: var(--color-text);
+    margin-bottom: var(--space-lg);
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
-.remove-btn {
-    align-self: flex-end;
+.library-card-footer {
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--space-sm);
+    margin-top: auto;
 }
+
+.library-date {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    font-family: var(--font-family-mono);
+}
+
+/* Empty State Refinement */
+.empty-state {
+    text-align: center;
+    padding: var(--space-xxl);
+    background: var(--color-surface);
+    border-radius: var(--border-radius);
+    border: 1px dashed var(--color-border);
+    max-width: 500px;
+    margin: 2rem auto;
+}
+.empty-state-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--color-surface-active);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-lg) auto;
+    color: var(--color-text-secondary);
+}
+.empty-state-icon svg { width: 40px; height: 40px; }
