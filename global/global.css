@@ -64,17 +64,18 @@ body {
 /* --- WORLD CLASS BACKGROUND SYSTEM: ILLUMINATED GRID --- */
 
 /* Layer 1: Structural Data Grid */
+/* Uses --color-text to adapt: white dots in dark mode, dark dots in light mode */
 body::before {
     content: "";
     position: fixed;
     inset: 0;
     z-index: -1;
-    background-image: radial-gradient(var(--color-border) 1.5px, transparent 1.5px);
-    background-size: 32px 32px;
-    opacity: 0.3;
-    mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
-    -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+    background-image: radial-gradient(var(--color-text) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.15; /* Subtle but visible */
     pointer-events: none;
+    mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
+    -webkit-mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
 }
 
 /* Layer 2: Flowing Aurora (Living Gradient) */
@@ -84,12 +85,12 @@ body::after {
     inset: -50%;
     z-index: -2;
     background: 
-        radial-gradient(circle at 20% 30%, var(--color-primary-transparent) 0%, transparent 50%),
-        radial-gradient(circle at 80% 70%, var(--color-secondary-transparent) 0%, transparent 50%),
-        radial-gradient(circle at 50% 50%, var(--color-accent-transparent) 0%, transparent 60%);
-    filter: blur(60px);
-    animation: aurora-flow 25s ease-in-out infinite alternate;
-    opacity: 0.6;
+        radial-gradient(circle at 20% 30%, var(--color-primary-transparent-heavy) 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, var(--color-secondary-transparent-heavy) 0%, transparent 40%),
+        radial-gradient(circle at 40% 80%, var(--color-accent-transparent) 0%, transparent 50%);
+    filter: blur(80px);
+    animation: aurora-flow 20s ease-in-out infinite alternate;
+    opacity: 0.5;
 }
 
 @keyframes aurora-flow {
@@ -139,7 +140,7 @@ body::after {
 
 #sidebar {
     width: var(--sidebar-width-collapsed);
-    background-color: rgba(22, 26, 46, 0.6); /* Transparent for background bleed */
+    background-color: rgba(15, 15, 20, 0.6); /* Darker tint for contrast */
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-right: 1px solid var(--color-border);
@@ -155,7 +156,7 @@ body::after {
 #sidebar:hover {
     width: var(--sidebar-width-expanded);
     box-shadow: 0 0 30px rgba(0,0,0,0.3);
-    background-color: rgba(22, 26, 46, 0.9);
+    background-color: rgba(15, 15, 20, 0.9);
 }
 
 #app-container {
@@ -267,7 +268,7 @@ body::after {
 }
 
 .sidebar-link.active {
-    color: var(--color-text); /* Icon keeps its color, text becomes white */
+    color: var(--color-text);
     background-color: var(--color-surface-active);
     position: relative;
 }
@@ -289,22 +290,22 @@ body::after {
     height: 24px;
     margin-right: 24px;
     transition: filter var(--transition-speed-fast), transform var(--transition-speed-fast);
-    stroke: currentColor;
+    stroke: currentColor; /* Will be overridden by explicit classes below */
 }
 
-/* --- Colorful Icons --- */
-.icon-color-1 { color: #00b8d4; } /* Teal */
-.icon-color-2 { color: #d500f9; } /* Violet */
-.icon-color-3 { color: #ff4081; } /* Pink */
-.icon-color-4 { color: #ff9100; } /* Orange */
-.icon-color-5 { color: #00e676; } /* Green */
-.icon-color-6 { color: #2979ff; } /* Blue */
+/* --- Colorful Icons: Forced Visibility --- */
+/* We use !important to override 'currentColor' inheritance from the parent link */
+.sidebar-link .icon.icon-color-1 { stroke: #00e5ff !important; } /* Cyan */
+.sidebar-link .icon.icon-color-2 { stroke: #d500f9 !important; } /* Violet */
+.sidebar-link .icon.icon-color-3 { stroke: #ff4081 !important; } /* Pink */
+.sidebar-link .icon.icon-color-4 { stroke: #ff9100 !important; } /* Orange */
+.sidebar-link .icon.icon-color-5 { stroke: #00e676 !important; } /* Neon Green */
+.sidebar-link .icon.icon-color-6 { stroke: #2979ff !important; } /* Bright Blue */
 
 .sidebar-link:hover .icon,
 .sidebar-link.active .icon {
     transform: scale(1.1);
-    /* Add a glow based on the current color */
-    filter: drop-shadow(0 0 5px currentColor); 
+    filter: drop-shadow(0 0 6px currentColor); 
 }
 
 .sidebar-link .text {
