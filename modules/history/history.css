@@ -1,3 +1,4 @@
+
 .history-header {
     margin-bottom: var(--space-xl);
     text-align: center;
@@ -58,11 +59,15 @@
     background: linear-gradient(to right, var(--color-surface), rgba(22, 27, 34, 0.4));
 }
 
-/* Pass/Fail Coloring */
+/* Status Colors */
 .history-entry.passed .history-card { border-left-color: var(--color-success); }
 .history-entry.passed .history-marker { border-color: var(--color-success); }
+
 .history-entry.failed .history-card { border-left-color: var(--color-error); }
 .history-entry.failed .history-marker { border-color: var(--color-error); }
+
+.history-entry.aural .history-card { border-left-color: var(--color-secondary); }
+.history-entry.aural .history-marker { border-color: var(--color-secondary); }
 
 .history-main {
     display: flex;
@@ -97,46 +102,56 @@
     gap: 8px;
 }
 
-/* Circular Score Chart */
+/* Visual Badges (Circles/Icons) */
 .history-score-badge {
     position: relative;
     width: 60px;
     height: 60px;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
+/* Fix for Quiz Circle Colors */
 .circular-chart {
     display: block;
-    margin: 0 auto;
     max-width: 100%;
     max-height: 100%;
 }
-
 .circle-bg {
     fill: none;
     stroke: var(--color-surface-hover);
     stroke-width: 3.8;
 }
-
 .circle {
     fill: none;
     stroke-width: 2.8;
     stroke-linecap: round;
     transition: stroke-dasharray 1s ease-out;
+    /* Explicit fallback if theme vars fail, but variables are preferred */
+    stroke: var(--color-primary); 
 }
 .history-entry.passed .circle { stroke: var(--color-success); }
 .history-entry.failed .circle { stroke: var(--color-error); }
 
 .percentage {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-family: var(--font-family-mono);
-    font-size: 0.85rem;
-    font-weight: bold;
-    color: var(--color-text);
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-family: var(--font-family-mono); font-size: 0.85rem; font-weight: bold; color: var(--color-text);
 }
+
+/* Aural Icon Badge */
+.aural-icon-badge {
+    width: 50px; height: 50px; border-radius: 50%;
+    background: var(--color-surface-active);
+    /* FIX: Ensure icon is colorful, not black */
+    color: var(--color-secondary); 
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--color-border);
+    box-shadow: 0 0 10px var(--color-secondary-transparent);
+}
+.aural-icon-badge svg { width: 24px; height: 24px; }
 
 .history-footer {
     display: flex;
@@ -149,13 +164,12 @@
     background: transparent;
     border: 1px solid var(--color-border);
     color: var(--color-text-secondary);
-    padding: 4px 12px;
+    /* Accessibility: Increase touch target padding */
+    padding: 8px 16px;
     font-size: 0.85rem;
     border-radius: 4px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    display: flex; align-items: center; gap: 6px;
     transition: all 0.2s ease;
 }
 .btn-small:hover {
@@ -163,7 +177,49 @@
     color: var(--color-primary);
     background: var(--color-surface-hover);
 }
-.btn-small .icon { width: 14px; height: 14px; }
+/* FIX: Ensure button icons inherit specific hover color or default text color */
+.btn-small .icon { width: 14px; height: 14px; stroke: currentColor; }
+
+/* Transcript Modal */
+.transcript-content {
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+.transcript-body {
+    overflow-y: auto;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.transcript-line {
+    padding: 0.8rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+.transcript-line.user {
+    background-color: var(--color-surface-active);
+    align-self: flex-end;
+    border-bottom-right-radius: 0;
+    max-width: 80%;
+}
+.transcript-line.model {
+    background-color: var(--color-surface-hover);
+    align-self: flex-start;
+    border-bottom-left-radius: 0;
+    border: 1px solid var(--color-border);
+    max-width: 80%;
+}
+.transcript-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 4px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
 
 @media (max-width: 600px) {
     .history-timeline { padding-left: 20px; }

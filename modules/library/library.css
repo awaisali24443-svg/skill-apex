@@ -1,3 +1,4 @@
+
 .library-header {
     margin-bottom: var(--space-xl);
     text-align: center;
@@ -41,11 +42,13 @@
     margin-bottom: var(--space-md);
 }
 
+/* --- FIX FOR BLACK ICON ISSUE --- */
 .question-badge {
     width: 32px;
     height: 32px;
-    background: var(--color-surface-active);
-    color: var(--color-primary);
+    /* Use gradient background for vibrancy instead of flat color */
+    background: var(--brand-gradient);
+    color: #ffffff; /* Force white text */
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -53,6 +56,8 @@
     font-family: var(--font-family-heading);
     font-weight: bold;
     font-size: 1.1rem;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 /* Icon-only Remove Button */
@@ -74,7 +79,11 @@
     color: var(--color-error);
     transform: rotate(10deg);
 }
-.btn-icon svg { width: 18px; height: 18px; }
+.btn-icon svg { 
+    width: 18px; 
+    height: 18px; 
+    stroke: currentColor; /* Ensure stroke uses the color property */
+}
 
 .card-content {
     flex-grow: 1;
@@ -122,6 +131,8 @@
     align-items: center;
     justify-content: center;
     margin: 0 auto var(--space-lg) auto;
-    color: var(--color-text-secondary);
+    /* FIX: Use specific color instead of inherited text-secondary */
+    color: var(--color-primary); 
+    border: 1px solid var(--color-border);
 }
-.empty-state-icon svg { width: 40px; height: 40px; }
+.empty-state-icon svg { width: 40px; height: 40px; stroke: currentColor; }

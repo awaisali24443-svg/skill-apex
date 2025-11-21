@@ -37,21 +37,28 @@
     --fs-h3: 1.5rem;
 }
 
-html, body {
+html {
     height: 100%;
     width: 100%;
     overflow: hidden;
+    /* FIX: Base color on HTML so body can be transparent for layers */
+    background-color: var(--color-background); 
     color: var(--color-text);
-    background-color: var(--color-background);
     font-family: var(--font-family-body);
     font-size: var(--fs-base);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color var(--transition-speed-med) ease;
 }
 
 body {
+    height: 100%;
+    width: 100%;
     position: relative;
-    transition: background-color var(--transition-speed-med) ease, color var(--transition-speed-med) ease;
+    /* FIX: Transparent body allows pseudo-elements to show against html bg */
+    background-color: transparent; 
+    color: var(--color-text);
+    transition: color var(--transition-speed-med) ease;
 }
 
 /* View Transitions API Animations */
@@ -73,7 +80,7 @@ body::before {
     /* Adaptive dots: uses text color so it works on light & dark themes */
     background-image: radial-gradient(var(--color-text) 1px, transparent 1px);
     background-size: 40px 40px;
-    opacity: 0.07; /* Subtle texture */
+    opacity: 0.08; 
     pointer-events: none;
 }
 
@@ -93,8 +100,8 @@ body::after {
 }
 
 @keyframes aurora-pulse {
-    0% { opacity: 0.5; transform: scale(1); }
-    100% { opacity: 0.8; transform: scale(1.1); }
+    0% { opacity: 0.4; transform: scale(1); }
+    100% { opacity: 0.7; transform: scale(1.1); }
 }
 
 
