@@ -90,7 +90,14 @@
                 <div class="it-topic-icon">${topic.icon}</div>
                 <div class="it-topic-name">${topic.name}</div>
             `;
-            card.onclick = () => selectTopic(topic.name);
+            // ONE-TOUCH UPDATE: Fill AND Click
+            card.onclick = () => {
+                selectTopic(topic.name);
+                setTimeout(() => {
+                    const btn = document.querySelector(CONFIG.SELECTORS.button);
+                    if(btn) btn.click();
+                }, 400); // Short delay for visual feedback of input filling
+            };
             grid.appendChild(card);
         });
 

@@ -206,6 +206,40 @@ function showLevelUpModal(level) {
     });
 }
 
+// --- Global Event Wiring ---
+function setupGlobalSearch() {
+    const input = document.getElementById('topicInput');
+    const btn = document.getElementById('generateBtn');
+    
+    if(!input || !btn) return;
+
+    const handleSearch = () => {
+        const topic = input.value.trim();
+        if(topic) {
+            // Note: Phase 1 validation runs in the capture phase.
+            // If we are here, the input is valid and we should proceed.
+            
+            // We clear the input for UI cleanliness, though we might want to keep it
+            // if the user goes back. For now, let's keep it clean.
+            input.value = ''; 
+            input.blur(); // Remove focus to hide keyboard on mobile
+            
+            // Navigate to the Game Map for the topic
+            window.location.hash = `#/game/${encodeURIComponent(topic)}`;
+        }
+    };
+
+    // The button listener must be bubbling (default) to run AFTER Phase 1 validation
+    btn.addEventListener('click', handleSearch);
+    
+    input.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter') {
+            // Manually trigger click so Phase 1 validation runs
+            btn.click();
+        }
+    });
+}
+
 async function main() {
     try {
         // PWA Install Capture
@@ -230,6 +264,7 @@ async function main() {
         }
 
         renderSidebar(document.getElementById('sidebar'));
+        setupGlobalSearch(); // Wire up the header inputs
 
         window.addEventListener('hashchange', handleRouteChange);
         window.addEventListener('settings-changed', (e) => applyAppSettings(e.detail));
