@@ -4,100 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Knowledge Tester</title>
-    <meta name="description" content="A streamlined, AI-powered quiz application rebuilt from the ground up with vanilla JavaScript for performance and reliability. Generate quizzes on any topic instantly.">
-    <meta name="theme-color" id="theme-color-meta" content="#0c0e1a">
-    
-    <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
-    <link rel="manifest" href="manifest.json">
-
-    <meta property="og:title" content="Knowledge Tester">
-    <meta property="og:description" content="Generate quizzes on any topic instantly with the power of AI.">
-    <meta property="og:image" content="https://knowledge-tester.onrender.com/assets/images/og-image.png">
-    <meta property="og:url" content="https://knowledge-tester.onrender.com">
-    <meta property="og:type" content="website">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Inter:wght@400;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-    
-    <!-- Mermaid.js for diagrams -->
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-
-    <link id="theme-stylesheet" rel="stylesheet" href="themes/theme-dark-cyber.css">
-    <link rel="stylesheet" href="global/global.css">
+    <!-- Existing styles -->
+    <link rel="stylesheet" href="style.css">
+    <!-- PHASE 1: Styles -->
+    <link rel="stylesheet" href="style-phase1.css">
 <script type="importmap">
 {
   "imports": {
-    "express": "https://aistudiocdn.com/express@^5.1.0",
-    "path": "https://aistudiocdn.com/path@^0.12.7",
-    "url": "https://aistudiocdn.com/url@^0.11.4",
     "dotenv/": "https://aistudiocdn.com/dotenv@^17.2.3/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.1",
-    "express-rate-limit": "https://aistudiocdn.com/express-rate-limit@^8.2.1",
+    "url": "https://aistudiocdn.com/url@^0.11.4",
+    "express": "https://aistudiocdn.com/express@^5.1.0",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "path": "https://aistudiocdn.com/path@^0.12.7",
     "fs/": "https://aistudiocdn.com/fs@^0.0.1-security/",
     "http": "https://aistudiocdn.com/http@^0.0.1-security",
-    "ws": "https://aistudiocdn.com/ws@^8.18.3"
+    "ws": "https://aistudiocdn.com/ws@^8.18.3",
+    "express-rate-limit": "https://aistudiocdn.com/express-rate-limit@^8.2.1"
   }
 }
 </script>
 </head>
 <body>
-    <div id="splash-screen">
-        <img src="assets/icons/favicon.svg" alt="Knowledge Tester Logo" class="splash-logo">
-        <div class="spinner" role="status">
-            <span class="sr-only">Loading...</span>
+    <div class="container">
+        <h1>Knowledge Tester</h1>
+        <!-- Input and Button are targeted dynamically by phase1-core.js -->
+        <div class="input-group">
+            <input type="text" id="topicInput" placeholder="Enter a topic...">
+            <button id="generateBtn">Generate Quiz</button>
         </div>
+        <div id="quizOutput"></div>
     </div>
 
-    <div id="welcome-screen" style="display: none;">
-        <div class="welcome-content card">
-            <img src="assets/icons/favicon.svg" alt="Knowledge Tester Logo" class="welcome-logo">
-            <h1>Welcome to Knowledge Tester</h1>
-            <p>Your personal AI-powered learning companion. Master any topic, one level at a time.</p>
-            <ul class="features-list">
-                <li>
-                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#cpu"/></svg>
-                    <span>AI-Powered Learning Paths</span>
-                </li>
-                <li>
-                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#git-branch"/></svg>
-                    <span>Custom Journey Creation</span>
-                </li>
-                <li>
-                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#star"/></svg>
-                    <span>Track Your Progress</span>
-                </li>
-            </ul>
-            <button id="welcome-get-started-btn" class="btn btn-primary">Let's Get Started</button>
-        </div>
-    </div>
-
-    <div id="app-wrapper">
-        <nav id="sidebar"></nav>
-        <main id="app-container" role="main">
-            <div id="app"></div>
-        </main>
-    </div>
-    
-    <div id="modal-container"></div>
-    <div id="toast-container"></div>
-    
-    <div id="offline-indicator" class="offline-indicator" style="display: none;" role="status" aria-live="assertive">
-        You are currently offline. Some features may be unavailable.
-    </div>
-
-    <script type="module" src="index.js"></script>
-    <script>
-        // Initialize Mermaid with a dark theme configuration
-        document.addEventListener('DOMContentLoaded', () => {
-            mermaid.initialize({ 
-                startOnLoad: false, 
-                theme: 'dark',
-                securityLevel: 'loose',
-                fontFamily: 'Inter'
-            });
-        });
-    </script>
+    <!-- Original Logic -->
+    <script src="index.js"></script>
+    <!-- PHASE 1: Logic (Loaded last to ensure DOM exists, but runs listeners first via capture) -->
+    <script src="phase1-core.js"></script>
 </body>
 </html>
