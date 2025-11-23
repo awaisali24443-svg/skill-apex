@@ -1,12 +1,12 @@
 
 /**
  * @file Service Worker for Knowledge Tester PWA
- * @version 3.8.0
+ * @version 3.8.1
  *
  * This service worker implements a robust offline-first caching strategy.
  */
 
-const CACHE_NAME = 'knowledge-tester-v3.8.0';
+const CACHE_NAME = 'knowledge-tester-v3.8.1';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [
@@ -18,12 +18,19 @@ const APP_SHELL_URLS = [
     'data/topics.json',
     'global/global.css',
     'global/global.js',
+    // New Phase Files
+    'style-phase1.css',
+    'style-phase2.css',
+    'phase1-core.js',
+    'phase2-themes.js',
+    // Themes
     'themes/theme-dark-cyber.css',
     'themes/theme-light-cyber.css',
     'themes/theme-light-solar.css',
     'themes/theme-dark.css',
     'themes/theme-dark-arcane.css',
     'themes/theme-dark-nebula.css',
+    // Assets
     'assets/icons/favicon.svg',
     'assets/icons/feather-sprite.svg',
     'assets/images/apple-touch-icon.png',
@@ -49,6 +56,7 @@ const APP_SHELL_URLS = [
     'services/stateService.js',
     'services/themeService.js',
     'services/toastService.js',
+    'services/i18nService.js',
     // App Modules
     'modules/home/home.html', 'modules/home/home.css', 'modules/home/home.js',
     'modules/topic-list/topic-list.html', 'modules/topic-list/topic-list.css', 'modules/topic-list/topic-list.js',
