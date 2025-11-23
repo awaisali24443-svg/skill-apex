@@ -1,5 +1,4 @@
 
-
 import * as configService from '../../services/configService.js';
 import { showConfirmationModal } from '../../services/modalService.js';
 import { LOCAL_STORAGE_KEYS } from '../../constants.js';
@@ -46,6 +45,9 @@ function loadSettings() {
     if (elements.timerSelect) {
         elements.timerSelect.value = config.quizTimer || 60;
     }
+    if (elements.difficultySelect) {
+        elements.difficultySelect.value = config.difficulty || 'medium';
+    }
 }
 
 function handleSoundToggle() {
@@ -60,6 +62,11 @@ function handleAnimationChange() {
 function handleTimerChange() {
     const duration = parseInt(elements.timerSelect.value, 10);
     configService.setConfig({ quizTimer: duration });
+}
+
+function handleDifficultyChange() {
+    const diff = elements.difficultySelect.value;
+    configService.setConfig({ difficulty: diff });
 }
 
 function handleThemeToggle(event) {
@@ -128,7 +135,6 @@ function handleInstallClick() {
 
 // PHASE 6: Mock Payment Logic
 function handleUpgradeClick() {
-    // Simulate opening a Stripe checkout via a modal or redirection
     showConfirmationModal({
         title: 'Upgrade to Pro?',
         message: 'This is a demo. In production, this would open Stripe Checkout.\n\nBenefits:\n- Unlimited AI Requests\n- GPT-4 Level Tuning\n- Cloud Sync',
@@ -151,12 +157,13 @@ export function init() {
         soundToggle: document.getElementById('sound-toggle'),
         animationSlider: document.getElementById('animation-slider'),
         timerSelect: document.getElementById('quiz-timer-select'),
+        difficultySelect: document.getElementById('difficulty-select'),
         clearDataBtn: document.getElementById('clear-data-btn'),
         themeToggle: document.getElementById('theme-toggle-group'),
         themeToggleButtons: document.querySelectorAll('#theme-toggle-group button'),
         installSection: document.getElementById('install-app-section'),
         installBtn: document.getElementById('install-app-btn'),
-        upgradeBtn: document.getElementById('upgrade-pro-btn'), // PHASE 6
+        upgradeBtn: document.getElementById('upgrade-pro-btn'),
     };
 
     loadSettings();
@@ -164,6 +171,7 @@ export function init() {
     elements.soundToggle.addEventListener('change', handleSoundToggle);
     elements.animationSlider.addEventListener('input', handleAnimationChange);
     elements.timerSelect.addEventListener('change', handleTimerChange);
+    elements.difficultySelect.addEventListener('change', handleDifficultyChange);
     elements.clearDataBtn.addEventListener('click', handleClearData);
     elements.themeToggle.addEventListener('click', handleThemeToggle);
     elements.themeToggle.addEventListener('keydown', handleThemeToggleKeydown);
@@ -179,6 +187,7 @@ export function destroy() {
     if (elements.soundToggle) elements.soundToggle.removeEventListener('change', handleSoundToggle);
     if (elements.animationSlider) elements.animationSlider.removeEventListener('input', handleAnimationChange);
     if (elements.timerSelect) elements.timerSelect.removeEventListener('change', handleTimerChange);
+    if (elements.difficultySelect) elements.difficultySelect.removeEventListener('change', handleDifficultyChange);
     if (elements.clearDataBtn) elements.clearDataBtn.removeEventListener('click', handleClearData);
     if (elements.themeToggle) {
         elements.themeToggle.removeEventListener('click', handleThemeToggle);

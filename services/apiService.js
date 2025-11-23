@@ -1,5 +1,6 @@
 
 import { showToast } from './toastService.js';
+import * as configService from './configService.js';
 
 /**
  * Handles the response from a fetch request.
@@ -55,11 +56,12 @@ export async function generateCurriculumOutline({ topic, totalLevels }) {
 }
 
 export async function generateLevel({ topic, level, totalLevels }) {
+    const { difficulty } = configService.getConfig();
     try {
         const response = await fetch('/api/generate-level', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, level, totalLevels })
+            body: JSON.stringify({ topic, level, totalLevels, difficulty })
         });
         return await handleResponse(response);
     } catch (error) {
@@ -68,11 +70,12 @@ export async function generateLevel({ topic, level, totalLevels }) {
 }
 
 export async function generateBossBattle({ topic, chapter }) {
+    const { difficulty } = configService.getConfig();
     try {
         const response = await fetch('/api/generate-boss-battle', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, chapter })
+            body: JSON.stringify({ topic, chapter, difficulty })
         });
         return await handleResponse(response);
     } catch (error) {
@@ -106,13 +109,6 @@ export async function generateSpeech(text) {
     }
 }
 
-/**
- * Sends a request to the backend to explain a specific concept (Socratic Deep Dive).
- * @param {string} topic - The main topic.
- * @param {string} concept - The specific concept/text to explain.
- * @param {string} context - The surrounding context (e.g., the full lesson text).
- * @returns {Promise<object>} Resolves to { explanation }.
- */
 export async function explainConcept(topic, concept, context) {
     try {
         const response = await fetch('/api/explain-concept', {

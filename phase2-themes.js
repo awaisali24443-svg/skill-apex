@@ -1,4 +1,5 @@
 
+
 /**
  * PHASE 2: VISUAL REVOLUTION ENGINE
  */
@@ -29,6 +30,17 @@
         renderModal();
         const saved = localStorage.getItem('kt_theme') || 'dark-cyber';
         applyTheme(saved);
+        
+        // Listen for settings changes to toggle particles on/off
+        window.addEventListener('settings-changed', (e) => {
+            const config = e.detail;
+            if (config.animationIntensity === 'off') {
+                destroyParticles();
+            } else {
+                const currentTheme = localStorage.getItem('kt_theme') || 'dark-cyber';
+                initParticles(currentTheme);
+            }
+        });
     }
 
     function renderOrb() {
@@ -65,12 +77,38 @@
     function applyTheme(id) {
         document.body.setAttribute('data-theme', id);
         localStorage.setItem('kt_theme', id);
-        initParticles(id);
+        
+        // Check config before initializing particles
+        const configStr = localStorage.getItem('knowledge-tester-config');
+        let shouldAnimate = true;
+        if (configStr) {
+            const config = JSON.parse(configStr);
+            if (config.animationIntensity === 'off') shouldAnimate = false;
+        }
+
+        if (shouldAnimate) {
+            initParticles(id);
+        } else {
+            destroyParticles();
+        }
+        
         document.getElementById('theme-modal').classList.remove('active');
+    }
+
+    function destroyParticles() {
+        if (window.pJSDom && window.pJSDom.length > 0) {
+            window.pJSDom[0].pJS.fn.vendors.destroypJS();
+            window.pJSDom = [];
+        }
+        document.getElementById('particles-js').innerHTML = '';
     }
 
     function initParticles(themeId) {
         if (!window.particlesJS) return;
+        
+        // Reset container
+        document.getElementById('particles-js').innerHTML = '';
+
         const color = THEMES.find(t => t.id === themeId)?.color || '#ffffff';
         const isMatrix = themeId === 'matrix' || themeId === 'hacker';
         

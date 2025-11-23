@@ -1,5 +1,6 @@
 
 
+
 .game-level-container {
     height: 100%;
     width: 100%;
@@ -310,13 +311,48 @@
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius);
     margin-bottom: var(--space-lg);
+    align-items: center;
+    justify-content: space-between;
 }
-.timer-section { padding-right: var(--space-lg); border-right: 1px solid var(--color-border); }
-.timer-section p, .question-progress-section p { margin: 0 0 var(--space-sm) 0; font-size: var(--fs-sm); color: var(--color-text-secondary); }
-#timer-text { font-size: 2rem; font-weight: 700; font-family: var(--font-family-heading); color: var(--color-primary); }
-.question-progress-section { flex-grow: 1; }
-.progress-bar { width: 100%; height: 8px; background-color: var(--color-surface); border-radius: 4px; }
-.progress-bar-fill { width: 0%; height: 100%; background: var(--brand-gradient); transition: width 0.3s ease; }
+.timer-section { padding-right: var(--space-lg); border-right: 1px solid var(--color-border); text-align: center; min-width: 100px; }
+.timer-section p { margin: 0 0 var(--space-sm) 0; font-size: var(--fs-sm); color: var(--color-text-secondary); }
+#timer-text { font-size: 1.8rem; font-weight: 700; font-family: var(--font-family-heading); color: var(--color-primary); }
+
+/* Circular Progress Bar */
+.question-progress-section.circular { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    width: 100px;
+}
+.progress-circle-container {
+    position: relative;
+    width: 60px;
+    height: 60px;
+}
+.circular-chart {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+}
+.circle-bg {
+    fill: none;
+    stroke: var(--color-surface-hover);
+    stroke-width: 3.8;
+}
+.circle {
+    fill: none;
+    stroke-width: 2.8;
+    stroke-linecap: round;
+    stroke: var(--color-primary);
+    transition: stroke-dasharray 0.5s ease-out;
+}
+.percentage {
+    position: absolute;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-family: var(--font-family-mono); font-size: 0.8rem; font-weight: bold; color: var(--color-text);
+}
+
 
 .main-question-card { padding: var(--space-xl); background-color: var(--color-surface); }
 #quiz-question-text { margin-bottom: var(--space-xl); font-size: var(--fs-h3); text-align: center; }
@@ -418,7 +454,8 @@
 
 @media (max-width: 600px) {
     .options-grid { grid-template-columns: 1fr; }
-    .quiz-status-card { flex-direction: column; }
-    .timer-section { border-right: none; padding-right: 0; border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-lg); }
-    .boss-health-container { display: none !important; } /* Hide boss bar on very small screens if needed */
+    .quiz-status-card { flex-direction: row; gap: 10px; padding: 10px; }
+    .timer-section { border-right: 1px solid var(--color-border); border-bottom: none; padding-bottom: 0; padding-right: 10px; }
+    .boss-health-container { display: none !important; } 
+    #timer-text { font-size: 1.4rem; }
 }

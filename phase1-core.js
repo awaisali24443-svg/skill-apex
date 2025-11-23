@@ -1,3 +1,4 @@
+
 /**
  * PHASE 1: IT-FOCUSED CORE & PRESETS
  */
@@ -68,7 +69,7 @@
 
         const title = document.createElement('div');
         title.className = 'it-section-title';
-        title.innerHTML = '<span>🔥 2025 Trending Tech</span>';
+        title.innerHTML = '<span>🔥 2025 Trending Tech</span> <button id="help-icon-btn" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--color-text-secondary);">?</button>';
 
         const grid = document.createElement('div');
         grid.className = 'it-preset-grid';
@@ -99,6 +100,39 @@
         } else {
             document.body.insertBefore(container, document.body.firstChild);
         }
+
+        // Setup Help Modal
+        document.getElementById('help-icon-btn')?.addEventListener('click', showHelpModal);
+    }
+
+    function showHelpModal() {
+        const modalHTML = `
+            <div class="modal-backdrop" id="phase1-help-backdrop"></div>
+            <div class="modal-content" style="max-width: 500px;">
+                <h2 style="color: var(--it-secondary);">About IT Quiz Master</h2>
+                <p>This platform is exclusively designed for <strong>IT & Programming Professionals</strong>. Our AI is tuned to reject non-technical topics to ensure high-quality, relevant learning.</p>
+                <hr style="border-color: var(--color-border); margin: 15px 0;">
+                <h3>Keyboard Shortcuts</h3>
+                <ul style="list-style: none; padding: 0; color: var(--color-text-secondary);">
+                    <li><strong>1-4</strong> : Select Answer</li>
+                    <li><strong>Enter</strong> : Submit Answer</li>
+                    <li><strong>N</strong> : Next Question</li>
+                    <li><strong>S</strong> : Share Results</li>
+                </ul>
+                <div style="text-align: right; margin-top: 20px;">
+                    <button class="btn" id="phase1-help-close">Got it</button>
+                </div>
+            </div>
+        `;
+        
+        const modalContainer = document.createElement('div');
+        modalContainer.id = 'phase1-help-modal';
+        modalContainer.innerHTML = modalHTML;
+        document.body.appendChild(modalContainer);
+
+        const close = () => { modalContainer.remove(); };
+        document.getElementById('phase1-help-close').onclick = close;
+        document.getElementById('phase1-help-backdrop').onclick = close;
     }
 
     function selectTopic(topicName) {

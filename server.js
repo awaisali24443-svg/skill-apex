@@ -199,12 +199,14 @@ async function generateCurriculumOutline(topic, totalLevels) {
     }
 }
 
-async function generateLevelContent(topic, level, totalLevels) {
+async function generateLevelContent(topic, level, totalLevels, difficulty = 'medium') {
     if (!ai) throw new Error("AI Service not initialized.");
     
     const prompt = `You are a charismatic, world-class keynote speaker and educator. You are teaching a ${totalLevels}-level masterclass on "${topic}". The user is currently on Level ${level}.
     
     YOUR GOAL: Deliver a high-impact, "Presentation Style" lesson that sticks.
+    
+    DIFFICULTY SETTING: The user has selected "${difficulty}" difficulty. Adjust the complexity of the questions accordingly (Easy = basic recall, Hard = complex application/analysis).
     
     RULES FOR LESSON CONTENT:
     1. **NO WALLS OF TEXT.** Do not write standard paragraphs.
@@ -221,6 +223,7 @@ async function generateLevelContent(topic, level, totalLevels) {
     RULES FOR QUESTIONS:
     1. Generate 2-3 multiple-choice questions based *only* on this specific lesson.
     2. Keep options concise.
+    3. Respect the "${difficulty}" difficulty setting for distractors and nuance.
     
     Generate the JSON response.`;
 
@@ -240,18 +243,20 @@ async function generateLevelContent(topic, level, totalLevels) {
     }
 }
 
-async function generateBossBattleContent(topic, chapter) {
+async function generateBossBattleContent(topic, chapter, difficulty = 'medium') {
     if (!ai) throw new Error("AI Service not initialized.");
     const startLevel = (chapter - 1) * 50 + 1;
     const endLevel = chapter * 50;
     
     const prompt = `You are a tough but fair AI quiz master creating a "Boss Battle" for a learning game about "${topic}". This is a cumulative test for Chapter ${chapter} (levels ${startLevel}-${endLevel}).
     
+    DIFFICULTY SETTING: "${difficulty}".
+    
     RULES:
     1. Generate exactly 10 challenging multiple-choice questions.
     2. Focus on tricky edge cases, common misconceptions, and synthesizing multiple concepts from this chapter.
     3. Questions should require critical thinking, not just memorization.
-    4. Difficulty: Hard. Distractors should be plausible.
+    4. Difficulty: ${difficulty.toUpperCase()}. Distractors should be plausible.
     5. NO lesson text. Quiz only.
     6. Tone: Epic final boss. The user must prove their mastery.
     
@@ -466,10 +471,10 @@ app.post('/api/generate-curriculum-outline', async (req, res) => {
 });
 
 app.post('/api/generate-level', async (req, res) => {
-    const { topic, level, totalLevels } = req.body;
+    const { topic, level, totalLevels, difficulty } = req.body;
     if (!topic || !level || !totalLevels) return res.status(400).json({ error: 'Missing required parameters' });
     try {
-        const levelContent = await generateLevelContent(topic, level, totalLevels);
+        const levelContent = await generateLevelContent(topic, level, totalLevels, difficulty);
         res.json(levelContent);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -477,10 +482,10 @@ app.post('/api/generate-level', async (req, res) => {
 });
 
 app.post('/api/generate-boss-battle', async (req, res) => {
-    const { topic, chapter } = req.body;
+    const { topic, chapter, difficulty } = req.body;
     if (!topic || !chapter) return res.status(400).json({ error: 'Missing required parameters' });
     try {
-        const bossContent = await generateBossBattleContent(topic, chapter);
+        const bossContent = await generateBossBattleContent(topic, chapter, difficulty);
         res.json(bossContent);
     } catch (error) {
         res.status(500).json({ error: error.message });

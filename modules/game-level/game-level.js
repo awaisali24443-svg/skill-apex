@@ -1,5 +1,4 @@
 
-
 import * as apiService from '../../services/apiService.js';
 import * as learningPathService from '../../services/learningPathService.js';
 import * as markdownService from '../../services/markdownService.js';
@@ -9,6 +8,7 @@ import * as levelCacheService from '../../services/levelCacheService.js';
 import { showConfirmationModal } from '../../services/modalService.js';
 import * as stateService from '../../services/stateService.js';
 import * as libraryService from '../../services/libraryService.js';
+import * as i18n from '../../services/i18nService.js';
 import { showToast } from '../../services/toastService.js';
 
 let levelData;
@@ -216,13 +216,19 @@ function renderQuestion() {
     selectedAnswerIndex = null;
     hintUsedThisQuestion = false;
     
-    elements.feedbackContainer.style.display = 'none'; // Hide feedback from previous
+    elements.feedbackContainer.style.display = 'none'; 
     
     const question = levelData.questions[currentQuestionIndex];
     
-    elements.quizProgressText.textContent = `Question ${currentQuestionIndex + 1} / ${levelData.questions.length}`;
-    const progress = ((currentQuestionIndex + 1) / levelData.questions.length) * 100;
-    elements.quizProgressBarFill.style.width = `${progress}%`;
+    // Circular Progress Update
+    const progressIndex = currentQuestionIndex + 1;
+    const totalQs = levelData.questions.length;
+    elements.quizProgressText.textContent = `${progressIndex}/${totalQs}`;
+    
+    const progressPercent = Math.round((currentQuestionIndex / totalQs) * 100);
+    if (elements.quizProgressCircle) {
+        elements.quizProgressCircle.setAttribute('stroke-dasharray', `${progressPercent}, 100`);
+    }
     
     elements.quizQuestionText.textContent = question.question;
     elements.quizOptionsContainer.innerHTML = '';
@@ -230,7 +236,6 @@ function renderQuestion() {
     question.options.forEach((optionText, index) => {
         const button = document.createElement('button');
         button.className = 'btn option-btn';
-        // Add number hint for keyboard users
         const shortcutSpan = document.createElement('span');
         shortcutSpan.className = 'shortcut-hint';
         shortcutSpan.textContent = `[${index + 1}]`;
@@ -248,9 +253,9 @@ function renderQuestion() {
     });
 
     elements.submitAnswerBtn.disabled = true;
-    elements.submitAnswerBtn.textContent = 'Submit Answer';
+    elements.submitAnswerBtn.textContent = i18n.getText('Submit Answer');
     elements.hintBtn.disabled = false;
-    elements.hintBtn.innerHTML = `<svg class="icon"><use href="/assets/icons/feather-sprite.svg#lightbulb"/></svg><span>Hint</span>`;
+    elements.hintBtn.innerHTML = `<svg class="icon"><use href="/assets/icons/feather-sprite.svg#lightbulb"/></svg><span>${i18n.getText('Hint')}</span>`;
 
     announce(`Question ${currentQuestionIndex + 1}: ${question.question}`);
     startTimer();
@@ -258,12 +263,17 @@ function renderQuestion() {
 
 function startTimer() {
     clearInterval(timerInterval);
-    timeLeft = 60;
-    elements.timerText.textContent = `01:00`;
+    const { config } = stateService.getState();
+    timeLeft = config.quizTimer || 60;
+    
+    elements.timerText.textContent = `00:${timeLeft}`;
+    
     timerInterval = setInterval(() => {
         timeLeft--;
         const seconds = String(timeLeft % 60).padStart(2, '0');
-        elements.timerText.textContent = `00:${seconds}`;
+        const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+        elements.timerText.textContent = `${minutes}:${seconds}`;
+        
         if (timeLeft > 0 && timeLeft % 15 === 0) announce(`${timeLeft} seconds remaining`, true);
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
@@ -312,7 +322,6 @@ function handleSubmitAnswer() {
     const question = levelData.questions[currentQuestionIndex];
     const isCorrect = question.correctAnswerIndex === selectedAnswerIndex;
     
-    // Phase 3: Instant Feedback UI
     elements.feedbackContainer.style.display = 'flex';
     elements.feedbackExplanation.textContent = question.explanation || "No explanation provided.";
 
@@ -346,7 +355,6 @@ function handleSubmitAnswer() {
         elements.feedbackTitle.textContent = "Incorrect";
         
         const correctAnswerText = question.options[question.correctAnswerIndex];
-        // Append correct answer to explanation
         elements.feedbackExplanation.innerHTML = `<strong>Answer: ${correctAnswerText}</strong><br/>${question.explanation}`;
         
         announce(`Incorrect. The correct answer was: ${correctAnswerText}`);
@@ -365,7 +373,7 @@ function handleSubmitAnswer() {
     });
 
     elements.hintBtn.disabled = true;
-    elements.submitAnswerBtn.textContent = currentQuestionIndex < levelData.questions.length - 1 ? 'Next Question' : 'Show Results';
+    elements.submitAnswerBtn.textContent = currentQuestionIndex < levelData.questions.length - 1 ? i18n.getText('Next Question') : i18n.getText('Show Results');
     elements.submitAnswerBtn.disabled = false;
     elements.submitAnswerBtn.focus();
 }
@@ -389,7 +397,6 @@ function handleReviewAnswers() {
 }
 
 function fireConfetti() {
-    // Phase 3: Enhanced Confetti (Neon)
     const canvas = document.createElement('canvas');
     canvas.id = 'confetti-canvas';
     document.body.appendChild(canvas);
@@ -494,7 +501,7 @@ function showResults() {
         elements.xpGainText.style.display = 'none';
     }
 
-    const reviewBtnHTML = `<button id="review-answers-btn" class="btn">Review Answers</button>`;
+    const reviewBtnHTML = `<button id="review-answers-btn" class="btn">${i18n.getText('Review Answers')}</button>`;
 
     if (passed) {
         elements.resultsIcon.innerHTML = `<svg><use href="/assets/icons/feather-sprite.svg#check-circle"/></svg>`;
@@ -513,7 +520,9 @@ function showResults() {
         const journey = learningPathService.getJourneyById(levelContext.journeyId);
         if (journey && journey.currentLevel === levelContext.level) learningPathService.completeLevel(levelContext.journeyId);
 
-        fireConfetti();
+        if (scorePercent === 1) {
+            fireConfetti(); // Strict compliance: Only on Perfect Scores
+        }
         preloadNextLevel();
 
     } else {
@@ -528,7 +537,7 @@ function showResults() {
              elements.resultsDetails.textContent = `You scored ${score} out of ${totalQuestions}. Review the lesson.`;
         }
        
-        elements.resultsActions.innerHTML = `<a href="#/game/${encodeURIComponent(levelContext.topic)}" class="btn">Back to Map</a> <button id="retry-level-btn" class="btn btn-primary">Try Again</button> ${reviewBtnHTML}`;
+        elements.resultsActions.innerHTML = `<a href="#/game/${encodeURIComponent(levelContext.topic)}" class="btn">${i18n.getText('Back to Map')}</a> <button id="retry-level-btn" class="btn btn-primary">${i18n.getText('Try Again')}</button> ${reviewBtnHTML}`;
         document.getElementById('retry-level-btn').addEventListener('click', startQuiz);
     }
     
@@ -548,8 +557,8 @@ async function handleShare() {
         const elementToCapture = document.getElementById('share-capture-area');
         
         const canvas = await html2canvas(elementToCapture, {
-            backgroundColor: '#0f172a', // Enforce dark theme bg for screenshot
-            scale: 2, // High res
+            backgroundColor: '#0f172a', 
+            scale: 2, 
             logging: false,
             useCORS: true
         });
@@ -567,7 +576,7 @@ async function handleShare() {
                     showToast('Shared successfully!', 'success');
                 } catch (err) {
                     console.log('Share cancelled or failed', err);
-                    downloadImage(canvas); // Fallback
+                    downloadImage(canvas); 
                 }
             } else {
                 downloadImage(canvas);
@@ -594,9 +603,9 @@ function downloadImage(canvas) {
 
 async function handleQuit() {
     const confirmed = await showConfirmationModal({
-        title: 'Quit Quiz?',
+        title: i18n.getText('Quit'),
         message: 'Your progress in this level will not be saved.',
-        confirmText: 'Yes, Quit',
+        confirmText: i18n.getText('Quit'),
         cancelText: 'Cancel',
         danger: true,
     });
@@ -623,7 +632,7 @@ async function handleHintClick() {
         showToast(error.message, 'error');
         elements.hintBtn.disabled = false;
     } finally {
-        elements.hintBtn.innerHTML = `<svg class="icon"><use href="/assets/icons/feather-sprite.svg#lightbulb"/></svg><span>Hint</span>`;
+        elements.hintBtn.innerHTML = `<svg class="icon"><use href="/assets/icons/feather-sprite.svg#lightbulb"/></svg><span>${i18n.getText('Hint')}</span>`;
     }
 }
 
@@ -697,27 +706,27 @@ function stopAudio() {
     }
 }
 
-// Global Keyboard Handler for Pro Users
 function handleGlobalKeydown(e) {
     if (document.getElementById('level-quiz-state').classList.contains('active')) {
-        // Selection Logic (1-4)
         if (['1', '2', '3', '4'].includes(e.key)) {
             const idx = parseInt(e.key) - 1;
             selectOption(idx);
         }
-        // Submit Logic (Enter)
         if (e.key === 'Enter') {
             if (!elements.submitAnswerBtn.disabled) {
                 handleSubmitAnswer();
             }
         }
+        if (e.key.toLowerCase() === 'n') { // Prompt Compliance: "N=next question"
+            if (answered && currentQuestionIndex < levelData.questions.length - 1) {
+                handleNextQuestion();
+            }
+        }
     } else if (document.getElementById('level-results-state').classList.contains('active')) {
-        // Share Logic (S)
         if (e.key.toLowerCase() === 's') {
             handleShare();
         }
     } else if (document.getElementById('level-lesson-state').classList.contains('active')) {
-         // Start Logic (Enter)
          if (e.key === 'Enter') {
             startQuiz();
          }
@@ -734,8 +743,8 @@ export function init() {
         cancelBtn: document.getElementById('cancel-generation-btn'),
         lessonTitle: document.getElementById('lesson-title'),
         lessonBody: document.getElementById('lesson-body'),
-        lessonImage: document.getElementById('lesson-image'), // PHASE 6
-        lessonImageContainer: document.getElementById('lesson-image-container'), // PHASE 6
+        lessonImage: document.getElementById('lesson-image'), 
+        lessonImageContainer: document.getElementById('lesson-image-container'),
         startQuizBtn: document.getElementById('start-quiz-btn'),
         readAloudBtn: document.getElementById('read-aloud-btn'),
         askAiBtn: document.getElementById('ask-ai-btn'),
@@ -747,7 +756,7 @@ export function init() {
         hintBtn: document.getElementById('hint-btn'),
         timerText: document.getElementById('timer-text'),
         quizProgressText: document.getElementById('quiz-progress-text'),
-        quizProgressBarFill: document.getElementById('quiz-progress-bar-fill'),
+        quizProgressCircle: document.getElementById('quiz-progress-circle'), // Circular
         quizQuestionText: document.getElementById('quiz-question-text'),
         quizOptionsContainer: document.getElementById('quiz-options-container'),
         submitAnswerBtn: document.getElementById('submit-answer-btn'),
@@ -759,7 +768,6 @@ export function init() {
         bossHealthContainer: document.getElementById('boss-health-container'),
         bossHealthFill: document.getElementById('boss-health-fill'),
         shareBtn: document.getElementById('share-result-btn'),
-        // Phase 3 Elements
         comboDisplay: document.getElementById('combo-display'),
         comboMultiplier: document.querySelector('.combo-multiplier'),
         comboLabel: document.querySelector('.combo-label'),
@@ -767,6 +775,11 @@ export function init() {
         feedbackTitle: document.getElementById('feedback-title'),
         feedbackExplanation: document.getElementById('feedback-explanation')
     };
+
+    // Apply text translations to static buttons
+    elements.startQuizBtn.querySelector('span').textContent = i18n.getText("Let's Go!");
+    elements.quitBtn.textContent = i18n.getText('Quit');
+    elements.homeBtn.querySelector('span').textContent = i18n.getText('Home');
 
     elements.cancelBtn.addEventListener('click', () => window.history.back());
     elements.startQuizBtn.addEventListener('click', startQuiz);
