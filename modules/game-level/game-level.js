@@ -27,6 +27,9 @@ let outputAudioContext = null;
 let currentAudioSource = null;
 let keyboardHandler = null;
 
+// Phase 3: Combo Mechanics
+let comboStreak = 0;
+
 // Boss Battle State
 let bossHp = 100;
 let damagePerHit = 10;
@@ -151,7 +154,6 @@ function renderLesson() {
     // PHASE 6: Dynamic AI Image Injection
     if (elements.lessonImage && elements.lessonImageContainer) {
         const encodedTopic = encodeURIComponent(`futuristic technology illustration for ${levelContext.topic}`);
-        // Using Pollinations.ai for dynamic generation
         const imageUrl = `https://image.pollinations.ai/prompt/${encodedTopic}?width=800&height=400&nologo=true&seed=${levelContext.level}`;
         
         elements.lessonImage.onload = () => {
@@ -178,6 +180,7 @@ function renderLesson() {
 function startQuiz() {
     currentQuestionIndex = 0;
     score = 0;
+    comboStreak = 0;
     userAnswers = [];
     xpGainedThisLevel = 0;
     
@@ -191,14 +194,30 @@ function startQuiz() {
     }
 
     renderQuestion();
+    updateComboDisplay();
     switchState('level-quiz-state');
     soundService.playSound('start');
+}
+
+function updateComboDisplay() {
+    if (comboStreak > 1) {
+        elements.comboDisplay.style.opacity = '1';
+        elements.comboDisplay.style.transform = 'scale(1.2)';
+        setTimeout(() => elements.comboDisplay.style.transform = 'scale(1)', 200);
+        elements.comboMultiplier.textContent = `x${comboStreak}`;
+        elements.comboLabel.textContent = comboStreak > 4 ? "ON FIRE! 🔥" : "Streak!";
+    } else {
+        elements.comboDisplay.style.opacity = '0';
+    }
 }
 
 function renderQuestion() {
     answered = false;
     selectedAnswerIndex = null;
     hintUsedThisQuestion = false;
+    
+    elements.feedbackContainer.style.display = 'none'; // Hide feedback from previous
+    
     const question = levelData.questions[currentQuestionIndex];
     
     elements.quizProgressText.textContent = `Question ${currentQuestionIndex + 1} / ${levelData.questions.length}`;
@@ -293,12 +312,23 @@ function handleSubmitAnswer() {
     const question = levelData.questions[currentQuestionIndex];
     const isCorrect = question.correctAnswerIndex === selectedAnswerIndex;
     
+    // Phase 3: Instant Feedback UI
+    elements.feedbackContainer.style.display = 'flex';
+    elements.feedbackExplanation.textContent = question.explanation || "No explanation provided.";
+
     if (isCorrect) {
         score++;
-        const xpForThisQuestion = hintUsedThisQuestion ? 5 : 10;
+        comboStreak++;
+        updateComboDisplay();
+        
+        const xpForThisQuestion = (hintUsedThisQuestion ? 5 : 10) + (comboStreak > 1 ? comboStreak * 2 : 0);
         xpGainedThisLevel += xpForThisQuestion;
+        
         soundService.playSound('correct');
         announce('Correct!');
+
+        elements.feedbackContainer.className = 'feedback-container correct';
+        elements.feedbackTitle.textContent = "Correct!";
 
         if (levelContext.isBoss) {
             bossHp = Math.max(0, bossHp - damagePerHit);
@@ -308,8 +338,17 @@ function handleSubmitAnswer() {
         }
 
     } else {
+        comboStreak = 0;
+        updateComboDisplay();
         soundService.playSound('incorrect');
+        
+        elements.feedbackContainer.className = 'feedback-container incorrect';
+        elements.feedbackTitle.textContent = "Incorrect";
+        
         const correctAnswerText = question.options[question.correctAnswerIndex];
+        // Append correct answer to explanation
+        elements.feedbackExplanation.innerHTML = `<strong>Answer: ${correctAnswerText}</strong><br/>${question.explanation}`;
+        
         announce(`Incorrect. The correct answer was: ${correctAnswerText}`);
         
         if (levelContext.isBoss) {
@@ -350,6 +389,7 @@ function handleReviewAnswers() {
 }
 
 function fireConfetti() {
+    // Phase 3: Enhanced Confetti (Neon)
     const canvas = document.createElement('canvas');
     canvas.id = 'confetti-canvas';
     document.body.appendChild(canvas);
@@ -718,7 +758,14 @@ export function init() {
         xpGainText: document.getElementById('xp-gain-text'),
         bossHealthContainer: document.getElementById('boss-health-container'),
         bossHealthFill: document.getElementById('boss-health-fill'),
-        shareBtn: document.getElementById('share-result-btn')
+        shareBtn: document.getElementById('share-result-btn'),
+        // Phase 3 Elements
+        comboDisplay: document.getElementById('combo-display'),
+        comboMultiplier: document.querySelector('.combo-multiplier'),
+        comboLabel: document.querySelector('.combo-label'),
+        feedbackContainer: document.getElementById('feedback-container'),
+        feedbackTitle: document.getElementById('feedback-title'),
+        feedbackExplanation: document.getElementById('feedback-explanation')
     };
 
     elements.cancelBtn.addEventListener('click', () => window.history.back());

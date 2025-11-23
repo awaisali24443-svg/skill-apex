@@ -1,3 +1,4 @@
+
 <div class="game-level-container">
     <div class="sr-only" id="announcer-region" role="alert" aria-live="assertive"></div>
     <div class="sr-only" id="timer-announcer-region" role="status" aria-live="polite"></div>
@@ -74,6 +75,11 @@
                     <div id="boss-health-fill" class="boss-health-fill" style="width: 100%;"></div>
                 </div>
             </div>
+            <!-- PHASE 3: Combo Meter -->
+            <div id="combo-display" class="combo-display" style="opacity: 0;">
+                <span class="combo-multiplier">x2</span>
+                <span class="combo-label">Streak!</span>
+            </div>
             <div class="quiz-header-actions">
                 <button id="quit-btn" class="btn btn-danger">Quit</button>
             </div>
@@ -95,6 +101,14 @@
                 <h2 id="quiz-question-text">Loading question...</h2>
                 <div id="quiz-options-container" class="options-grid">
                     <!-- Options will be injected here -->
+                </div>
+                <!-- PHASE 3: Instant Feedback Container -->
+                <div id="feedback-container" class="feedback-container" style="display: none;">
+                    <div class="feedback-icon"></div>
+                    <div class="feedback-text">
+                        <h3 id="feedback-title">Correct!</h3>
+                        <p id="feedback-explanation">Explanation goes here.</p>
+                    </div>
                 </div>
             </div>
         </div>
