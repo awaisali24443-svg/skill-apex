@@ -274,33 +274,42 @@ async function startLevel(forceRefresh = false) {
 }
 
 /**
- * Triggered on the first incorrect answer.
- * Generates the *next* attempt's data in the background IF we don't have enough local questions.
+ * Triggered on the first incorrect answer (or interact failure).
+ * Generates the *next* attempt's data in the background.
  */
 function triggerRetryGeneration() {
-    if (isInteractiveLevel) return; // Interactive levels don't support multi-set retry yet (would need complex logic)
+    if (retryGenerationPromise) return; // Already fetching
 
     const isBoss = levelContext.isBoss;
-    const questionsNeeded = isBoss ? 10 : STANDARD_QUESTIONS_PER_ATTEMPT;
-    const remainingQuestions = masterQuestionsList.length - ((currentAttemptSet + 1) * questionsNeeded);
-
-    if (remainingQuestions >= questionsNeeded) {
-        return;
-    }
-
-    if (retryGenerationPromise) return; 
-
-    console.log("Prefetching fallback retry level...");
     const { topic, level, totalLevels } = levelContext;
 
-    const generator = isBoss 
-        ? apiService.generateBossBattle({ topic, chapter: Math.ceil(level/LEVELS_PER_CHAPTER) }) 
-        : apiService.generateLevelQuestions({ topic, level, totalLevels });
+    // Check if we really need to fetch
+    if (!isInteractiveLevel) {
+        const questionsNeeded = isBoss ? 10 : STANDARD_QUESTIONS_PER_ATTEMPT;
+        const remainingQuestions = masterQuestionsList.length - ((currentAttemptSet + 1) * questionsNeeded);
+        if (remainingQuestions >= questionsNeeded) return;
+    }
+
+    console.log("Prefetching fallback retry level...");
+
+    let generator;
+    if (isBoss) {
+        generator = apiService.generateBossBattle({ topic, chapter: Math.ceil(level/LEVELS_PER_CHAPTER) });
+    } else if (isInteractiveLevel) {
+        // Support retry for interactive
+        generator = apiService.generateInteractiveLevel({ topic, level });
+    } else {
+        generator = apiService.generateLevelQuestions({ topic, level, totalLevels });
+    }
 
     retryGenerationPromise = generator
         .then(data => {
-            console.log("Fallback retry questions prefetched successfully.");
-            return isBoss ? data : { questions: data.questions, lesson: levelData.lesson }; 
+            console.log("Fallback retry data prefetched successfully.");
+            // For non-interactive, standard levels need lesson context preservation
+            if (!isBoss && !isInteractiveLevel) {
+                return { questions: data.questions, lesson: levelData.lesson };
+            }
+            return data;
         })
         .catch(err => {
             console.error("Prefetch failed", err);
@@ -767,6 +776,7 @@ function submitInteractive() {
         score = 0;
         soundService.playSound('incorrect');
         announce('Challenge Failed.');
+        triggerRetryGeneration(); // Prefetch retry immediately on failure
         showResults(true);
     }
 }
@@ -1092,6 +1102,10 @@ function showResults(isInteractive = false, isAntiCheatForfeit = false) {
        
         // Retry logic
         const canInstantRetry = !levelContext.isBoss && !isInteractive && !isAntiCheatForfeit && ((currentAttemptSet + 1) * STANDARD_QUESTIONS_PER_ATTEMPT < masterQuestionsList.length);
+        
+        // For interactive, we can ALWAYS retry if we generated the data, but 'canInstantRetry' tracks local array slicing which interactive doesn't use.
+        // So we simplify the check: interactive levels always need a 'Try Again' button that triggers logic.
+        
         const retryText = canInstantRetry ? "Try Again (Instant)" : "Try Again";
         
         elements.resultsActions.innerHTML = `<a href="#/game/${encodeURIComponent(levelContext.topic)}" class="btn">Back to Map</a> <button id="retry-level-btn" class="btn btn-primary">${retryText}</button> ${reviewBtnHTML}`;
@@ -1099,7 +1113,7 @@ function showResults(isInteractive = false, isAntiCheatForfeit = false) {
         document.getElementById('retry-level-btn').addEventListener('click', async (e) => {
             const btn = e.target;
             
-            // OPTION 1: Instant Retry with local questions
+            // OPTION 1: Instant Retry with local questions (Standard Quiz)
             if (canInstantRetry) {
                 currentAttemptSet++;
                 startQuiz();
@@ -1116,10 +1130,15 @@ function showResults(isInteractive = false, isAntiCheatForfeit = false) {
                     const data = await retryGenerationPromise;
                     if (data) {
                         levelData = data;
-                        masterQuestionsList = levelData.questions || [];
+                        if (isInteractive) {
+                            interactiveData = data;
+                            interactiveUserState = []; // Reset user state
+                        } else {
+                            masterQuestionsList = levelData.questions || [];
+                            currentAttemptSet = 0;
+                        }
                         levelCacheService.saveLevel(levelContext.topic, levelContext.level, data);
                         retryGenerationPromise = null;
-                        currentAttemptSet = 0;
                         startQuiz();
                         return;
                     }
@@ -1129,7 +1148,7 @@ function showResults(isInteractive = false, isAntiCheatForfeit = false) {
             }
 
             // OPTION 3: Hard Refresh (Fallback)
-            elements.loadingText.textContent = "Regenerating Level...";
+            elements.loadingText.textContent = isInteractive ? "Rebuilding Challenge..." : "Regenerating Level...";
             elements.skipPopup.style.display = 'none';
             switchState('level-loading-state');
             startLevel(true);
