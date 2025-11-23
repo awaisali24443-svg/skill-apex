@@ -1,6 +1,8 @@
 
 import * as gamificationService from '../../services/gamificationService.js';
 import * as historyService from '../../services/historyService.js';
+import * as learningPathService from '../../services/learningPathService.js';
+import * as stateService from '../../services/stateService.js';
 
 function renderStats() {
     const gamificationStats = gamificationService.getStats();
@@ -70,11 +72,94 @@ function renderAchievements() {
     });
 }
 
+function renderNeuralNexus() {
+    const container = document.getElementById('neural-nexus');
+    if (!container) return;
+
+    // Check User Settings for Performance Mode
+    const { config } = stateService.getState();
+    const isLiteMode = config.animationIntensity !== 'full';
+
+    if (isLiteMode) {
+        container.classList.add('nexus-lite');
+    } else {
+        container.classList.remove('nexus-lite');
+    }
+
+    // Clear existing nodes (except core)
+    const existingNodes = container.querySelectorAll('.nexus-node, .connection-line');
+    existingNodes.forEach(n => n.remove());
+
+    const journeys = learningPathService.getAllJourneys();
+    const history = historyService.getHistory();
+    const healthStats = gamificationService.getDetailedTopicHealth(history);
+
+    if (journeys.length === 0) return;
+
+    const centerX = 0; // Relative to container center, CSS handles positioning
+    const centerY = 0;
+    const radius = 100; // Base distance from core
+
+    journeys.forEach((journey, index) => {
+        const angle = (index / journeys.length) * 2 * Math.PI;
+        // Distribute nodes in a circle
+        // Add some random offset to make it look organic (only in Heavy Mode)
+        const offset = isLiteMode ? 0 : (Math.random() * 40 - 20);
+        const r = radius + offset; 
+        const x = Math.cos(angle) * r;
+        const y = Math.sin(angle) * r;
+
+        // Determine Size based on Level
+        const size = Math.min(80, 40 + (journey.currentLevel * 2)); // Min 40px, max 80px
+
+        // Determine Health Status
+        const topicName = journey.goal.split('-')[0].trim();
+        const stats = healthStats[topicName] || { status: 'Stable', health: 100 };
+        const statusClass = stats.status.toLowerCase(); // stable, decaying, critical
+
+        // Create Node
+        const node = document.createElement('div');
+        node.className = `nexus-node ${statusClass}`;
+        node.style.width = `${size}px`;
+        node.style.height = `${size}px`;
+        // Use translate from center
+        node.style.transform = `translate(${x}px, ${y}px)`; 
+        
+        // Tooltip Content
+        const labelText = `${topicName} (Lvl ${journey.currentLevel})`;
+        const healthText = stats.status === 'Stable' ? '' : ` • ${stats.status}`;
+        
+        node.innerHTML = `
+            <div class="nexus-node-label">${labelText}${healthText}</div>
+        `;
+
+        // Click to Repair/Play
+        node.addEventListener('click', () => {
+            stateService.setNavigationContext({ topic: journey.goal });
+            window.location.hash = `#/game/${encodeURIComponent(journey.goal)}`;
+        });
+
+        // Add Connection Line (Simple approach: rotated div)
+        const line = document.createElement('div');
+        line.className = 'connection-line';
+        // Stop line at node edge (approx) to look cleaner
+        const length = Math.sqrt(x*x + y*y) - (size/2); 
+        const rotation = (Math.atan2(y, x) * 180 / Math.PI);
+        
+        line.style.width = `${length}px`;
+        line.style.transform = `rotate(${rotation}deg)`;
+        
+        // Append
+        container.appendChild(line);
+        container.appendChild(node);
+    });
+}
 
 export function init() {
     renderStats();
     renderQuests();
     renderAchievements();
+    renderNeuralNexus();
 }
 
 export function destroy() {

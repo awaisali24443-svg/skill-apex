@@ -217,9 +217,8 @@ export function getProfileStats(history) {
     return { totalQuizzes, totalQuestions, averageScore };
 }
 
-// --- NEW: Memory Health Logic (Optimized for Fairness) ---
-export function calculateMemoryHealth(history) {
-    // 1. Group by Topic
+// Helper to get raw map of topic dates
+function getTopicLastPlayedDates(history) {
     const topicDates = {};
     history.forEach(h => {
         const cleanTopic = h.topic.split('-')[0].trim();
@@ -228,32 +227,32 @@ export function calculateMemoryHealth(history) {
             topicDates[cleanTopic] = date;
         }
     });
+    return topicDates;
+}
 
+// --- Memory Health Logic ---
+
+const GRACE_PERIOD_DAYS = 3; 
+const DECAY_RATE_PER_DAY = 2; 
+
+export function calculateMemoryHealth(history) {
+    const topicDates = getTopicLastPlayedDates(history);
     const topics = Object.keys(topicDates);
+    
     if (topics.length === 0) return { health: 100, status: 'Stable', oldestTopic: null };
 
-    // 2. Find the most neglected topic
     let oldestDate = Date.now();
     let oldestTopic = null;
-    
-    // Average Decay
     let totalDecay = 0;
     const now = Date.now();
     const DAY_MS = 86400000;
-    
-    // Configurable Risk Mitigation
-    const GRACE_PERIOD_DAYS = 3; // Days before decay starts
-    const DECAY_RATE_PER_DAY = 2; // % lost per day after grace period
 
     topics.forEach(t => {
         const daysSince = (now - topicDates[t]) / DAY_MS;
-        
-        // Apply Grace Period Logic
         let decay = 0;
         if (daysSince > GRACE_PERIOD_DAYS) {
             decay = Math.min(100, (daysSince - GRACE_PERIOD_DAYS) * DECAY_RATE_PER_DAY);
         }
-        
         totalDecay += decay;
 
         if (topicDates[t] < oldestDate) {
@@ -262,7 +261,6 @@ export function calculateMemoryHealth(history) {
         }
     });
 
-    // 3. Calculate Overall Health (Average of all active topics)
     const avgHealth = Math.max(0, 100 - (totalDecay / topics.length));
     
     let status = 'Stable';
@@ -270,4 +268,29 @@ export function calculateMemoryHealth(history) {
     else if (avgHealth < 80) status = 'Decaying';
 
     return { health: Math.round(avgHealth), status, oldestTopic };
+}
+
+// NEW: Get health stats for ALL individual topics (for visualization)
+export function getDetailedTopicHealth(history) {
+    const topicDates = getTopicLastPlayedDates(history);
+    const now = Date.now();
+    const DAY_MS = 86400000;
+    
+    const results = {};
+    
+    Object.keys(topicDates).forEach(topic => {
+        const daysSince = (now - topicDates[topic]) / DAY_MS;
+        let decay = 0;
+        if (daysSince > GRACE_PERIOD_DAYS) {
+            decay = Math.min(100, (daysSince - GRACE_PERIOD_DAYS) * DECAY_RATE_PER_DAY);
+        }
+        const health = Math.max(0, 100 - decay);
+        let status = 'Stable';
+        if (health < 50) status = 'Critical';
+        else if (health < 80) status = 'Decaying';
+        
+        results[topic] = { health: Math.round(health), status, daysSince: Math.floor(daysSince) };
+    });
+    
+    return results;
 }

@@ -1,15 +1,35 @@
 
 <div class="page-container profile-container">
-    <header class="profile-header card">
-        <img src="assets/images/avatar-placeholder.png" alt="User Avatar" class="profile-avatar">
-        <div class="profile-info">
-            <h1>Learner</h1>
-            <div class="profile-level">
-                <span id="profile-level-text">Level 1</span>
-                <div class="xp-bar">
-                    <div id="xp-bar-fill" class="xp-bar-fill"></div>
+    
+    <!-- Header with Neural Nexus Visualization -->
+    <header class="profile-header-nexus card">
+        <div class="nexus-info">
+            <img src="assets/images/avatar-placeholder.png" alt="User Avatar" class="profile-avatar">
+            <div class="profile-text-info">
+                <h1>Neural Nexus</h1>
+                <div class="profile-level">
+                    <span id="profile-level-text">Level 1</span>
+                    <div class="xp-bar">
+                        <div id="xp-bar-fill" class="xp-bar-fill"></div>
+                    </div>
+                    <span id="xp-text">0 / 100 XP</span>
                 </div>
-                <span id="xp-text">0 / 100 XP</span>
+            </div>
+        </div>
+        
+        <!-- The Visualizer -->
+        <div class="nexus-visualizer-container">
+            <div id="neural-nexus" class="neural-nexus">
+                <!-- Nodes injected via JS -->
+                <div class="core-node">
+                    <div class="core-pulse"></div>
+                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#cpu"/></svg>
+                </div>
+            </div>
+            <div class="nexus-legend">
+                <span class="legend-item"><span class="dot stable"></span> Stable</span>
+                <span class="legend-item"><span class="dot decaying"></span> Decaying</span>
+                <span class="legend-item"><span class="dot critical"></span> Critical</span>
             </div>
         </div>
     </header>

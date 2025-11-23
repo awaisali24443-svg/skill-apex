@@ -40,6 +40,7 @@ let bossHp = 100;
 let damagePerHit = 10;
 let antiCheatHandler = null; // Stores the visibility change listener
 let focusStrikes = 0; // NEW: Track anti-cheat warnings
+let focusTimeout = null; // NEW: Grace period timer
 
 // Async Flow Control
 let lessonGenerationPromise = null;
@@ -52,7 +53,7 @@ let dragStartIndex = null;
 const PASS_THRESHOLD = 0.8;
 const LEVELS_PER_CHAPTER = 50;
 const STANDARD_QUESTIONS_PER_ATTEMPT = 3;
-const BOSS_TIME_LIMIT = 20; // Aggressive timer for bosses
+const BOSS_TIME_LIMIT = 39; // Extended from 20 to 39 seconds
 
 function announce(message, polite = false) {
     const region = polite ? elements.timerAnnouncer : elements.announcer;
@@ -369,33 +370,70 @@ function activateAntiCheat() {
     antiCheatHandler = () => {
         if (document.hidden) {
             // User switched tabs or minimized
-            if (focusStrikes === 0) {
-                // Strike 1: Warning (State updated silently, modal shown on return)
-                focusStrikes++;
-                soundService.playSound('incorrect');
-            } else {
-                // Strike 2: Fail
-                soundService.playSound('incorrect');
-                score = 0; // Immediate forfeit
-                clearInterval(timerInterval);
-                announce('Focus lost. Battle failed.');
-                showResults(false, true); // true = flag as anti-cheat forfeit
-            }
+            // START 3-second GRACE PERIOD
+            focusTimeout = setTimeout(() => {
+                // If this code runs, user has been gone for > 3 seconds
+                if (focusStrikes === 0) {
+                    // Strike 1: Warning (Apply Penalty)
+                    focusStrikes++;
+                    soundService.playSound('incorrect');
+                    
+                    // Time Penalty
+                    timeLeft = Math.max(0, timeLeft - 5);
+                    const seconds = String(timeLeft % 60).padStart(2, '0');
+                    if (elements.timerText) {
+                        elements.timerText.textContent = `00:${seconds}`;
+                        elements.timerText.style.color = '#ff0000'; // Flash red
+                        // Revert color after flash
+                        setTimeout(() => {
+                             if(elements.timerText) elements.timerText.style.color = '#ff4040';
+                        }, 1000);
+                    }
+                    showToast("⚠️ FOCUS LOST > 3s: -5 Seconds Penalty!", "error", 4000);
+
+                    // Check if penalty killed them
+                    if (timeLeft <= 0) {
+                         clearInterval(timerInterval);
+                         handleTimeUp();
+                         removeAntiCheat();
+                    }
+
+                } else {
+                    // Strike 2: Fail (Already penalized once)
+                    soundService.playSound('incorrect');
+                    score = 0; // Immediate forfeit
+                    clearInterval(timerInterval);
+                    announce('Focus lost. Battle failed.');
+                    showResults(false, true); // true = flag as anti-cheat forfeit
+                }
+            }, 3000); // 3 Seconds Tolerance
+
         } else {
             // User returned
+            // If they returned quickly (<3s), cancel the pending strike
+            if (focusTimeout) {
+                clearTimeout(focusTimeout);
+                focusTimeout = null;
+                // Feedback for safe return
+                showToast("⚠️ Focus restored. Stay on this tab!", "info", 2000);
+            }
+
+            // Only show the "Final Warning" modal if a strike WAS actually applied
             if (focusStrikes === 1) {
-                showConfirmationModal({
-                    title: '⚠️ BATTLEFIELD WARNING',
-                    message: '<strong style="color:var(--color-error)">FOCUS LOST!</strong><br><br>The Boss has noticed your distraction.<br>If you leave this tab <strong>one more time</strong>, you will instantly forfeit the battle.',
-                    confirmText: 'I Understand',
-                    cancelText: 'Surrender', // Option to quit if they want
-                    danger: true
-                }).then(confirmed => {
-                    if (!confirmed) {
-                        // If they click "Surrender" (Cancel), fail them
-                        showResults(false, true);
-                    }
-                });
+                if(!elements.resultsTitle.textContent) { 
+                    showConfirmationModal({
+                        title: '⚠️ BATTLEFIELD WARNING',
+                        message: '<strong style="color:var(--color-error)">FOCUS LOST! (-5s Penalty)</strong><br><br>The Boss has noticed your distraction (away > 3s).<br>If you leave this tab <strong>one more time</strong>, you will instantly forfeit the battle.',
+                        confirmText: 'I Understand',
+                        cancelText: 'Surrender', // Option to quit if they want
+                        danger: true
+                    }).then(confirmed => {
+                        if (!confirmed) {
+                            // If they click "Surrender" (Cancel), fail them
+                            showResults(false, true);
+                        }
+                    });
+                }
             }
         }
     };
@@ -404,6 +442,10 @@ function activateAntiCheat() {
 }
 
 function removeAntiCheat() {
+    if (focusTimeout) {
+        clearTimeout(focusTimeout);
+        focusTimeout = null;
+    }
     if (antiCheatHandler) {
         document.removeEventListener('visibilitychange', antiCheatHandler);
         antiCheatHandler = null;
@@ -764,7 +806,7 @@ function renderQuestion() {
 
 function startTimer() {
     clearInterval(timerInterval);
-    // Boss Timer is much shorter (20s) vs Standard (60s)
+    // Boss Timer is much shorter (20s -> 39s) vs Standard (60s)
     timeLeft = (levelContext.isBoss && !isInteractiveLevel) ? BOSS_TIME_LIMIT : 60;
     
     const displayTime = timeLeft < 10 ? `00:0${timeLeft}` : `00:${timeLeft}`;
