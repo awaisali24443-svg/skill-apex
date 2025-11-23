@@ -252,15 +252,30 @@ async function generateCurriculumOutline(topic, totalLevels) {
 async function generateLevelQuestions(topic, level, totalLevels) {
     if (!ai) throw new Error("AI Service not initialized.");
     
+    // Adaptive Roleplay Logic: Levels > 10 get scenarios instead of definitions
+    const isScenarioMode = level > 10;
+    
+    let instructions = `
+    1. The questions should introduce and test a specific concept appropriate for this level.
+    2. Questions must be challenging but fair.
+    3. Include plausible distractors.`;
+
+    if (isScenarioMode) {
+        instructions = `
+        1. **ROLEPLAY MODE:** Do NOT ask "What is X?". Instead, generate a **Scenario**.
+           - Format: "You are a [Job Role]. [Situation happens]. What action do you take?"
+           - Example: "You are a SysAdmin. A server hits 100% CPU. Which command identifies the culprit?"
+        2. Test practical application of the concept, not just memory.
+        3. Make the distractors plausible mistakes a junior might make in that situation.`;
+    }
+
     const prompt = `You are an expert educator creating a quiz for a student learning "${topic}".
     Current Level: ${level} / ${totalLevels}.
     
     TASK: Generate exactly 6 multiple-choice questions for this specific level.
     
     RULES:
-    1. The questions should introduce and test a specific concept appropriate for this level.
-    2. Questions must be challenging but fair.
-    3. Include plausible distractors.
+    ${instructions}
     
     Generate the JSON response.`;
 
@@ -357,11 +372,9 @@ async function generateBossBattleContent(topic, chapter) {
     
     RULES:
     1. Generate exactly 10 challenging multiple-choice questions.
-    2. Focus on tricky edge cases, common misconceptions, and synthesizing multiple concepts from this chapter.
-    3. Questions should require critical thinking, not just memorization.
-    4. Difficulty: Hard. Distractors should be plausible.
-    5. NO lesson text. Quiz only.
-    6. Tone: Epic final boss. The user must prove their mastery.
+    2. **Scenario Mode:** Use complex "Real World" scenarios where the user must apply multiple concepts to solve a problem. No simple definitions.
+    3. Difficulty: Very Hard. Distractors should be highly plausible.
+    4. Tone: Epic final boss. The user must prove their mastery.
     
     Generate the 10 questions based on these rules and the provided JSON schema.`;
 

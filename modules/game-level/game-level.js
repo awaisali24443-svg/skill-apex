@@ -38,6 +38,8 @@ let retryGenerationPromise = null; // Store the pending retry generation
 // Boss Battle State
 let bossHp = 100;
 let damagePerHit = 10;
+let antiCheatHandler = null; // Stores the visibility change listener
+let focusStrikes = 0; // NEW: Track anti-cheat warnings
 
 // Async Flow Control
 let lessonGenerationPromise = null;
@@ -50,6 +52,7 @@ let dragStartIndex = null;
 const PASS_THRESHOLD = 0.8;
 const LEVELS_PER_CHAPTER = 50;
 const STANDARD_QUESTIONS_PER_ATTEMPT = 3;
+const BOSS_TIME_LIMIT = 20; // Aggressive timer for bosses
 
 function announce(message, polite = false) {
     const region = polite ? elements.timerAnnouncer : elements.announcer;
@@ -109,15 +112,14 @@ async function startLevel(forceRefresh = false) {
     levelData = {};
     isInteractiveLevel = false;
     interactiveData = null;
+    removeAntiCheat(); // Clean up potential leftovers
 
     if (!topic || !level || !journeyId) {
         window.location.hash = '/topics';
         return;
     }
 
-    // Determine if this is an Interactive Challenge (every 5th level, not boss)
-    // Bosses (level 50, 100) are standard quizzes for now based on previous logic, but "every 5th level" 
-    // implies 5, 10, 15... 45. 50 is Boss. So if % 5 == 0 AND NOT Boss.
+    // Determine if this is an Interactive Challenge
     if (level % 5 === 0 && !isBoss) {
         isInteractiveLevel = true;
     }
@@ -140,13 +142,10 @@ async function startLevel(forceRefresh = false) {
             if (isInteractiveLevel && cachedLevel.challengeType) {
                 levelData = cachedLevel;
                 interactiveData = cachedLevel;
-                // Interactive levels have no separate lesson, they are just the challenge + lesson context maybe?
-                // For now, let's assume interactive levels might have a lesson or might just be the challenge.
-                // If we follow standard pattern, we want a lesson too.
                 if (cachedLevel.lesson) {
                     renderLesson();
                 } else {
-                    startQuiz(); // Or start interactive mode
+                    startQuiz(); 
                 }
                 return;
             } else if (!isInteractiveLevel && cachedLevel.questions) {
@@ -325,7 +324,6 @@ async function preloadNextLevel() {
         } else if (nextLevel % 5 === 0) {
              // Preload interactive level
              const iData = await apiService.generateInteractiveLevel({ topic, level: nextLevel });
-             // We won't generate lesson for interactive preload to save tokens/time for now, or could mimic standard logic
              data = { ...iData }; 
         } else {
             const qData = await apiService.generateLevelQuestions({ topic, level: nextLevel, totalLevels });
@@ -362,6 +360,56 @@ function renderLesson() {
     switchState('level-lesson-state');
 }
 
+// --- ANTI-CHEAT SYSTEM ---
+function activateAntiCheat() {
+    if (antiCheatHandler) return; // Already active
+
+    showToast("⚠️ FOCUS MODE ACTIVE: Leaving this tab may cause failure.", "error", 5000);
+    
+    antiCheatHandler = () => {
+        if (document.hidden) {
+            // User switched tabs or minimized
+            if (focusStrikes === 0) {
+                // Strike 1: Warning (State updated silently, modal shown on return)
+                focusStrikes++;
+                soundService.playSound('incorrect');
+            } else {
+                // Strike 2: Fail
+                soundService.playSound('incorrect');
+                score = 0; // Immediate forfeit
+                clearInterval(timerInterval);
+                announce('Focus lost. Battle failed.');
+                showResults(false, true); // true = flag as anti-cheat forfeit
+            }
+        } else {
+            // User returned
+            if (focusStrikes === 1) {
+                showConfirmationModal({
+                    title: '⚠️ BATTLEFIELD WARNING',
+                    message: '<strong style="color:var(--color-error)">FOCUS LOST!</strong><br><br>The Boss has noticed your distraction.<br>If you leave this tab <strong>one more time</strong>, you will instantly forfeit the battle.',
+                    confirmText: 'I Understand',
+                    cancelText: 'Surrender', // Option to quit if they want
+                    danger: true
+                }).then(confirmed => {
+                    if (!confirmed) {
+                        // If they click "Surrender" (Cancel), fail them
+                        showResults(false, true);
+                    }
+                });
+            }
+        }
+    };
+    
+    document.addEventListener('visibilitychange', antiCheatHandler);
+}
+
+function removeAntiCheat() {
+    if (antiCheatHandler) {
+        document.removeEventListener('visibilitychange', antiCheatHandler);
+        antiCheatHandler = null;
+    }
+}
+
 function startQuiz() {
     skippedLesson = true;
     if (lessonAbortController) {
@@ -371,6 +419,7 @@ function startQuiz() {
 
     currentQuestionIndex = 0;
     score = 0;
+    focusStrikes = 0; // Reset strikes on new attempt
     userAnswers = [];
     xpGainedThisLevel = 0;
     
@@ -394,7 +443,7 @@ function startQuiz() {
         
         switchState('level-quiz-state');
         soundService.playSound('start');
-        startTimer(); // Maybe generous timer?
+        startTimer(); // Standard timer for interactive
         return;
     }
 
@@ -408,6 +457,9 @@ function startQuiz() {
         damagePerHit = 100 / currentQuestions.length;
         elements.bossHealthContainer.style.display = 'flex';
         elements.bossHealthFill.style.width = '100%';
+        
+        // ACTIVATE BOSS PROTOCOLS
+        activateAntiCheat();
     } else {
         const startIndex = currentAttemptSet * STANDARD_QUESTIONS_PER_ATTEMPT;
         const endIndex = startIndex + STANDARD_QUESTIONS_PER_ATTEMPT;
@@ -432,13 +484,9 @@ function renderInteractiveChallenge() {
     const container = document.getElementById('interactive-playground');
     container.innerHTML = '';
     
-    // Feature detection for fine pointer (Mouse) vs coarse pointer (Touch)
-    // We enable Drag if the user has a mouse (fine pointer).
-    // Note: We ALWAYS keep click/tap handlers active for accessibility and hybrid devices.
     const canDrag = window.matchMedia('(pointer: fine)').matches;
     
     if (interactiveData.challengeType === 'sequence') {
-        // Shuffle items for sequence if it's the first render
         if (interactiveUserState.length === 0) {
             interactiveUserState = [...interactiveData.items].sort(() => Math.random() - 0.5);
         }
@@ -450,7 +498,6 @@ function renderInteractiveChallenge() {
             el.dataset.index = index;
             el.innerHTML = `<div class="sort-index">${index + 1}</div><span class="sort-content">${item.text}</span>`;
             
-            // 1. Drag Support (Mouse/Desktop)
             if (canDrag) {
                 el.draggable = true;
                 el.addEventListener('dragstart', handleDragStart);
@@ -460,7 +507,6 @@ function renderInteractiveChallenge() {
                 el.addEventListener('dragleave', handleDragLeave);
             }
 
-            // 2. Tap Support (Mobile + Fallback)
             el.addEventListener('click', () => handleSequenceClick(index));
             
             container.appendChild(el);
@@ -718,13 +764,21 @@ function renderQuestion() {
 
 function startTimer() {
     clearInterval(timerInterval);
-    timeLeft = 60;
-    elements.timerText.textContent = `01:00`;
+    // Boss Timer is much shorter (20s) vs Standard (60s)
+    timeLeft = (levelContext.isBoss && !isInteractiveLevel) ? BOSS_TIME_LIMIT : 60;
+    
+    const displayTime = timeLeft < 10 ? `00:0${timeLeft}` : `00:${timeLeft}`;
+    elements.timerText.textContent = displayTime;
+    
+    // Add urgency color if boss
+    if (levelContext.isBoss) elements.timerText.style.color = '#ff4040';
+    else elements.timerText.style.color = 'var(--color-primary)';
+
     timerInterval = setInterval(() => {
         timeLeft--;
         const seconds = String(timeLeft % 60).padStart(2, '0');
         elements.timerText.textContent = `00:${seconds}`;
-        if (timeLeft > 0 && timeLeft % 15 === 0) announce(`${timeLeft} seconds remaining`, true);
+        if (timeLeft > 0 && timeLeft <= 10) announce(`${timeLeft} seconds remaining`, true);
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
             handleTimeUp();
@@ -898,7 +952,9 @@ function fireConfetti() {
     }, 4000);
 }
 
-function showResults(isInteractive = false) {
+function showResults(isInteractive = false, isAntiCheatForfeit = false) {
+    removeAntiCheat(); // Safety cleanup
+    
     let passed = false;
     let totalQuestions = 1;
     let scoreDisplay = score;
@@ -912,8 +968,13 @@ function showResults(isInteractive = false) {
         passed = scorePercent >= PASS_THRESHOLD;
         scoreDisplay = score;
     }
+    
+    // Anti-cheat override
+    if (isAntiCheatForfeit) {
+        passed = false;
+    }
 
-    soundService.playSound('finish');
+    soundService.playSound(passed ? 'finish' : 'incorrect');
     
     historyService.addQuizAttempt({
         topic: `${levelContext.topic} - Level ${levelContext.level}`,
@@ -921,10 +982,10 @@ function showResults(isInteractive = false) {
         totalQuestions: totalQuestions,
         startTime: Date.now() - (60000), // Approx
         endTime: Date.now(),
-        xpGained: xpGainedThisLevel,
+        xpGained: isAntiCheatForfeit ? 0 : xpGainedThisLevel,
     });
 
-    if (!isInteractive) {
+    if (!isInteractive && !isAntiCheatForfeit) {
         // Auto-Save Mistakes
         let mistakesSaved = 0;
         currentQuestions.forEach((q, index) => {
@@ -940,7 +1001,7 @@ function showResults(isInteractive = false) {
         }
     }
 
-    const xpGained = xpGainedThisLevel;
+    const xpGained = isAntiCheatForfeit ? 0 : xpGainedThisLevel;
     if (xpGained > 0) {
         elements.xpGainText.textContent = `+${xpGained} XP`;
         elements.xpGainText.style.display = 'inline-block';
@@ -948,7 +1009,7 @@ function showResults(isInteractive = false) {
         elements.xpGainText.style.display = 'none';
     }
 
-    const reviewBtnHTML = isInteractive ? '' : `<button id="review-answers-btn" class="btn">Review Answers</button>`;
+    const reviewBtnHTML = (isInteractive || isAntiCheatForfeit) ? '' : `<button id="review-answers-btn" class="btn">Review Answers</button>`;
 
     if (passed) {
         elements.resultsIcon.innerHTML = `<svg><use href="/assets/icons/feather-sprite.svg#check-circle"/></svg>`;
@@ -975,15 +1036,20 @@ function showResults(isInteractive = false) {
         elements.resultsIcon.className = 'results-icon failed';
         
         if (levelContext.isBoss) {
-             elements.resultsTitle.textContent = 'Boss Fight Failed';
-             elements.resultsDetails.textContent = `The boss survived. Try again.`;
+             if (isAntiCheatForfeit) {
+                 elements.resultsTitle.textContent = 'FOCUS LOST';
+                 elements.resultsDetails.textContent = `Anti-Cheat Protocol engaged. You left the battlefield.`;
+             } else {
+                 elements.resultsTitle.textContent = 'Boss Fight Failed';
+                 elements.resultsDetails.textContent = `The boss survived. Try again.`;
+             }
         } else {
              elements.resultsTitle.textContent = 'Keep Practicing!';
              elements.resultsDetails.textContent = isInteractive ? 'Solution Incorrect.' : `You scored ${score} out of ${totalQuestions}. Review the lesson.`;
         }
        
         // Retry logic
-        const canInstantRetry = !levelContext.isBoss && !isInteractive && ((currentAttemptSet + 1) * STANDARD_QUESTIONS_PER_ATTEMPT < masterQuestionsList.length);
+        const canInstantRetry = !levelContext.isBoss && !isInteractive && !isAntiCheatForfeit && ((currentAttemptSet + 1) * STANDARD_QUESTIONS_PER_ATTEMPT < masterQuestionsList.length);
         const retryText = canInstantRetry ? "Try Again (Instant)" : "Try Again";
         
         elements.resultsActions.innerHTML = `<a href="#/game/${encodeURIComponent(levelContext.topic)}" class="btn">Back to Map</a> <button id="retry-level-btn" class="btn btn-primary">${retryText}</button> ${reviewBtnHTML}`;
@@ -1209,6 +1275,7 @@ export function init() {
 export function destroy() {
     clearInterval(timerInterval);
     stopAudio();
+    removeAntiCheat(); // Crucial cleanup
     if (outputAudioContext) {
         outputAudioContext.close().catch(e => console.error(e));
         outputAudioContext = null;

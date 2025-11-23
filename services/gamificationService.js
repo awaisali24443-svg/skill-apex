@@ -217,7 +217,7 @@ export function getProfileStats(history) {
     return { totalQuizzes, totalQuestions, averageScore };
 }
 
-// --- NEW: Memory Health Logic ---
+// --- NEW: Memory Health Logic (Optimized for Fairness) ---
 export function calculateMemoryHealth(history) {
     // 1. Group by Topic
     const topicDates = {};
@@ -240,10 +240,20 @@ export function calculateMemoryHealth(history) {
     let totalDecay = 0;
     const now = Date.now();
     const DAY_MS = 86400000;
+    
+    // Configurable Risk Mitigation
+    const GRACE_PERIOD_DAYS = 3; // Days before decay starts
+    const DECAY_RATE_PER_DAY = 2; // % lost per day after grace period
 
     topics.forEach(t => {
         const daysSince = (now - topicDates[t]) / DAY_MS;
-        const decay = Math.min(100, daysSince * 5); // Lose 5% health per day
+        
+        // Apply Grace Period Logic
+        let decay = 0;
+        if (daysSince > GRACE_PERIOD_DAYS) {
+            decay = Math.min(100, (daysSince - GRACE_PERIOD_DAYS) * DECAY_RATE_PER_DAY);
+        }
+        
         totalDecay += decay;
 
         if (topicDates[t] < oldestDate) {
