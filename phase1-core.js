@@ -131,9 +131,20 @@
 
             if (!val) return; 
 
-            if (!isITTopic(val)) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
+            // 1. Direct Validation
+            if (isITTopic(val)) {
+                return; // Allow
+            }
+
+            // 2. Fuzzy Validation
+            const suggestion = findClosestMatch(val);
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            
+            if (suggestion) {
+                showToast(`Did you mean "${suggestion}"? 🧐`, 'info');
+                selectTopic(suggestion); // Auto-correct
+            } else {
                 showToast("⚠️ Stick to Tech! Try a preset below.", 'error');
                 highlightGrid();
             }
@@ -146,12 +157,64 @@
         return false; 
     }
 
+    // Levenshtein Distance Algorithm (Vanilla JS)
+    function levenshtein(a, b) {
+        if (a.length === 0) return b.length;
+        if (b.length === 0) return a.length;
+        
+        const matrix = [];
+        for (let i = 0; i <= b.length; i++) { matrix[i] = [i]; }
+        for (let j = 0; j <= a.length; j++) { matrix[0][j] = j; }
+
+        for (let i = 1; i <= b.length; i++) {
+            for (let j = 1; j <= a.length; j++) {
+                if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                    matrix[i][j] = matrix[i - 1][j - 1];
+                } else {
+                    matrix[i][j] = Math.min(
+                        matrix[i - 1][j - 1] + 1,
+                        Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
+                    );
+                }
+            }
+        }
+        return matrix[b.length][a.length];
+    }
+
+    function findClosestMatch(term) {
+        let closest = null;
+        let minDist = Infinity;
+        const threshold = 3; // Max edits allowed
+
+        // Check presets
+        IT_PRESETS.forEach(p => {
+            const dist = levenshtein(term, p.name.toLowerCase());
+            if (dist < minDist && dist <= threshold) {
+                minDist = dist;
+                closest = p.name;
+            }
+        });
+
+        // Check keywords if no preset matched well
+        if (!closest) {
+            IT_KEYWORDS.forEach(kw => {
+                const dist = levenshtein(term, kw);
+                if (dist < minDist && dist <= 2) { // Stricter for short keywords
+                    minDist = dist;
+                    closest = kw; // Suggest the keyword itself (generic)
+                }
+            });
+        }
+        
+        return closest;
+    }
+
     function showToast(msg, type = 'success') {
         const container = document.getElementById('it-toast-container');
         const toast = document.createElement('div');
         toast.className = `it-toast ${type}`;
         
-        const icon = type === 'error' ? '🚫' : '✅';
+        const icon = type === 'error' ? '🚫' : (type === 'info' ? '💡' : '✅');
         toast.innerHTML = `<span>${icon}</span> <span>${msg}</span>`;
         
         container.appendChild(toast);

@@ -66,13 +66,32 @@
     padding-bottom: var(--space-lg);
     margin-bottom: var(--space-lg);
 }
-.lesson-header h1 { color: var(--color-primary); }
+.lesson-header h1 { color: var(--color-primary); margin-bottom: 0; }
+
+/* PHASE 6: Dynamic Image Styles */
+.lesson-image-container {
+    width: 100%;
+    height: 250px;
+    margin-bottom: 25px;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    background-color: var(--color-surface-hover);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+.image-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, var(--color-card-background) 0%, transparent 40%);
+    z-index: 1;
+}
 
 /* PRESENTATION STYLE TYPOGRAPHY */
 .lesson-body {
     text-align: left;
-    line-height: 1.8; /* Looser leading for readability */
-    font-size: 1.2rem; /* Larger font size */
+    line-height: 1.8;
+    font-size: 1.2rem;
     color: var(--color-text);
     max-height: 60vh;
     overflow-y: auto;
@@ -88,7 +107,6 @@
     font-weight: 700;
 }
 
-/* Code Snippets in text */
 .lesson-body code {
     background-color: var(--color-surface-hover);
     color: var(--color-accent);
@@ -98,9 +116,8 @@
     font-size: 0.9em;
 }
 
-/* Presentation Lists */
 .lesson-body ul {
-    list-style: none; /* Remove default dots, we use emojis now */
+    list-style: none; 
     padding-left: 0;
     margin-bottom: var(--space-xl);
 }
@@ -121,7 +138,7 @@
     padding-left: var(--space-md);
 }
 
-/* --- Mermaid Diagram Styles --- */
+/* Mermaid Diagram */
 .lesson-body .mermaid {
     background-color: var(--color-surface);
     padding: var(--space-md);
@@ -131,7 +148,7 @@
     justify-content: center;
 }
 
-/* --- Code Block Styles --- */
+/* Code Block */
 .lesson-body pre {
     background-color: var(--color-background);
     border: 1px solid var(--color-border);
@@ -163,7 +180,6 @@
     white-space: pre;
 }
 
-
 .lesson-footer {
     margin-top: var(--space-xl);
     display: flex;
@@ -185,6 +201,7 @@
     box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
     animation: slide-up 0.3s ease-out;
     text-align: left;
+    z-index: 10;
 }
 @keyframes slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
 .ask-ai-content h3 { margin-top: 0; color: var(--color-primary); }
@@ -254,7 +271,6 @@
     100% { background-position: 28px 0; }
 }
 
-/* Shake Animation for Boss Damage */
 @keyframes shake {
   0% { transform: translate(1px, 1px) rotate(0deg); }
   10% { transform: translate(-1px, -2px) rotate(-1deg); }
@@ -273,7 +289,6 @@
   animation-iteration-count: 1;
 }
 
-/* Damage Flash */
 @keyframes flash-red {
     0% { box-shadow: inset 0 0 0 0 rgba(255, 0, 0, 0); }
     50% { box-shadow: inset 0 0 100px 50px rgba(255, 0, 0, 0.3); }
@@ -329,21 +344,46 @@
 .option-btn.incorrect::before { background-color: var(--color-error); border-color: var(--color-error); color: #fff; content: '✖'; }
 .option-btn.correct.selected::before { content: '✔'; }
 
-/* PHASE 3: Combo & Feedback */
+/* PHASE 3: Combo & Feedback (Gamification) */
 .combo-display {
     display: flex; flex-direction: column; align-items: center; margin-right: 20px;
     animation: pop-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     transition: transform 0.2s ease;
+    text-shadow: 0 0 15px rgba(255, 152, 0, 0.6);
 }
-.combo-multiplier { font-size: 1.5rem; font-weight: 800; color: #ff9800; text-shadow: 0 0 10px rgba(255, 152, 0, 0.5); }
+.combo-multiplier { 
+    font-size: 2rem; 
+    font-weight: 800; 
+    color: #ff9800; 
+    font-family: var(--font-family-heading);
+}
 .combo-label { font-size: 0.7rem; color: #ff9800; text-transform: uppercase; letter-spacing: 1px; }
 
 .feedback-container {
     margin-top: 20px; padding: 15px; border-radius: 8px; border: 1px solid transparent;
-    display: flex; gap: 15px; align-items: flex-start; animation: fade-slide-in 0.3s ease-out;
+    display: flex; gap: 15px; align-items: flex-start; 
+    animation: fade-slide-in 0.3s ease-out;
+    background: rgba(0,0,0,0.2);
 }
-.feedback-container.correct { background: var(--color-success-bg); border-color: var(--color-success); }
-.feedback-container.incorrect { background: var(--color-error-bg); border-color: var(--color-error); }
+.feedback-container.correct { 
+    background: var(--color-success-bg); 
+    border-color: var(--color-success); 
+    box-shadow: 0 0 15px var(--color-success-bg);
+}
+.feedback-container.incorrect { 
+    background: var(--color-error-bg); 
+    border-color: var(--color-error);
+}
+
+.feedback-icon {
+    width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-weight: bold; color: #fff;
+}
+.feedback-container.correct .feedback-icon { background: var(--color-success); }
+.feedback-container.correct .feedback-icon::after { content: '✓'; }
+.feedback-container.incorrect .feedback-icon { background: var(--color-error); }
+.feedback-container.incorrect .feedback-icon::after { content: '✕'; }
+
 .feedback-text h3 { margin: 0 0 5px 0; font-size: 1.1rem; }
 .feedback-container.correct h3 { color: var(--color-success); }
 .feedback-container.incorrect h3 { color: var(--color-error); }

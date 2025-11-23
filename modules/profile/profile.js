@@ -1,4 +1,5 @@
 
+
 import * as gamificationService from '../../services/gamificationService.js';
 import * as historyService from '../../services/historyService.js';
 
@@ -70,10 +71,45 @@ function renderAchievements() {
     });
 }
 
+function renderLeaderboard() {
+    const tbody = document.getElementById('leaderboard-body');
+    const myStats = gamificationService.getStats();
+    
+    // Mock Data for "Local" leaderboard environment
+    const bots = [
+        { name: "CodeNinja", xp: myStats.xp + 500 },
+        { name: "AlgorithmAce", xp: myStats.xp + 200 },
+        { name: "SystemDes", xp: Math.max(0, myStats.xp - 100) },
+        { name: "DevOpsGuru", xp: Math.max(0, myStats.xp - 300) }
+    ];
+    
+    const allUsers = [
+        { name: "You (Learner)", xp: myStats.xp, isMe: true },
+        ...bots
+    ].sort((a, b) => b.xp - a.xp);
+
+    tbody.innerHTML = allUsers.map((user, index) => {
+        const isMeStyle = user.isMe ? 'background: var(--color-surface-active); font-weight:bold; color:var(--color-primary);' : '';
+        const rank = index + 1;
+        let rankIcon = rank;
+        if(rank === 1) rankIcon = '🥇';
+        if(rank === 2) rankIcon = '🥈';
+        if(rank === 3) rankIcon = '🥉';
+
+        return `
+            <tr style="border-bottom:1px solid var(--color-border); ${isMeStyle}">
+                <td style="padding:10px;">${rankIcon}</td>
+                <td style="padding:10px;">${user.name}</td>
+                <td style="padding:10px; text-align:right;">${user.xp} XP</td>
+            </tr>
+        `;
+    }).join('');
+}
 
 export function init() {
     renderStats();
     renderQuests();
+    renderLeaderboard();
     renderAchievements();
 }
 

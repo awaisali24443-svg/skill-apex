@@ -1,9 +1,12 @@
+
 import * as historyService from '../../services/historyService.js';
 import { showConfirmationModal } from '../../services/modalService.js';
 import * as stateService from '../../services/stateService.js';
+import { showToast } from '../../services/toastService.js';
 
 let container;
 let clearBtn;
+let exportBtn;
 let emptyMessage;
 let template;
 let gridClickHandler;
@@ -20,11 +23,13 @@ function renderHistory() {
     if (history.length === 0) {
         emptyMessage.style.display = 'block';
         clearBtn.disabled = true;
+        exportBtn.disabled = true;
         container.style.display = 'none';
     } else {
         emptyMessage.style.display = 'none';
         container.style.display = 'block';
         clearBtn.disabled = false;
+        exportBtn.disabled = false;
         
         history.forEach((item, index) => {
             const clone = template.content.cloneNode(true);
@@ -99,6 +104,18 @@ async function handleClearHistory() {
     }
 }
 
+function handleExportHistory() {
+    const history = historyService.getHistory();
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(history, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", `knowledge_tester_history_${Date.now()}.json`);
+    document.body.appendChild(downloadAnchorNode); // required for firefox
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+    showToast("History exported to JSON!", "success");
+}
+
 function showTranscript(item) {
     transcriptBody.innerHTML = '';
     if (item.transcript && item.transcript.length > 0) {
@@ -140,6 +157,7 @@ function handleGridClick(event) {
 export function init() {
     container = document.getElementById('history-timeline');
     clearBtn = document.getElementById('clear-history-btn');
+    exportBtn = document.getElementById('export-history-btn');
     emptyMessage = document.getElementById('empty-history-message');
     template = document.getElementById('history-item-template');
     
@@ -148,6 +166,7 @@ export function init() {
     closeTranscriptBtn = document.getElementById('close-transcript-btn');
 
     clearBtn.addEventListener('click', handleClearHistory);
+    exportBtn.addEventListener('click', handleExportHistory);
     
     gridClickHandler = handleGridClick;
     container.addEventListener('click', gridClickHandler);
@@ -166,5 +185,6 @@ export function init() {
 
 export function destroy() {
     if (clearBtn) clearBtn.removeEventListener('click', handleClearHistory);
+    if (exportBtn) exportBtn.removeEventListener('click', handleExportHistory);
     if (container && gridClickHandler) container.removeEventListener('click', gridClickHandler);
 }

@@ -42,6 +42,10 @@ function loadSettings() {
     setActiveThemeButton(activeThemeButton, true); 
     
     elements.animationSlider.value = animationLevels.indexOf(config.animationIntensity);
+    
+    if (elements.timerSelect) {
+        elements.timerSelect.value = config.quizTimer || 60;
+    }
 }
 
 function handleSoundToggle() {
@@ -51,6 +55,11 @@ function handleSoundToggle() {
 function handleAnimationChange() {
     const level = animationLevels[elements.animationSlider.value];
     configService.setConfig({ animationIntensity: level });
+}
+
+function handleTimerChange() {
+    const duration = parseInt(elements.timerSelect.value, 10);
+    configService.setConfig({ quizTimer: duration });
 }
 
 function handleThemeToggle(event) {
@@ -141,6 +150,7 @@ export function init() {
     elements = {
         soundToggle: document.getElementById('sound-toggle'),
         animationSlider: document.getElementById('animation-slider'),
+        timerSelect: document.getElementById('quiz-timer-select'),
         clearDataBtn: document.getElementById('clear-data-btn'),
         themeToggle: document.getElementById('theme-toggle-group'),
         themeToggleButtons: document.querySelectorAll('#theme-toggle-group button'),
@@ -153,6 +163,7 @@ export function init() {
 
     elements.soundToggle.addEventListener('change', handleSoundToggle);
     elements.animationSlider.addEventListener('input', handleAnimationChange);
+    elements.timerSelect.addEventListener('change', handleTimerChange);
     elements.clearDataBtn.addEventListener('click', handleClearData);
     elements.themeToggle.addEventListener('click', handleThemeToggle);
     elements.themeToggle.addEventListener('keydown', handleThemeToggleKeydown);
@@ -167,6 +178,7 @@ export function init() {
 export function destroy() {
     if (elements.soundToggle) elements.soundToggle.removeEventListener('change', handleSoundToggle);
     if (elements.animationSlider) elements.animationSlider.removeEventListener('input', handleAnimationChange);
+    if (elements.timerSelect) elements.timerSelect.removeEventListener('change', handleTimerChange);
     if (elements.clearDataBtn) elements.clearDataBtn.removeEventListener('click', handleClearData);
     if (elements.themeToggle) {
         elements.themeToggle.removeEventListener('click', handleThemeToggle);
