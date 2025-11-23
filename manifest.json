@@ -1,11 +1,11 @@
 {
-    "name": "Knowledge Tester",
-    "short_name": "KnowledgeTester",
-    "description": "A streamlined, AI-powered quiz application rebuilt from the ground up with vanilla JavaScript for performance and reliability. Generate quizzes on any topic instantly.",
+    "name": "IT Quiz Master 2025",
+    "short_name": "ITQuizMaster",
+    "description": "The #1 AI-powered IT & Programming quiz platform.",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#0c0e1a",
-    "theme_color": "#0c0e1a",
+    "background_color": "#0f172a",
+    "theme_color": "#38bdf8",
     "icons": [
         {
             "src": "/assets/images/icon-192.png",
