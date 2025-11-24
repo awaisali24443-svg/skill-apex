@@ -39,8 +39,8 @@ export function getUserInterest() {
 }
 
 export function saveUserInterest(category) {
-    // Allow saving 'custom' or any valid category
-    if (category === 'custom' || INTEREST_DATA[category]) {
+    // GUARANTEED SAVE: Remove strict validation to prevent popup looping
+    if (category) {
         localStorage.setItem('kt_selected_interest', category);
     }
 }

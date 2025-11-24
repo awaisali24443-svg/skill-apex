@@ -80,7 +80,7 @@ body {
 #global-background {
     position: fixed;
     inset: 0;
-    z-index: -1; /* Behind everything */
+    z-index: 0; /* Fixed: 0 ensures it is above -1 contexts but below 1 content */
     pointer-events: none;
     background-color: var(--color-background); /* Base color */
     overflow: hidden;
@@ -167,7 +167,7 @@ body {
     height: 100%;
     width: 100%;
     position: relative;
-    z-index: 1; /* Ensures content sits above background layers */
+    z-index: 1; /* Ensures content sits above background layers (index 0) */
 }
 
 #sidebar {

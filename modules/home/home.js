@@ -18,7 +18,10 @@ function checkOnboarding() {
     // If user has already chosen, DO NOT show popup.
     // Remove it from DOM entirely to prevent any visual glitches
     if (existingInterest) {
-        if (overlay) overlay.remove();
+        if (overlay) {
+            overlay.style.display = 'none'; // Instant hide
+            overlay.remove(); // Remove from DOM
+        }
         return;
     }
     
@@ -38,15 +41,15 @@ function checkOnboarding() {
             newCard.addEventListener('click', () => {
                 const category = newCard.dataset.category;
                 
+                // SAVE THE CHOICE PERMANENTLY FIRST
+                learningPathService.saveUserInterest(category);
+
                 // Fade out
                 overlay.classList.remove('visible');
                 setTimeout(() => {
                     overlay.style.display = 'none';
                     overlay.remove(); // Remove from DOM after fade
                 }, 400); 
-
-                // SAVE THE CHOICE PERMANENTLY
-                learningPathService.saveUserInterest(category);
 
                 if (category === 'custom') {
                     // For custom, we just go to the standard list
@@ -90,7 +93,6 @@ function renderPrimaryAction() {
         description.textContent = `Jump back into "${path.goal}" at Level ${path.currentLevel}`;
     } else {
         // Logic: If they have a saved interest, 'Start New' goes to topics list which is pre-filtered
-        // If they are new (and somehow ignored popup), it goes to topics list too.
         card.href = '/#/topics';
         icon.innerHTML = `<svg><use href="/assets/icons/feather-sprite.svg#plus"/></svg>`;
         title.textContent = 'Start New Adventure';
