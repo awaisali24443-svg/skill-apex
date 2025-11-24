@@ -88,16 +88,19 @@
         You are currently offline. Some features may be unavailable.
     </div>
 
+    <script src="global/global.js"></script>
     <script type="module" src="index.js"></script>
     <script>
         // Initialize Mermaid with a dark theme configuration
         document.addEventListener('DOMContentLoaded', () => {
-            mermaid.initialize({ 
-                startOnLoad: false, 
-                theme: 'dark',
-                securityLevel: 'loose',
-                fontFamily: 'Inter'
-            });
+            if (typeof mermaid !== 'undefined') {
+                mermaid.initialize({ 
+                    startOnLoad: false, 
+                    theme: 'dark',
+                    securityLevel: 'loose',
+                    fontFamily: 'Inter'
+                });
+            }
         });
     </script>
 </body>

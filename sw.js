@@ -1,12 +1,12 @@
 
 /**
  * @file Service Worker for Knowledge Tester PWA
- * @version 3.8.4
+ * @version 3.8.5
  *
  * This service worker implements a robust offline-first caching strategy.
  */
 
-const CACHE_NAME = 'knowledge-tester-v3.8.4';
+const CACHE_NAME = 'knowledge-tester-v3.8.5';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [
@@ -106,8 +106,14 @@ self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
 
-    if (url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com' || url.origin === 'https://cdn.jsdelivr.net') {
+    if (url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com') {
         event.respondWith(staleWhileRevalidate(FONT_CACHE_NAME, request));
+        return;
+    }
+
+    // Handle mermaid.js and other CDN libs separately from fonts but still cache them
+    if (url.origin === 'https://cdn.jsdelivr.net') {
+        event.respondWith(staleWhileRevalidate(CACHE_NAME, request));
         return;
     }
 

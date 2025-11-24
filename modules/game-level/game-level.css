@@ -469,5 +469,4 @@
     .match-container { grid-template-columns: 1fr; gap: var(--space-md); }
     .quiz-status-card { flex-direction: column; }
     .timer-section { border-right: none; padding-right: 0; border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-lg); }
-    .boss-health-container { display: none !important; } /* Hide boss bar on very small screens if needed */
 }
