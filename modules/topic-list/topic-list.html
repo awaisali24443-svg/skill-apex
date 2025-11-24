@@ -1,9 +1,20 @@
 
+
 <div class="page-container topic-list-container">
     <header class="page-header">
         <h1>Welcome to AI Quiz Nexus!</h1>
         <p>Choose your adventure and master new fields with AI-powered quizzes.</p>
     </header>
+
+    <!-- Active Filter Badge (Injected via JS) -->
+    <div id="active-filter-container" class="active-filter-container" style="display: none;">
+        <span class="filter-badge">
+            <span id="filter-name"></span>
+            <button id="clear-filter-btn" class="btn-icon-small" aria-label="Clear Filter">
+                <svg class="icon"><use href="/assets/icons/feather-sprite.svg#x-circle"/></svg>
+            </button>
+        </span>
+    </div>
 
     <div class="card journey-creator-card">
         <div class="creator-icon">

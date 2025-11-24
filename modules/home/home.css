@@ -293,19 +293,33 @@
     position: fixed;
     inset: 0;
     z-index: 2000;
-    background-color: rgba(5, 5, 10, 0.9);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
+    background-color: rgba(5, 5, 10, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: fade-in 0.5s ease-out;
+    opacity: 0; /* Start hidden for transition */
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+.onboarding-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .onboarding-content {
     width: 90%;
     max-width: 900px;
-    animation: pop-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.onboarding-overlay.visible .onboarding-content {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .onboarding-header {

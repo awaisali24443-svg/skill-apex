@@ -1,4 +1,5 @@
 
+
 import * as apiService from '../../services/apiService.js';
 import * as stateService from '../../services/stateService.js';
 import * as modalService from '../../services/modalService.js';
@@ -6,7 +7,7 @@ import * as learningPathService from '../../services/learningPathService.js';
 import * as levelCacheService from '../../services/levelCacheService.js';
 import { showToast } from '../../services/toastService.js';
 
-let topicGrid, activeJourneysGrid, activeJourneysSection, skeletonGrid;
+let topicGrid, activeJourneysGrid, activeJourneysSection, skeletonGrid, activeFilterContainer;
 let template, activeJourneyTemplate;
 let journeyCreatorForm;
 let currentTopicsList = [];
@@ -43,7 +44,6 @@ function renderTopics(topics) {
     });
 
     // Start Background Pre-fetching sequence
-    // We fetch the top 6 items (most likely to be clicked)
     initiatePrefetchSequence(topics);
 }
 
@@ -68,7 +68,6 @@ async function processPrefetchQueue() {
     // Safety check: Only prefetch if we have metadata (totalLevels)
     // This ensures we are in the "Fast Track" mode.
     if (!topicData || !topicData.totalLevels) {
-        // If no metadata, we can't skip journey generation, so we don't prefetch content yet.
         processPrefetchQueue(); 
         return;
     }
@@ -80,9 +79,7 @@ async function processPrefetchQueue() {
     }
 
     try {
-        // console.log(`[Background] Pre-fetching Level 1 for: ${topicName}...`);
-        
-        // 1. Generate Questions (Parallelizable part of logic, but we do it linearly to save bandwidth)
+        // 1. Generate Questions
         const qData = await apiService.generateLevelQuestions({ 
             topic: topicName, 
             level: 1, 
@@ -100,12 +97,9 @@ async function processPrefetchQueue() {
         // 3. Save to Cache
         const fullLevelData = { ...qData, ...lData };
         levelCacheService.saveLevel(topicName, 1, fullLevelData);
-        
-        // console.log(`[Background] Cached ${topicName} successfully.`);
 
     } catch (e) {
-        // Silent fail in background, user will just see normal loading screen if they click
-        // console.warn(`[Background] Prefetch failed for ${topicName}`, e);
+        // Silent fail in background
     } finally {
         // Schedule next fetch with a small delay to keep UI thread buttery smooth
         prefetchTimeout = setTimeout(processPrefetchQueue, 300);
@@ -153,7 +147,6 @@ function handleTopicSelection(topicName) {
     
     if (topicData && topicData.totalLevels) {
         // INSTANT JOURNEY CREATION
-        // We know the total levels (e.g. 50), so we skip the Journey Plan API call entirely.
         learningPathService.startOrGetJourney(topicName, {
             totalLevels: topicData.totalLevels,
             description: topicData.description
@@ -180,6 +173,20 @@ function handleGridInteraction(event) {
     handleTopicSelection(topic);
 }
 
+function handleClearFilter() {
+    learningPathService.clearUserInterest();
+    activeFilterContainer.style.display = 'none';
+    skeletonGrid.style.display = 'grid';
+    topicGrid.style.display = 'none';
+    
+    // Load generic topics
+    apiService.fetchTopics().then(renderTopics).catch(err => {
+        topicGrid.innerHTML = '<p>Error loading topics.</p>';
+    });
+    
+    showToast('Filter cleared. Showing all topics.', 'info');
+}
+
 async function handleJourneyCreatorSubmit(event) {
     event.preventDefault();
     const input = document.getElementById('custom-topic-input');
@@ -198,10 +205,7 @@ async function handleJourneyCreatorSubmit(event) {
     buttonIcon.innerHTML = `<div class="spinner" style="width: 16px; height: 16px; border-width: 2px;"></div>`;
 
     try {
-        // 1. Generate the journey plan to get totalLevels and a better description
         const plan = await apiService.generateJourneyPlan(topic);
-
-        // 2. Generate the curriculum outline based on the plan
         const outline = await apiService.generateCurriculumOutline({ topic, totalLevels: plan.totalLevels });
 
         const curriculumHtml = `
@@ -211,7 +215,6 @@ async function handleJourneyCreatorSubmit(event) {
             </ul>
         `;
 
-        // 3. Show confirmation modal with the curriculum
         const confirmed = await modalService.showConfirmationModal({
             title: 'Journey Preview',
             message: curriculumHtml,
@@ -219,7 +222,6 @@ async function handleJourneyCreatorSubmit(event) {
             cancelText: 'Cancel'
         });
 
-        // 4. If confirmed, SAVE the journey and proceed
         if (confirmed) {
             await learningPathService.startOrGetJourney(topic, plan);
             handleTopicSelection(topic);
@@ -228,7 +230,6 @@ async function handleJourneyCreatorSubmit(event) {
     } catch (error) {
         showToast(`Error creating journey: ${error.message}`, 'error');
     } finally {
-        // Restore button state
         button.disabled = false;
         buttonText.textContent = originalButtonText;
         buttonIcon.innerHTML = originalIconHTML;
@@ -242,6 +243,7 @@ export async function init() {
     skeletonGrid = document.getElementById('topics-skeleton');
     activeJourneysGrid = document.getElementById('active-journeys-grid');
     activeJourneysSection = document.getElementById('active-journeys-section');
+    activeFilterContainer = document.getElementById('active-filter-container');
     
     template = document.getElementById('topic-card-template');
     activeJourneyTemplate = document.getElementById('active-journey-template');
@@ -253,23 +255,28 @@ export async function init() {
     activeJourneysGrid.addEventListener('keydown', handleGridInteraction);
     journeyCreatorForm.addEventListener('submit', handleJourneyCreatorSubmit);
     
-    // Render user's active journeys first
+    const clearFilterBtn = document.getElementById('clear-filter-btn');
+    if (clearFilterBtn) clearFilterBtn.addEventListener('click', handleClearFilter);
+    
     renderActiveJourneys();
 
-    // Show skeleton immediately
     skeletonGrid.style.display = 'grid';
     topicGrid.style.display = 'none';
 
-    // Check if we have preloaded topics from the Onboarding Overlay
-    const { navigationContext } = stateService.getState();
+    // 1. Check for user's SAVED interest (Persisted preference)
+    const savedInterest = learningPathService.getUserInterest();
     
-    if (navigationContext && navigationContext.preloadedTopics) {
-        // INSTANT RENDER (Using Fake AI Data)
-        renderTopics(navigationContext.preloadedTopics);
-        // Clear the preload context so it doesn't stick if user navigates away and back
-        stateService.setNavigationContext({ ...navigationContext, preloadedTopics: null });
+    if (savedInterest && savedInterest !== 'custom') {
+        // Load instant data for that interest
+        const topics = learningPathService.getInterestTopics(savedInterest);
+        renderTopics(topics);
+        
+        // Show filter badge
+        activeFilterContainer.style.display = 'flex';
+        document.getElementById('filter-name').textContent = `Filtering: ${savedInterest.toUpperCase()}`;
     } else {
-        // STANDARD API FETCH
+        activeFilterContainer.style.display = 'none';
+        // 2. Fallback (or Custom): API fetch for generic topics
         try {
             const allTopics = await apiService.fetchTopics();
             renderTopics(allTopics);
@@ -282,7 +289,6 @@ export async function init() {
 }
 
 export function destroy() {
-    // Stop any ongoing prefetch if user navigates away
     if (prefetchTimeout) {
         clearTimeout(prefetchTimeout);
         prefetchTimeout = null;

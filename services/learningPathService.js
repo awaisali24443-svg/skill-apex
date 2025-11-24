@@ -2,8 +2,56 @@
 import { LOCAL_STORAGE_KEYS } from '../constants.js';
 import * as apiService from './apiService.js';
 
+// --- HARDCODED INTEREST DATA (Shared Source of Truth) ---
+const INTEREST_DATA = {
+    cs: [
+        { name: "Python for Beginners", description: "Master the basics of Python, the world's most popular language.", styleClass: "topic-programming", totalLevels: 50 },
+        { name: "Ethical Hacking", description: "Learn penetration testing and network defense strategies.", styleClass: "topic-space", totalLevels: 60 },
+        { name: "Web Development 101", description: "HTML, CSS, and JavaScript: Build your first website.", styleClass: "topic-arts", totalLevels: 40 },
+        { name: "Artificial Intelligence", description: "Understand Neural Networks, ML, and the future of tech.", styleClass: "topic-robotics", totalLevels: 100 }
+    ],
+    history: [
+        { name: "World War II", description: "The global conflict that shaped the modern world.", styleClass: "topic-finance", totalLevels: 80 },
+        { name: "Ancient Rome", description: "Rise and fall of the greatest empire in history.", styleClass: "topic-philosophy", totalLevels: 70 },
+        { name: "History of Pakistan", description: "From the Indus Valley to independence and beyond.", styleClass: "topic-biology", totalLevels: 50 },
+        { name: "The Industrial Revolution", description: "How machines changed human society forever.", styleClass: "topic-programming", totalLevels: 40 }
+    ],
+    science: [
+        { name: "Quantum Physics", description: "Dive into the bizarre world of subatomic particles.", styleClass: "topic-space", totalLevels: 120 },
+        { name: "Human Biology", description: "Anatomy, physiology, and the miracle of life.", styleClass: "topic-medicine", totalLevels: 90 },
+        { name: "Space Exploration", description: "Rockets, Mars missions, and the search for aliens.", styleClass: "topic-programming", totalLevels: 60 },
+        { name: "Organic Chemistry", description: "The carbon-based building blocks of existence.", styleClass: "topic-ecology", totalLevels: 80 }
+    ],
+    business: [
+        { name: "Digital Marketing", description: "SEO, Social Media, and growth hacking strategies.", styleClass: "topic-arts", totalLevels: 50 },
+        { name: "Financial Literacy", description: "Investing, saving, and managing personal wealth.", styleClass: "topic-finance", totalLevels: 30 },
+        { name: "Entrepreneurship", description: "How to start, fund, and scale your own startup.", styleClass: "topic-robotics", totalLevels: 60 },
+        { name: "Stock Market Basics", description: "Understanding bulls, bears, and trading.", styleClass: "topic-programming", totalLevels: 40 }
+    ]
+};
+
 let gameProgress = [];
 const pendingJourneys = new Map();
+
+// --- Interest Persistence Methods ---
+export function getUserInterest() {
+    return localStorage.getItem('kt_selected_interest');
+}
+
+export function saveUserInterest(category) {
+    // Allow saving 'custom' or any valid category
+    if (category === 'custom' || INTEREST_DATA[category]) {
+        localStorage.setItem('kt_selected_interest', category);
+    }
+}
+
+export function clearUserInterest() {
+    localStorage.removeItem('kt_selected_interest');
+}
+
+export function getInterestTopics(category) {
+    return INTEREST_DATA[category] || [];
+}
 
 /**
  * Loads game progress from localStorage.

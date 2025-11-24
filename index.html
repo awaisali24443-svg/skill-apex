@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,6 +45,12 @@
 </script>
 </head>
 <body>
+    <!-- DEDICATED BACKGROUND LAYER -->
+    <div id="global-background">
+        <div class="bg-circuit"></div>
+        <div class="bg-aurora"></div>
+    </div>
+
     <div id="splash-screen">
         <img src="assets/icons/favicon.svg" alt="Knowledge Tester Logo" class="splash-logo">
         <div class="spinner" role="status">
@@ -54,23 +61,29 @@
     <div id="welcome-screen" style="display: none;">
         <div class="welcome-content card">
             <img src="assets/icons/favicon.svg" alt="Knowledge Tester Logo" class="welcome-logo">
-            <h1>Welcome to Knowledge Tester</h1>
-            <p>Your personal AI-powered learning companion. Master any topic, one level at a time.</p>
+            <h1>Knowledge Tester</h1>
+            <p>Your personal AI-powered learning companion. Master any topic, from basics to boss battles.</p>
             <ul class="features-list">
                 <li>
-                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#cpu"/></svg>
-                    <span>AI-Powered Learning Paths</span>
+                    <div class="icon-badge">
+                        <svg class="icon"><use href="/assets/icons/feather-sprite.svg#cpu"/></svg>
+                    </div>
+                    <span>AI-Powered Curriculum</span>
                 </li>
                 <li>
-                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#git-branch"/></svg>
-                    <span>Custom Journey Creation</span>
+                    <div class="icon-badge">
+                        <svg class="icon"><use href="/assets/icons/feather-sprite.svg#git-branch"/></svg>
+                    </div>
+                    <span>Custom Learning Paths</span>
                 </li>
                 <li>
-                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#star"/></svg>
-                    <span>Track Your Progress</span>
+                    <div class="icon-badge">
+                        <svg class="icon"><use href="/assets/icons/feather-sprite.svg#star"/></svg>
+                    </div>
+                    <span>Gamified Progression</span>
                 </li>
             </ul>
-            <button id="welcome-get-started-btn" class="btn btn-primary">Let's Get Started</button>
+            <button id="welcome-get-started-btn" class="btn btn-primary">Initialize System</button>
         </div>
     </div>
 

@@ -2,12 +2,12 @@
 
 /**
  * @file Service Worker for Knowledge Tester PWA
- * @version 3.8.8
+ * @version 3.9.3
  *
  * This service worker implements a robust offline-first caching strategy.
  */
 
-const CACHE_NAME = 'knowledge-tester-v3.8.8';
+const CACHE_NAME = 'knowledge-tester-v3.9.3';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [

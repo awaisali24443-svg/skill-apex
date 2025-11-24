@@ -4,6 +4,7 @@ import { showConfirmationModal } from '../../services/modalService.js';
 import { LOCAL_STORAGE_KEYS } from '../../constants.js';
 import { showToast } from '../../services/toastService.js';
 import * as levelCacheService from '../../services/levelCacheService.js';
+import * as learningPathService from '../../services/learningPathService.js';
 
 let elements = {};
 const animationLevels = ['off', 'subtle', 'full'];
@@ -84,6 +85,24 @@ function handleThemeToggleKeydown(event) {
     configService.setConfig({ theme: newTheme });
 }
 
+async function handleChangeInterest() {
+    const confirmed = await showConfirmationModal({
+        title: 'Change Learning Field?',
+        message: 'This will reset your "Explore Topics" recommendations to allow you to choose a new core field. Your existing journeys and history will NOT be deleted.',
+        confirmText: 'Change Field',
+        cancelText: 'Cancel'
+    });
+
+    if (confirmed) {
+        learningPathService.clearUserInterest();
+        showToast('Interest reset. Redirecting to home...', 'success');
+        setTimeout(() => {
+            window.location.hash = '/';
+            window.location.reload(); // Reload to trigger the onboarding popup
+        }, 1000);
+    }
+}
+
 async function handleClearData() {
     const confirmed = await showConfirmationModal({
         title: 'Confirm Data Deletion',
@@ -96,6 +115,7 @@ async function handleClearData() {
         Object.values(LOCAL_STORAGE_KEYS).forEach(key => {
             localStorage.removeItem(key);
         });
+        learningPathService.clearUserInterest();
         levelCacheService.clearAllLevels();
         showToast('All application data has been cleared.', 'success');
         setTimeout(() => window.location.reload(), 1000);
@@ -121,6 +141,7 @@ export function init() {
         soundToggle: document.getElementById('sound-toggle'),
         animationSlider: document.getElementById('animation-slider'),
         clearDataBtn: document.getElementById('clear-data-btn'),
+        changeInterestBtn: document.getElementById('change-interest-btn'),
         themeToggle: document.getElementById('theme-toggle-group'),
         themeToggleButtons: document.querySelectorAll('#theme-toggle-group button'),
         installSection: document.getElementById('install-app-section'),
@@ -132,6 +153,7 @@ export function init() {
     elements.soundToggle.addEventListener('change', handleSoundToggle);
     elements.animationSlider.addEventListener('input', handleAnimationChange);
     elements.clearDataBtn.addEventListener('click', handleClearData);
+    if (elements.changeInterestBtn) elements.changeInterestBtn.addEventListener('click', handleChangeInterest);
     elements.themeToggle.addEventListener('click', handleThemeToggle);
     elements.themeToggle.addEventListener('keydown', handleThemeToggleKeydown);
 
@@ -145,6 +167,7 @@ export function destroy() {
     if (elements.soundToggle) elements.soundToggle.removeEventListener('change', handleSoundToggle);
     if (elements.animationSlider) elements.animationSlider.removeEventListener('input', handleAnimationChange);
     if (elements.clearDataBtn) elements.clearDataBtn.removeEventListener('click', handleClearData);
+    if (elements.changeInterestBtn) elements.changeInterestBtn.removeEventListener('click', handleChangeInterest);
     if (elements.themeToggle) {
         elements.themeToggle.removeEventListener('click', handleThemeToggle);
         elements.themeToggle.removeEventListener('keydown', handleThemeToggleKeydown);

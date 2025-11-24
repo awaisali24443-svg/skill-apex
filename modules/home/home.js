@@ -1,5 +1,4 @@
 
-
 import * as gamificationService from '../../services/gamificationService.js';
 import * as historyService from '../../services/historyService.js';
 import * as learningPathService from '../../services/learningPathService.js';
@@ -11,43 +10,24 @@ import { showToast } from '../../services/toastService.js';
 let historyClickHandler;
 let challengeBtn;
 
-// --- HARDCODED INTEREST DATA (THE FAKE AI + PREDICTIVE METADATA) ---
-// We add 'totalLevels' to skip the first API call (Journey Plan).
-// We do NOT pre-generate questions to keep the app lightweight.
-const INTEREST_DATA = {
-    cs: [
-        { name: "Python for Beginners", description: "Master the basics of Python, the world's most popular language.", styleClass: "topic-programming", totalLevels: 50 },
-        { name: "Ethical Hacking", description: "Learn penetration testing and network defense strategies.", styleClass: "topic-space", totalLevels: 60 },
-        { name: "Web Development 101", description: "HTML, CSS, and JavaScript: Build your first website.", styleClass: "topic-arts", totalLevels: 40 },
-        { name: "Artificial Intelligence", description: "Understand Neural Networks, ML, and the future of tech.", styleClass: "topic-robotics", totalLevels: 100 }
-    ],
-    history: [
-        { name: "World War II", description: "The global conflict that shaped the modern world.", styleClass: "topic-finance", totalLevels: 80 },
-        { name: "Ancient Rome", description: "Rise and fall of the greatest empire in history.", styleClass: "topic-philosophy", totalLevels: 70 },
-        { name: "History of Pakistan", description: "From the Indus Valley to independence and beyond.", styleClass: "topic-biology", totalLevels: 50 },
-        { name: "The Industrial Revolution", description: "How machines changed human society forever.", styleClass: "topic-programming", totalLevels: 40 }
-    ],
-    science: [
-        { name: "Quantum Physics", description: "Dive into the bizarre world of subatomic particles.", styleClass: "topic-space", totalLevels: 120 },
-        { name: "Human Biology", description: "Anatomy, physiology, and the miracle of life.", styleClass: "topic-medicine", totalLevels: 90 },
-        { name: "Space Exploration", description: "Rockets, Mars missions, and the search for aliens.", styleClass: "topic-programming", totalLevels: 60 },
-        { name: "Organic Chemistry", description: "The carbon-based building blocks of existence.", styleClass: "topic-ecology", totalLevels: 80 }
-    ],
-    business: [
-        { name: "Digital Marketing", description: "SEO, Social Media, and growth hacking strategies.", styleClass: "topic-arts", totalLevels: 50 },
-        { name: "Financial Literacy", description: "Investing, saving, and managing personal wealth.", styleClass: "topic-finance", totalLevels: 30 },
-        { name: "Entrepreneurship", description: "How to start, fund, and scale your own startup.", styleClass: "topic-robotics", totalLevels: 60 },
-        { name: "Stock Market Basics", description: "Understanding bulls, bears, and trading.", styleClass: "topic-programming", totalLevels: 40 }
-    ]
-};
-
 function checkOnboarding() {
-    // EXPO MODE: Ignored the localStorage check so it ALWAYS shows for the demo.
-    // const hasSeenOnboarding = localStorage.getItem('kt_onboarding_complete');
+    // Check if user has already selected an interest
+    const existingInterest = learningPathService.getUserInterest();
     const overlay = document.getElementById('onboarding-overlay');
+    
+    // If user has already chosen, DO NOT show popup.
+    // Remove it from DOM entirely to prevent any visual glitches
+    if (existingInterest) {
+        if (overlay) overlay.remove();
+        return;
+    }
     
     if (overlay) {
         overlay.style.display = 'flex';
+        // Force reflow
+        void overlay.offsetWidth;
+        // Add visible class for transition
+        overlay.classList.add('visible');
         
         // Add listeners to buttons
         overlay.querySelectorAll('.interest-card').forEach(card => {
@@ -59,22 +39,20 @@ function checkOnboarding() {
                 const category = newCard.dataset.category;
                 
                 // Fade out
-                overlay.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' }).onfinish = () => {
+                overlay.classList.remove('visible');
+                setTimeout(() => {
                     overlay.style.display = 'none';
-                };
+                    overlay.remove(); // Remove from DOM after fade
+                }, 400); 
+
+                // SAVE THE CHOICE PERMANENTLY
+                learningPathService.saveUserInterest(category);
 
                 if (category === 'custom') {
-                    // Just go to topics page normally
+                    // For custom, we just go to the standard list
                     window.location.hash = '#/topics';
                 } else {
-                    // Inject "Fake AI" data (Metadata Only - Lightweight)
-                    const fakeTopics = INTEREST_DATA[category];
-                    stateService.setNavigationContext({ preloadedTopics: fakeTopics });
-                    
-                    // We intentionally DO NOT start background generation here.
-                    // It risks slowing down the UI during the demo. 
-                    // The "Instant Map" (Level 1-50) from the metadata is impressive enough.
-
+                    // For preset, we also go to topics, but the list module will filter/preload
                     window.location.hash = '#/topics';
                 }
             });
@@ -111,6 +89,8 @@ function renderPrimaryAction() {
         title.textContent = 'Resume Journey';
         description.textContent = `Jump back into "${path.goal}" at Level ${path.currentLevel}`;
     } else {
+        // Logic: If they have a saved interest, 'Start New' goes to topics list which is pre-filtered
+        // If they are new (and somehow ignored popup), it goes to topics list too.
         card.href = '/#/topics';
         icon.innerHTML = `<svg><use href="/assets/icons/feather-sprite.svg#plus"/></svg>`;
         title.textContent = 'Start New Adventure';
@@ -284,7 +264,6 @@ async function initDailyChallenge() {
 
 // --- Preloading ---
 async function preloadCriticalModules() {
-    // Silently fetch the topic-list module so clicking "Start" feels instant
     const moduleName = 'topic-list';
     try {
         await Promise.all([
@@ -294,7 +273,7 @@ async function preloadCriticalModules() {
         ]);
         console.log('Preloaded topic-list module.');
     } catch (e) {
-        // Ignore errors in background preload
+        // Ignore
     }
 }
 
@@ -304,9 +283,8 @@ export function init() {
     renderRecentHistory();
     renderMemoryHealth();
     initDailyChallenge();
-    checkOnboarding(); // Will now trigger every time for Expo
+    checkOnboarding();
     
-    // Trigger preload after a short delay to let main thread settle
     setTimeout(preloadCriticalModules, 1000);
 }
 

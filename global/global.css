@@ -47,7 +47,6 @@ html {
     font-size: var(--fs-base);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition: background-color var(--transition-speed-med) ease;
 }
 
 body {
@@ -56,8 +55,6 @@ body {
     position: relative;
     background-color: transparent; 
     color: var(--color-text);
-    transition: color var(--transition-speed-med) ease;
-    /* Ensure body creates a stacking context but doesn't hide fixed bg elements */
     z-index: 0; 
 }
 
@@ -78,35 +75,38 @@ body {
     to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* --- ADVANCED BACKGROUND SYSTEM --- */
+/* --- ADVANCED BACKGROUND SYSTEM (FIXED) --- */
 
-/* Layer 1: Circuit Texture (Static Tech Feel) */
-/* Using Data URI to ensure it loads without external file dependency */
-body::before {
-    content: "";
+#global-background {
     position: fixed;
     inset: 0;
-    z-index: -2; /* Behind content */
-    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='rgba(255,255,255,0.05)' fill-rule='evenodd'/%3E%3C/svg%3E");
-    background-size: 400px 400px;
-    opacity: 0.3;
+    z-index: -1; /* Behind everything */
     pointer-events: none;
+    background-color: var(--color-background); /* Base color */
+    overflow: hidden;
+}
+
+/* Layer 1: Circuit Texture (Static Tech Feel) */
+.bg-circuit {
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-rule='evenodd'/%3E%3C/svg%3E");
+    background-size: 400px 400px;
+    opacity: 0.1; /* Increased visibility */
+    mix-blend-mode: overlay;
 }
 
 /* Layer 2: Fluid Aurora (Dynamic Glows) */
-body::after {
-    content: "";
-    position: fixed;
+.bg-aurora {
+    position: absolute;
     inset: -50%; /* Extend beyond viewport for movement */
-    z-index: -3; /* Behind circuit */
     background: 
         radial-gradient(circle at 20% 30%, var(--color-primary-transparent-heavy) 0%, transparent 50%),
         radial-gradient(circle at 80% 70%, var(--color-secondary-transparent-heavy) 0%, transparent 50%),
         radial-gradient(circle at 50% 50%, var(--color-accent-transparent) 0%, transparent 60%);
-    filter: blur(80px); /* Increased blur for smoother gradient */
-    opacity: 0.7; /* Slightly more visible */
+    filter: blur(80px);
+    opacity: 0.6; /* Vibrant visibility */
     animation: aurora-drift 30s ease-in-out infinite alternate;
-    pointer-events: none;
 }
 
 @keyframes aurora-drift {
@@ -116,7 +116,7 @@ body::after {
 }
 
 /* Layer 3: Scanlines (Retro-Tech Overlay) */
-html::after {
+#global-background::after {
     content: " ";
     display: block;
     position: absolute;
@@ -126,7 +126,7 @@ html::after {
     right: 0;
     background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
     background-size: 100% 4px;
-    z-index: 9999;
+    z-index: 5;
     pointer-events: none;
     opacity: 0.15;
 }
@@ -351,15 +351,15 @@ html::after {
 }
 
 
-/* --- Welcome Screen --- */
+/* --- Welcome Screen (Upgraded) --- */
 #welcome-screen {
     position: fixed;
     inset: 0;
     display: none;
     align-items: center;
     justify-content: center;
-    background-color: rgba(0,0,0,0.7);
-    backdrop-filter: blur(10px);
+    background-color: rgba(5, 5, 10, 0.9); /* Darker overlay */
+    backdrop-filter: blur(15px);
     z-index: 1000;
     opacity: 0;
     transition: opacity 0.4s ease;
@@ -370,13 +370,102 @@ html::after {
 }
 
 .welcome-content {
-    animation: fade-slide-in 0.5s ease-out 0.2s backwards, pulsing-glow 4s ease-in-out infinite;
+    background: rgba(20, 20, 30, 0.85);
+    border: 1px solid var(--color-primary);
+    box-shadow: 0 0 50px rgba(0, 184, 212, 0.2), inset 0 0 20px rgba(0, 184, 212, 0.1);
+    max-width: 500px;
+    text-align: center;
+    animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    padding: var(--space-xl) !important;
+    position: relative;
+    overflow: hidden;
 }
 
-@keyframes pulsing-glow {
-    0% { box-shadow: inset 0 0 2px 0 var(--color-surface-transparent), 0 8px 30px rgba(0, 0, 0, 0.25), 0 0 15px var(--color-primary-transparent); }
-    50% { box-shadow: inset 0 0 2px 0 var(--color-surface-transparent), 0 8px 30px rgba(0, 0, 0, 0.25), 0 0 35px var(--color-primary-transparent-heavy); }
-    100% { box-shadow: inset 0 0 2px 0 var(--color-surface-transparent), 0 8px 30px rgba(0, 0, 0, 0.25), 0 0 15px var(--color-primary-transparent); }
+/* Decorative accent line for welcome card */
+.welcome-content::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: var(--brand-gradient);
+    box-shadow: 0 0 10px var(--color-primary);
+}
+
+.welcome-logo {
+    width: 80px;
+    height: 80px;
+    margin-bottom: var(--space-lg);
+    filter: drop-shadow(0 0 15px var(--color-primary));
+    animation: pulse-glow 3s infinite alternate;
+}
+
+@keyframes pulse-glow {
+    0% { filter: drop-shadow(0 0 10px var(--color-primary)); transform: scale(1); }
+    100% { filter: drop-shadow(0 0 25px var(--color-primary)); transform: scale(1.05); }
+}
+
+.welcome-content h1 {
+    font-size: 2rem;
+    margin-bottom: var(--space-sm);
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.welcome-content p {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-xl);
+}
+
+.features-list {
+    list-style: none;
+    margin-bottom: var(--space-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    text-align: left;
+}
+
+.features-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    background: var(--color-surface-hover);
+    padding: 10px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--color-border);
+    transition: transform 0.2s ease;
+}
+.features-list li:hover {
+    transform: translateX(5px);
+    border-color: var(--color-primary);
+    background: var(--color-surface-active);
+}
+
+/* Fancy Badge Icons for List */
+.features-list .icon-badge {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.features-list li:nth-child(1) .icon-badge { background: rgba(0, 229, 255, 0.15); color: #00e5ff; }
+.features-list li:nth-child(2) .icon-badge { background: rgba(156, 39, 176, 0.15); color: #9c27b0; }
+.features-list li:nth-child(3) .icon-badge { background: rgba(255, 64, 129, 0.15); color: #ff4081; }
+
+.features-list svg {
+    width: 20px; height: 20px; stroke: currentColor;
+}
+
+.features-list span {
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+#welcome-get-started-btn {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.1rem;
 }
 
 
