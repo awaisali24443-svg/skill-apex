@@ -1,6 +1,7 @@
 
 
 
+
 import * as apiService from '../../services/apiService.js';
 import * as learningPathService from '../../services/learningPathService.js';
 import * as markdownService from '../../services/markdownService.js';
@@ -233,89 +234,87 @@ async function startLevel(forceRefresh = false) {
         
         } else if (isInteractiveLevel) {
             // --- INTERACTIVE LEVEL GENERATION ---
-            if (!partialCacheHit) {
-                stopLoadingAnimation();
-                if (elements.loadingText) elements.loadingText.textContent = "Designing Challenge...";
-                interactiveData = await apiService.generateInteractiveLevel({ topic, level });
-                
-                if (!interactiveData || !interactiveData.items) throw new Error("Failed to generate challenge.");
-                
-                levelData = { ...interactiveData }; // Merge
-                // Save intermediate
-                levelCacheService.saveLevel(topic, level, levelData);
-            }
-
-            // Generate Lesson for Interactive Level too
-             elements.skipPopup.style.display = 'block';
-             stopLoadingAnimation();
-             if (elements.loadingText) elements.loadingText.textContent = "Writing Instructions...";
-             
-             lessonAbortController = new AbortController();
-             // Pass interactive items as "questions" context for the lesson generator
-             const contextItems = interactiveData.items.map(i => i.text).join(', ');
-             
-             lessonGenerationPromise = apiService.generateLevelLesson({
-                 topic,
-                 level,
-                 totalLevels,
-                 questions: [{ question: `Interactive Challenge: ${interactiveData.instruction}. Items: ${contextItems}` }], // Mock structure for context
-                 signal: lessonAbortController.signal
-             })
-             .then(lData => {
-                 levelData.lesson = lData.lesson;
-                 levelCacheService.saveLevel(topic, level, levelData);
-                 if (!skippedLesson) renderLesson();
-             })
-             .catch(err => {
-                 if (err.name !== 'AbortError') {
-                     if (!skippedLesson) {
-                         showToast("Lesson failed, starting challenge.", "error");
-                         startQuiz();
-                     }
-                 }
-             });
-
-        } else {
-            // --- STANDARD MCQ GENERATION ---
-            if (!partialCacheHit) {
-                // Loading animation continues here
-                const qData = await apiService.generateLevelQuestions({ topic, level, totalLevels });
-                
-                if (!qData || !qData.questions) throw new Error("Failed to generate questions.");
-                
-                masterQuestionsList = qData.questions;
-                levelData.questions = masterQuestionsList;
-                levelCacheService.saveLevel(topic, level, levelData); 
-            } else {
-                console.log("Restored questions from partial cache.");
-            }
-
-            elements.skipPopup.style.display = 'block';
-            stopLoadingAnimation();
-            if (elements.loadingText) elements.loadingText.textContent = "Writing Lesson Plan...";
-
+            // Parallel Execution: Generate Challenge AND Lesson (optional)
             lessonAbortController = new AbortController();
             
-            lessonGenerationPromise = apiService.generateLevelLesson({ 
-                topic, 
-                level, 
-                totalLevels, 
-                questions: masterQuestionsList, 
-                signal: lessonAbortController.signal 
-            })
-                .then(lData => {
-                    levelData.lesson = lData.lesson;
+            const promises = [];
+            
+            // 1. Challenge Data
+            if (!partialCacheHit) {
+                promises.push(apiService.generateInteractiveLevel({ topic, level }).then(data => {
+                    interactiveData = data;
+                    levelData = { ...interactiveData };
                     levelCacheService.saveLevel(topic, level, levelData);
-                    if (!skippedLesson) renderLesson();
-                })
-                .catch(err => {
-                    if (err.name !== 'AbortError') {
-                        if (!skippedLesson) {
-                            showToast("Lesson failed, starting quiz.", "error");
-                            startQuiz();
-                        }
+                    // If interactive data is ready, we can enable "skip" to challenge
+                    if (elements.skipPopup) elements.skipPopup.style.display = 'block';
+                }));
+            }
+            
+            // 2. Lesson Data (No questions context needed for parallel)
+            promises.push(apiService.generateLevelLesson({ 
+                topic, level, totalLevels, questions: null, signal: lessonAbortController.signal 
+            }).then(lData => {
+                levelData.lesson = lData.lesson;
+                levelCacheService.saveLevel(topic, level, levelData);
+            }).catch(e => console.warn("Lesson gen skipped or failed", e)));
+
+            await Promise.allSettled(promises);
+            
+            if (!skippedLesson && levelData.lesson) {
+                renderLesson();
+            } else {
+                startQuiz();
+            }
+
+        } else {
+            // --- STANDARD MCQ GENERATION (PARALLELIZED) ---
+            lessonAbortController = new AbortController();
+            const promises = [];
+
+            // 1. Generate Questions
+            if (!partialCacheHit) {
+                promises.push(apiService.generateLevelQuestions({ topic, level, totalLevels }).then(qData => {
+                    if (!qData || !qData.questions) throw new Error("Failed to generate questions.");
+                    masterQuestionsList = qData.questions;
+                    levelData.questions = masterQuestionsList;
+                    levelCacheService.saveLevel(topic, level, levelData);
+                    
+                    // Enable "Skip to Quiz" immediately when questions are ready
+                    if (elements.skipPopup) elements.skipPopup.style.display = 'block';
+                }));
+            } else {
+                // If partial hit (questions exist), enable skip immediately
+                if (elements.skipPopup) elements.skipPopup.style.display = 'block';
+            }
+
+            // 2. Generate Lesson (Parallel)
+            // We pass 'questions: null' to signal the API to generate based on topic/level only
+            promises.push(apiService.generateLevelLesson({ 
+                topic, level, totalLevels, questions: null, signal: lessonAbortController.signal 
+            }).then(lData => {
+                levelData.lesson = lData.lesson;
+                levelCacheService.saveLevel(topic, level, levelData);
+            }).catch(err => {
+                if (err.name !== 'AbortError') console.warn("Lesson generation error:", err);
+            }));
+
+            // Wait for everything to settle
+            // Note: The UI might update via the 'then' blocks above
+            await Promise.allSettled(promises);
+
+            if (!skippedLesson) {
+                if (levelData.lesson) {
+                    renderLesson();
+                } else {
+                    // Fallback if lesson failed but questions worked
+                    if (masterQuestionsList.length > 0) {
+                        showToast("Lesson unavailable, starting quiz.", "info");
+                        startQuiz();
+                    } else {
+                        throw new Error("Level generation failed.");
                     }
-                });
+                }
+            }
         }
 
     } catch (error) {
@@ -385,10 +384,15 @@ async function preloadNextLevel() {
         } else if (nextLevel % 5 === 0) {
              // Preload interactive level
              const iData = await apiService.generateInteractiveLevel({ topic, level: nextLevel });
-             data = { ...iData }; 
+             // Parallel lesson gen for preload
+             const lData = await apiService.generateLevelLesson({ topic, level: nextLevel, totalLevels, questions: null });
+             data = { ...iData, ...lData }; 
         } else {
-            const qData = await apiService.generateLevelQuestions({ topic, level: nextLevel, totalLevels });
-            const lData = await apiService.generateLevelLesson({ topic, level: nextLevel, totalLevels, questions: qData.questions });
+            // Parallel preload
+            const [qData, lData] = await Promise.all([
+                apiService.generateLevelQuestions({ topic, level: nextLevel, totalLevels }),
+                apiService.generateLevelLesson({ topic, level: nextLevel, totalLevels, questions: null })
+            ]);
             data = { ...qData, ...lData };
         }
 

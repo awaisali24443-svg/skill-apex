@@ -120,7 +120,8 @@ export async function generateLevelLesson({ topic, level, totalLevels, questions
         const response = await fetchWithTimeout('/api/generate-level-lesson', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, level, totalLevels, questions }),
+            // Questions are now optional for parallel generation
+            body: JSON.stringify({ topic, level, totalLevels, questions: questions || null }),
             signal: signal
         });
         return await handleResponse(response);

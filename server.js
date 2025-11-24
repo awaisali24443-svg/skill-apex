@@ -355,13 +355,19 @@ async function generateInteractiveLevel(topic, level) {
 async function generateLevelLesson(topic, level, totalLevels, questionsContext) {
     if (!ai) throw new Error("AI Service not initialized.");
     
-    const questionsText = JSON.stringify(questionsContext);
+    let contextInstruction = "";
+    if (questionsContext && questionsContext.length > 0) {
+        const questionsText = JSON.stringify(questionsContext);
+        contextInstruction = `CONTEXT: The student has been assigned these questions: ${questionsText}. Ensure the lesson covers these answers.`;
+    } else {
+        contextInstruction = `CONTEXT: Design a lesson for Level ${level} of the topic "${topic}". Cover key concepts suitable for this stage.`;
+    }
     
     const prompt = `You are a charismatic, world-class keynote speaker. You are teaching a masterclass on "${topic}" (Level ${level}).
     
-    CONTEXT: The student has just been assigned the following challenge: ${questionsText}.
+    ${contextInstruction}
     
-    YOUR GOAL: Write a high-impact, "Presentation Style" lesson that teaches the concepts required to answer those specific questions.
+    YOUR GOAL: Write a high-impact, "Presentation Style" lesson that teaches the concepts required.
     
     RULES:
     1. **NO WALLS OF TEXT.** Do not write standard paragraphs.
@@ -637,7 +643,8 @@ app.post('/api/generate-interactive-level', async (req, res) => {
 
 app.post('/api/generate-level-lesson', async (req, res) => {
     const { topic, level, totalLevels, questions } = req.body;
-    if (!isValidTopic(topic) || !isValidNumber(level) || !isValidNumber(totalLevels) || !questions) return res.status(400).json({ error: 'Invalid parameters' });
+    // Relaxed validation: questions are optional now for parallel generation
+    if (!isValidTopic(topic) || !isValidNumber(level) || !isValidNumber(totalLevels)) return res.status(400).json({ error: 'Invalid parameters' });
     try {
         const data = await generateLevelLesson(topic, level, totalLevels, questions);
         res.json(data);
