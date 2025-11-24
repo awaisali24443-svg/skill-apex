@@ -1,5 +1,7 @@
+
 import { LOCAL_STORAGE_KEYS } from '../constants.js';
 import { showToast } from './toastService.js';
+import * as gamificationService from './gamificationService.js';
 
 let library = [];
 
@@ -20,6 +22,7 @@ export function hashQuestion(questionText) {
 
 /**
  * Loads the question library from localStorage.
+ * Automatically migrates old data formats to include SRS metadata.
  * @private
  */
 function loadLibrary() {
@@ -27,11 +30,40 @@ function loadLibrary() {
         const storedLibrary = localStorage.getItem(LOCAL_STORAGE_KEYS.LIBRARY);
         if (storedLibrary) {
             library = JSON.parse(storedLibrary);
+            migrateLibraryData();
         }
     } catch (e) {
         console.error("Failed to load library from localStorage", e);
         library = [];
     }
+}
+
+/**
+ * Ensures all saved questions have Spaced Repetition System (SRS) metadata.
+ * @private
+ */
+function migrateLibraryData() {
+    let updated = false;
+    const now = Date.now();
+    
+    library = library.map(q => {
+        if (q.srs === undefined) {
+            updated = true;
+            return {
+                ...q,
+                srs: {
+                    interval: 0,      // Days until next review
+                    repetitions: 0,   // Successful reviews in a row
+                    easeFactor: 2.5,  // SM-2 difficulty multiplier
+                    nextReviewDate: now, // Due immediately
+                    lastReviewed: null
+                }
+            };
+        }
+        return q;
+    });
+
+    if (updated) saveLibrary();
 }
 
 /**
@@ -68,10 +100,20 @@ export function saveQuestion(question) {
         showToast('Question already in library.', 'info');
         return false;
     }
-    const questionToSave = { ...question, id };
+    const questionToSave = { 
+        ...question, 
+        id,
+        srs: {
+            interval: 0,
+            repetitions: 0,
+            easeFactor: 2.5,
+            nextReviewDate: Date.now(),
+            lastReviewed: null
+        }
+    };
     library.unshift(questionToSave);
     saveLibrary();
-    showToast('Question saved to library!');
+    showToast('Saved to Smart Library!');
     return true;
 }
 
@@ -102,15 +144,64 @@ export function isQuestionSaved(question) {
 }
 
 /**
- * Retrieves all saved questions for a general study session, shuffled.
- * Shuffling improves learning retention by preventing pattern matching.
- * @returns {Array<object>} A shuffled copy of all questions in the library.
+ * Retrieves questions due for review based on SM-2 algorithm.
+ * @returns {Array<object>} Questions where nextReviewDate <= now.
  */
-export function getQuestionsForStudy() {
-    const shuffled = [...library];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+export function getDueQuestions() {
+    const now = Date.now();
+    // Filter items that are due or overdue
+    const due = library.filter(q => q.srs.nextReviewDate <= now);
+    
+    // Sort by due date (most overdue first)
+    return due.sort((a, b) => a.srs.nextReviewDate - b.srs.nextReviewDate);
+}
+
+/**
+ * Updates a question's SRS stats based on user rating (SM-2 Algorithm).
+ * @param {string} questionId - The ID of the question.
+ * @param {number} quality - 0 (Again), 3 (Hard), 4 (Good), 5 (Easy).
+ */
+export function processReview(questionId, quality) {
+    const questionIndex = library.findIndex(q => q.id === questionId);
+    if (questionIndex === -1) return;
+
+    const q = library[questionIndex];
+    let { interval, repetitions, easeFactor } = q.srs;
+
+    if (quality >= 3) {
+        // Correct response logic
+        if (repetitions === 0) {
+            interval = 1;
+        } else if (repetitions === 1) {
+            interval = 6;
+        } else {
+            interval = Math.round(interval * easeFactor);
+        }
+        repetitions += 1;
+    } else {
+        // Incorrect response logic (Reset)
+        repetitions = 0;
+        interval = 1;
     }
-    return shuffled;
+
+    // Update Ease Factor (SM-2 Formula)
+    easeFactor = easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+    if (easeFactor < 1.3) easeFactor = 1.3;
+
+    // Calculate next date
+    const nextReviewDate = Date.now() + (interval * 24 * 60 * 60 * 1000);
+
+    // Update stats in memory
+    library[questionIndex].srs = {
+        interval,
+        repetitions,
+        easeFactor,
+        nextReviewDate,
+        lastReviewed: Date.now()
+    };
+
+    saveLibrary();
+    
+    // Award XP for studying
+    gamificationService.checkQuestProgress({ type: 'study_session' });
 }

@@ -1,9 +1,33 @@
+
 .study-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100%;
+    position: relative;
+    padding-top: 60px; /* Space for header */
+}
+
+.study-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: var(--space-md) var(--space-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.study-progress {
+    font-family: var(--font-family-mono);
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+}
+#items-remaining {
+    color: var(--color-primary);
+    font-weight: bold;
 }
 
 .flashcard-scene {
@@ -26,6 +50,7 @@
 
 .flashcard.is-flipped {
     transform: rotateY(180deg);
+    cursor: default; /* Don't flip back on click, force rating */
 }
 
 .flashcard-face {
@@ -41,6 +66,8 @@
     text-align: center;
     font-size: 1.5rem;
     border-radius: var(--border-radius);
+    user-select: none;
+    overflow: hidden;
 }
 .face-label {
     position: absolute;
@@ -49,6 +76,48 @@
     font-size: var(--fs-sm);
     font-family: var(--font-family-mono);
     color: var(--color-text-secondary);
+    z-index: 2;
+}
+
+.flashcard-content {
+    width: 100%;
+    max-height: 100%;
+    overflow-y: auto;
+    padding: 1rem 0;
+    /* Ensure text alignment logic works for both short and long content */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+}
+
+/* Markdown Styling Inside Flashcards */
+.flashcard-content p { margin-bottom: 1rem; line-height: 1.6; font-size: 1.2rem; }
+.flashcard-content strong { color: var(--color-secondary); }
+.flashcard-content code { 
+    background: rgba(255,255,255,0.1); 
+    padding: 2px 6px; 
+    border-radius: 4px; 
+    font-size: 0.9em; 
+    font-family: var(--font-family-mono);
+}
+.flashcard-content pre {
+    background: rgba(0,0,0,0.3);
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 0.9rem;
+    overflow-x: auto;
+    width: 100%;
+    margin: 1rem 0;
+    border: 1px solid var(--color-border);
+}
+
+.tap-hint {
+    position: absolute;
+    bottom: 1.5rem;
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    opacity: 0.5;
 }
 
 .flashcard-front {
@@ -59,22 +128,62 @@
     background-color: var(--color-surface-active);
     color: var(--color-primary);
     transform: rotateY(180deg);
+    border: 2px solid var(--color-primary);
 }
 .flashcard-back .face-label {
     color: var(--color-primary);
     opacity: 0.7;
 }
 
+/* SRS Controls */
 .study-controls {
-    display: flex;
-    align-items: center;
-    gap: var(--space-xl);
+    width: 100%;
+    max-width: 600px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+.study-controls.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
 }
 
-.card-counter {
-    font-family: var(--font-family-mono);
-    font-size: 1.2rem;
-    color: var(--color-text-secondary);
-    min-width: 80px;
-    text-align: center;
+.rating-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-sm);
+}
+
+.btn-rate {
+    flex-direction: column;
+    padding: 0.8rem 0.5rem;
+    border: 2px solid transparent;
+    background-color: var(--color-surface);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.btn-rate:hover { transform: translateY(-3px); }
+
+.rate-label { font-weight: bold; display: block; margin-bottom: 4px; }
+.rate-sub { font-size: 0.7rem; opacity: 0.7; font-family: var(--font-family-mono); }
+
+/* Rating Colors */
+.rate-again { border-color: var(--color-error); color: var(--color-error); }
+.rate-again:hover { background-color: var(--color-error-bg); box-shadow: 0 5px 15px rgba(244, 67, 54, 0.2); }
+
+.rate-hard { border-color: #ff9800; color: #ff9800; }
+.rate-hard:hover { background-color: rgba(255, 152, 0, 0.1); box-shadow: 0 5px 15px rgba(255, 152, 0, 0.2); }
+
+.rate-good { border-color: var(--color-primary); color: var(--color-primary); }
+.rate-good:hover { background-color: var(--color-primary-transparent); box-shadow: 0 5px 15px var(--color-primary-transparent); }
+
+.rate-easy { border-color: var(--color-success); color: var(--color-success); }
+.rate-easy:hover { background-color: var(--color-success-bg); box-shadow: 0 5px 15px rgba(76, 175, 80, 0.2); }
+
+
+@media (max-width: 600px) {
+    .rating-buttons { grid-template-columns: 1fr 1fr; }
+    .flashcard-scene { height: 300px; }
+    .study-container { padding-top: 40px; }
 }

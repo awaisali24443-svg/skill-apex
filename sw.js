@@ -1,12 +1,12 @@
 
 /**
  * @file Service Worker for Knowledge Tester PWA
- * @version 3.8.2
+ * @version 3.8.3
  *
  * This service worker implements a robust offline-first caching strategy.
  */
 
-const CACHE_NAME = 'knowledge-tester-v3.8.2';
+const CACHE_NAME = 'knowledge-tester-v3.8.3';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [
@@ -33,6 +33,7 @@ const APP_SHELL_URLS = [
     'assets/images/avatar-placeholder.png',
     'assets/images/circuit-bg.svg',
     'https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Inter:wght@400;600&family=Roboto+Mono:wght@400;500&display=swap',
+    'https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js',
     // Core Services
     'services/apiService.js',
     'services/configService.js',
@@ -105,7 +106,7 @@ self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
 
-    if (url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com') {
+    if (url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com' || url.origin === 'https://cdn.jsdelivr.net') {
         event.respondWith(staleWhileRevalidate(FONT_CACHE_NAME, request));
         return;
     }

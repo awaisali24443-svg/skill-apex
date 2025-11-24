@@ -637,12 +637,13 @@ function handleDrop(e) {
     if (answered) return;
     e.preventDefault();
     
-    const dragEndItem = e.target.closest('.sortable-item');
+    // --- CRITICAL FIX: Remove dragging classes FIRST to ensure UI resets even if drop is invalid ---
     document.querySelectorAll('.sortable-item').forEach(el => {
         el.classList.remove('dragging', 'drag-over');
     });
 
-    if (!dragEndItem) return;
+    const dragEndItem = e.target.closest('.sortable-item');
+    if (!dragEndItem) return; // Dropped outside valid item
 
     const dragEndIndex = +dragEndItem.dataset.index;
 
@@ -1004,6 +1005,52 @@ function fireConfetti() {
     }, 4000);
 }
 
+async function handleRetryClick(e) {
+    const btn = e.target;
+    
+    // OPTION 1: Instant Retry with local questions (Standard Quiz)
+    const canInstantRetry = !levelContext.isBoss && !isInteractiveLevel && ((currentAttemptSet + 1) * STANDARD_QUESTIONS_PER_ATTEMPT < masterQuestionsList.length);
+    
+    if (canInstantRetry) {
+        currentAttemptSet++;
+        startQuiz();
+        return;
+    }
+
+    // OPTION 2: Use pre-fetched data (Background generation finished)
+    if (retryGenerationPromise) {
+        // Show loading state on button to handle slow promise resolution
+        btn.disabled = true;
+        btn.innerHTML = `<div class="btn-spinner"></div> Loading...`;
+        
+        try {
+            const data = await retryGenerationPromise;
+            if (data) {
+                levelData = data;
+                if (isInteractiveLevel) {
+                    interactiveData = data;
+                    interactiveUserState = []; // Reset user state
+                } else {
+                    masterQuestionsList = levelData.questions || [];
+                    currentAttemptSet = 0;
+                }
+                levelCacheService.saveLevel(levelContext.topic, levelContext.level, data);
+                retryGenerationPromise = null;
+                startQuiz();
+                return;
+            }
+        } catch (e) {
+            console.error("Retry prefetch failed", e);
+        }
+    }
+
+    // OPTION 3: Hard Refresh (Fallback)
+    elements.loadingText.textContent = isInteractiveLevel ? "Rebuilding Challenge..." : "Regenerating Level...";
+    elements.skipPopup.style.display = 'none';
+    switchState('level-loading-state');
+    startLevel(true);
+}
+
 function showResults(isInteractive = false, isAntiCheatForfeit = false) {
     removeAntiCheat(); // Safety cleanup
     
@@ -1103,56 +1150,15 @@ function showResults(isInteractive = false, isAntiCheatForfeit = false) {
         // Retry logic
         const canInstantRetry = !levelContext.isBoss && !isInteractive && !isAntiCheatForfeit && ((currentAttemptSet + 1) * STANDARD_QUESTIONS_PER_ATTEMPT < masterQuestionsList.length);
         
-        // For interactive, we can ALWAYS retry if we generated the data, but 'canInstantRetry' tracks local array slicing which interactive doesn't use.
-        // So we simplify the check: interactive levels always need a 'Try Again' button that triggers logic.
-        
         const retryText = canInstantRetry ? "Try Again (Instant)" : "Try Again";
         
         elements.resultsActions.innerHTML = `<a href="#/game/${encodeURIComponent(levelContext.topic)}" class="btn">Back to Map</a> <button id="retry-level-btn" class="btn btn-primary">${retryText}</button> ${reviewBtnHTML}`;
         
-        document.getElementById('retry-level-btn').addEventListener('click', async (e) => {
-            const btn = e.target;
-            
-            // OPTION 1: Instant Retry with local questions (Standard Quiz)
-            if (canInstantRetry) {
-                currentAttemptSet++;
-                startQuiz();
-                return;
-            }
-
-            // OPTION 2: Use pre-fetched data (Background generation finished)
-            if (retryGenerationPromise) {
-                // Show loading state on button to handle slow promise resolution
-                btn.disabled = true;
-                btn.innerHTML = `<div class="btn-spinner"></div> Loading...`;
-                
-                try {
-                    const data = await retryGenerationPromise;
-                    if (data) {
-                        levelData = data;
-                        if (isInteractive) {
-                            interactiveData = data;
-                            interactiveUserState = []; // Reset user state
-                        } else {
-                            masterQuestionsList = levelData.questions || [];
-                            currentAttemptSet = 0;
-                        }
-                        levelCacheService.saveLevel(levelContext.topic, levelContext.level, data);
-                        retryGenerationPromise = null;
-                        startQuiz();
-                        return;
-                    }
-                } catch (e) {
-                    console.error("Retry prefetch failed", e);
-                }
-            }
-
-            // OPTION 3: Hard Refresh (Fallback)
-            elements.loadingText.textContent = isInteractive ? "Rebuilding Challenge..." : "Regenerating Level...";
-            elements.skipPopup.style.display = 'none';
-            switchState('level-loading-state');
-            startLevel(true);
-        });
+        // CRITICAL FIX: Using onclick handler to prevent Event Listener accumulation in SPA
+        const retryBtn = document.getElementById('retry-level-btn');
+        if(retryBtn) {
+            retryBtn.onclick = handleRetryClick;
+        }
     }
     
     if (document.getElementById('review-answers-btn')) {
@@ -1232,7 +1238,7 @@ async function handleReadAloudClick() {
         const audioData = response.audioContent;
         
         if (!outputAudioContext) outputAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
-        else if (outputAudioContext.state === 'suspended') await outputAudioContext.resume();
+        if (outputAudioContext.state === 'suspended') await outputAudioContext.resume();
 
         const decoded = decode(audioData);
         const audioBuffer = await decodeAudioData(decoded, outputAudioContext, 24000, 1);

@@ -156,7 +156,10 @@ async function startConversation() {
     try {
         mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         inputAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+        if (inputAudioContext.state === 'suspended') await inputAudioContext.resume();
+
         outputAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+        if (outputAudioContext.state === 'suspended') await outputAudioContext.resume();
         
         const blob = new Blob([workletCode], { type: 'application/javascript' });
         const workletUrl = URL.createObjectURL(blob);
@@ -265,7 +268,10 @@ function stopConversation() {
         if (xpGained > 0) showToast(`Session saved! +${xpGained} XP`, 'success');
     }
 
-    if (socket) { socket.close(); socket = null; }
+    if (socket) { 
+        if (socket.readyState === WebSocket.OPEN) socket.close(); 
+        socket = null; 
+    }
     if (audioWorkletNode) { audioWorkletNode.disconnect(); audioWorkletNode = null; }
     if (mediaStream) { mediaStream.getTracks().forEach(track => track.stop()); mediaStream = null; }
     if (inputAudioContext) { inputAudioContext.close().catch(()=>{}); inputAudioContext = null; }

@@ -41,7 +41,6 @@ html {
     height: 100%;
     width: 100%;
     overflow: hidden;
-    /* FIX: Base color on HTML so body can be transparent for layers */
     background-color: var(--color-background); 
     color: var(--color-text);
     font-family: var(--font-family-body);
@@ -55,10 +54,11 @@ body {
     height: 100%;
     width: 100%;
     position: relative;
-    /* FIX: Transparent body allows pseudo-elements to show against html bg */
     background-color: transparent; 
     color: var(--color-text);
     transition: color var(--transition-speed-med) ease;
+    /* Ensure body creates a stacking context but doesn't hide fixed bg elements */
+    z-index: 0; 
 }
 
 /* View Transitions API Animations */
@@ -69,39 +69,57 @@ body {
     animation: fade-in 0.3s ease-in-out both;
 }
 
-/* --- WORLD CLASS BACKGROUND SYSTEM: ILLUMINATED GRID --- */
+/* --- ADVANCED BACKGROUND SYSTEM --- */
 
-/* Layer 1: Structural Dot Grid (Visible on top of gradients) */
+/* Layer 1: Circuit Texture (Static Tech Feel) */
+/* Using Data URI to ensure it loads without external file dependency */
 body::before {
     content: "";
     position: fixed;
     inset: 0;
-    z-index: -1; /* Behind content, in front of gradients */
-    /* Adaptive dots: uses text color so it works on light & dark themes */
-    background-image: radial-gradient(var(--color-text) 1px, transparent 1px);
-    background-size: 40px 40px;
-    opacity: 0.08; 
+    z-index: -2; /* Behind content */
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='rgba(255,255,255,0.05)' fill-rule='evenodd'/%3E%3C/svg%3E");
+    background-size: 400px 400px;
+    opacity: 0.3;
     pointer-events: none;
 }
 
-/* Layer 2: Fluid Aurora (Background Gradient) */
+/* Layer 2: Fluid Aurora (Dynamic Glows) */
 body::after {
     content: "";
     position: fixed;
-    inset: 0;
-    z-index: -2; /* Behind everything */
+    inset: -50%; /* Extend beyond viewport for movement */
+    z-index: -3; /* Behind circuit */
     background: 
-        radial-gradient(circle at 15% 50%, var(--color-primary-transparent) 0%, transparent 50%),
-        radial-gradient(circle at 85% 30%, var(--color-secondary-transparent) 0%, transparent 50%);
+        radial-gradient(circle at 20% 30%, var(--color-primary-transparent-heavy) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, var(--color-secondary-transparent-heavy) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, var(--color-accent-transparent) 0%, transparent 60%);
+    filter: blur(80px); /* Increased blur for smoother gradient */
+    opacity: 0.7; /* Slightly more visible */
+    animation: aurora-drift 30s ease-in-out infinite alternate;
     pointer-events: none;
-    /* PERFORMANCE OPTIMIZATION: Promote to GPU layer */
-    will-change: transform, opacity;
-    animation: aurora-pulse 10s ease-in-out infinite alternate;
 }
 
-@keyframes aurora-pulse {
-    0% { opacity: 0.4; transform: scale(1); }
-    100% { opacity: 0.7; transform: scale(1.1); }
+@keyframes aurora-drift {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(5deg) scale(1.1); }
+    100% { transform: rotate(-5deg) scale(1); }
+}
+
+/* Layer 3: Scanlines (Retro-Tech Overlay) */
+html::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+    background-size: 100% 4px;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.2; /* Reduced slightly for readability */
 }
 
 
@@ -140,7 +158,7 @@ body::after {
     height: 100%;
     width: 100%;
     position: relative;
-    z-index: 1;
+    z-index: 1; /* Ensures content sits above background layers */
 }
 
 #sidebar {
