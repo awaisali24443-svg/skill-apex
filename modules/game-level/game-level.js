@@ -1,4 +1,6 @@
 
+
+
 import * as apiService from '../../services/apiService.js';
 import * as learningPathService from '../../services/learningPathService.js';
 import * as markdownService from '../../services/markdownService.js';
@@ -46,6 +48,7 @@ let focusTimeout = null; // NEW: Grace period timer
 let lessonGenerationPromise = null;
 let lessonAbortController = null; // Controller to cancel lesson generation
 let skippedLesson = false;
+let loadingTextInterval = null; // For dynamic loading messages
 
 // Drag and Drop State
 let dragStartIndex = null;
@@ -54,6 +57,15 @@ const PASS_THRESHOLD = 0.8;
 const LEVELS_PER_CHAPTER = 50;
 const STANDARD_QUESTIONS_PER_ATTEMPT = 3;
 const BOSS_TIME_LIMIT = 39; // Extended from 20 to 39 seconds
+
+const LOADING_MESSAGES = [
+    "Analyzing Neural Pathways...",
+    "Synthesizing Curriculum...",
+    "Calibrating Difficulty Vectors...",
+    "Generating Scenario Logic...",
+    "Compiling Knowledge Shards...",
+    "Optimizing Experience..."
+];
 
 function announce(message, polite = false) {
     const region = polite ? elements.timerAnnouncer : elements.announcer;
@@ -89,8 +101,45 @@ function switchState(targetStateId) {
     if (targetStateId !== 'level-lesson-state' && currentAudioSource) {
         stopAudio();
     }
+    
+    // Stop loading animation if leaving loading state
+    if (targetStateId !== 'level-loading-state') {
+        stopLoadingAnimation();
+    }
+
     document.querySelectorAll('.game-level-state').forEach(s => s.classList.remove('active'));
     document.getElementById(targetStateId)?.classList.add('active');
+}
+
+function startLoadingAnimation() {
+    if (loadingTextInterval) clearInterval(loadingTextInterval);
+    let index = 0;
+    // Reset to initial text
+    if(elements.loadingText) elements.loadingText.textContent = "Establishing Link...";
+    
+    // Faster interval (1000ms instead of 1500ms) to make it feel snappier
+    loadingTextInterval = setInterval(() => {
+        if (elements.loadingText && document.body.contains(elements.loadingText)) {
+            elements.loadingText.style.opacity = 0;
+            setTimeout(() => {
+                if (elements.loadingText && document.body.contains(elements.loadingText)) {
+                    elements.loadingText.textContent = LOADING_MESSAGES[index];
+                    elements.loadingText.style.opacity = 1;
+                    index = (index + 1) % LOADING_MESSAGES.length;
+                }
+            }, 150); // Faster fade toggle
+        } else {
+            // Cleanup if element is gone
+            stopLoadingAnimation();
+        }
+    }, 1000);
+}
+
+function stopLoadingAnimation() {
+    if (loadingTextInterval) {
+        clearInterval(loadingTextInterval);
+        loadingTextInterval = null;
+    }
 }
 
 /**
@@ -127,10 +176,9 @@ async function startLevel(forceRefresh = false) {
     
     // Show loading screen
     switchState('level-loading-state');
+    startLoadingAnimation();
+    
     elements.skipPopup.style.display = 'none'; // Hide skip initially
-    elements.loadingText.textContent = isInteractiveLevel 
-        ? "Designing Interactive Challenge..." 
-        : "The AI is crafting your next challenge...";
 
     let partialCacheHit = false;
 
@@ -186,7 +234,8 @@ async function startLevel(forceRefresh = false) {
         } else if (isInteractiveLevel) {
             // --- INTERACTIVE LEVEL GENERATION ---
             if (!partialCacheHit) {
-                elements.loadingText.textContent = "Creating Interactive Challenge...";
+                stopLoadingAnimation();
+                if (elements.loadingText) elements.loadingText.textContent = "Designing Challenge...";
                 interactiveData = await apiService.generateInteractiveLevel({ topic, level });
                 
                 if (!interactiveData || !interactiveData.items) throw new Error("Failed to generate challenge.");
@@ -198,7 +247,8 @@ async function startLevel(forceRefresh = false) {
 
             // Generate Lesson for Interactive Level too
              elements.skipPopup.style.display = 'block';
-             elements.loadingText.textContent = "Writing Challenge Instructions...";
+             stopLoadingAnimation();
+             if (elements.loadingText) elements.loadingText.textContent = "Writing Instructions...";
              
              lessonAbortController = new AbortController();
              // Pass interactive items as "questions" context for the lesson generator
@@ -228,7 +278,7 @@ async function startLevel(forceRefresh = false) {
         } else {
             // --- STANDARD MCQ GENERATION ---
             if (!partialCacheHit) {
-                elements.loadingText.textContent = "Generating Challenge Questions...";
+                // Loading animation continues here
                 const qData = await apiService.generateLevelQuestions({ topic, level, totalLevels });
                 
                 if (!qData || !qData.questions) throw new Error("Failed to generate questions.");
@@ -241,7 +291,8 @@ async function startLevel(forceRefresh = false) {
             }
 
             elements.skipPopup.style.display = 'block';
-            elements.loadingText.textContent = "Writing Lesson Plan...";
+            stopLoadingAnimation();
+            if (elements.loadingText) elements.loadingText.textContent = "Writing Lesson Plan...";
 
             lessonAbortController = new AbortController();
             
@@ -1045,7 +1096,7 @@ async function handleRetryClick(e) {
     }
 
     // OPTION 3: Hard Refresh (Fallback)
-    elements.loadingText.textContent = isInteractiveLevel ? "Rebuilding Challenge..." : "Regenerating Level...";
+    if (elements.loadingText) elements.loadingText.textContent = isInteractiveLevel ? "Rebuilding Challenge..." : "Regenerating Level...";
     elements.skipPopup.style.display = 'none';
     switchState('level-loading-state');
     startLevel(true);
@@ -1341,6 +1392,7 @@ export function init() {
 
 export function destroy() {
     clearInterval(timerInterval);
+    stopLoadingAnimation();
     stopAudio();
     removeAntiCheat(); // Crucial cleanup
     if (outputAudioContext) {

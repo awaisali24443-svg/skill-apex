@@ -1,4 +1,6 @@
 
+
+
 import { ROUTES, LOCAL_STORAGE_KEYS } from './constants.js';
 import * as configService from './services/configService.js';
 import { renderSidebar } from './services/sidebarService.js';
@@ -206,6 +208,23 @@ function showLevelUpModal(level) {
     });
 }
 
+async function preloadCriticalModules() {
+    const modulesToPreload = ['topic-list', 'game-map', 'game-level', 'quiz-review'];
+    
+    for (const moduleName of modulesToPreload) {
+        try {
+            await Promise.all([
+                fetch(`./modules/${moduleName}/${moduleName}.html`).then(res => res.text()),
+                fetch(`./modules/${moduleName}/${moduleName}.css`).then(res => res.text()),
+                import(`./modules/${moduleName}/${moduleName}.js`)
+            ]);
+        } catch (e) {
+            // Ignore errors in background preload
+        }
+    }
+    console.log('All critical modules preloaded.');
+}
+
 async function main() {
     try {
         // PWA Install Capture
@@ -277,6 +296,8 @@ async function main() {
                 if (!hasBeenWelcomed) {
                     showWelcomeScreen();
                 }
+                // Start aggressive preload after splash is gone
+                setTimeout(preloadCriticalModules, 500);
             };
             splashScreen.addEventListener('transitionend', onTransitionEnd, { once: true });
             splashScreen.classList.add('hidden');

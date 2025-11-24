@@ -1,13 +1,83 @@
 
+
 import * as gamificationService from '../../services/gamificationService.js';
 import * as historyService from '../../services/historyService.js';
 import * as learningPathService from '../../services/learningPathService.js';
 import * as stateService from '../../services/stateService.js';
 import * as apiService from '../../services/apiService.js';
+import * as levelCacheService from '../../services/levelCacheService.js';
 import { showToast } from '../../services/toastService.js';
 
 let historyClickHandler;
 let challengeBtn;
+
+// --- HARDCODED INTEREST DATA (THE FAKE AI + PREDICTIVE METADATA) ---
+// We add 'totalLevels' to skip the first API call (Journey Plan).
+// We do NOT pre-generate questions to keep the app lightweight.
+const INTEREST_DATA = {
+    cs: [
+        { name: "Python for Beginners", description: "Master the basics of Python, the world's most popular language.", styleClass: "topic-programming", totalLevels: 50 },
+        { name: "Ethical Hacking", description: "Learn penetration testing and network defense strategies.", styleClass: "topic-space", totalLevels: 60 },
+        { name: "Web Development 101", description: "HTML, CSS, and JavaScript: Build your first website.", styleClass: "topic-arts", totalLevels: 40 },
+        { name: "Artificial Intelligence", description: "Understand Neural Networks, ML, and the future of tech.", styleClass: "topic-robotics", totalLevels: 100 }
+    ],
+    history: [
+        { name: "World War II", description: "The global conflict that shaped the modern world.", styleClass: "topic-finance", totalLevels: 80 },
+        { name: "Ancient Rome", description: "Rise and fall of the greatest empire in history.", styleClass: "topic-philosophy", totalLevels: 70 },
+        { name: "History of Pakistan", description: "From the Indus Valley to independence and beyond.", styleClass: "topic-biology", totalLevels: 50 },
+        { name: "The Industrial Revolution", description: "How machines changed human society forever.", styleClass: "topic-programming", totalLevels: 40 }
+    ],
+    science: [
+        { name: "Quantum Physics", description: "Dive into the bizarre world of subatomic particles.", styleClass: "topic-space", totalLevels: 120 },
+        { name: "Human Biology", description: "Anatomy, physiology, and the miracle of life.", styleClass: "topic-medicine", totalLevels: 90 },
+        { name: "Space Exploration", description: "Rockets, Mars missions, and the search for aliens.", styleClass: "topic-programming", totalLevels: 60 },
+        { name: "Organic Chemistry", description: "The carbon-based building blocks of existence.", styleClass: "topic-ecology", totalLevels: 80 }
+    ],
+    business: [
+        { name: "Digital Marketing", description: "SEO, Social Media, and growth hacking strategies.", styleClass: "topic-arts", totalLevels: 50 },
+        { name: "Financial Literacy", description: "Investing, saving, and managing personal wealth.", styleClass: "topic-finance", totalLevels: 30 },
+        { name: "Entrepreneurship", description: "How to start, fund, and scale your own startup.", styleClass: "topic-robotics", totalLevels: 60 },
+        { name: "Stock Market Basics", description: "Understanding bulls, bears, and trading.", styleClass: "topic-programming", totalLevels: 40 }
+    ]
+};
+
+function checkOnboarding() {
+    const hasSeenOnboarding = localStorage.getItem('kt_onboarding_complete');
+    const overlay = document.getElementById('onboarding-overlay');
+    
+    if (!hasSeenOnboarding && overlay) {
+        overlay.style.display = 'flex';
+        
+        // Add listeners to buttons
+        overlay.querySelectorAll('.interest-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const category = card.dataset.category;
+                
+                localStorage.setItem('kt_onboarding_complete', 'true');
+                
+                // Fade out
+                overlay.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' }).onfinish = () => {
+                    overlay.style.display = 'none';
+                };
+
+                if (category === 'custom') {
+                    // Just go to topics page normally
+                    window.location.hash = '#/topics';
+                } else {
+                    // Inject "Fake AI" data (Metadata Only - Lightweight)
+                    const fakeTopics = INTEREST_DATA[category];
+                    stateService.setNavigationContext({ preloadedTopics: fakeTopics });
+                    
+                    // We intentionally DO NOT start background generation here.
+                    // It risks slowing down the UI during the demo. 
+                    // The "Instant Map" (Level 1-50) from the metadata is impressive enough.
+
+                    window.location.hash = '#/topics';
+                }
+            });
+        });
+    }
+}
 
 function renderStreak() {
     const stats = gamificationService.getStats();
@@ -209,12 +279,32 @@ async function initDailyChallenge() {
     };
 }
 
+// --- Preloading ---
+async function preloadCriticalModules() {
+    // Silently fetch the topic-list module so clicking "Start" feels instant
+    const moduleName = 'topic-list';
+    try {
+        await Promise.all([
+            fetch(`./modules/${moduleName}/${moduleName}.html`).then(res => res.text()),
+            fetch(`./modules/${moduleName}/${moduleName}.css`).then(res => res.text()),
+            import(`../../modules/${moduleName}/${moduleName}.js`)
+        ]);
+        console.log('Preloaded topic-list module.');
+    } catch (e) {
+        // Ignore errors in background preload
+    }
+}
+
 export function init() {
     renderStreak();
     renderPrimaryAction();
     renderRecentHistory();
     renderMemoryHealth();
     initDailyChallenge();
+    checkOnboarding();
+    
+    // Trigger preload after a short delay to let main thread settle
+    setTimeout(preloadCriticalModules, 1000);
 }
 
 export function destroy() {
