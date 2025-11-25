@@ -597,6 +597,10 @@ app.use('/api', apiLimiter);
 
 // --- API Endpoints ---
 
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+});
+
 app.post('/api/generate-journey-plan', async (req, res) => {
     const { topic } = req.body;
     if (!isValidTopic(topic)) return res.status(400).json({ error: 'Invalid parameter: topic' });
@@ -773,6 +777,26 @@ wss.on('connection', (ws, req) => {
     });
 });
 
+// --- SELF-PING KEEP-ALIVE SYSTEM ---
+// This prevents the server from sleeping on free tier hosting platforms like Render.
+const PING_INTERVAL = 4 * 60 * 1000; // 4 minutes
+const SELF_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+
+function keepAlive() {
+    console.log(`[KeepAlive] Pinging ${SELF_URL}/health`);
+    fetch(`${SELF_URL}/health`)
+        .then(res => {
+            if (res.ok) console.log(`[KeepAlive] Status: ${res.status}`);
+            else console.warn(`[KeepAlive] Failed with status: ${res.status}`);
+        })
+        .catch(err => console.error(`[KeepAlive] Error: ${err.message}`));
+}
+
+// Start pinging only if we are in production or have an external URL set
+if (process.env.NODE_ENV === 'production' || process.env.RENDER_EXTERNAL_URL) {
+    setInterval(keepAlive, PING_INTERVAL);
+    console.log(`[KeepAlive] System initialized. Pinging every ${PING_INTERVAL / 60000} minutes.`);
+}
 
 // --- SERVER START ---
 server.listen(PORT, () => {
