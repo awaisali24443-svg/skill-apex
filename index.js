@@ -1,6 +1,4 @@
 
-
-
 import { ROUTES, LOCAL_STORAGE_KEYS } from './constants.js';
 import * as configService from './services/configService.js';
 import { renderSidebar } from './services/sidebarService.js';
@@ -11,6 +9,7 @@ import * as historyService from './services/historyService.js';
 import * as themeService from './services/themeService.js';
 import * as gamificationService from './services/gamificationService.js';
 import * as stateService from './services/stateService.js';
+import { init as initVoice } from './services/voiceCommandService.js';
 
 const moduleCache = new Map();
 let currentModule = null;
@@ -227,6 +226,12 @@ async function preloadCriticalModules() {
 
 async function main() {
     try {
+        // Client-side heartbeat to prevent sleep during active use
+        // Pings the health endpoint every 5 minutes
+        setInterval(() => {
+            fetch('/health').catch(() => {}); // Silent fail is fine
+        }, 5 * 60 * 1000);
+
         // PWA Install Capture
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
@@ -241,6 +246,7 @@ async function main() {
         historyService.init();
         gamificationService.init();
         stateService.initState();
+        initVoice(); // Initialize Voice Command Service
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

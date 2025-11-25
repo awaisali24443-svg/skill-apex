@@ -1,12 +1,12 @@
 
 /**
  * @file Service Worker for Knowledge Tester PWA
- * @version 3.9.9
+ * @version 4.0.0
  *
  * This service worker implements a robust offline-first caching strategy.
  */
 
-const CACHE_NAME = 'knowledge-tester-v3.9.9';
+const CACHE_NAME = 'knowledge-tester-v4.0.0';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [
@@ -51,6 +51,7 @@ const APP_SHELL_URLS = [
     'services/stateService.js',
     'services/themeService.js',
     'services/toastService.js',
+    'services/voiceCommandService.js', // Ensure voice command service is cached
     // App Modules
     'modules/home/home.html', 'modules/home/home.css', 'modules/home/home.js',
     'modules/topic-list/topic-list.html', 'modules/topic-list/topic-list.css', 'modules/topic-list/topic-list.js',
