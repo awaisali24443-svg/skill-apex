@@ -768,6 +768,44 @@ a:hover { text-decoration: underline; }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* Voice Indicator Overlay */
+.voice-indicator {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid var(--color-primary);
+    border-radius: 30px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-primary);
+    z-index: 5000;
+    font-family: var(--font-family-mono);
+    font-size: 0.8rem;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 15px var(--color-primary-transparent);
+}
+
+.voice-wave {
+    width: 3px;
+    height: 10px;
+    background-color: var(--color-primary);
+    border-radius: 2px;
+}
+
+.voice-indicator.pulse .voice-wave {
+    animation: voice-wave-anim 1s infinite ease-in-out;
+}
+.voice-indicator.pulse .voice-wave:nth-child(2) { animation-delay: 0.1s; }
+.voice-indicator.pulse .voice-wave:nth-child(3) { animation-delay: 0.2s; }
+
+@keyframes voice-wave-anim {
+    0%, 100% { height: 10px; }
+    50% { height: 18px; }
+}
+
 /* --- Responsive Tweaks --- */
 @media (max-width: 768px) {
     :root { --sidebar-width-collapsed: 0px; --page-padding: 1rem; --fs-h1: 2rem; }
