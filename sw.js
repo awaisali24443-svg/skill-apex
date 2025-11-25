@@ -1,12 +1,12 @@
 
 /**
  * @file Service Worker for Knowledge Tester PWA
- * @version 3.9.92
+ * @version 3.9.9
  *
  * This service worker implements a robust offline-first caching strategy.
  */
 
-const CACHE_NAME = 'knowledge-tester-v3.9.92';
+const CACHE_NAME = 'knowledge-tester-v3.9.9';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [
@@ -31,9 +31,10 @@ const APP_SHELL_URLS = [
     'assets/images/icon-192.png',
     'assets/images/icon-512.png',
     'assets/images/avatar-placeholder.png',
+    // 'assets/images/circuit-bg.svg', // Removed: Inlined in global.css for performance
     'https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Inter:wght@400;600&family=Roboto+Mono:wght@400;500&display=swap',
     'https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js',
-    'https://aistudiocdn.com/dompurify@^3.0.5', 
+    'https://aistudiocdn.com/dompurify@^3.0.5', // Ensure library availability
     // Core Services
     'services/apiService.js',
     'services/configService.js',
@@ -50,7 +51,6 @@ const APP_SHELL_URLS = [
     'services/stateService.js',
     'services/themeService.js',
     'services/toastService.js',
-    'services/voiceCommandService.js',
     // App Modules
     'modules/home/home.html', 'modules/home/home.css', 'modules/home/home.js',
     'modules/topic-list/topic-list.html', 'modules/topic-list/topic-list.css', 'modules/topic-list/topic-list.js',
@@ -112,6 +112,8 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
+    // Handle CDN libs (mermaid, dompurify, express shims)
+    // CRITICAL: We must cache aistudiocdn.com for the importmap to work offline
     if (url.origin === 'https://cdn.jsdelivr.net' || url.origin === 'https://aistudiocdn.com') {
         event.respondWith(staleWhileRevalidate(CACHE_NAME, request));
         return;

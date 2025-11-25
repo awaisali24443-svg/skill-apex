@@ -4,20 +4,15 @@
     <!-- Header with Neural Nexus Visualization -->
     <header class="profile-header-nexus card">
         <div class="nexus-info">
-            <div class="avatar-container">
-                <img src="assets/images/avatar-placeholder.png" alt="User Avatar" class="profile-avatar">
-                <div class="avatar-glow"></div>
-            </div>
+            <img src="assets/images/avatar-placeholder.png" alt="User Avatar" class="profile-avatar">
             <div class="profile-text-info">
                 <h1>Neural Nexus</h1>
                 <div class="profile-level">
-                    <div class="level-row">
-                        <span id="profile-level-text">Level 1</span>
-                        <span id="xp-text">0 / 100 XP</span>
-                    </div>
+                    <span id="profile-level-text">Level 1</span>
                     <div class="xp-bar">
                         <div id="xp-bar-fill" class="xp-bar-fill"></div>
                     </div>
+                    <span id="xp-text">0 / 100 XP</span>
                 </div>
             </div>
         </div>
@@ -46,40 +41,40 @@
     </header>
 
     <div class="profile-grid-layout">
+        <!-- Daily Quests Section -->
+        <section class="quests-section">
+            <h2>Daily Quests</h2>
+            <div id="daily-quests-container" class="card quests-card">
+                <div id="daily-quests-list" class="quests-list">
+                    <!-- Quests injected here -->
+                </div>
+            </div>
+        </section>
+
         <!-- Stats Grid -->
         <section class="stats-section">
             <h2>Statistics</h2>
             <div class="profile-stats-grid">
                 <div class="card stat-card">
-                    <div class="stat-icon fire"><svg><use href="/assets/icons/feather-sprite.svg#zap"/></svg></div>
+                    <div class="stat-icon" style="color: #ff9800;"><svg><use href="/assets/icons/feather-sprite.svg#zap"/></svg></div>
                     <div class="stat-info">
-                        <span class="stat-label">Streak</span>
                         <span id="streak-stat" class="stat-value">0</span>
+                        <span class="stat-label">Day Streak</span>
                     </div>
                 </div>
                 <div class="card stat-card">
-                    <div class="stat-icon target"><svg><use href="/assets/icons/feather-sprite.svg#target"/></svg></div>
+                    <div class="stat-icon" style="color: #4caf50;"><svg><use href="/assets/icons/feather-sprite.svg#target"/></svg></div>
                     <div class="stat-info">
-                        <span class="stat-label">Quizzes</span>
                         <span id="quizzes-stat" class="stat-value">0</span>
+                        <span class="stat-label">Quizzes</span>
                     </div>
                 </div>
                 <div class="card stat-card">
-                    <div class="stat-icon check"><svg><use href="/assets/icons/feather-sprite.svg#check-circle"/></svg></div>
+                    <div class="stat-icon" style="color: #00b8d4;"><svg><use href="/assets/icons/feather-sprite.svg#check-circle"/></svg></div>
                     <div class="stat-info">
-                        <span class="stat-label">Accuracy</span>
                         <span id="avg-score-stat" class="stat-value">0%</span>
+                        <span class="stat-label">Avg Score</span>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Daily Quests Section -->
-        <section class="quests-section">
-            <h2>Daily Protocols</h2>
-            <div id="daily-quests-container" class="card quests-card">
-                <div id="daily-quests-list" class="quests-list">
-                    <!-- Quests injected here -->
                 </div>
             </div>
         </section>

@@ -1,40 +1,34 @@
 
-
 <div class="game-level-container">
     <div class="sr-only" id="announcer-region" role="alert" aria-live="assertive"></div>
     <div class="sr-only" id="timer-announcer-region" role="status" aria-live="polite"></div>
     
-    <!-- State 1: Loading (Enhanced with Progress Bar) -->
+    <!-- State 1: Loading (Skeleton) -->
     <div id="level-loading-state" class="game-level-state active">
         <div class="state-content card">
-             <!-- Skeleton Structure -->
              <div class="skeleton-header">
                 <div class="skeleton" style="width: 60%; height: 32px; margin-bottom: 20px;"></div>
              </div>
              <div class="skeleton-body">
                 <div class="skeleton" style="width: 100%; height: 16px; margin-bottom: 10px;"></div>
+                <div class="skeleton" style="width: 90%; height: 16px; margin-bottom: 10px;"></div>
+                <div class="skeleton" style="width: 95%; height: 16px; margin-bottom: 10px;"></div>
                 <div class="skeleton" style="width: 80%; height: 16px; margin-bottom: 20px;"></div>
+                <div class="skeleton" style="width: 40%; height: 40px;"></div>
              </div>
-             
-             <!-- Real Feedback UI -->
-             <div id="loading-text-container" style="margin-top: 30px;">
-                 <p id="loading-status-text" style="font-family: var(--font-family-mono); color: var(--color-primary);">Connecting to Neural Net...</p>
+             <div id="loading-text-container" style="margin-top: 20px;">
+                 <p id="loading-status-text">The AI is crafting your next challenge...</p>
                  
-                 <!-- PROGRESS BAR -->
-                 <div class="loading-progress-track">
-                     <div id="loading-progress-bar" class="loading-progress-fill"></div>
-                 </div>
-
-                 <!-- Instant Skip / Popup Action -->
+                 <!-- NEW: Instant Skip / Popup Action -->
                  <div id="skip-lesson-popup" class="skip-lesson-popup" style="display: none;">
-                     <button id="skip-to-quiz-btn" class="btn btn-primary btn-lg pulse-effect">
+                     <button id="skip-to-quiz-btn" class="btn btn-primary">
                          <svg class="icon"><use href="/assets/icons/feather-sprite.svg#zap"/></svg>
                          <span>Questions Ready! Start Quiz</span>
                      </button>
                      <p class="small-text">Lesson generating in background...</p>
                  </div>
 
-                 <button id="cancel-generation-btn" class="btn btn-secondary" style="margin-top: 20px;">Cancel</button>
+                 <button id="cancel-generation-btn" class="btn" style="margin-top: 10px;">Cancel</button>
              </div>
         </div>
     </div>
@@ -51,21 +45,21 @@
                 <div class="ask-ai-content">
                     <h3>AI Deep Dive</h3>
                     <p id="ask-ai-answer"></p>
-                    <button id="close-ask-ai-btn" class="btn btn-secondary">Close</button>
+                    <button id="close-ask-ai-btn" class="btn">Close</button>
                 </div>
             </div>
 
             <footer class="lesson-footer">
-                <button id="ask-ai-btn" class="btn btn-secondary" title="Select text to ask about it">
+                <button id="ask-ai-btn" class="btn" title="Select text to ask about it">
                     <svg class="icon"><use href="/assets/icons/feather-sprite.svg#search"/></svg>
                     <span>Deep Dive</span>
                 </button>
-                <button id="read-aloud-btn" class="btn btn-secondary">
+                <button id="read-aloud-btn" class="btn">
                     <svg class="icon"><use href="/assets/icons/feather-sprite.svg#volume-2"/></svg>
                     <span>Read Aloud</span>
                 </button>
                 <button id="start-quiz-btn" class="btn btn-primary">
-                    <span>Start Quiz</span>
+                    <span>Let's Go!</span>
                     <svg class="icon"><use href="/assets/icons/feather-sprite.svg#arrow-right"/></svg>
                 </button>
             </footer>
@@ -75,10 +69,11 @@
     <!-- State 3: Quiz / Interactive Challenge -->
     <div id="level-quiz-state" class="game-level-state">
         <header class="new-quiz-header">
-            <a href="/#/" class="sidebar-logo" aria-label="Home">
-                <img src="assets/icons/favicon.svg" alt="Logo" class="sidebar-logo-img">
-                <span class="sidebar-logo-text">Knowledge Tester</span>
+            <a href="/#/" class="sidebar-logo" aria-label="Knowledge Tester Home">
+                <img src="assets/icons/favicon.svg" alt="Knowledge Tester Logo" class="sidebar-logo-img">
+                <span class="sidebar-logo-text">AI Quiz Nexus</span>
             </a>
+            <!-- Boss Health Bar (Hidden by default) -->
             <div id="boss-health-container" class="boss-health-container" style="display: none;">
                 <span class="boss-label">BOSS HP</span>
                 <div class="boss-health-bar">
@@ -86,7 +81,7 @@
                 </div>
             </div>
             <div class="quiz-header-actions">
-                <button id="quit-btn" class="btn btn-danger btn-sm">Quit</button>
+                <button id="quit-btn" class="btn btn-danger">Quit</button>
             </div>
         </header>
         <div class="new-quiz-content">
@@ -121,7 +116,11 @@
 
         </div>
         <footer class="new-quiz-footer">
-             <button id="hint-btn" class="btn btn-secondary">
+             <button id="home-btn" class="btn">
+                <svg class="icon"><use href="/assets/icons/feather-sprite.svg#home"/></svg>
+                <span>Home</span>
+            </button>
+             <button id="hint-btn" class="btn">
                 <svg class="icon"><use href="/assets/icons/feather-sprite.svg#lightbulb"/></svg>
                 <span>Hint</span>
             </button>

@@ -595,9 +595,6 @@ const apiLimiter = rateLimit({
 
 app.use('/api', apiLimiter);
 
-// --- SYSTEM ENDPOINTS ---
-app.get('/health', (req, res) => res.status(200).send('OK'));
-
 // --- API Endpoints ---
 
 app.post('/api/generate-journey-plan', async (req, res) => {
@@ -775,28 +772,6 @@ wss.on('connection', (ws, req) => {
         sessionPromise?.then(session => session.close());
     });
 });
-
-// --- KEEP-ALIVE SERVICE ---
-// Pings the server every 4 minutes to prevent sleep on free tiers (e.g. Render)
-function startKeepAlive() {
-    const interval = 4 * 60 * 1000; // 4 minutes
-    // Use Render's environment variable for external URL if available, otherwise default to hosted URL
-    const url = process.env.RENDER_EXTERNAL_URL 
-        ? `${process.env.RENDER_EXTERNAL_URL}/health` 
-        : 'https://knowledge-tester.onrender.com/health';
-
-    console.log(`[System] Keep-alive service initialized. Target: ${url}`);
-
-    setInterval(() => {
-        // Use global fetch (Node 18+)
-        fetch(url)
-            .then(res => console.log(`[KeepAlive] Ping sent. Status: ${res.status}`))
-            .catch(err => console.error(`[KeepAlive] Ping failed: ${err.message}`));
-    }, interval);
-}
-
-// Always start keep-alive for reliability
-startKeepAlive();
 
 
 // --- SERVER START ---

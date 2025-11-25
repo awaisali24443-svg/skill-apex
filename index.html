@@ -3,9 +3,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Knowledge Tester | AI Learning Companion</title>
-    <meta name="description" content="Generate custom AI quizzes and learning journeys. Master any topic from coding to history with personalized curriculum.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Tester</title>
+    <meta name="description" content="A streamlined, AI-powered quiz application rebuilt from the ground up with vanilla JavaScript for performance and reliability. Generate quizzes on any topic instantly.">
     <meta name="theme-color" id="theme-color-meta" content="#0c0e1a">
     
     <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
@@ -20,7 +20,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700;800&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Inter:wght@400;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     
     <!-- Mermaid.js for diagrams -->
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
@@ -58,49 +58,42 @@
         </div>
     </div>
 
+    <div id="welcome-screen" style="display: none;">
+        <div class="welcome-content card">
+            <img src="assets/icons/favicon.svg" alt="Knowledge Tester Logo" class="welcome-logo">
+            <h1>Knowledge Tester</h1>
+            <p>Your personal AI-powered learning companion. Master any topic, from basics to boss battles.</p>
+            <ul class="features-list">
+                <li>
+                    <div class="icon-badge">
+                        <svg class="icon"><use href="/assets/icons/feather-sprite.svg#cpu"/></svg>
+                    </div>
+                    <span>AI-Powered Curriculum</span>
+                </li>
+                <li>
+                    <div class="icon-badge">
+                        <svg class="icon"><use href="/assets/icons/feather-sprite.svg#git-branch"/></svg>
+                    </div>
+                    <span>Custom Learning Paths</span>
+                </li>
+                <li>
+                    <div class="icon-badge">
+                        <svg class="icon"><use href="/assets/icons/feather-sprite.svg#star"/></svg>
+                    </div>
+                    <span>Gamified Progression</span>
+                </li>
+            </ul>
+            <button id="welcome-get-started-btn" class="btn btn-primary">Initialize System</button>
+        </div>
+    </div>
+
     <div id="app-wrapper">
-        <nav id="sidebar" aria-label="Main Navigation"></nav>
+        <nav id="sidebar"></nav>
         <main id="app-container" role="main">
             <div id="app"></div>
         </main>
     </div>
     
-    <!-- VOICE COMMAND INDICATOR -->
-    <div id="voice-indicator" class="voice-indicator" style="display: none;">
-        <div class="voice-dot"></div>
-        <span>Listening...</span>
-    </div>
-    
-    <!-- Global Help Modal -->
-    <div id="help-modal" class="modal-backdrop" style="display: none;" aria-hidden="true">
-        <div class="modal-content help-content" role="dialog" aria-labelledby="help-title">
-            <div class="modal-header">
-                <h2 id="help-title">System Guide</h2>
-                <button id="close-help-btn" class="btn-icon" aria-label="Close Help">
-                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#x-circle"/></svg>
-                </button>
-            </div>
-            <div class="modal-body help-body">
-                <section class="help-section">
-                    <h3><svg class="icon"><use href="/assets/icons/feather-sprite.svg#git-branch"/></svg> Learning Journeys</h3>
-                    <p>Type any topic (e.g., "Quantum Physics" or "Baking"). The AI builds a custom 50-level curriculum for you instantly.</p>
-                </section>
-                <section class="help-section">
-                    <h3><svg class="icon"><use href="/assets/icons/feather-sprite.svg#mic"/></svg> Voice Commands</h3>
-                    <p>Enable "Voice Nav" in the sidebar. Say things like "Go Home", "Explore Topics", "My Stats", or "Back".</p>
-                </section>
-                <section class="help-section">
-                    <h3><svg class="icon"><use href="/assets/icons/feather-sprite.svg#shield"/></svg> Boss Battles</h3>
-                    <p>Every 10 levels, you face a Boss. These are timed, cumulative exams. Don't switch tabs, or you'll lose!</p>
-                </section>
-                <section class="help-section">
-                    <h3><svg class="icon"><use href="/assets/icons/feather-sprite.svg#play"/></svg> How to Play</h3>
-                    <p>Each level has a short lesson followed by a quiz. Pass with 80% to unlock the next level.</p>
-                </section>
-            </div>
-        </div>
-    </div>
-
     <div id="modal-container"></div>
     <div id="toast-container"></div>
     
@@ -111,7 +104,7 @@
     <script src="global/global.js"></script>
     <script type="module" src="index.js"></script>
     <script>
-        // Initialize Mermaid
+        // Initialize Mermaid with a dark theme configuration
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof mermaid !== 'undefined') {
                 mermaid.initialize({ 
