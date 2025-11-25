@@ -2,11 +2,11 @@
 
 <div class="page-container topic-list-container">
     <header class="page-header">
-        <h1>Welcome to AI Quiz Nexus!</h1>
-        <p>Choose your adventure and master new fields with AI-powered quizzes.</p>
+        <h1>Explore Topics</h1>
+        <p>Select a predefined path or ask the AI to build a custom curriculum.</p>
     </header>
 
-    <!-- Active Filter Badge (Injected via JS) -->
+    <!-- Active Filter Badge -->
     <div id="active-filter-container" class="active-filter-container" style="display: none;">
         <span class="filter-badge">
             <span id="filter-name"></span>
@@ -16,19 +16,22 @@
         </span>
     </div>
 
+    <!-- New Journey Creator (Enhanced) -->
     <div class="card journey-creator-card">
         <div class="creator-icon">
-             <svg><use href="/assets/icons/feather-sprite.svg#cpu"/></svg>
+             <svg><use href="/assets/icons/feather-sprite.svg#compass"/></svg>
         </div>
         <div class="creator-content">
-            <h2>Create Your Own Journey</h2>
-            <p>Enter any topic you can imagine, and our AI will build a personalized learning path for you.</p>
+            <h2>Create Custom Journey</h2>
+            <p>Type any subject (e.g., "Quantum Physics", "Baking", "Roman History") and the AI will design a 50-level course for you.</p>
             <form id="journey-creator-form" class="creator-form">
-                <input type="text" id="custom-topic-input" class="form-input" placeholder="e.g., 'The History of Jazz Music'" required>
-                <button type="submit" class="btn btn-primary">
-                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#zap"/></svg>
-                    <span>Generate</span>
-                </button>
+                <div class="input-group">
+                    <input type="text" id="custom-topic-input" class="form-input" placeholder="Enter topic..." required>
+                    <button type="submit" class="btn btn-primary">
+                        <span>Generate</span>
+                        <svg class="icon"><use href="/assets/icons/feather-sprite.svg#arrow-right"/></svg>
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -41,16 +44,14 @@
         </div>
     </div>
 
-    <h2>Explore Topics</h2>
+    <h2>Recommended Paths</h2>
     
-    <!-- Skeleton Loader for Topics -->
+    <!-- Skeleton Loader -->
     <div id="topics-skeleton" class="topic-grid">
-        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 90%; height: 16px;"></div><div class="skeleton" style="width: 40%; height: 16px;"></div></div>
-        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 90%; height: 16px;"></div><div class="skeleton" style="width: 40%; height: 16px;"></div></div>
-        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 90%; height: 16px;"></div><div class="skeleton" style="width: 40%; height: 16px;"></div></div>
-        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 90%; height: 16px;"></div><div class="skeleton" style="width: 40%; height: 16px;"></div></div>
-        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 90%; height: 16px;"></div><div class="skeleton" style="width: 40%; height: 16px;"></div></div>
-        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 90%; height: 16px;"></div><div class="skeleton" style="width: 40%; height: 16px;"></div></div>
+        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div></div>
+        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div></div>
+        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div></div>
+        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div></div>
     </div>
 
     <div id="topic-grid-container" class="topic-grid" style="display: none;">

@@ -1,110 +1,125 @@
 
 <div class="page-container home-container">
-    <header class="home-header">
-        <div class="greeting-section">
-            <h1 class="fade-in">Welcome Back</h1>
-            <p class="fade-in-delay">Your neural network is ready for an upgrade.</p>
+    
+    <!-- 1. DASHBOARD HEADER -->
+    <header class="dashboard-header">
+        <div class="header-intro">
+            <h1 class="greeting fade-in">Command Center</h1>
+            <p class="subtitle">Track your progress and resume your training.</p>
         </div>
-        <div id="streak-counter" class="streak-counter" style="display: none;"></div>
+        <div class="user-stats">
+            <div class="stat-badge level-badge">
+                <span class="label">Level</span>
+                <span id="header-level" class="value">1</span>
+            </div>
+            <div class="stat-badge streak-badge" id="streak-counter" style="display:none;">
+                <svg class="icon"><use href="/assets/icons/feather-sprite.svg#zap"/></svg>
+                <span id="streak-value">0</span>
+            </div>
+        </div>
     </header>
 
+    <!-- 2. HERO ACTION (The "One Thing") -->
+    <section id="hero-section" class="hero-section">
+        <!-- Injected via JS: Either "Resume Journey" or "Start New" -->
+    </section>
+
+    <!-- 3. MAIN GRID -->
     <div class="dashboard-grid">
-        <!-- Primary Action / Hero Card -->
-        <div class="dashboard-main">
-            <a id="primary-action-card" href="#" class="card home-card primary-action hero-card">
-                <div class="hero-bg-glow"></div>
-                <div class="card-content">
-                    <div id="primary-action-icon" class="card-icon hero-icon">
-                        <svg><use href="/assets/icons/feather-sprite.svg#grid"/></svg>
-                    </div>
-                    <div class="hero-text">
-                        <h2 id="primary-action-title">Start a New Journey</h2>
-                        <p id="primary-action-description">Search for any topic to begin a step-by-step learning path.</p>
-                    </div>
-                    <div class="hero-arrow">
-                        <svg class="icon"><use href="/assets/icons/feather-sprite.svg#arrow-right"/></svg>
+        
+        <!-- Left Column: Daily & Health -->
+        <div class="grid-col-left">
+            <!-- Daily Challenge -->
+            <div id="daily-challenge-card" class="card task-card">
+                <div class="task-header">
+                    <div class="task-icon"><svg><use href="/assets/icons/feather-sprite.svg#star"/></svg></div>
+                    <div class="task-info">
+                        <h3>Daily Challenge</h3>
+                        <p>Earn 200 XP instantly</p>
                     </div>
                 </div>
-            </a>
-            
-            <!-- NEW: Daily Challenge Card -->
-            <div id="daily-challenge-card" class="card home-card daily-challenge-card" style="display: none;">
-                <div class="card-content">
-                    <div class="challenge-icon">
-                        <svg class="icon"><use href="/assets/icons/feather-sprite.svg#star"/></svg>
+                <button id="daily-challenge-btn" class="btn btn-secondary btn-sm btn-full-width">Start Challenge</button>
+            </div>
+
+            <!-- Neural Health -->
+            <div id="memory-health-widget" class="card task-card health-card">
+                <div class="task-header">
+                    <div class="task-icon"><svg><use href="/assets/icons/feather-sprite.svg#cpu"/></svg></div>
+                    <div class="task-info">
+                        <h3>Neural Integrity</h3>
+                        <p id="health-status-text">Systems Nominal</p>
                     </div>
-                    <div class="challenge-text">
-                        <h3>Daily Micro-Challenge</h3>
-                        <p id="daily-challenge-status">Earn 200 XP with one quick question.</p>
-                    </div>
-                    <button id="start-daily-challenge-btn" class="btn btn-primary">Play</button>
+                    <span id="health-percentage" class="health-val">100%</span>
+                </div>
+                <div class="health-progress-bg">
+                    <div id="health-bar-fill" class="health-progress-fill"></div>
+                </div>
+                <button id="repair-memory-btn" class="btn btn-secondary btn-sm btn-full-width" style="display:none;">Repair Memory</button>
+            </div>
+        </div>
+
+        <!-- Right Column: Recent Activity -->
+        <div class="grid-col-right">
+            <div class="section-header">
+                <h3>Recent Activity</h3>
+                <a href="/#/history" class="view-all-link">View All</a>
+            </div>
+            <div id="recent-activity-list" class="activity-list">
+                <!-- Injected via JS -->
+                <div class="empty-activity">
+                    <p>No recent missions recorded.</p>
                 </div>
             </div>
         </div>
 
-        <!-- Sidebar Widgets -->
-        <div class="dashboard-sidebar">
-            
-            <!-- NEW: Neural Integrity Widget -->
-            <div id="memory-health-widget" class="dashboard-widget card" style="display: none;">
-                <div class="widget-header">
-                    <h3>Neural Integrity</h3>
-                    <span id="health-percentage">100%</span>
-                </div>
-                <div class="health-bar-container">
-                    <div id="health-bar-fill" class="health-bar-fill"></div>
-                </div>
-                <p id="health-status-text">Systems Nominal.</p>
-                <button id="repair-memory-btn" class="btn btn-small btn-repair" style="display: none;">
-                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#zap"/></svg> Repair Memory
-                </button>
-            </div>
+    </div>
 
-            <div id="recent-history-container" class="dashboard-widget" style="display: none;">
-                <!-- Content injected by JS -->
+    <!-- 4. WELCOME MODAL (First Time Only) -->
+    <div id="welcome-modal" class="modal-backdrop" style="display: none;">
+        <div class="modal-content welcome-content">
+            <div class="welcome-icon">
+                <img src="assets/icons/favicon.svg" alt="Logo">
             </div>
+            <h2>Welcome to Knowledge Tester</h2>
+            <p>An AI-powered learning engine that builds custom curriculums for you.</p>
+            <ul class="welcome-steps">
+                <li><strong>1. Choose a Topic:</strong> Type anything (e.g., "Python").</li>
+                <li><strong>2. Learn & Quiz:</strong> Read short lessons and pass quizzes.</li>
+                <li><strong>3. Master It:</strong> Beat Boss Battles to prove your skill.</li>
+            </ul>
+            <button id="close-welcome-btn" class="btn btn-primary btn-full-width">Initialize System</button>
         </div>
     </div>
-</div>
 
-<!-- ONBOARDING OVERLAY -->
-<div id="onboarding-overlay" class="onboarding-overlay" style="display: none;">
-    <div class="onboarding-content">
-        <div class="onboarding-header">
-            <h1>Initialize Your Matrix</h1>
-            <p>Select a core field to calibrate your learning feed instantly.</p>
-        </div>
-        <div class="interest-grid">
-            <button class="card interest-card cs" data-category="cs">
-                <div class="interest-icon">
-                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#cpu"/></svg>
-                </div>
-                <h3>Computer Science</h3>
-            </button>
-            <button class="card interest-card history" data-category="history">
-                <div class="interest-icon">
-                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#book-open"/></svg>
-                </div>
-                <h3>History</h3>
-            </button>
-            <button class="card interest-card science" data-category="science">
-                <div class="interest-icon">
-                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#lightbulb"/></svg>
-                </div>
-                <h3>Science</h3>
-            </button>
-            <button class="card interest-card business" data-category="business">
-                <div class="interest-icon">
-                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#target"/></svg>
-                </div>
-                <h3>Business</h3>
-            </button>
-            <button class="card interest-card custom" data-category="custom">
-                <div class="interest-icon">
-                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#plus"/></svg>
-                </div>
-                <h3>Create Custom</h3>
-            </button>
+    <!-- 5. ONBOARDING OVERLAY (Interest Selection) -->
+    <div id="onboarding-overlay" class="onboarding-overlay" style="display: none;">
+        <div class="onboarding-content">
+            <div class="onboarding-header">
+                <h1>Select Your Field</h1>
+                <p>Choose a core directive to calibrate your learning path.</p>
+            </div>
+            <div class="interest-grid">
+                <button class="card interest-card cs" data-category="cs">
+                    <div class="interest-icon"><svg class="icon"><use href="/assets/icons/feather-sprite.svg#cpu"/></svg></div>
+                    <h3>Computer Science</h3>
+                </button>
+                <button class="card interest-card history" data-category="history">
+                    <div class="interest-icon"><svg class="icon"><use href="/assets/icons/feather-sprite.svg#book-open"/></svg></div>
+                    <h3>History</h3>
+                </button>
+                <button class="card interest-card science" data-category="science">
+                    <div class="interest-icon"><svg class="icon"><use href="/assets/icons/feather-sprite.svg#lightbulb"/></svg></div>
+                    <h3>Science</h3>
+                </button>
+                <button class="card interest-card business" data-category="business">
+                    <div class="interest-icon"><svg class="icon"><use href="/assets/icons/feather-sprite.svg#target"/></svg></div>
+                    <h3>Business</h3>
+                </button>
+                <button class="card interest-card custom" data-category="custom">
+                    <div class="interest-icon"><svg class="icon"><use href="/assets/icons/feather-sprite.svg#plus"/></svg></div>
+                    <h3>Custom Input</h3>
+                </button>
+            </div>
         </div>
     </div>
 </div>

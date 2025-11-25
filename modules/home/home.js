@@ -5,296 +5,250 @@ import * as historyService from '../../services/historyService.js';
 import * as learningPathService from '../../services/learningPathService.js';
 import * as stateService from '../../services/stateService.js';
 import * as apiService from '../../services/apiService.js';
-import * as levelCacheService from '../../services/levelCacheService.js';
 import { showToast } from '../../services/toastService.js';
+import { LOCAL_STORAGE_KEYS } from '../../constants.js';
 
-let historyClickHandler;
-let challengeBtn;
+// --- 1. Welcome Logic ---
+function checkWelcome() {
+    const hasSeenWelcome = localStorage.getItem(LOCAL_STORAGE_KEYS.WELCOME_COMPLETED);
+    if (!hasSeenWelcome) {
+        const modal = document.getElementById('welcome-modal');
+        if (modal) {
+            modal.style.display = 'flex';
+            document.getElementById('close-welcome-btn').onclick = () => {
+                modal.style.display = 'none';
+                localStorage.setItem(LOCAL_STORAGE_KEYS.WELCOME_COMPLETED, 'true');
+                checkOnboarding(); // Chain next step
+            };
+        }
+    } else {
+        checkOnboarding();
+    }
+}
 
 function checkOnboarding() {
-    // Check if user has already selected an interest
     const existingInterest = learningPathService.getUserInterest();
     const overlay = document.getElementById('onboarding-overlay');
     
-    // If user has already chosen, DO NOT show popup.
-    // Remove it from DOM entirely to prevent any visual glitches
     if (existingInterest) {
-        if (overlay) {
-            overlay.style.display = 'none'; // Instant hide
-            overlay.classList.remove('visible');
-            overlay.remove(); // Remove from DOM
-        }
+        if (overlay) overlay.remove();
         return;
     }
     
     if (overlay) {
         overlay.style.display = 'flex';
-        // Force reflow
         void overlay.offsetWidth;
-        // Add visible class for transition
         overlay.classList.add('visible');
         
-        // Add listeners to buttons
         overlay.querySelectorAll('.interest-card').forEach(card => {
-            // Remove old listeners to prevent duplicates if re-initialized
-            const newCard = card.cloneNode(true);
-            card.parentNode.replaceChild(newCard, card);
-            
-            newCard.addEventListener('click', () => {
-                const category = newCard.dataset.category;
-                
-                // SAVE THE CHOICE PERMANENTLY FIRST
+            card.onclick = () => {
+                const category = card.dataset.category;
                 learningPathService.saveUserInterest(category);
-
-                // Fade out
                 overlay.classList.remove('visible');
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    overlay.remove(); // Remove from DOM after fade
-                }, 400); 
-
-                if (category === 'custom') {
-                    // For custom, we just go to the standard list
-                    window.location.hash = '#/topics';
-                } else {
-                    // For preset, we also go to topics, but the list module will filter/preload
-                    window.location.hash = '#/topics';
-                }
-            });
+                setTimeout(() => overlay.remove(), 400); 
+                
+                // Navigate to topics to start exploring immediately
+                window.location.hash = '#/topics';
+            };
         });
     }
 }
 
-function renderStreak() {
+// --- 2. Dashboard Renders ---
+
+function renderHeaderStats() {
     const stats = gamificationService.getStats();
-    const streakCounter = document.getElementById('streak-counter');
+    
+    const streakEl = document.getElementById('streak-counter');
     if (stats.currentStreak > 0) {
-        streakCounter.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="/assets/icons/feather-sprite.svg#zap"/></svg>
-            <span><strong>${stats.currentStreak} Day</strong> Streak</span>
-        `;
-        streakCounter.style.display = 'inline-flex';
-    } else {
-        streakCounter.style.display = 'none';
+        streakEl.style.display = 'flex';
+        document.getElementById('streak-value').textContent = `${stats.currentStreak} Days`;
     }
+    
+    document.getElementById('header-level').textContent = `${stats.level}`;
 }
 
-function renderPrimaryAction() {
+function renderHeroAction() {
+    const container = document.getElementById('hero-section');
     const journeys = learningPathService.getAllJourneys();
-    const path = journeys.length > 0 ? journeys[0] : null;
+    const activeJourney = journeys.length > 0 ? journeys[0] : null;
+    const isDailyDone = gamificationService.isDailyChallengeCompleted();
 
-    const card = document.getElementById('primary-action-card');
-    const icon = document.getElementById('primary-action-icon');
-    const title = document.getElementById('primary-action-title');
-    const description = document.getElementById('primary-action-description');
+    let html = '';
 
-    if (path && path.currentLevel <= path.totalLevels) {
-        card.href = `/#/game/${encodeURIComponent(path.goal)}`;
-        icon.innerHTML = `<svg><use href="/assets/icons/feather-sprite.svg#play"/></svg>`;
-        title.textContent = 'Resume Journey';
-        description.textContent = `Jump back into "${path.goal}" at Level ${path.currentLevel}`;
+    // Logic: If active journey exists and isn't finished -> RESUME
+    // Else -> START NEW
+    if (activeJourney && activeJourney.currentLevel <= activeJourney.totalLevels) {
+        const progress = Math.round(((activeJourney.currentLevel - 1) / activeJourney.totalLevels) * 100);
+        
+        html = `
+            <div class="card hero-card resume">
+                <div class="hero-icon-lg">
+                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#play"/></svg>
+                </div>
+                <div class="hero-content">
+                    <span class="hero-tag">Active Mission</span>
+                    <h2 class="hero-title">${activeJourney.goal}</h2>
+                    <p class="hero-detail">Level ${activeJourney.currentLevel} • ${progress}% Complete</p>
+                </div>
+                <div class="hero-action">
+                    <a href="#/game/${encodeURIComponent(activeJourney.goal)}" class="btn btn-primary btn-lg">
+                        Resume Journey <svg class="icon"><use href="/assets/icons/feather-sprite.svg#arrow-right"/></svg>
+                    </a>
+                </div>
+            </div>
+        `;
     } else {
-        // Logic: If they have a saved interest, 'Start New' goes to topics list which is pre-filtered
-        card.href = '/#/topics';
-        icon.innerHTML = `<svg><use href="/assets/icons/feather-sprite.svg#plus"/></svg>`;
-        title.textContent = 'Start New Adventure';
-        description.textContent = 'Generate a custom learning path on any topic you can imagine.';
+        html = `
+            <div class="card hero-card start">
+                <div class="hero-icon-lg">
+                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#compass"/></svg>
+                </div>
+                <div class="hero-content">
+                    <span class="hero-tag">Ready to Learn</span>
+                    <h2 class="hero-title">Start a New Journey</h2>
+                    <p class="hero-detail">Pick a topic and let the AI build your curriculum.</p>
+                </div>
+                <div class="hero-action">
+                    <a href="#/topics" class="btn btn-primary btn-lg">
+                        Explore Topics <svg class="icon"><use href="/assets/icons/feather-sprite.svg#arrow-right"/></svg>
+                    </a>
+                </div>
+            </div>
+        `;
     }
+    
+    container.innerHTML = html;
 }
 
-function renderRecentHistory() {
+function renderRecentActivity() {
+    const list = document.getElementById('recent-activity-list');
     const history = historyService.getRecentHistory(3);
-    const container = document.getElementById('recent-history-container');
-    if (history.length === 0 || !container) {
-        if(container) container.style.display = 'none';
+
+    if (history.length === 0) {
+        return; // Keeps default empty message
+    }
+
+    list.innerHTML = history.map(item => {
+        const isPass = (item.score / item.totalQuestions) >= 0.6;
+        const icon = isPass ? 'check-circle' : 'x-circle';
+        const cls = isPass ? 'passed' : 'failed';
+        const cleanTopic = item.topic.replace(/ - Level \d+$/, '');
+        const levelMatch = item.topic.match(/Level (\d+)/);
+        const level = levelMatch ? `Level ${levelMatch[1]}` : 'Quiz';
+
+        return `
+            <div class="activity-item">
+                <div class="activity-status-icon ${cls}">
+                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#${icon}"/></svg>
+                </div>
+                <div class="activity-details">
+                    <h4>${cleanTopic}</h4>
+                    <p>${level}</p>
+                </div>
+                <span class="activity-score">${Math.round((item.score / item.totalQuestions) * 100)}%</span>
+            </div>
+        `;
+    }).join('');
+}
+
+function initDailyChallenge() {
+    const btn = document.getElementById('daily-challenge-btn');
+    const card = document.getElementById('daily-challenge-card');
+    
+    if (gamificationService.isDailyChallengeCompleted()) {
+        btn.textContent = "Completed";
+        btn.disabled = true;
+        card.style.opacity = 0.7;
         return;
     }
-    
-    const cleanTopic = (topic) => topic.replace(/ - Level \d+$/, '').trim();
 
-    container.innerHTML = '<h3>Recent Missions</h3>' + history.map(item => `
-        <div class="card dashboard-card-small">
-            <div class="history-mini-info">
-                <p class="history-mini-title">${cleanTopic(item.topic)}</p>
-                <span class="history-mini-score">${item.score !== undefined ? item.score + '/' + item.totalQuestions : 'Audio'}</span>
-            </div>
-            <button class="btn-small retry-btn" data-topic="${cleanTopic(item.topic)}">
-                <svg class="icon"><use href="/assets/icons/feather-sprite.svg#rotate-ccw"/></svg>
-            </button>
-        </div>
-    `).join('');
-    container.style.display = 'block';
-
-    historyClickHandler = (e) => {
-        const btn = e.target.closest('.retry-btn');
-        if(btn) {
-            const topic = btn.dataset.topic;
-            stateService.setNavigationContext({ topic });
-            window.location.hash = `#/game/${encodeURIComponent(topic)}`;
+    btn.onclick = async () => {
+        btn.textContent = "Loading...";
+        try {
+            const challenge = await apiService.fetchDailyChallenge();
+            showDailyChallengeModal(challenge);
+        } catch (e) {
+            showToast("Failed to load challenge.", "error");
+        } finally {
+            btn.textContent = "Start Challenge";
         }
     };
-    container.addEventListener('click', historyClickHandler);
 }
 
-// --- NEW: Neural Integrity (Memory Health) ---
-function renderMemoryHealth() {
-    const history = historyService.getHistory();
-    if (history.length === 0) return; // No history, no decay
+function showDailyChallengeModal(challenge) {
+    const modalContainer = document.getElementById('modal-container');
+    const optionsHtml = challenge.options.map((opt, i) => 
+        `<button class="btn option-btn" data-idx="${i}" style="width:100%; margin-bottom:8px; text-align:left; padding: 1rem;">${opt}</button>`
+    ).join('');
+    
+    modalContainer.innerHTML = `
+        <div class="modal-backdrop">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>${challenge.topic} Trivia</h2>
+                </div>
+                <p style="font-size:1.2rem; margin-bottom:1.5rem; line-height:1.4;">${challenge.question}</p>
+                <div id="challenge-options">${optionsHtml}</div>
+                <div class="modal-footer" style="margin-top:1rem; text-align:center;">
+                    <button id="cancel-challenge" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    `;
+    modalContainer.style.display = 'flex';
+    
+    const backdrop = modalContainer.querySelector('.modal-backdrop');
+    const cancelBtn = document.getElementById('cancel-challenge');
+    
+    const close = () => modalContainer.innerHTML = '';
+    
+    cancelBtn.onclick = close;
+    backdrop.onclick = (e) => { if(e.target === backdrop) close(); };
 
+    document.getElementById('challenge-options').onclick = (e) => {
+        const optBtn = e.target.closest('.option-btn');
+        if (!optBtn) return;
+        
+        const isCorrect = parseInt(optBtn.dataset.idx) === challenge.correctAnswerIndex;
+        if (isCorrect) {
+            showToast("Correct! +200 XP", "success");
+            gamificationService.completeDailyChallenge();
+            initDailyChallenge(); // Refresh button state
+        } else {
+            showToast(`Wrong! Answer: ${challenge.options[challenge.correctAnswerIndex]}`, "error");
+        }
+        close();
+    };
+}
+
+function renderNeuralHealth() {
+    const history = historyService.getHistory();
     const { health, status, oldestTopic } = gamificationService.calculateMemoryHealth(history);
     
-    const widget = document.getElementById('memory-health-widget');
-    const percentEl = document.getElementById('health-percentage');
-    const barFill = document.getElementById('health-bar-fill');
-    const statusText = document.getElementById('health-status-text');
-    const repairBtn = document.getElementById('repair-memory-btn');
+    document.getElementById('health-percentage').textContent = `${health}%`;
+    document.getElementById('health-bar-fill').style.width = `${health}%`;
+    document.getElementById('health-status-text').textContent = status === 'Stable' ? 'Systems Nominal' : `${status}: ${oldestTopic}`;
     
-    widget.style.display = 'block';
-    percentEl.textContent = `${health}%`;
-    barFill.style.width = `${health}%`;
-    
-    // Status Colors
-    if (status === 'Critical') {
-        barFill.style.backgroundColor = 'var(--color-error)';
-        widget.style.borderLeftColor = 'var(--color-error)';
-        statusText.textContent = `Critical Decay: ${oldestTopic}`;
-    } else if (status === 'Decaying') {
-        barFill.style.backgroundColor = 'var(--color-primary)'; // Or orange if defined
-        widget.style.borderLeftColor = 'var(--color-primary)';
-        statusText.textContent = `Fading: ${oldestTopic}`;
-    } else {
-        barFill.style.backgroundColor = 'var(--color-success)';
-        widget.style.borderLeftColor = 'var(--color-success)';
-        statusText.textContent = "Neural pathways stable.";
-    }
-    
-    // Show Repair button if health is low
-    if (health < 90 && oldestTopic) {
-        repairBtn.style.display = 'flex';
-        repairBtn.onclick = () => {
+    const btn = document.getElementById('repair-memory-btn');
+    if (health < 100 && oldestTopic) {
+        btn.style.display = 'block';
+        btn.onclick = () => {
             stateService.setNavigationContext({ topic: oldestTopic, level: 1, journeyId: 'repair', isBoss: false, totalLevels: 10 });
             window.location.hash = `#/game/${encodeURIComponent(oldestTopic)}`;
         };
     } else {
-        repairBtn.style.display = 'none';
-    }
-}
-
-
-// --- Daily Challenge Logic ---
-async function initDailyChallenge() {
-    const container = document.getElementById('daily-challenge-card');
-    const statusText = document.getElementById('daily-challenge-status');
-    challengeBtn = document.getElementById('start-daily-challenge-btn');
-    
-    if (gamificationService.isDailyChallengeCompleted()) {
-        container.classList.add('completed');
-        statusText.textContent = "Challenge Completed! Come back tomorrow.";
-        challengeBtn.disabled = true;
-        challengeBtn.textContent = "Done";
-        container.style.display = 'block';
-        return;
-    }
-
-    container.style.display = 'block';
-    
-    challengeBtn.onclick = async () => {
-        challengeBtn.disabled = true;
-        challengeBtn.textContent = "Loading...";
-        
-        try {
-            const challenge = await apiService.fetchDailyChallenge();
-            
-            const optionsHtml = challenge.options.map((opt, i) => 
-                `<button class="btn option-btn" data-idx="${i}" style="width:100%; margin-bottom:8px; text-align:left;">${opt}</button>`
-            ).join('');
-            
-            const modalHtml = `
-                <div class="challenge-modal">
-                    <h3 style="color:var(--color-primary); margin-bottom:1rem;">${challenge.topic} Trivia</h3>
-                    <p style="font-size:1.2rem; margin-bottom:1.5rem;">${challenge.question}</p>
-                    <div id="challenge-options">${optionsHtml}</div>
-                </div>
-            `;
-            
-            const modalContainer = document.getElementById('modal-container');
-            modalContainer.innerHTML = `
-                <div class="modal-backdrop"></div>
-                <div class="modal-content">
-                    ${modalHtml}
-                    <div class="modal-footer" style="justify-content:center; margin-top:1rem;">
-                        <button id="cancel-challenge" class="btn">Close</button>
-                    </div>
-                </div>
-            `;
-            modalContainer.style.display = 'block';
-            
-            const optionsDiv = document.getElementById('challenge-options');
-            optionsDiv.addEventListener('click', (e) => {
-                const btn = e.target.closest('.option-btn');
-                if(!btn) return;
-                
-                const selected = parseInt(btn.dataset.idx);
-                const isCorrect = selected === challenge.correctAnswerIndex;
-                
-                if (isCorrect) {
-                    showToast("Correct! +200 XP", "success");
-                    gamificationService.completeDailyChallenge();
-                    container.classList.add('completed');
-                    statusText.textContent = "Challenge Completed!";
-                    challengeBtn.textContent = "Done";
-                } else {
-                    showToast(`Wrong! It was: ${challenge.options[challenge.correctAnswerIndex]}`, "error");
-                }
-                
-                modalContainer.style.display = 'none';
-                challengeBtn.disabled = gamificationService.isDailyChallengeCompleted();
-                if(!gamificationService.isDailyChallengeCompleted()) challengeBtn.textContent = "Play";
-            });
-            
-            document.getElementById('cancel-challenge').onclick = () => {
-                modalContainer.style.display = 'none';
-                challengeBtn.disabled = false;
-                challengeBtn.textContent = "Play";
-            };
-
-        } catch (e) {
-            showToast("Failed to load challenge.", "error");
-            challengeBtn.disabled = false;
-            challengeBtn.textContent = "Play";
-        }
-    };
-}
-
-// --- Preloading ---
-async function preloadCriticalModules() {
-    const moduleName = 'topic-list';
-    try {
-        await Promise.all([
-            fetch(`./modules/${moduleName}/${moduleName}.html`).then(res => res.text()),
-            fetch(`./modules/${moduleName}/${moduleName}.css`).then(res => res.text()),
-            import(`../../modules/${moduleName}/${moduleName}.js`)
-        ]);
-        console.log('Preloaded topic-list module.');
-    } catch (e) {
-        // Ignore
+        btn.style.display = 'none';
     }
 }
 
 export function init() {
-    renderStreak();
-    renderPrimaryAction();
-    renderRecentHistory();
-    renderMemoryHealth();
+    renderHeaderStats();
+    renderHeroAction();
+    renderRecentActivity();
+    renderNeuralHealth();
     initDailyChallenge();
-    checkOnboarding();
-    
-    setTimeout(preloadCriticalModules, 1000);
+    checkWelcome(); // Triggers welcome or onboarding
 }
 
-export function destroy() {
-    const container = document.getElementById('recent-history-container');
-    if (container && historyClickHandler) {
-        container.removeEventListener('click', historyClickHandler);
-    }
-}
+export function destroy() {}

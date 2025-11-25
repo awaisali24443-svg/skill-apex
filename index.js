@@ -1,6 +1,4 @@
 
-
-
 import { ROUTES, LOCAL_STORAGE_KEYS } from './constants.js';
 import * as configService from './services/configService.js';
 import { renderSidebar } from './services/sidebarService.js';
@@ -11,6 +9,7 @@ import * as historyService from './services/historyService.js';
 import * as themeService from './services/themeService.js';
 import * as gamificationService from './services/gamificationService.js';
 import * as stateService from './services/stateService.js';
+import * as voiceCommandService from './services/voiceCommandService.js';
 
 const moduleCache = new Map();
 let currentModule = null;
@@ -126,20 +125,16 @@ async function loadModule(route) {
              await renderNewModule();
         });
     } else {
-        await new Promise(resolve => {
-            const handler = (event) => {
-                if (event.target === appContainer) {
-                    appContainer.removeEventListener('transitionend', handler);
-                    resolve();
-                }
-            };
-            appContainer.addEventListener('transitionend', handler);
-            appContainer.classList.add('fade-out');
-            setTimeout(resolve, 350);
-        });
-        
         await renderNewModule();
-        appContainer.classList.remove('fade-out');
+    }
+}
+
+function handleHelperModal() {
+    const modal = document.getElementById('help-modal');
+    const closeBtn = document.getElementById('close-help-btn');
+    if(closeBtn && modal) {
+        closeBtn.onclick = () => modal.style.display = 'none';
+        modal.onclick = (e) => { if(e.target === modal) modal.style.display = 'none'; }
     }
 }
 
@@ -157,90 +152,20 @@ function handleRouteChange() {
     }
 }
 
-function applyAppSettings(config) {
-    themeService.applyTheme(config.theme);
-    themeService.applyAnimationSetting(config.animationIntensity);
-}
-
-function showWelcomeScreen() {
-    const welcomeScreen = document.getElementById('welcome-screen');
-    const startBtn = document.getElementById('welcome-get-started-btn');
-    if (!welcomeScreen || !startBtn) return;
-
-    welcomeScreen.style.display = 'flex';
-    setTimeout(() => {
-        welcomeScreen.classList.add('visible');
-    }, 10);
-    
-    startBtn.addEventListener('click', () => {
-        localStorage.setItem(LOCAL_STORAGE_KEYS.WELCOME_COMPLETED, 'true');
-        welcomeScreen.classList.remove('visible');
-        
-        welcomeScreen.addEventListener('transitionend', () => {
-            welcomeScreen.remove();
-        }, { once: true });
-        
-        setTimeout(() => {
-            if (document.body.contains(welcomeScreen)) {
-                welcomeScreen.remove();
-            }
-        }, 500);
-    }, { once: true });
-}
-
-function showLevelUpModal(level) {
-    soundService.playSound('achievement');
-    const modal = document.createElement('div');
-    modal.className = 'level-up-overlay';
-    modal.innerHTML = `
-        <div class="level-up-content">
-            <div class="level-badge">${level}</div>
-            <h2 class="level-up-title">LEVEL UP!</h2>
-            <p class="level-up-sub">You've reached Level ${level}</p>
-            <button id="level-up-continue" class="btn btn-primary">Continue</button>
-        </div>
-    `;
-    document.body.appendChild(modal);
-    
-    document.getElementById('level-up-continue').addEventListener('click', () => {
-        modal.style.opacity = '0';
-        setTimeout(() => modal.remove(), 500);
-    });
-}
-
-async function preloadCriticalModules() {
-    const modulesToPreload = ['topic-list', 'game-map', 'game-level', 'quiz-review'];
-    
-    for (const moduleName of modulesToPreload) {
-        try {
-            await Promise.all([
-                fetch(`./modules/${moduleName}/${moduleName}.html`).then(res => res.text()),
-                fetch(`./modules/${moduleName}/${moduleName}.css`).then(res => res.text()),
-                import(`./modules/${moduleName}/${moduleName}.js`)
-            ]);
-        } catch (e) {
-            // Ignore errors in background preload
-        }
-    }
-    console.log('All critical modules preloaded.');
-}
-
 async function main() {
     try {
-        // PWA Install Capture
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             window.deferredInstallPrompt = e;
-            window.dispatchEvent(new CustomEvent('app-installable'));
         });
 
         configService.init();
-        applyAppSettings(configService.getConfig());
         soundService.init(configService);
         learningPathService.init();
         historyService.init();
         gamificationService.init();
         stateService.initState();
+        voiceCommandService.init(); // Init Voice Command Service
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -249,68 +174,32 @@ async function main() {
         }
 
         renderSidebar(document.getElementById('sidebar'));
+        handleHelperModal();
 
         window.addEventListener('hashchange', handleRouteChange);
-        window.addEventListener('settings-changed', (e) => applyAppSettings(e.detail));
-        window.addEventListener('achievement-unlocked', () => {
-            soundService.playSound('achievement');
-        });
-        window.addEventListener('level-up', (e) => {
-            showLevelUpModal(e.detail.level);
-        });
-
-        document.body.addEventListener('click', (event) => {
-            if (event.target.closest('.btn, .sidebar-link, .topic-button, .option-btn, .flashcard, .topic-card')) {
-                soundService.playSound('click');
-            }
-        });
+        window.addEventListener('settings-changed', (e) => themeService.applyTheme(e.detail.theme));
         
-        document.body.addEventListener('mouseover', (event) => {
-            const target = event.target;
-            if (target.closest('.btn:not(:disabled), .sidebar-link, .topic-card, .level-card:not(.locked), .chapter-card:not(.locked), .flashcard')) {
-                soundService.playSound('hover');
+        // Sound Triggers
+        document.body.addEventListener('click', (event) => {
+            if (event.target.closest('.btn, .sidebar-link, .topic-card')) {
+                soundService.playSound('click');
             }
         });
 
         const offlineIndicator = document.getElementById('offline-indicator');
-        function updateOnlineStatus() {
-            if (offlineIndicator) {
-                if (navigator.onLine) {
-                    offlineIndicator.style.display = 'none';
-                } else {
-                    offlineIndicator.style.display = 'block';
-                }
-            }
-        }
-        window.addEventListener('online', updateOnlineStatus);
-        window.addEventListener('offline', updateOnlineStatus);
-        updateOnlineStatus();
+        window.addEventListener('online', () => offlineIndicator.style.display = 'none');
+        window.addEventListener('offline', () => offlineIndicator.style.display = 'block');
 
         handleRouteChange();
 
         const splashScreen = document.getElementById('splash-screen');
         if (splashScreen) {
-            const onTransitionEnd = () => {
-                splashScreen.remove();
-                const hasBeenWelcomed = localStorage.getItem(LOCAL_STORAGE_KEYS.WELCOME_COMPLETED);
-                if (!hasBeenWelcomed) {
-                    showWelcomeScreen();
-                }
-                // Start aggressive preload after splash is gone
-                setTimeout(preloadCriticalModules, 500);
-            };
-            splashScreen.addEventListener('transitionend', onTransitionEnd, { once: true });
+            splashScreen.addEventListener('transitionend', () => splashScreen.remove());
             splashScreen.classList.add('hidden');
-            
-            setTimeout(() => {
-                if (document.body.contains(splashScreen)) {
-                     onTransitionEnd();
-                }
-            }, 600);
+            setTimeout(() => splashScreen.remove(), 600);
         }
 
     } catch (error) {
-        console.error("A critical error occurred during application startup:", error);
         showFatalError(error);
     }
 }

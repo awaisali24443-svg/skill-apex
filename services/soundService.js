@@ -26,12 +26,7 @@ export function init(configService) {
 }
 
 /**
- * Plays a synthesized tone.
- * @param {number} freq - Frequency in Hz.
- * @param {string} type - Oscillator type (sine, square, sawtooth, triangle).
- * @param {number} duration - Duration in seconds.
- * @param {number} startTime - Delay before starting.
- * @param {number} volume - Volume level (0-1).
+ * Plays a synthesized tone with an envelope.
  */
 function playTone(freq, type, duration, startTime = 0, volume = 0.1) {
     const ctx = getContext();
@@ -42,41 +37,89 @@ function playTone(freq, type, duration, startTime = 0, volume = 0.1) {
     osc.type = type;
     osc.frequency.setValueAtTime(freq, now);
 
-    // Envelope to prevent clicking and provide shape
     gain.gain.cancelScheduledValues(now);
     gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(volume, now + 0.02); // Quick Attack
-    gain.gain.exponentialRampToValueAtTime(0.01, now + duration); // Decay to near silence
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start(now);
-    osc.stop(now + duration + 0.1); // Stop slightly after decay to ensure silence
-}
-
-/**
- * Plays a frequency sweep (slide).
- */
-function playSweep(startFreq, endFreq, duration, type = 'sine', volume = 0.1) {
-    const ctx = getContext();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    const now = ctx.currentTime;
-
-    osc.type = type;
-    osc.frequency.setValueAtTime(startFreq, now);
-    osc.frequency.exponentialRampToValueAtTime(endFreq, now + duration);
-
-    gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(volume, now + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+    gain.gain.linearRampToValueAtTime(volume, now + 0.01); // Fast attack
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration); // Smooth decay
 
     osc.connect(gain);
     gain.connect(ctx.destination);
 
     osc.start(now);
     osc.stop(now + duration + 0.1);
+}
+
+/**
+ * Plays a specific "Success Chime" (Duolingo-style two-tone ding).
+ */
+function playSuccessChime() {
+    const ctx = getContext();
+    const now = ctx.currentTime;
+    
+    // Tone 1: High C (C6)
+    playTone(1046.50, 'sine', 0.15, 0, 0.2); 
+    // Tone 2: High E (E6) - Harmonious Major 3rd, slightly delayed
+    playTone(1318.51, 'sine', 0.3, 0.08, 0.2);
+    
+    // Add a subtle "sparkle" overtone
+    playTone(2093.00, 'triangle', 0.1, 0.08, 0.05);
+}
+
+/**
+ * Plays a "Soft Thud" for errors (Duolingo-style non-aggressive error).
+ */
+function playErrorThud() {
+    const ctx = getContext();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    // Low frequency, dull sound
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(150, now);
+    osc.frequency.exponentialRampToValueAtTime(100, now + 0.3); // Pitch drop
+
+    gain.gain.setValueAtTime(0.2, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.35);
+}
+
+/**
+ * Plays a "Pop" sound for clicks.
+ */
+function playPop() {
+    const ctx = getContext();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(800, now);
+    osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+
+    gain.gain.setValueAtTime(0.1, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.15);
+}
+
+/**
+ * Plays a fanfare for completing a level.
+ */
+function playFanfare() {
+    const now = 0;
+    // Fast Major Arpeggio
+    playTone(523.25, 'square', 0.2, now, 0.1);       // C5
+    playTone(659.25, 'square', 0.2, now + 0.1, 0.1); // E5
+    playTone(783.99, 'square', 0.2, now + 0.2, 0.1); // G5
+    playTone(1046.50, 'square', 0.4, now + 0.3, 0.15); // C6
 }
 
 /**
@@ -89,11 +132,10 @@ export function playSound(soundName) {
         try {
             switch (soundName) {
                 case 'click': navigator.vibrate(5); break; 
-                case 'correct': navigator.vibrate([50, 30, 50]); break;
-                case 'incorrect': navigator.vibrate(150); break;
+                case 'correct': navigator.vibrate([50, 30, 50]); break; // Double bump
+                case 'incorrect': navigator.vibrate(100); break; // Single dull bump
                 case 'achievement': navigator.vibrate([50, 50, 50, 50, 100]); break;
-                case 'start': navigator.vibrate(20); break;
-                case 'finish': navigator.vibrate(50); break;
+                case 'finish': navigator.vibrate([50, 50, 100]); break;
             }
         } catch(e) {}
     }
@@ -112,50 +154,46 @@ export function playSound(soundName) {
 
     switch (soundName) {
         case 'click':
-            // High, short "tick" - Louder
-            playTone(800, 'sine', 0.08, 0, 0.4);
+            playPop();
             break;
 
         case 'hover':
-            // Very subtle "pop"
-            playTone(400, 'triangle', 0.03, 0, 0.1);
+            // Extremely subtle tick
+            playTone(1200, 'sine', 0.01, 0, 0.02);
             break;
 
         case 'correct':
-            // Major 3rd "Ding-Dong"
-            playTone(523.25, 'sine', 0.3, 0, 0.4); // C5
-            playTone(659.25, 'sine', 0.4, 0.1, 0.4); // E5
+            playSuccessChime();
             break;
 
         case 'incorrect':
-            // Low "Buzz" - Louder and raspier
-            playTone(150, 'sawtooth', 0.3, 0, 0.3);
-            playTone(145, 'sawtooth', 0.3, 0.05, 0.3); // Dissonance
+            playErrorThud();
             break;
 
         case 'start':
-            // "Power Up" Sweep
-            playSweep(200, 800, 0.3, 'sine', 0.3);
+            // 'Ready' swoosh
+            playTone(400, 'sine', 0.3, 0, 0.1);
+            playTone(600, 'sine', 0.3, 0.1, 0.1);
             break;
 
         case 'finish':
-            // Major Triad Arpeggio
-            playTone(523.25, 'sine', 0.4, 0, 0.3);   // C5
-            playTone(659.25, 'sine', 0.4, 0.1, 0.3); // E5
-            playTone(783.99, 'sine', 0.6, 0.2, 0.3); // G5
-            break;
-
         case 'achievement':
-            // Fast energetic sequence
-            playTone(523.25, 'square', 0.1, 0, 0.15);
-            playTone(659.25, 'square', 0.1, 0.08, 0.15);
-            playTone(783.99, 'square', 0.1, 0.16, 0.15);
-            playTone(1046.50, 'square', 0.4, 0.24, 0.15); // C6
+            playFanfare();
             break;
 
         case 'flip':
-            // Quick low sweep "Swish"
-            playSweep(300, 100, 0.15, 'triangle', 0.2);
+            // Paper-like swish
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            const now = ctx.currentTime;
+            osc.frequency.setValueAtTime(300, now);
+            osc.frequency.linearRampToValueAtTime(600, now + 0.1);
+            gain.gain.setValueAtTime(0.05, now);
+            gain.gain.linearRampToValueAtTime(0, now + 0.1);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.15);
             break;
     }
 }

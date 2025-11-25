@@ -1,9 +1,9 @@
+
 <div class="page-container history-container">
     <header class="page-header history-header">
         <h1>Mission Log</h1>
-        <p>A timeline of your learning conquests.</p>
-        <div class="history-actions">
-            <button id="clear-history-btn" class="btn" disabled>
+        <div class="header-actions">
+            <button id="clear-history-btn" class="btn btn-secondary btn-sm" disabled>
                  <svg class="icon"><use href="/assets/icons/feather-sprite.svg#trash-2"/></svg>
                  <span>Clear Log</span>
             </button>
@@ -43,14 +43,14 @@
     <div class="history-entry">
         <div class="history-marker"></div>
         <div class="card history-card">
+            <div class="history-header-row">
+                <span class="history-date"></span>
+                <span class="history-badge"></span>
+            </div>
             <div class="history-main">
-                <div class="history-info">
-                    <span class="history-date"></span>
-                    <h3 class="history-topic"></h3>
-                    <span class="history-meta"></span>
-                </div>
-                <div class="history-score-badge">
-                    <!-- Quiz Score or Aural Icon will be injected here -->
+                <h3 class="history-topic"></h3>
+                <div class="history-stats">
+                    <!-- Injected -->
                 </div>
             </div>
             <div class="history-footer">

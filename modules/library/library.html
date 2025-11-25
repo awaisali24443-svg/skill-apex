@@ -1,16 +1,19 @@
+
 <div class="page-container library-container">
     <header class="page-header library-header">
-        <h1>Study Library</h1>
-        <p>Your collection of saved knowledge shards. Review and master them.</p>
+        <div class="header-content">
+            <h1>Data Vault</h1>
+            <p>Your collection of saved knowledge shards.</p>
+        </div>
         <div class="library-actions">
             <button id="study-btn" class="btn btn-primary" disabled>
                 <svg class="icon"><use href="/assets/icons/feather-sprite.svg#book-open"/></svg>
-                <span>Start Study Session</span>
+                <span>Study Session</span>
             </button>
         </div>
     </header>
 
-    <div id="library-grid">
+    <div id="library-grid" class="library-grid">
         <!-- Saved questions will be rendered here -->
     </div>
     
@@ -18,17 +21,17 @@
         <div class="empty-state-icon">
              <svg><use href="/assets/icons/feather-sprite.svg#layers"/></svg>
         </div>
-        <h2>Library Empty</h2>
-        <p>Save interesting questions after a quiz to build your personal knowledge base.</p>
-        <a href="/#/topics" class="btn">Explore Topics</a>
+        <h2>Vault Empty</h2>
+        <p>Save interesting questions after a quiz to review them here later.</p>
+        <a href="/#/topics" class="btn btn-secondary">Explore Topics</a>
     </div>
 </div>
 
 <template id="library-item-template">
     <div class="card library-item">
-        <div class="library-card-header">
-            <div class="question-badge">Q</div>
-            <button class="btn-icon remove-btn" title="Remove from Library">
+        <div class="library-card-top">
+            <span class="shard-id">#DATA-SHARD</span>
+            <button class="btn-icon remove-btn" title="Delete">
                 <svg class="icon"><use href="/assets/icons/feather-sprite.svg#trash-2"/></svg>
             </button>
         </div>
@@ -36,7 +39,10 @@
             <p class="library-question-text"></p>
         </div>
         <div class="library-card-footer">
-            <span class="library-date">Saved recently</span>
+            <div class="srs-status">
+                <span class="status-dot"></span>
+                <span class="status-text">Review Pending</span>
+            </div>
         </div>
     </div>
 </template>

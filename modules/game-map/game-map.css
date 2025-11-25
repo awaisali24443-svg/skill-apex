@@ -4,213 +4,179 @@
     flex-direction: column;
     height: 100%;
     position: relative;
-}
-
-.journey-loading-state {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
-    background-color: var(--color-background);
-}
-.journey-loading-state .spinner {
-    margin-bottom: var(--space-lg);
-}
-.journey-loading-state p {
-    color: var(--color-text-secondary);
-    font-family: var(--font-family-mono);
-}
-
-.journey-content {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-
-.page-header {
-    flex-shrink: 0;
-}
-
-#game-map-topic-title {
-    margin-bottom: var(--space-md);
-}
-
-.progress-container {
-    max-width: 400px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-}
-
-.progress-bar {
-    flex-grow: 1;
-    height: 8px;
-    background-color: var(--color-surface-hover);
-    border-radius: 4px;
     overflow: hidden;
 }
 
-#progress-bar-fill {
-    width: 0%;
+.journey-loading-state, .journey-content {
     height: 100%;
-    background: var(--brand-gradient, linear-gradient(45deg, var(--color-primary), var(--color-secondary)));
-    border-radius: 4px;
-    transition: width var(--transition-speed-med) ease-out;
-    will-change: width; /* Optimization */
+    display: flex;
+    flex-direction: column;
 }
 
-#progress-percent-text {
-    font-family: var(--font-family-mono);
-    font-size: var(--fs-sm);
-    color: var(--color-text-secondary);
+.journey-loading-state {
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- Header --- */
+.map-header {
+    flex-shrink: 0;
+    padding-bottom: var(--space-lg);
+    background: linear-gradient(to bottom, rgba(12, 14, 26, 0.95) 0%, rgba(12, 14, 26, 0.8) 100%);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.header-top {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+}
+
+#game-map-topic-title {
+    font-size: 1.25rem;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .chapter-navigator {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: var(--space-xl);
+    margin-bottom: var(--space-md);
+}
+
+.chapter-info { text-align: center; }
+.chapter-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--color-text-secondary); }
+#current-chapter-display { font-size: 1.8rem; margin: 0; line-height: 1; color: var(--color-primary); }
+
+.progress-container {
+    display: flex;
+    align-items: center;
     gap: var(--space-md);
-    margin-top: var(--space-lg);
 }
-#current-chapter-display {
-    margin: 0;
-    color: var(--color-text);
-    min-width: 180px; /* To prevent layout shift */
-    text-align: center;
-    font-size: var(--fs-h3);
+.progress-bar {
+    flex-grow: 1;
+    height: 6px;
+    background: var(--color-surface);
+    border-radius: 3px;
+    overflow: hidden;
 }
-.chapter-navigator .btn {
-    padding: 0.6rem; /* Make buttons smaller */
+#progress-bar-fill {
+    height: 100%;
+    background: var(--brand-gradient);
+    transition: width 0.5s ease;
 }
-.chapter-navigator .btn .icon {
-    width: 1.2rem;
-    height: 1.2rem;
-}
+#progress-percent-text { font-family: var(--font-family-mono); font-size: 0.8rem; color: var(--color-text-secondary); }
 
 
+/* --- Map Grid (Constellation) --- */
 .map-grid {
     flex-grow: 1;
     overflow-y: auto;
-    padding: var(--space-lg);
-    margin: 0 calc(-1 * var(--page-padding));
-    display: grid;
-    gap: var(--space-lg);
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-}
-
-/* Skeleton Styles specific to map grid */
-.map-grid .skeleton {
-    background-color: var(--color-surface);
-    opacity: 0.5;
-}
-
-.level-card {
+    padding: var(--space-xl);
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-xxl);
+    align-content: flex-start;
+    position: relative;
+}
+
+.level-node {
+    position: relative;
+    width: 70px;
+    height: 70px;
+    display: flex;
     align-items: center;
     justify-content: center;
-    aspect-ratio: 1 / 1;
-    text-align: center;
     cursor: pointer;
-    transition: all var(--transition-speed-fast) ease;
-    animation: node-appear 0.5s ease-out forwards;
+    z-index: 2;
+    animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     opacity: 0;
-    padding: var(--space-sm);
-    will-change: transform, opacity; /* Optimization */
 }
 
-@keyframes node-appear {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+.node-visual {
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    z-index: 2;
 }
 
 .level-number {
-    font-size: 2rem;
+    font-family: var(--font-family-mono);
     font-weight: 700;
-    font-family: var(--font-family-heading);
-    color: var(--color-text);
-    line-height: 1.1;
-}
-
-.level-status {
-    font-size: 0.8rem;
-    color: var(--color-text-secondary);
-    margin: 0;
-}
-
-/* --- Node States --- */
-.level-card.locked {
-    cursor: not-allowed;
-    background-color: var(--color-surface);
-    opacity: 0.5;
-}
-
-.level-card.locked:hover {
-    transform: none;
-    box-shadow: none;
-    border-color: var(--color-border);
-}
-
-.level-card.completed .level-status {
+    font-size: 1rem;
     color: var(--color-text-secondary);
 }
-.level-card.completed:hover {
-    border-color: var(--color-primary);
+
+/* States */
+.level-node.locked { opacity: 0.5; pointer-events: none; }
+
+.level-node.completed .node-visual {
+    background: var(--color-surface-active);
+    border-color: var(--color-success);
+    color: var(--color-success);
+}
+.level-node.completed .level-number { color: var(--color-success); }
+
+.level-node.current .node-visual {
+    width: 70px; height: 70px; /* Bigger */
+    background: var(--brand-gradient);
+    border-color: transparent;
+    box-shadow: 0 0 30px var(--color-primary-transparent-heavy);
+    animation: pulse-node 2s infinite;
+}
+.level-node.current .level-number { color: #000; font-size: 1.2rem; }
+
+.level-node.boss .node-visual {
+    border-color: var(--color-error);
+    border-width: 3px;
+}
+.level-node.boss.current .node-visual {
+    background: var(--color-error);
+    box-shadow: 0 0 30px var(--color-error-bg);
 }
 
-.level-card.current {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 15px var(--color-primary-transparent-heavy);
+/* Connector Lines (Pseudo) */
+.level-node::after {
+    content: ''; position: absolute;
+    right: -40px; top: 50%; width: 40px; height: 2px;
+    background: var(--color-border);
+    z-index: 1;
 }
-.level-card.current .level-status {
-    color: var(--color-primary);
-    font-weight: 600;
-}
-.level-card.current:hover {
-    transform: translateY(-4px) scale(1.03);
-    box-shadow: 0 0 25px var(--color-primary-transparent-heavy);
-}
+.level-node:nth-child(5n)::after { display: none; } /* Break lines for rows */
 
-/* --- Boss Battle Card Styles --- */
-.level-card.boss {
-    --glow-color: var(--color-error);
-    border-color: var(--glow-color);
-}
-.level-card.current.boss {
-    box-shadow: 0 0 15px var(--glow-color);
-    animation: node-appear 0.5s ease-out forwards, boss-pulse 2s infinite;
-}
-
-@keyframes boss-pulse {
-    0% { box-shadow: 0 0 15px var(--glow-color); }
-    50% { box-shadow: 0 0 25px var(--glow-color); transform: scale(1.02); }
-    100% { box-shadow: 0 0 15px var(--glow-color); }
-}
-
-.level-card.boss .level-number {
-    font-size: 2.5rem;
-    color: var(--glow-color);
-}
-.level-card.boss .level-number .icon {
-    width: 1.5em;
-    height: 1.5em;
-}
-
-.level-card.boss .level-status {
-    color: var(--glow-color);
-}
-
+/* --- Sticky Footer --- */
 .game-map-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     flex-shrink: 0;
-    padding-top: var(--space-lg);
-    margin-top: var(--space-lg);
+    padding: var(--space-md) var(--space-lg);
+    background: rgba(15, 15, 20, 0.9);
+    backdrop-filter: blur(10px);
     border-top: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-lg);
+}
+
+.footer-info {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+}
+
+@keyframes pulse-node {
+    0% { box-shadow: 0 0 0 0 var(--color-primary-transparent); }
+    70% { box-shadow: 0 0 0 15px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
 }

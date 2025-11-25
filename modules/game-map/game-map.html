@@ -1,78 +1,80 @@
 
 <div class="page-container game-map-container">
     
-    <!-- Loading State with Spinner (Initial) -->
+    <!-- Loading State -->
     <div id="journey-loading-state" class="journey-loading-state">
         <div class="spinner"></div>
-        <p>The AI is analyzing the topic and designing a custom learning path...</p>
+        <p>Calibrating Neural Path...</p>
     </div>
 
-    <!-- Skeleton State (Transition) -->
+    <!-- Skeleton State -->
     <div id="journey-skeleton-state" class="journey-content" style="display: none;">
         <header class="page-header">
             <div class="skeleton" style="width: 50%; height: 40px; margin-bottom: 20px;"></div>
             <div class="progress-container">
                 <div class="skeleton" style="width: 100%; height: 8px; border-radius: 4px;"></div>
             </div>
-            <div class="chapter-navigator" style="margin-top: 30px; justify-content: center;">
-                <div class="skeleton" style="width: 40px; height: 40px; border-radius: 50%;"></div>
-                <div class="skeleton" style="width: 150px; height: 30px; margin: 0 20px;"></div>
-                <div class="skeleton" style="width: 40px; height: 40px; border-radius: 50%;"></div>
-            </div>
         </header>
         <main class="map-grid">
-            <!-- Generate 12 skeleton nodes -->
-            <div class="skeleton" style="aspect-ratio: 1; border-radius: 50%;"></div>
-            <div class="skeleton" style="aspect-ratio: 1; border-radius: 50%;"></div>
-            <div class="skeleton" style="aspect-ratio: 1; border-radius: 50%;"></div>
-            <div class="skeleton" style="aspect-ratio: 1; border-radius: 50%;"></div>
-            <div class="skeleton" style="aspect-ratio: 1; border-radius: 50%;"></div>
-            <div class="skeleton" style="aspect-ratio: 1; border-radius: 50%;"></div>
-            <div class="skeleton" style="aspect-ratio: 1; border-radius: 50%;"></div>
-            <div class="skeleton" style="aspect-ratio: 1; border-radius: 50%;"></div>
+            <div class="skeleton" style="width: 80px; height: 80px; border-radius: 50%;"></div>
+            <div class="skeleton" style="width: 80px; height: 80px; border-radius: 50%;"></div>
+            <div class="skeleton" style="width: 80px; height: 80px; border-radius: 50%;"></div>
+            <div class="skeleton" style="width: 80px; height: 80px; border-radius: 50%;"></div>
         </main>
     </div>
 
-    <!-- Loaded Content -->
+    <!-- Content -->
     <div id="journey-content" class="journey-content" style="display: none;">
-        <header class="page-header">
-            <h1 id="game-map-topic-title"></h1> <!-- For the main topic title -->
+        <header class="map-header">
+            <div class="header-top">
+                <button id="back-btn" class="btn-icon-small" aria-label="Back">
+                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#arrow-left"/></svg>
+                </button>
+                <h1 id="game-map-topic-title">Topic Name</h1>
+            </div>
+            
+            <div class="chapter-navigator">
+                <button id="prev-chapter-btn" class="btn-icon" aria-label="Previous Chapter">
+                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#arrow-left"/></svg>
+                </button>
+                <div class="chapter-info">
+                    <span class="chapter-label">Sector</span>
+                    <h2 id="current-chapter-display">01</h2>
+                </div>
+                <button id="next-chapter-btn" class="btn-icon" aria-label="Next Chapter">
+                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#arrow-right"/></svg>
+                </button>
+            </div>
+
             <div class="progress-container">
                 <div class="progress-bar">
                     <div id="progress-bar-fill"></div>
                 </div>
                 <span id="progress-percent-text">0%</span>
             </div>
-            <div class="chapter-navigator">
-                <button id="prev-chapter-btn" class="btn" aria-label="Previous Chapter">
-                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#arrow-left"/></svg>
-                </button>
-                <h2 id="current-chapter-display">Chapter 1</h2>
-                <button id="next-chapter-btn" class="btn" aria-label="Next Chapter">
-                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#arrow-right"/></svg>
-                </button>
-            </div>
         </header>
+
         <main id="map-grid" class="map-grid" aria-label="Game Progression Map">
-            <!-- Level cards will be rendered here -->
+            <!-- Nodes injected here -->
         </main>
+
         <footer class="game-map-footer">
-            <button id="back-btn" class="btn">
-                <svg class="icon"><use href="/assets/icons/feather-sprite.svg#arrow-left"/></svg>
-                <span id="back-btn-text">Back to Journeys</span>
-            </button>
-            <button id="primary-action-btn" class="btn btn-primary">
+            <div class="footer-info">
+                <span id="primary-action-btn-text">Level 1 Ready</span>
+            </div>
+            <button id="primary-action-btn" class="btn btn-primary btn-cta">
                 <svg class="icon"><use href="/assets/icons/feather-sprite.svg#play"/></svg>
-                <span id="primary-action-btn-text">Start</span>
+                <span>Engage</span>
             </button>
         </footer>
     </div>
 </div>
 
-<!-- Template for level nodes -->
 <template id="level-node-template">
-    <div class="level-card card" tabindex="0" role="button">
-        <span class="level-number"></span>
-        <p class="level-status"></p>
+    <div class="level-node" tabindex="0" role="button">
+        <div class="node-visual">
+            <span class="level-number"></span>
+        </div>
+        <div class="node-connector"></div>
     </div>
 </template>
