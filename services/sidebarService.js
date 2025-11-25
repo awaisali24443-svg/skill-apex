@@ -50,12 +50,6 @@ export function renderSidebar(container) {
         </ul>
         <div style="flex-grow: 1;"></div> <!-- Spacer -->
         <ul class="sidebar-links">
-             <button id="sidebar-voice-toggle" class="sidebar-link" aria-label="Toggle Voice Control">
-                <svg class="icon icon-color-6" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <use href="assets/icons/feather-sprite.svg#mic"/>
-                </svg>
-                <span class="text">Voice Control</span>
-             </button>
              ${footerLinks.map((link, i) => createNavLink(link, i + filteredMainLinks.length)).join('')}
         </ul>
     `;

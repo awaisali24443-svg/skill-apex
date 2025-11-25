@@ -255,8 +255,8 @@ async function main() {
         const sidebarEl = document.getElementById('sidebar');
         renderSidebar(sidebarEl);
         
-        // Attach voice toggle listener
-        const voiceToggleBtn = document.getElementById('sidebar-voice-toggle');
+        // Attach voice toggle listener to the new Floating Action Button
+        const voiceToggleBtn = document.getElementById('voice-mic-btn');
         if (voiceToggleBtn) {
             voiceToggleBtn.addEventListener('click', () => {
                 toggleListening();
