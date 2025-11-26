@@ -1,3 +1,4 @@
+
 import * as historyService from '../../services/historyService.js';
 import { showConfirmationModal } from '../../services/modalService.js';
 import * as stateService from '../../services/stateService.js';
@@ -12,6 +13,8 @@ let transcriptBody;
 let closeTranscriptBtn;
 
 function renderHistory() {
+    if (!container) return; // Safety check if module destroyed
+
     const history = historyService.getHistory();
     container.innerHTML = '';
     
@@ -161,10 +164,14 @@ export function init() {
         if (e.target === transcriptModal) transcriptModal.style.display = 'none';
     });
     
+    // Listen for cloud updates
+    window.addEventListener('history-updated', renderHistory);
+    
     renderHistory();
 }
 
 export function destroy() {
+    window.removeEventListener('history-updated', renderHistory);
     if (clearBtn) clearBtn.removeEventListener('click', handleClearHistory);
     if (container && gridClickHandler) container.removeEventListener('click', gridClickHandler);
 }

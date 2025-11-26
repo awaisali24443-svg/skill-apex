@@ -9,7 +9,9 @@ import * as historyService from './services/historyService.js';
 import * as themeService from './services/themeService.js';
 import * as gamificationService from './services/gamificationService.js';
 import * as stateService from './services/stateService.js';
+import * as firebaseService from './services/firebaseService.js';
 import { init as initVoice, toggleListening } from './services/voiceCommandService.js';
+import * as authModule from './modules/auth/auth.js';
 
 const moduleCache = new Map();
 let currentModule = null;
@@ -224,6 +226,80 @@ async function preloadCriticalModules() {
     console.log('All critical modules preloaded.');
 }
 
+// --- AUTH STATE HANDLER ---
+function initializeAppContent(user) {
+    const splashScreen = document.getElementById('splash-screen');
+    
+    // 1. Initialize Services (Load Data from Firebase for THIS user)
+    learningPathService.init();
+    historyService.init();
+    gamificationService.init();
+    stateService.initState();
+    initVoice();
+
+    // 2. Render App Shell
+    const sidebarEl = document.getElementById('sidebar');
+    renderSidebar(sidebarEl);
+    
+    const voiceToggleBtn = document.getElementById('voice-mic-btn');
+    if (voiceToggleBtn) {
+        voiceToggleBtn.addEventListener('click', () => {
+            toggleListening();
+            voiceToggleBtn.classList.toggle('active');
+        });
+    }
+
+    // 3. Setup Listeners
+    window.addEventListener('hashchange', handleRouteChange);
+    window.addEventListener('settings-changed', (e) => applyAppSettings(e.detail));
+    window.addEventListener('achievement-unlocked', () => soundService.playSound('achievement'));
+    window.addEventListener('level-up', (e) => showLevelUpModal(e.detail.level));
+
+    document.body.addEventListener('click', (event) => {
+        if (event.target.closest('.btn, .sidebar-link, .topic-button, .option-btn, .flashcard, .topic-card')) {
+            soundService.playSound('click');
+        }
+    });
+    
+    document.body.addEventListener('mouseover', (event) => {
+        const target = event.target;
+        if (target.closest('.btn:not(:disabled), .sidebar-link, .topic-card, .level-card:not(.locked), .chapter-card:not(.locked), .flashcard')) {
+            soundService.playSound('hover');
+        }
+    });
+
+    // 4. Start Router
+    handleRouteChange();
+
+    // 5. Hide Splash / Auth Overlay
+    authModule.destroy(); // Remove auth UI if it exists
+    document.getElementById('app-wrapper').style.display = 'flex'; // Show App
+    document.getElementById('auth-container').style.display = 'none';
+
+    if (splashScreen && !splashScreen.classList.contains('hidden')) {
+        const onTransitionEnd = () => {
+            splashScreen.remove();
+            const hasBeenWelcomed = localStorage.getItem(LOCAL_STORAGE_KEYS.WELCOME_COMPLETED);
+            if (!hasBeenWelcomed) {
+                showWelcomeScreen();
+            }
+            setTimeout(preloadCriticalModules, 500);
+        };
+        splashScreen.addEventListener('transitionend', onTransitionEnd, { once: true });
+        splashScreen.classList.add('hidden');
+        setTimeout(() => { if (document.body.contains(splashScreen)) onTransitionEnd(); }, 600);
+    }
+}
+
+function showAuthScreen() {
+    const splashScreen = document.getElementById('splash-screen');
+    if (splashScreen) splashScreen.remove();
+    
+    document.getElementById('app-wrapper').style.display = 'none'; // Hide App
+    document.getElementById('auth-container').style.display = 'flex';
+    authModule.init(); // Render Auth UI
+}
+
 async function main() {
     try {
         // Client-side heartbeat
@@ -231,20 +307,9 @@ async function main() {
             fetch('/health').catch(() => {}); 
         }, 5 * 60 * 1000);
 
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            window.deferredInstallPrompt = e;
-            window.dispatchEvent(new CustomEvent('app-installable'));
-        });
-
         configService.init();
         applyAppSettings(configService.getConfig());
         soundService.init(configService);
-        learningPathService.init();
-        historyService.init();
-        gamificationService.init();
-        stateService.initState();
-        initVoice(); // Initialize Voice Command
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -252,75 +317,17 @@ async function main() {
             });
         }
 
-        const sidebarEl = document.getElementById('sidebar');
-        renderSidebar(sidebarEl);
-        
-        // Attach voice toggle listener to the new Floating Action Button
-        const voiceToggleBtn = document.getElementById('voice-mic-btn');
-        if (voiceToggleBtn) {
-            voiceToggleBtn.addEventListener('click', () => {
-                toggleListening();
-                voiceToggleBtn.classList.toggle('active');
-            });
-        }
-
-        window.addEventListener('hashchange', handleRouteChange);
-        window.addEventListener('settings-changed', (e) => applyAppSettings(e.detail));
-        window.addEventListener('achievement-unlocked', () => {
-            soundService.playSound('achievement');
-        });
-        window.addEventListener('level-up', (e) => {
-            showLevelUpModal(e.detail.level);
-        });
-
-        document.body.addEventListener('click', (event) => {
-            if (event.target.closest('.btn, .sidebar-link, .topic-button, .option-btn, .flashcard, .topic-card')) {
-                soundService.playSound('click');
+        // --- WAIT FOR AUTH ---
+        // The app flow splits here. We do NOT load data until we know WHO the user is.
+        firebaseService.onAuthChange((user) => {
+            if (user) {
+                console.log('User authenticated:', user.email);
+                initializeAppContent(user);
+            } else {
+                console.log('No user. Showing Auth screen.');
+                showAuthScreen();
             }
         });
-        
-        document.body.addEventListener('mouseover', (event) => {
-            const target = event.target;
-            if (target.closest('.btn:not(:disabled), .sidebar-link, .topic-card, .level-card:not(.locked), .chapter-card:not(.locked), .flashcard')) {
-                soundService.playSound('hover');
-            }
-        });
-
-        const offlineIndicator = document.getElementById('offline-indicator');
-        function updateOnlineStatus() {
-            if (offlineIndicator) {
-                if (navigator.onLine) {
-                    offlineIndicator.style.display = 'none';
-                } else {
-                    offlineIndicator.style.display = 'block';
-                }
-            }
-        }
-        window.addEventListener('online', updateOnlineStatus);
-        window.addEventListener('offline', updateOnlineStatus);
-        updateOnlineStatus();
-
-        handleRouteChange();
-
-        const splashScreen = document.getElementById('splash-screen');
-        if (splashScreen) {
-            const onTransitionEnd = () => {
-                splashScreen.remove();
-                const hasBeenWelcomed = localStorage.getItem(LOCAL_STORAGE_KEYS.WELCOME_COMPLETED);
-                if (!hasBeenWelcomed) {
-                    showWelcomeScreen();
-                }
-                setTimeout(preloadCriticalModules, 500);
-            };
-            splashScreen.addEventListener('transitionend', onTransitionEnd, { once: true });
-            splashScreen.classList.add('hidden');
-            
-            setTimeout(() => {
-                if (document.body.contains(splashScreen)) {
-                     onTransitionEnd();
-                }
-            }, 600);
-        }
 
     } catch (error) {
         console.error("A critical error occurred during application startup:", error);

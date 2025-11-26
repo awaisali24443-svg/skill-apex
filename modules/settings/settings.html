@@ -5,6 +5,50 @@
         <p>Customize your application experience.</p>
     </header>
 
+    <!-- Upgrade Section (Visible only to Guests) -->
+    <section id="upgrade-account-section" class="settings-group card" style="display: none; border-color: var(--color-accent);">
+        <div class="setting-item">
+            <div class="setting-info">
+                <h3 style="color: var(--color-accent);">Save Your Progress</h3>
+                <p>You are currently a Guest. Link an account to save your data permanently and access it on other devices.</p>
+            </div>
+            <div class="setting-control actions-stack">
+                <button id="link-google-btn" class="btn btn-google">
+                    <svg class="google-icon" viewBox="0 0 24 24" style="width: 18px; height: 18px;">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Link Google
+                </button>
+                <button id="link-email-btn" class="btn">
+                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#mail"/></svg> Link Email
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Account Section -->
+    <section class="settings-group card" style="border-color: var(--color-secondary);">
+        <h2 style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--color-secondary);">Account</h2>
+        <div class="setting-item">
+            <div class="setting-info">
+                <label>Logged in as</label>
+                <p id="account-email-display" style="font-family: var(--font-family-mono);">Loading...</p>
+                <p id="guest-warning" style="display: none; color: var(--color-accent); font-size: 0.8rem; margin-top: 4px;">
+                    <svg class="icon" style="width: 12px; height: 12px;"><use href="/assets/icons/feather-sprite.svg#shield"/></svg>
+                    Guest Mode: Data is saved to this device only.
+                </p>
+            </div>
+            <div class="setting-control">
+                <button id="logout-btn" class="btn">
+                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#arrow-left"/></svg> <span id="logout-btn-text">Logout</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
     <section id="install-app-section" class="settings-group card" style="display: none; border-color: var(--color-primary);">
         <div class="setting-item">
             <div class="setting-info">
@@ -89,17 +133,36 @@
         <h2 id="danger-zone-heading" class="sr-only">Danger Zone</h2>
         <div class="setting-item">
             <div class="setting-info">
-                <h3>Clear All Data</h3>
-                <p>Permanently delete your saved library, learning paths, quiz history, and application settings. This action cannot be undone.</p>
+                <h3>Clear Local Cache</h3>
+                <p>Troubleshoot syncing issues by clearing local data. Cloud data will remain safe.</p>
             </div>
             <div class="setting-control">
                 <button id="clear-data-btn" class="btn btn-danger">
                     <svg class="icon" width="18" height="18" viewBox="0 0 24 24"><use href="/assets/icons/feather-sprite.svg#trash-2"/></svg>
-                    <span>Clear Data</span>
+                    <span>Clear Cache</span>
                 </button>
             </div>
         </div>
     </section>
 
-    <p class="app-version">Version 3.9.2</p>
+    <p class="app-version">Version 4.2.0 (Guest Mode Enabled)</p>
+</div>
+
+<!-- Link Email Modal -->
+<div id="link-email-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Link Email Account</h2>
+        </div>
+        <div class="modal-body">
+            <p style="margin-bottom: 1rem;">Create a login to save your current progress permanently.</p>
+            <input type="email" id="link-email-input" class="form-input" placeholder="Email" style="margin-bottom: 10px;">
+            <input type="password" id="link-pass-input" class="form-input" placeholder="Password (min 6 chars)">
+            <p id="link-error" style="color: var(--color-error); display: none; margin-top: 10px; font-size: 0.9rem; background: var(--color-error-bg); padding: 8px; border-radius: 4px;"></p>
+        </div>
+        <div class="modal-footer">
+            <button id="cancel-link-btn" class="btn">Cancel</button>
+            <button id="confirm-link-btn" class="btn btn-primary">Link Account</button>
+        </div>
+    </div>
 </div>

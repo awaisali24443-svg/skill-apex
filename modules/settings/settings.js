@@ -5,6 +5,7 @@ import { LOCAL_STORAGE_KEYS } from '../../constants.js';
 import { showToast } from '../../services/toastService.js';
 import * as levelCacheService from '../../services/levelCacheService.js';
 import * as learningPathService from '../../services/learningPathService.js';
+import * as firebaseService from '../../services/firebaseService.js';
 
 let elements = {};
 const animationLevels = ['off', 'subtle', 'full'];
@@ -42,6 +43,23 @@ function loadSettings() {
     setActiveThemeButton(activeThemeButton, true); 
     
     elements.animationSlider.value = animationLevels.indexOf(config.animationIntensity);
+    
+    const isGuest = firebaseService.isGuest();
+
+    // Show Email or Guest
+    if (elements.emailDisplay) {
+        if (isGuest) {
+            elements.emailDisplay.textContent = "Guest (Offline Mode)";
+            if(elements.guestWarning) elements.guestWarning.style.display = 'block';
+            if(elements.logoutBtnText) elements.logoutBtnText.textContent = "Exit Guest Mode";
+            if(elements.upgradeSection) elements.upgradeSection.style.display = 'grid';
+        } else {
+            elements.emailDisplay.textContent = firebaseService.getUserEmail() || 'Anonymous';
+            if(elements.guestWarning) elements.guestWarning.style.display = 'none';
+            if(elements.logoutBtnText) elements.logoutBtnText.textContent = "Logout";
+            if(elements.upgradeSection) elements.upgradeSection.style.display = 'none';
+        }
+    }
 }
 
 function handleSoundToggle() {
@@ -88,7 +106,7 @@ function handleThemeToggleKeydown(event) {
 async function handleChangeInterest() {
     const confirmed = await showConfirmationModal({
         title: 'Change Learning Field?',
-        message: 'This will reset your "Explore Topics" recommendations to allow you to choose a new core field. Your existing journeys and history will NOT be deleted.',
+        message: 'This will reset your "Explore Topics" recommendations. Your existing journeys and history will NOT be deleted.',
         confirmText: 'Change Field',
         cancelText: 'Cancel'
     });
@@ -98,27 +116,50 @@ async function handleChangeInterest() {
         showToast('Interest reset. Redirecting to home...', 'success');
         setTimeout(() => {
             window.location.hash = '/';
-            window.location.reload(); // Reload to trigger the onboarding popup
+            window.location.reload();
         }, 1000);
     }
 }
 
 async function handleClearData() {
     const confirmed = await showConfirmationModal({
-        title: 'Confirm Data Deletion',
-        message: 'Are you sure you want to delete all your saved questions, learning paths, quiz history, and application settings? This action cannot be undone.',
-        confirmText: 'Yes, Delete Everything',
-        cancelText: 'Cancel'
+        title: 'Confirm Cache Clear',
+        message: 'This will clear data stored on this specific device. Your Cloud data is safe and will be re-synced upon reload. Use this if you are experiencing sync issues.',
+        confirmText: 'Clear Cache',
+        cancelText: 'Cancel',
+        danger: true
     });
 
     if (confirmed) {
         Object.values(LOCAL_STORAGE_KEYS).forEach(key => {
             localStorage.removeItem(key);
         });
-        learningPathService.clearUserInterest();
         levelCacheService.clearAllLevels();
-        showToast('All application data has been cleared.', 'success');
+        showToast('Local cache cleared.', 'success');
         setTimeout(() => window.location.reload(), 1000);
+    }
+}
+
+async function handleLogout() {
+    const isGuest = firebaseService.isGuest();
+    const title = isGuest ? "Exit Guest Mode?" : "Sign Out?";
+    const msg = isGuest 
+        ? "You will return to the login screen. Your guest progress will remain on this device until cache is cleared."
+        : "You will be returned to the login screen. Your data is safely stored in the cloud.";
+
+    const confirmed = await showConfirmationModal({
+        title: title,
+        message: msg,
+        confirmText: isGuest ? 'Exit' : 'Sign Out',
+        cancelText: 'Cancel'
+    });
+
+    if (confirmed) {
+        // Clear local data on logout to prevent data leakage to next user (Unless guest wanting to persist local)
+        if (!isGuest) {
+             Object.values(LOCAL_STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
+        }
+        await firebaseService.logout();
     }
 }
 
@@ -136,6 +177,71 @@ function handleInstallClick() {
     });
 }
 
+// --- Account Linking Handlers ---
+
+async function handleLinkGoogle() {
+    try {
+        await firebaseService.linkGoogle();
+        showToast("Account upgraded successfully!", "success");
+        loadSettings(); // Refresh UI
+    } catch (e) {
+        console.error(e);
+        let msg = "Failed to link Google account.";
+        if (e.code === 'auth/credential-already-in-use') {
+            msg = "This Google account is already linked to another user. Sign out to use it.";
+        }
+        showToast(msg, "error", 5000);
+    }
+}
+
+function openLinkEmailModal() {
+    elements.linkEmailModal.style.display = 'block';
+    elements.linkEmailInput.focus();
+}
+
+function closeLinkEmailModal() {
+    elements.linkEmailModal.style.display = 'none';
+    elements.linkError.style.display = 'none';
+    elements.linkEmailInput.value = '';
+    elements.linkPassInput.value = '';
+}
+
+async function handleConfirmLinkEmail() {
+    const email = elements.linkEmailInput.value.trim();
+    const password = elements.linkPassInput.value.trim();
+    
+    if (!email || password.length < 6) {
+        elements.linkError.textContent = "Invalid email or password (min 6 chars).";
+        elements.linkError.style.display = 'block';
+        return;
+    }
+    
+    const btn = elements.confirmLinkBtn;
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "Linking...";
+    
+    try {
+        await firebaseService.linkEmail(email, password);
+        showToast("Account upgraded successfully!", "success");
+        closeLinkEmailModal();
+        loadSettings();
+    } catch (e) {
+        console.error(e);
+        let msg = e.message;
+        if (e.code === 'auth/credential-already-in-use') {
+            msg = "This email is already registered. Sign out to log in.";
+        } else if (e.code === 'auth/invalid-email') {
+            msg = "Invalid email format.";
+        }
+        elements.linkError.textContent = msg;
+        elements.linkError.style.display = 'block';
+    } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+    }
+}
+
 export function init() {
     elements = {
         soundToggle: document.getElementById('sound-toggle'),
@@ -146,6 +252,21 @@ export function init() {
         themeToggleButtons: document.querySelectorAll('#theme-toggle-group button'),
         installSection: document.getElementById('install-app-section'),
         installBtn: document.getElementById('install-app-btn'),
+        emailDisplay: document.getElementById('account-email-display'),
+        logoutBtn: document.getElementById('logout-btn'),
+        logoutBtnText: document.getElementById('logout-btn-text'),
+        guestWarning: document.getElementById('guest-warning'),
+        
+        // Upgrade Elements
+        upgradeSection: document.getElementById('upgrade-account-section'),
+        linkGoogleBtn: document.getElementById('link-google-btn'),
+        linkEmailBtn: document.getElementById('link-email-btn'),
+        linkEmailModal: document.getElementById('link-email-modal'),
+        linkEmailInput: document.getElementById('link-email-input'),
+        linkPassInput: document.getElementById('link-pass-input'),
+        cancelLinkBtn: document.getElementById('cancel-link-btn'),
+        confirmLinkBtn: document.getElementById('confirm-link-btn'),
+        linkError: document.getElementById('link-error')
     };
 
     loadSettings();
@@ -156,11 +277,18 @@ export function init() {
     if (elements.changeInterestBtn) elements.changeInterestBtn.addEventListener('click', handleChangeInterest);
     elements.themeToggle.addEventListener('click', handleThemeToggle);
     elements.themeToggle.addEventListener('keydown', handleThemeToggleKeydown);
+    if (elements.logoutBtn) elements.logoutBtn.addEventListener('click', handleLogout);
 
     if (window.deferredInstallPrompt) {
         elements.installSection.style.display = 'block';
         elements.installBtn.addEventListener('click', handleInstallClick);
     }
+    
+    // Linking Listeners
+    if (elements.linkGoogleBtn) elements.linkGoogleBtn.addEventListener('click', handleLinkGoogle);
+    if (elements.linkEmailBtn) elements.linkEmailBtn.addEventListener('click', openLinkEmailModal);
+    if (elements.cancelLinkBtn) elements.cancelLinkBtn.addEventListener('click', closeLinkEmailModal);
+    if (elements.confirmLinkBtn) elements.confirmLinkBtn.addEventListener('click', handleConfirmLinkEmail);
 }
 
 export function destroy() {
@@ -173,5 +301,12 @@ export function destroy() {
         elements.themeToggle.removeEventListener('keydown', handleThemeToggleKeydown);
     }
     if (elements.installBtn) elements.installBtn.removeEventListener('click', handleInstallClick);
+    if (elements.logoutBtn) elements.logoutBtn.removeEventListener('click', handleLogout);
+    
+    if (elements.linkGoogleBtn) elements.linkGoogleBtn.removeEventListener('click', handleLinkGoogle);
+    if (elements.linkEmailBtn) elements.linkEmailBtn.removeEventListener('click', openLinkEmailModal);
+    if (elements.cancelLinkBtn) elements.cancelLinkBtn.removeEventListener('click', closeLinkEmailModal);
+    if (elements.confirmLinkBtn) elements.confirmLinkBtn.removeEventListener('click', handleConfirmLinkEmail);
+    
     elements = {};
 }

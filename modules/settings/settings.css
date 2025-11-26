@@ -1,3 +1,4 @@
+
 .settings-group {
     margin-bottom: var(--space-xl);
     padding: var(--space-sm) var(--space-xl);
@@ -30,6 +31,14 @@
 }
 
 .setting-control { justify-self: end; }
+
+/* Actions Stack for Upgrade Buttons */
+.actions-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+}
 
 /* Segmented Control for Theme Toggle */
 .segmented-control {
@@ -82,7 +91,9 @@
 @media (max-width: 600px) {
     .setting-item { grid-template-columns: 1fr; gap: var(--space-md); text-align: center; }
     .setting-info p { margin: 0 auto 1rem auto; }
-    .setting-control { justify-self: center; }
+    .setting-control { justify-self: center; width: 100%; }
+    .actions-stack { width: 100%; }
+    .actions-stack .btn { width: 100%; }
 }
 
 /* Toggle Switch CSS */
@@ -148,4 +159,21 @@ input[type=range]::-moz-range-thumb {
         margin-left: auto;
         margin-right: auto;
     }
+}
+
+/* Google Button (Settings context) */
+.btn-google {
+    background-color: white;
+    color: #3c4043;
+    border: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+.btn-google:hover {
+    background-color: #f1f3f4;
+    color: #3c4043;
 }

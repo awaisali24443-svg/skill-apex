@@ -115,12 +115,11 @@ function renderNeuralNexus() {
 
     // 4. Calculate Layout (Responsive)
     const containerRect = visualizerContainer.getBoundingClientRect();
-    // Dynamic radius based on smallest dimension to prevent clipping
     const minDim = Math.min(containerRect.width, containerRect.height);
-    const radius = Math.max(100, minDim * 0.35); // Minimum 100px, or 35% of container
+    const radius = Math.max(100, minDim * 0.35);
     
     journeys.forEach((journey, index) => {
-        const angle = (index / journeys.length) * 2 * Math.PI - (Math.PI / 2); // Start top
+        const angle = (index / journeys.length) * 2 * Math.PI - (Math.PI / 2);
         
         const x = Math.cos(angle) * radius;
         const y = Math.sin(angle) * radius;
@@ -132,28 +131,24 @@ function renderNeuralNexus() {
         const statusClass = stats.status.toLowerCase();
 
         node.className = `nexus-node ${statusClass}`;
-        node.style.transform = `translate(${x}px, ${y}px)`; // Centered by CSS flex, then offset
+        node.style.transform = `translate(${x}px, ${y}px)`;
         
-        // Inner visual div
         const visual = document.createElement('div');
         visual.className = 'node-visual';
         visual.textContent = topicName.charAt(0).toUpperCase();
         
         node.appendChild(visual);
 
-        // Tooltip
         const label = document.createElement('div');
         label.className = 'nexus-node-label';
         label.innerHTML = `<strong>${topicName}</strong><br>Lvl ${journey.currentLevel} • ${stats.status}`;
         node.appendChild(label);
 
-        // Click Handler
         node.addEventListener('click', () => {
             stateService.setNavigationContext({ topic: journey.goal });
             window.location.hash = `#/game/${encodeURIComponent(journey.goal)}`;
         });
 
-        // Hover Handler for Line Highlight
         node.addEventListener('mouseenter', () => {
             const line = document.getElementById(`line-${index}`);
             if (line) line.classList.add('active');
@@ -165,11 +160,8 @@ function renderNeuralNexus() {
 
         container.appendChild(node);
 
-        // 6. Create SVG Path (Bezier Curve)
-        // We use a fixed viewbox centered at 0,0 so logic matches CSS transform
         svgLayer.setAttribute("viewBox", "-300 -300 600 600");
         
-        // Control point for curve (slight arc)
         const cx = x * 0.5; 
         const cy = y * 0.5;
         
@@ -177,7 +169,6 @@ function renderNeuralNexus() {
         path.setAttribute("id", `line-${index}`);
         path.setAttribute("class", "connection-path");
         
-        // Ensure overflow handles large layouts
         svgLayer.style.overflow = 'visible';
         
         svgLayer.setAttribute("viewBox", `${-containerRect.width/2} ${-containerRect.height/2} ${containerRect.width} ${containerRect.height}`);
@@ -189,15 +180,16 @@ function renderNeuralNexus() {
     });
 }
 
-export function init() {
+function handleUpdate() {
     renderStats();
     renderQuests();
     renderAchievements();
+    renderNeuralNexus();
+}
+
+export function init() {
+    handleUpdate();
     
-    // Initial Render
-    setTimeout(renderNeuralNexus, 50);
-    
-    // Setup Observer for responsive layout
     const container = document.querySelector('.nexus-visualizer-container');
     if (container) {
         resizeObserver = new ResizeObserver(() => {
@@ -205,9 +197,12 @@ export function init() {
         });
         resizeObserver.observe(container);
     }
+
+    window.addEventListener('gamification-updated', handleUpdate);
 }
 
 export function destroy() {
+    window.removeEventListener('gamification-updated', handleUpdate);
     if (resizeObserver) {
         resizeObserver.disconnect();
         resizeObserver = null;

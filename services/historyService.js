@@ -2,64 +2,86 @@
 import { LOCAL_STORAGE_KEYS } from '../constants.js';
 import { showToast } from './toastService.js';
 import * as gamificationService from './gamificationService.js';
+import { db, doc, getDoc, setDoc, getUserId, isGuest } from './firebaseService.js';
 
 let history = [];
 
 /**
- * Loads the quiz history from localStorage.
+ * Loads the quiz history from localStorage and Syncs with Firebase.
  * @private
  */
-function loadHistory() {
+async function loadHistory() {
     try {
+        // 1. Fast load from local
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.HISTORY);
         history = stored ? JSON.parse(stored) : [];
+        
+        // 2. Background Sync with Firebase (Skip if Guest)
+        if (navigator.onLine && !isGuest()) {
+            const userId = getUserId();
+            if (userId) {
+                const docRef = doc(db, "users", userId, "data", "history");
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const remoteData = docSnap.data().items || [];
+                    if (JSON.stringify(remoteData) !== JSON.stringify(history)) {
+                        history = remoteData;
+                        saveHistoryLocal();
+                        window.dispatchEvent(new CustomEvent('history-updated'));
+                    }
+                }
+            }
+        }
     } catch (e) {
         console.error("Failed to load quiz history:", e);
-        history = [];
     }
 }
 
 /**
- * Saves the current quiz history to localStorage.
+ * Saves the current quiz history to localStorage and Firebase.
  * @private
  */
 function saveHistory() {
+    saveHistoryLocal();
+    saveHistoryRemote();
+}
+
+function saveHistoryLocal() {
     try {
         localStorage.setItem(LOCAL_STORAGE_KEYS.HISTORY, JSON.stringify(history));
     } catch (e) {
-        console.error("Failed to save quiz history:", e);
+        console.error("Failed to save history locally:", e);
     }
 }
 
-/**
- * Initializes the history service by loading data from localStorage.
- * Should be called once on application startup.
- */
+async function saveHistoryRemote() {
+    if (!navigator.onLine || isGuest()) return;
+    try {
+        const userId = getUserId();
+        if (userId) {
+            await setDoc(doc(db, "users", userId, "data", "history"), { 
+                items: history,
+                lastUpdated: new Date().toISOString() 
+            });
+        }
+    } catch (e) {
+        console.warn("Failed to save history to cloud:", e);
+    }
+}
+
 export function init() {
     loadHistory();
 }
 
-/**
- * Retrieves the entire history, sorted with the most recent attempts first.
- * @returns {Array<object>} A sorted array of history objects.
- */
 export function getHistory() {
     return [...history].sort((a, b) => new Date(b.date) - new Date(a.date));
 }
 
-/**
- * Retrieves the most recent history items.
- * @param {number} [count=3] - The number of items to retrieve.
- * @returns {Array<object>}
- */
 export function getRecentHistory(count = 3) {
     return getHistory().slice(0, count);
 }
 
-/**
- * Gets context about the user's last significant activity.
- * Useful for seeding AI conversations.
- */
 export function getLastContext() {
     const sorted = getHistory();
     const lastStruggle = sorted.find(h => h.type === 'quiz' && (h.score / h.totalQuestions) < 0.7);
@@ -76,10 +98,6 @@ export function getLastContext() {
     return "The user is starting a new session. Ask what they want to learn today.";
 }
 
-/**
- * Adds a completed quiz attempt to the history.
- * @param {object} quizState - The final state object of the completed quiz.
- */
 export function addQuizAttempt(quizState) {
     if (!quizState || !quizState.questions || quizState.questions.length === 0) {
         return;
@@ -107,10 +125,6 @@ export function addQuizAttempt(quizState) {
     gamificationService.updateStatsOnQuizCompletion(newAttempt, getHistory());
 }
 
-/**
- * Adds a completed Aural Tutor session to the history.
- * @param {object} sessionData - Data about the conversation.
- */
 export function addAuralSession(sessionData) {
     if (!sessionData || !sessionData.transcript || sessionData.transcript.length === 0) return;
 
@@ -127,15 +141,8 @@ export function addAuralSession(sessionData) {
     history.unshift(newSession);
     if (history.length > 50) history.pop();
     saveHistory();
-    
-    if (newSession.xpGained > 0) {
-        // Optionally trigger generic XP update if gamification service supports it directly
-    }
 }
 
-/**
- * Clears all entries from the history.
- */
 export function clearHistory() {
     history = [];
     saveHistory();

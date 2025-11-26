@@ -1,12 +1,13 @@
 
 /**
  * @file Service Worker for Knowledge Tester PWA
- * @version 4.0.5
+ * @version 4.1.0
  *
  * This service worker implements a robust offline-first caching strategy.
+ * Updated to include Auth module assets.
  */
 
-const CACHE_NAME = 'knowledge-tester-v4.0.5';
+const CACHE_NAME = 'knowledge-tester-v4.1.0';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [
@@ -51,7 +52,9 @@ const APP_SHELL_URLS = [
     'services/themeService.js',
     'services/toastService.js',
     'services/voiceCommandService.js',
+    'services/firebaseService.js',
     // App Modules
+    'modules/auth/auth.html', 'modules/auth/auth.css', 'modules/auth/auth.js',
     'modules/home/home.html', 'modules/home/home.css', 'modules/home/home.js',
     'modules/topic-list/topic-list.html', 'modules/topic-list/topic-list.css', 'modules/topic-list/topic-list.js',
     'modules/library/library.html', 'modules/library/library.css', 'modules/library/library.js',
@@ -112,7 +115,7 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    if (url.origin === 'https://cdn.jsdelivr.net' || url.origin === 'https://aistudiocdn.com') {
+    if (url.origin === 'https://cdn.jsdelivr.net' || url.origin === 'https://aistudiocdn.com' || url.origin === 'https://www.gstatic.com') {
         event.respondWith(staleWhileRevalidate(CACHE_NAME, request));
         return;
     }

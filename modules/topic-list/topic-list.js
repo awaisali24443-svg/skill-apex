@@ -1,5 +1,4 @@
 
-
 import * as apiService from '../../services/apiService.js';
 import * as stateService from '../../services/stateService.js';
 import * as modalService from '../../services/modalService.js';
@@ -15,9 +14,8 @@ let prefetchQueue = [];
 let isPrefetching = false;
 let prefetchTimeout = null;
 
-// --- UI Rendering & Event Listeners ---
-
 function renderTopics(topics) {
+    if (!topicGrid) return; // Safety check
     currentTopicsList = topics;
     skeletonGrid.style.display = 'none';
     topicGrid.style.display = 'grid';
@@ -34,7 +32,6 @@ function renderTopics(topics) {
         cardEl.dataset.topic = topic.name;
         if (topic.styleClass) cardEl.classList.add(topic.styleClass);
         
-        // Stagger animation for visual polish
         cardEl.style.animationDelay = `${index * 50}ms`;
         
         card.querySelector('.topic-name').textContent = topic.name;
@@ -43,50 +40,39 @@ function renderTopics(topics) {
         topicGrid.appendChild(card);
     });
 
-    // Start Background Pre-fetching sequence
     initiatePrefetchSequence(topics);
 }
 
-// --- Background Pre-fetching Logic ---
 function initiatePrefetchSequence(topics) {
-    // Stop any existing sequence
     if (prefetchTimeout) clearTimeout(prefetchTimeout);
-    
-    // Prioritize top 6 topics for immediate responsiveness
     prefetchQueue = topics.slice(0, 6).map(t => t.name);
     processPrefetchQueue();
 }
 
 async function processPrefetchQueue() {
-    // Stop if queue empty or component destroyed
     if (prefetchQueue.length === 0) return;
     if (!document.body.contains(topicGrid)) return; 
 
     const topicName = prefetchQueue.shift();
     const topicData = currentTopicsList.find(t => t.name === topicName);
     
-    // Safety check: Only prefetch if we have metadata (totalLevels)
-    // This ensures we are in the "Fast Track" mode.
     if (!topicData || !topicData.totalLevels) {
         processPrefetchQueue(); 
         return;
     }
 
-    // Check if Level 1 is already in cache. If so, skip to next.
     if (levelCacheService.getLevel(topicName, 1)) {
         processPrefetchQueue();
         return;
     }
 
     try {
-        // 1. Generate Questions
         const qData = await apiService.generateLevelQuestions({ 
             topic: topicName, 
             level: 1, 
             totalLevels: topicData.totalLevels 
         });
 
-        // 2. Generate Lesson using the questions we just got
         const lData = await apiService.generateLevelLesson({ 
             topic: topicName, 
             level: 1, 
@@ -94,19 +80,19 @@ async function processPrefetchQueue() {
             questions: qData.questions 
         });
 
-        // 3. Save to Cache
         const fullLevelData = { ...qData, ...lData };
         levelCacheService.saveLevel(topicName, 1, fullLevelData);
 
     } catch (e) {
-        // Silent fail in background
+        // Silent fail
     } finally {
-        // Schedule next fetch with a small delay to keep UI thread buttery smooth
         prefetchTimeout = setTimeout(processPrefetchQueue, 300);
     }
 }
 
 function renderActiveJourneys() {
+    if (!activeJourneysSection) return;
+    
     const journeys = learningPathService.getAllJourneys();
     
     if (!journeys || journeys.length === 0) {
@@ -122,7 +108,6 @@ function renderActiveJourneys() {
         const cardEl = card.querySelector('.topic-card');
         cardEl.dataset.topic = journey.goal;
         
-        // Visual flair for active journeys
         const styles = ['topic-programming', 'topic-space', 'topic-biology', 'topic-arts', 'topic-finance', 'topic-robotics'];
         const styleIndex = journey.goal.length % styles.length;
         cardEl.classList.add(styles[styleIndex]);
@@ -142,11 +127,9 @@ function renderActiveJourneys() {
 function handleTopicSelection(topicName) {
     if (!topicName) return;
     
-    // 1. Check if we have metadata (totalLevels) for this topic
     const topicData = currentTopicsList.find(t => t.name === topicName);
     
     if (topicData && topicData.totalLevels) {
-        // INSTANT JOURNEY CREATION
         learningPathService.startOrGetJourney(topicName, {
             totalLevels: topicData.totalLevels,
             description: topicData.description
@@ -157,7 +140,6 @@ function handleTopicSelection(topicName) {
         return;
     }
 
-    // Standard flow (API call inside game-map will handle generation)
     stateService.setNavigationContext({ topic: topicName });
     window.location.hash = `#/game/${encodeURIComponent(topicName)}`;
 }
@@ -179,7 +161,6 @@ function handleClearFilter() {
     skeletonGrid.style.display = 'grid';
     topicGrid.style.display = 'none';
     
-    // Load generic topics
     apiService.fetchTopics().then(renderTopics).catch(err => {
         topicGrid.innerHTML = '<p>Error loading topics.</p>';
     });
@@ -199,7 +180,6 @@ async function handleJourneyCreatorSubmit(event) {
     const originalButtonText = buttonText.textContent;
     const originalIconHTML = buttonIcon.innerHTML;
 
-    // Show loading state on button
     button.disabled = true;
     buttonText.textContent = 'Generating...';
     buttonIcon.innerHTML = `<div class="spinner" style="width: 16px; height: 16px; border-width: 2px;"></div>`;
@@ -263,20 +243,16 @@ export async function init() {
     skeletonGrid.style.display = 'grid';
     topicGrid.style.display = 'none';
 
-    // 1. Check for user's SAVED interest (Persisted preference)
     const savedInterest = learningPathService.getUserInterest();
     
     if (savedInterest && savedInterest !== 'custom') {
-        // Load instant data for that interest
         const topics = learningPathService.getInterestTopics(savedInterest);
         renderTopics(topics);
         
-        // Show filter badge
         activeFilterContainer.style.display = 'flex';
         document.getElementById('filter-name').textContent = `Filtering: ${savedInterest.toUpperCase()}`;
     } else {
         activeFilterContainer.style.display = 'none';
-        // 2. Fallback (or Custom): API fetch for generic topics
         try {
             const allTopics = await apiService.fetchTopics();
             renderTopics(allTopics);
@@ -286,9 +262,12 @@ export async function init() {
             topicGrid.innerHTML = `<p class="error-message">Could not load topics. Please try again later.</p>`;
         }
     }
+
+    window.addEventListener('journeys-updated', renderActiveJourneys);
 }
 
 export function destroy() {
+    window.removeEventListener('journeys-updated', renderActiveJourneys);
     if (prefetchTimeout) {
         clearTimeout(prefetchTimeout);
         prefetchTimeout = null;

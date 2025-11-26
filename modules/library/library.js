@@ -1,3 +1,4 @@
+
 import * as libraryService from '../../services/libraryService.js';
 
 let container;
@@ -5,6 +6,8 @@ let clickHandler;
 let studyBtn;
 
 function renderLibrary() {
+    if (!document.getElementById('library-grid')) return;
+
     container = document.getElementById('library-grid');
     studyBtn = document.getElementById('study-btn');
     const emptyMessage = document.getElementById('empty-library-message');
@@ -55,15 +58,21 @@ export function init() {
         }
     };
     
+    container = document.getElementById('library-grid');
     container.addEventListener('click', clickHandler);
+    
+    studyBtn = document.getElementById('study-btn');
     studyBtn.addEventListener('click', () => {
         if (!studyBtn.disabled) {
             window.location.hash = '/study';
         }
     });
+
+    window.addEventListener('library-updated', renderLibrary);
 }
 
 export function destroy() {
+    window.removeEventListener('library-updated', renderLibrary);
     if (container && clickHandler) {
         container.removeEventListener('click', clickHandler);
     }

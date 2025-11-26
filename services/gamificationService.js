@@ -1,6 +1,7 @@
 
 import { LOCAL_STORAGE_KEYS } from '../constants.js';
 import { showToast } from './toastService.js';
+import { db, doc, getDoc, setDoc, getUserId, isGuest } from './firebaseService.js';
 
 const defaultStats = {
     level: 1,
@@ -114,11 +115,29 @@ const QUEST_TYPES = [
     { id: 'study_session', text: 'Review Flashcards', xp: 40, check: (action) => action.type === 'study_session' },
 ];
 
-function loadStats() {
+async function loadStats() {
     try {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.GAMIFICATION);
         stats = stored ? { ...defaultStats, ...JSON.parse(stored) } : { ...defaultStats };
         checkDailyQuests();
+
+        // Background Sync (Skip if Guest)
+        if (navigator.onLine && !isGuest()) {
+            const userId = getUserId();
+            if (userId) {
+                const docRef = doc(db, "users", userId, "data", "gamification");
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const remoteStats = docSnap.data();
+                    if (remoteStats.xp > stats.xp) {
+                        stats = { ...defaultStats, ...remoteStats };
+                        saveStatsLocal();
+                        window.dispatchEvent(new CustomEvent('gamification-updated'));
+                    }
+                }
+            }
+        }
     } catch (e) {
         console.error("Failed to load gamification stats:", e);
         stats = { ...defaultStats };
@@ -126,10 +145,27 @@ function loadStats() {
 }
 
 function saveStats() {
+    saveStatsLocal();
+    saveStatsRemote();
+}
+
+function saveStatsLocal() {
     try {
         localStorage.setItem(LOCAL_STORAGE_KEYS.GAMIFICATION, JSON.stringify(stats));
     } catch (e) {
-        console.error("Failed to save gamification stats:", e);
+        console.error("Failed to save gamification stats locally:", e);
+    }
+}
+
+async function saveStatsRemote() {
+    if (!navigator.onLine || isGuest()) return;
+    try {
+        const userId = getUserId();
+        if (userId) {
+            await setDoc(doc(db, "users", userId, "data", "gamification"), stats);
+        }
+    } catch (e) {
+        console.warn("Failed to save stats to cloud", e);
     }
 }
 
@@ -283,7 +319,6 @@ export function getProfileStats(history) {
     return { totalQuizzes, totalQuestions, averageScore };
 }
 
-// Helper to get raw map of topic dates
 function getTopicLastPlayedDates(history) {
     const topicDates = {};
     history.forEach(h => {
@@ -295,8 +330,6 @@ function getTopicLastPlayedDates(history) {
     });
     return topicDates;
 }
-
-// --- Memory Health Logic ---
 
 const GRACE_PERIOD_DAYS = 3; 
 const DECAY_RATE_PER_DAY = 2; 
@@ -336,7 +369,6 @@ export function calculateMemoryHealth(history) {
     return { health: Math.round(avgHealth), status, oldestTopic };
 }
 
-// NEW: Get health stats for ALL individual topics (for visualization)
 export function getDetailedTopicHealth(history) {
     const topicDates = getTopicLastPlayedDates(history);
     const now = Date.now();
