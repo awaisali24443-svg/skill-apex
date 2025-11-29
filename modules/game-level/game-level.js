@@ -4,6 +4,8 @@
 
 
 
+
+
 import * as apiService from '../../services/apiService.js';
 import * as learningPathService from '../../services/learningPathService.js';
 import * as markdownService from '../../services/markdownService.js';
@@ -961,7 +963,7 @@ function renderQuestion() {
     elements.submitAnswerBtn.disabled = true;
     elements.submitAnswerBtn.textContent = 'Submit Answer';
     elements.hintBtn.disabled = false;
-    elements.hintBtn.innerHTML = `<svg class="icon"><use href="/assets/icons/feather-sprite.svg#lightbulb"/></svg><span>Hint</span>`;
+    elements.hintBtn.innerHTML = `<svg class="icon"><use href="assets/icons/feather-sprite.svg#lightbulb"/></svg><span>Hint</span>`;
 
     announce(`Question ${currentQuestionIndex + 1}: ${question.question}`);
     startTimer();
@@ -1263,7 +1265,7 @@ function showResults(isInteractive = false, isAntiCheatForfeit = false) {
     const reviewBtnHTML = (isInteractive || isAntiCheatForfeit) ? '' : `<button id="review-answers-btn" class="btn">Review Answers</button>`;
 
     if (passed) {
-        elements.resultsIcon.innerHTML = `<svg><use href="/assets/icons/feather-sprite.svg#check-circle"/></svg>`;
+        elements.resultsIcon.innerHTML = `<svg><use href="assets/icons/feather-sprite.svg#check-circle"/></svg>`;
         elements.resultsIcon.className = 'results-icon passed';
         
         if (levelContext.isBoss) {
@@ -1283,7 +1285,7 @@ function showResults(isInteractive = false, isAntiCheatForfeit = false) {
         preloadNextLevel();
 
     } else {
-        elements.resultsIcon.innerHTML = `<svg><use href="/assets/icons/feather-sprite.svg#x-circle"/></svg>`;
+        elements.resultsIcon.innerHTML = `<svg><use href="assets/icons/feather-sprite.svg#x-circle"/></svg>`;
         elements.resultsIcon.className = 'results-icon failed';
         
         if (levelContext.isBoss) {
@@ -1350,7 +1352,7 @@ async function handleHintClick() {
         showToast(error.message, 'error');
         elements.hintBtn.disabled = false;
     } finally {
-        elements.hintBtn.innerHTML = `<svg class="icon"><use href="/assets/icons/feather-sprite.svg#lightbulb"/></svg><span>Hint</span>`;
+        elements.hintBtn.innerHTML = `<svg class="icon"><use href="assets/icons/feather-sprite.svg#lightbulb"/></svg><span>Hint</span>`;
     }
 }
 
@@ -1401,7 +1403,7 @@ async function handleReadAloudClick() {
         currentAudioSource.start();
         
         btn.disabled = false;
-        btn.innerHTML = `<svg class="icon"><use href="/assets/icons/feather-sprite.svg#square"/></svg> <span>Stop</span>`;
+        btn.innerHTML = `<svg class="icon"><use href="assets/icons/feather-sprite.svg#square"/></svg> <span>Stop</span>`;
         btn.classList.remove('loading');
         btn.classList.add('playing');
     } catch (error) {
@@ -1422,7 +1424,7 @@ function stopAudio() {
     if (btn) {
         btn.classList.remove('loading', 'playing');
         btn.disabled = false;
-        btn.innerHTML = `<svg class="icon"><use href="/assets/icons/feather-sprite.svg#volume-2"/></svg> <span>Read Aloud</span>`;
+        btn.innerHTML = `<svg class="icon"><use href="assets/icons/feather-sprite.svg#volume-2"/></svg> <span>Read Aloud</span>`;
     }
 }
 

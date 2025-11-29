@@ -1,4 +1,6 @@
 
+
+
 import * as historyService from '../../services/historyService.js';
 import { showConfirmationModal } from '../../services/modalService.js';
 import * as stateService from '../../services/stateService.js';
@@ -48,9 +50,9 @@ function renderHistory() {
                 entry.classList.add('aural');
                 entry.querySelector('.history-meta').textContent = `Audio Session • ${Math.floor(item.duration / 60)}m ${item.duration % 60}s • +${item.xpGained || 0} XP`;
                 
-                badgeContainer.innerHTML = `<div class="aural-icon-badge"><svg class="icon"><use href="/assets/icons/feather-sprite.svg#mic"/></svg></div>`;
+                badgeContainer.innerHTML = `<div class="aural-icon-badge"><svg class="icon"><use href="assets/icons/feather-sprite.svg#mic"/></svg></div>`;
                 
-                footer.innerHTML = `<button class="btn-small transcript-btn" data-id="${item.id}"><svg class="icon"><use href="/assets/icons/feather-sprite.svg#message-circle"/></svg> Transcript</button>`;
+                footer.innerHTML = `<button class="btn-small transcript-btn" data-id="${item.id}"><svg class="icon"><use href="assets/icons/feather-sprite.svg#message-circle"/></svg> Transcript</button>`;
                 
                 // Store transcript data on the button for easy access
                 const btn = footer.querySelector('.transcript-btn');
@@ -79,7 +81,7 @@ function renderHistory() {
                     if (circle) circle.setAttribute('stroke-dasharray', `${scorePercent}, 100`);
                 }, 100 + (index * 50));
 
-                footer.innerHTML = `<button class="btn-small retry-btn"><svg class="icon"><use href="/assets/icons/feather-sprite.svg#rotate-ccw"/></svg> Retry</button>`;
+                footer.innerHTML = `<button class="btn-small retry-btn"><svg class="icon"><use href="assets/icons/feather-sprite.svg#rotate-ccw"/></svg> Retry</button>`;
             }
 
             container.appendChild(clone);

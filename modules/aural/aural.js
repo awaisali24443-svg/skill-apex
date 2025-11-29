@@ -1,4 +1,6 @@
 
+
+
 import { GoogleGenAI, Modality } from '@google/genai';
 import * as stateService from '../../services/stateService.js';
 import * as historyService from '../../services/historyService.js';
@@ -329,7 +331,7 @@ export function init() {
         const backBtn = document.createElement('a');
         backBtn.href = `#/${navigationContext.auralContext.from}`;
         backBtn.className = 'btn';
-        backBtn.innerHTML = `<svg class="icon" width="18" height="18" viewBox="0 0 24 24"><use href="/assets/icons/feather-sprite.svg#arrow-left"/></svg><span>Back</span>`;
+        backBtn.innerHTML = `<svg class="icon" width="18" height="18" viewBox="0 0 24 24"><use href="assets/icons/feather-sprite.svg#arrow-left"/></svg><span>Back</span>`;
         elements.headerControls.appendChild(backBtn);
     }
     elements.micBtn.addEventListener('click', handleMicClick);

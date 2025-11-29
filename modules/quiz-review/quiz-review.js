@@ -1,4 +1,6 @@
 
+
+
 import * as stateService from '../../services/stateService.js';
 import * as libraryService from '../../services/libraryService.js';
 import * as gamificationService from '../../services/gamificationService.js';
@@ -54,7 +56,7 @@ function render() {
             const explainBtn = document.createElement('button');
             explainBtn.className = 'btn btn-small explain-error-btn';
             explainBtn.style.marginTop = '10px';
-            explainBtn.innerHTML = `<svg class="icon"><use href="/assets/icons/feather-sprite.svg#lightbulb"/></svg> Why was I wrong?`;
+            explainBtn.innerHTML = `<svg class="icon"><use href="assets/icons/feather-sprite.svg#lightbulb"/></svg> Why was I wrong?`;
             
             explainBtn.onclick = async () => {
                 explainBtn.disabled = true;
@@ -91,12 +93,12 @@ function render() {
 
             if (isCorrect) {
                 optionEl.classList.add('correct');
-                iconHtml = `<svg class="icon"><use href="/assets/icons/feather-sprite.svg#check-circle"/></svg>`;
+                iconHtml = `<svg class="icon"><use href="assets/icons/feather-sprite.svg#check-circle"/></svg>`;
             } else if (isSelected) {
                 optionEl.classList.add('incorrect');
-                iconHtml = `<svg class="icon"><use href="/assets/icons/feather-sprite.svg#x-circle"/></svg>`;
+                iconHtml = `<svg class="icon"><use href="assets/icons/feather-sprite.svg#x-circle"/></svg>`;
             } else {
-                iconHtml = `<svg class="icon" style="color: var(--color-text-secondary);"><use href="/assets/icons/feather-sprite.svg#circle"/></svg>`;
+                iconHtml = `<svg class="icon" style="color: var(--color-text-secondary);"><use href="assets/icons/feather-sprite.svg#circle"/></svg>`;
             }
             
             optionEl.innerHTML = `${iconHtml} <span>${optionText}</span>`;
