@@ -1,26 +1,27 @@
+
 const THEMES = {
     'light-cyber': {
-        path: '/themes/theme-light-cyber.css',
+        path: 'themes/theme-light-cyber.css',
         color: '#f8f9fa'
     },
     'light-solar': {
-        path: '/themes/theme-light-solar.css',
+        path: 'themes/theme-light-solar.css',
         color: '#fffbf5'
     },
     'dark': {
-        path: '/themes/theme-dark.css',
+        path: 'themes/theme-dark.css',
         color: '#101410'
     },
     'dark-cyber': {
-        path: '/themes/theme-dark-cyber.css',
+        path: 'themes/theme-dark-cyber.css',
         color: '#0c0e1a'
     },
     'dark-arcane': {
-        path: '/themes/theme-dark-arcane.css',
+        path: 'themes/theme-dark-arcane.css',
         color: '#1a143b'
     },
     'dark-nebula': {
-        path: '/themes/theme-dark-nebula.css',
+        path: 'themes/theme-dark-nebula.css',
         color: '#0d1117'
     },
 };

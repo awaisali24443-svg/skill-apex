@@ -1,4 +1,5 @@
 
+import { GoogleGenAI, Modality } from '@google/genai';
 import * as stateService from '../../services/stateService.js';
 import * as historyService from '../../services/historyService.js';
 import { showToast } from '../../services/toastService.js';
@@ -14,7 +15,8 @@ const STATE = {
 };
 
 let currentState = STATE.IDLE;
-let socket, mediaStream, inputAudioContext, outputAudioContext, connectionTimeout;
+let activeSession = null;
+let inputAudioContext, outputAudioContext;
 let audioWorkletNode;
 let nextStartTime = 0;
 let sources = new Set();
@@ -22,6 +24,10 @@ let liveTranscriptionElement = null;
 let sessionStartTime = 0;
 let transcriptLog = []; 
 let elements = {};
+let mediaStream = null;
+
+// Initialize SDK
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const workletCode = `
 class PCMProcessor extends AudioWorkletProcessor {
@@ -51,6 +57,7 @@ function encode(bytes) {
   }
   return btoa(binary);
 }
+
 function decode(base64) {
   const binaryString = atob(base64);
   const len = binaryString.length;
@@ -60,6 +67,7 @@ function decode(base64) {
   }
   return bytes;
 }
+
 async function decodeAudioData(data, ctx, sampleRate, numChannels) {
   const dataInt16 = new Int16Array(data.buffer, data.byteOffset, data.byteLength / 2);
   const frameCount = dataInt16.length / numChannels;
@@ -138,14 +146,12 @@ function finalizeLiveTranscription() {
 async function startConversation() {
     if (currentState !== STATE.IDLE && currentState !== STATE.ERROR) return;
     
-    // --- CRITICAL FIX FOR MOBILE SAFARI ---
-    // Initialize and resume contexts synchronously within the user gesture (click)
+    // Initialize Audio Contexts
     if (!inputAudioContext) inputAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
     if (inputAudioContext.state === 'suspended') await inputAudioContext.resume();
 
     if (!outputAudioContext) outputAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
     if (outputAudioContext.state === 'suspended') await outputAudioContext.resume();
-    // --------------------------------------
 
     transcriptLog = [];
     sessionStartTime = Date.now();
@@ -155,120 +161,131 @@ async function startConversation() {
     updateUI(STATE.CONNECTING);
     elements.error.style.display = 'none';
 
-    connectionTimeout = setTimeout(() => {
-        if (currentState === STATE.CONNECTING) {
-            updateUI(STATE.ERROR, 'Connection timed out.');
-            stopConversation();
-        }
-    }, 10000); 
-
     try {
-        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        
-        const blob = new Blob([workletCode], { type: 'application/javascript' });
-        const workletUrl = URL.createObjectURL(blob);
-        await inputAudioContext.audioWorklet.addModule(workletUrl);
-        
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        
-        // --- CONTEXT INJECTION (APEXCORE AURAL MODE) ---
+        // --- CONTEXT INJECTION ---
         const userContext = historyService.getLastContext();
-        const baseInstruction = `You are ApexCore's Aural Tutor.
+        const systemInstruction = `You are ApexCore's Aural Tutor.
         ROLE: A warm, human-like mentor.
         RULES:
         1. Use spoken-style conversation. Use analogies, storytelling, and mental imagery.
         2. DO NOT use bullet points or lists.
         3. Be encouraging and concise.
-        
         USER CONTEXT: ${userContext}`;
+
+        // Get microphone stream first
+        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         
-        const socketUrl = `${protocol}//${window.location.host}/?systemInstruction=${encodeURIComponent(baseInstruction)}`;
-        socket = new WebSocket(socketUrl);
+        // Setup Audio Worklet for processing input
+        const blob = new Blob([workletCode], { type: 'application/javascript' });
+        const workletUrl = URL.createObjectURL(blob);
+        await inputAudioContext.audioWorklet.addModule(workletUrl);
 
-        socket.onopen = () => {
-            clearTimeout(connectionTimeout);
-            updateUI(STATE.LISTENING);
-            const source = inputAudioContext.createMediaStreamSource(mediaStream);
-            audioWorkletNode = new AudioWorkletNode(inputAudioContext, 'pcm-processor');
-            audioWorkletNode.port.onmessage = (event) => {
-                if (socket.readyState === WebSocket.OPEN) {
-                    const pcmBuffer = event.data;
-                    const base64Audio = encode(new Uint8Array(pcmBuffer));
-                    socket.send(JSON.stringify({ type: 'audio_input', payload: { data: base64Audio, mimeType: 'audio/pcm;rate=16000' } }));
-                }
-            };
-            source.connect(audioWorkletNode);
-            audioWorkletNode.connect(inputAudioContext.destination);
-        };
-
-        socket.onmessage = async (event) => {
-            try {
-                const serverMessage = JSON.parse(event.data);
-                if (serverMessage.type === 'error') { updateUI(STATE.ERROR, serverMessage.message); return; }
-                const geminiMessage = serverMessage.message;
-                if (!geminiMessage) return;
-
-                if (geminiMessage.serverContent?.interrupted) {
-                    sources.forEach(source => source.stop());
-                    sources.clear();
-                    nextStartTime = 0;
-                    finalizeLiveTranscription();
-                }
-
-                const inputTranscription = geminiMessage.serverContent?.inputTranscription?.text;
-                if (inputTranscription) {
-                    if (currentState === STATE.LISTENING) updateUI(STATE.THINKING);
-                    updateLiveTranscription('user', inputTranscription);
-                }
-
-                const outputTranscription = geminiMessage.serverContent?.outputTranscription?.text;
-                if (outputTranscription) {
-                    if (liveTranscriptionElement && liveTranscriptionElement.dataset.type === 'user') finalizeLiveTranscription();
-                    updateLiveTranscription('model', outputTranscription);
-                }
-                
-                const audioData = geminiMessage.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
-                if (audioData) {
-                    if (currentState !== STATE.SPEAKING) updateUI(STATE.SPEAKING);
-                    if (liveTranscriptionElement && liveTranscriptionElement.dataset.type === 'user') finalizeLiveTranscription();
-
-                    const decoded = decode(audioData);
-                    const audioBuffer = await decodeAudioData(decoded, outputAudioContext, 24000, 1);
+        // Connect to Live API
+        const sessionPromise = ai.live.connect({
+            model: 'gemini-2.5-flash-native-audio-preview-09-2025',
+            config: {
+                responseModalities: [Modality.AUDIO],
+                speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } } },
+                systemInstruction: systemInstruction,
+                inputAudioTranscription: {},
+                outputAudioTranscription: {},
+            },
+            callbacks: {
+                onopen: () => {
+                    updateUI(STATE.LISTENING);
+                    // Start Streaming Audio
+                    const source = inputAudioContext.createMediaStreamSource(mediaStream);
+                    audioWorkletNode = new AudioWorkletNode(inputAudioContext, 'pcm-processor');
                     
-                    nextStartTime = Math.max(nextStartTime, outputAudioContext.currentTime);
-                    const source = outputAudioContext.createBufferSource();
-                    source.buffer = audioBuffer;
-                    source.connect(outputAudioContext.destination);
-                    source.addEventListener('ended', () => sources.delete(source));
-                    source.start(nextStartTime);
-                    nextStartTime += audioBuffer.duration;
-                    sources.add(source);
-                }
-                
-                if(geminiMessage.serverContent?.turnComplete) {
-                    finalizeLiveTranscription();
-                    const checkPlayback = () => {
-                        if (!outputAudioContext || outputAudioContext.state === 'closed' || outputAudioContext.currentTime + 0.1 >= nextStartTime) {
-                             if (currentState !== STATE.IDLE && currentState !== STATE.ERROR) updateUI(STATE.LISTENING);
-                        } else { setTimeout(checkPlayback, 100); }
+                    audioWorkletNode.port.onmessage = (event) => {
+                        const pcmBuffer = event.data;
+                        const base64Audio = encode(new Uint8Array(pcmBuffer));
+                        
+                        // Send data to active session
+                        sessionPromise.then(session => {
+                            session.sendRealtimeInput({ 
+                                media: { 
+                                    data: base64Audio, 
+                                    mimeType: 'audio/pcm;rate=16000' 
+                                } 
+                            });
+                        });
                     };
-                    checkPlayback();
-                }
-            } catch (e) { console.error(e); updateUI(STATE.ERROR, 'Error processing message'); }
-        };
+                    
+                    source.connect(audioWorkletNode);
+                    audioWorkletNode.connect(inputAudioContext.destination);
+                },
+                onmessage: async (message) => {
+                    if (message.serverContent?.interrupted) {
+                        sources.forEach(source => source.stop());
+                        sources.clear();
+                        nextStartTime = 0;
+                        finalizeLiveTranscription();
+                    }
+
+                    // Transcriptions
+                    if (message.serverContent?.inputTranscription?.text) {
+                        if (currentState === STATE.LISTENING) updateUI(STATE.THINKING);
+                        updateLiveTranscription('user', message.serverContent.inputTranscription.text);
+                    }
+                    if (message.serverContent?.outputTranscription?.text) {
+                        if (liveTranscriptionElement && liveTranscriptionElement.dataset.type === 'user') finalizeLiveTranscription();
+                        updateLiveTranscription('model', message.serverContent.outputTranscription.text);
+                    }
+
+                    // Audio Output
+                    const audioData = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
+                    if (audioData) {
+                        if (currentState !== STATE.SPEAKING) updateUI(STATE.SPEAKING);
+                        if (liveTranscriptionElement && liveTranscriptionElement.dataset.type === 'user') finalizeLiveTranscription();
+
+                        const decoded = decode(audioData);
+                        const audioBuffer = await decodeAudioData(decoded, outputAudioContext, 24000, 1);
+                        
+                        nextStartTime = Math.max(nextStartTime, outputAudioContext.currentTime);
+                        const source = outputAudioContext.createBufferSource();
+                        source.buffer = audioBuffer;
+                        source.connect(outputAudioContext.destination);
+                        source.addEventListener('ended', () => sources.delete(source));
+                        source.start(nextStartTime);
+                        nextStartTime += audioBuffer.duration;
+                        sources.add(source);
+                    }
+
+                    if (message.serverContent?.turnComplete) {
+                        finalizeLiveTranscription();
+                        // Check for playback end to reset state
+                        const checkPlayback = () => {
+                            if (!outputAudioContext || outputAudioContext.state === 'closed' || outputAudioContext.currentTime + 0.1 >= nextStartTime) {
+                                if (currentState !== STATE.IDLE && currentState !== STATE.ERROR) updateUI(STATE.LISTENING);
+                            } else { setTimeout(checkPlayback, 100); }
+                        };
+                        checkPlayback();
+                    }
+                },
+                onerror: (e) => {
+                    console.error('Live API Error:', e);
+                    updateUI(STATE.ERROR, 'Connection Error');
+                },
+                onclose: () => {
+                    console.log('Live API Closed');
+                    stopConversation();
+                },
+            }
+        });
         
-        socket.onerror = (err) => { finalizeLiveTranscription(); updateUI(STATE.ERROR, `Connection error.`); };
-        socket.onclose = () => { finalizeLiveTranscription(); stopConversation(); };
+        activeSession = await sessionPromise;
 
     } catch (err) {
-        clearTimeout(connectionTimeout);
+        console.error(err);
         updateUI(STATE.ERROR, `Could not start: ${err.message}`);
+        stopConversation();
     }
 }
 
 function stopConversation() {
     if (currentState === STATE.IDLE) return;
-    clearTimeout(connectionTimeout);
+    
     finalizeLiveTranscription();
 
     if (transcriptLog.length > 0) {
@@ -278,13 +295,13 @@ function stopConversation() {
         if (xpGained > 0) showToast(`Session saved! +${xpGained} XP`, 'success');
     }
 
-    if (socket) { 
-        if (socket.readyState === WebSocket.OPEN) socket.close(); 
-        socket = null; 
+    if (activeSession) {
+        activeSession.close();
+        activeSession = null;
     }
+
     if (audioWorkletNode) { audioWorkletNode.disconnect(); audioWorkletNode = null; }
     if (mediaStream) { mediaStream.getTracks().forEach(track => track.stop()); mediaStream = null; }
-    // Do not close audio contexts here; reuse them or they will need new user gesture
     if (outputAudioContext) { sources.forEach(s => s.stop()); sources.clear(); }
     
     if (elements.log) elements.log.innerHTML = '';
