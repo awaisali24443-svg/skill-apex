@@ -179,6 +179,7 @@ function handleError(error) {
     else if (msg.includes('email-already-in-use')) msg = 'Email already registered.';
     else if (msg.includes('weak-password')) msg = 'Password must be at least 6 characters.';
     else if (msg.includes('popup-closed-by-user')) msg = 'Sign-in cancelled.';
+    else if (msg.includes('too-many-requests')) msg = 'Too many attempts. Try again later.';
     
     elements.error.textContent = msg;
     elements.error.style.display = 'block';
@@ -196,6 +197,8 @@ function checkUrlForReset() {
 
     if (mode === 'resetPassword' && oobCode) {
         resetOobCode = oobCode;
+        console.log("Password Reset Mode Detected.");
+        
         // Clean URL visually to hide codes/keys immediately
         window.history.replaceState({}, document.title, window.location.pathname);
         

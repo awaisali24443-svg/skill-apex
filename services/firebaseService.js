@@ -87,9 +87,13 @@ function logout() {
 }
 
 function resetPassword(email) {
+    // Construct absolute URL for the app root
+    const url = window.location.protocol + '//' + window.location.host + window.location.pathname;
+    
     const actionCodeSettings = {
         // Redirect back to this app to handle the reset
-        url: window.location.origin + window.location.pathname + '?mode=resetPassword',
+        // We append the mode query param to be detected by auth.js
+        url: `${url}?mode=resetPassword`,
         handleCodeInApp: true,
     };
     return sendPasswordResetEmail(auth, email, actionCodeSettings);
@@ -123,6 +127,7 @@ function linkEmail(email, password) {
 
 function reauthenticate(password) {
     if (!currentUser) return Promise.reject(new Error("No user"));
+    // Re-auth is required before changing sensitive info like passwords
     const cred = EmailAuthProvider.credential(currentUser.email, password);
     return reauthenticateWithCredential(currentUser, cred);
 }

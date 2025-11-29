@@ -61,8 +61,9 @@ function loadSettings() {
             if(elements.logoutBtnText) elements.logoutBtnText.textContent = "Logout";
             if(elements.upgradeSection) elements.upgradeSection.style.display = 'none';
             
-            // Show Security Section ONLY if logged in with password
+            // Show Security Section ONLY if logged in with password provider
             if (elements.securitySection) {
+                // provider usually 'password' for email/pass auth
                 elements.securitySection.style.display = (provider === 'password') ? 'block' : 'none';
             }
         }
