@@ -78,7 +78,7 @@ body:has(.level-card.boss.current) .game-level-container,
 }
 .game-level-state.active { opacity: 1; pointer-events: auto; }
 
-/* --- CONTENT CONTAINER BACKGROUND: The Focus Slab --- */
+/* --- CONTENT CONTAINER: The Focus Slab --- */
 .state-content {
     width: 100%;
     max-width: 900px;
@@ -86,22 +86,24 @@ body:has(.level-card.boss.current) .game-level-container,
     text-align: center;
     animation: fade-slide-in 0.5s ease-out;
     
-    /* High Readability Background */
-    background-color: var(--color-surface); /* Solid fallback */
-    background: linear-gradient(170deg, var(--color-surface) 0%, rgba(15, 20, 30, 0.95) 100%);
-    backdrop-filter: blur(15px);
+    /* High Readability Opaque Glass */
+    background-color: rgba(15, 20, 30, 0.85); /* Slightly more opaque than standard card */
+    background-image: linear-gradient(170deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.4) 100%);
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    
     border: 1px solid var(--color-border);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
     border-radius: var(--border-radius);
     
-    /* Subtle inner texture */
     position: relative;
     overflow: hidden;
 }
 
+/* Neon Top Border */
 .state-content::before {
     content: '';
-    position: absolute; top:0; left:0; width:100%; height:4px;
+    position: absolute; top:0; left:0; width:100%; height:3px;
     background: var(--brand-gradient);
     z-index: 10;
 }
@@ -140,14 +142,20 @@ body:has(.level-card.boss.current) .game-level-container,
     font-family: var(--font-family-body);
 }
 
+/* Typewriter Cursor */
+.typewriter-cursor::after {
+    content: '▋';
+    display: inline-block;
+    color: var(--color-primary);
+    animation: blink-cursor 0.7s infinite;
+    vertical-align: text-bottom;
+}
+@keyframes blink-cursor { 0% {opacity:1;} 50% {opacity:0;} 100% {opacity:1;} }
+
 .lesson-body p { margin-bottom: var(--space-lg); }
 
-.lesson-body strong { 
-    color: var(--color-secondary); 
-    font-weight: 700;
-}
+.lesson-body strong { color: var(--color-secondary); font-weight: 700; }
 
-/* Code Snippets in text */
 .lesson-body code {
     background-color: var(--color-surface-hover);
     color: var(--color-accent);
@@ -157,20 +165,15 @@ body:has(.level-card.boss.current) .game-level-container,
     font-size: 0.9em;
 }
 
-/* Presentation Lists */
 .lesson-body ul {
-    list-style: none; /* Remove default dots, we use emojis now */
-    padding-left: 0;
-    margin-bottom: var(--space-xl);
+    list-style: none; padding-left: 0; margin-bottom: var(--space-xl);
 }
 
 .lesson-body li {
     margin-bottom: var(--space-md);
     padding-left: var(--space-md);
     position: relative;
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
+    display: flex; align-items: flex-start; gap: 10px;
 }
 
 .lesson-body h3 { 
@@ -186,8 +189,7 @@ body:has(.level-card.boss.current) .game-level-container,
     padding: var(--space-md);
     border-radius: var(--border-radius);
     margin: var(--space-lg) 0;
-    display: flex;
-    justify-content: center;
+    display: flex; justify-content: center;
 }
 
 /* --- Code Block Styles --- */
@@ -203,32 +205,22 @@ body:has(.level-card.boss.current) .game-level-container,
 }
 .lesson-body pre::before {
     content: attr(data-lang);
-    position: absolute;
-    top: 0;
-    right: var(--space-md);
+    position: absolute; top: 0; right: var(--space-md);
     padding: 2px 8px;
     font-family: var(--font-family-mono);
     font-size: var(--fs-sm);
     color: var(--color-text-secondary);
     background-color: var(--color-border);
     border-radius: 0 0 4px 4px;
-    text-transform: uppercase;
-    font-weight: 600;
+    text-transform: uppercase; font-weight: 600;
 }
 .lesson-body pre[data-lang=""]::before { display: none; }
-.lesson-body pre code {
-    background-color: transparent;
-    padding: 0;
-    white-space: pre;
-}
+.lesson-body pre code { background-color: transparent; padding: 0; white-space: pre; }
 
 
 .lesson-footer {
     margin-top: var(--space-xl);
-    display: flex;
-    justify-content: center;
-    gap: var(--space-md);
-    align-items: center;
+    display: flex; justify-content: center; gap: var(--space-md); align-items: center;
 }
 
 #read-aloud-btn .btn-spinner { width: 1.1em; height: 1.1em; }
@@ -236,8 +228,7 @@ body:has(.level-card.boss.current) .game-level-container,
 
 /* Ask AI Overlay */
 .ask-ai-container {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
+    position: absolute; bottom: 0; left: 0; right: 0;
     background-color: var(--color-surface);
     border-top: 2px solid var(--color-primary);
     padding: var(--space-lg);
@@ -253,13 +244,9 @@ body:has(.level-card.boss.current) .game-level-container,
 #level-quiz-state { justify-content: space-between; }
 
 .new-quiz-header {
-    width: 100%;
-    padding: var(--space-md) var(--space-lg);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-shrink: 0;
-    z-index: 10;
+    width: 100%; padding: var(--space-md) var(--space-lg);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-shrink: 0; z-index: 10;
 }
 .new-quiz-header .sidebar-logo { text-decoration: none; display: flex; align-items: center; gap: var(--space-sm); }
 .new-quiz-header .sidebar-logo-img { height: 32px; width: 32px; }
@@ -268,51 +255,30 @@ body:has(.level-card.boss.current) .game-level-container,
 
 /* --- BOSS BATTLE STYLES --- */
 .boss-health-container {
-    flex-grow: 1;
-    margin: 0 var(--space-xl);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    flex-grow: 1; margin: 0 var(--space-xl);
+    display: flex; flex-direction: column; align-items: center;
     animation: pop-in 0.5s ease-out;
 }
 .boss-label {
-    font-family: var(--font-family-heading);
-    font-weight: 800;
-    font-size: 0.9rem;
-    color: #ff4040;
-    margin-bottom: 4px;
-    letter-spacing: 2px;
+    font-family: var(--font-family-heading); font-weight: 800; font-size: 0.9rem;
+    color: #ff4040; margin-bottom: 4px; letter-spacing: 2px;
     text-shadow: 0 0 10px rgba(255, 64, 64, 0.5);
 }
 .boss-health-bar {
-    width: 100%;
-    max-width: 400px;
-    height: 16px;
-    background-color: #2a0000;
-    border: 1px solid #500;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
+    width: 100%; max-width: 400px; height: 16px;
+    background-color: #2a0000; border: 1px solid #500; border-radius: 8px;
+    overflow: hidden; box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
 }
 .boss-health-fill {
     height: 100%;
-    background: repeating-linear-gradient(
-        45deg,
-        #ff0000,
-        #ff0000 10px,
-        #ff4d4d 10px,
-        #ff4d4d 20px
-    );
+    background: repeating-linear-gradient(45deg, #ff0000, #ff0000 10px, #ff4d4d 10px, #ff4d4d 20px);
     background-size: 28px 28px;
     box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.3);
     transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     animation: boss-bar-stripes 1s linear infinite;
 }
 
-@keyframes boss-bar-stripes {
-    0% { background-position: 0 0; }
-    100% { background-position: 28px 0; }
-}
+@keyframes boss-bar-stripes { 0% { background-position: 0 0; } 100% { background-position: 28px 0; } }
 
 /* Shake Animation for Boss Damage */
 @keyframes shake {
@@ -328,10 +294,7 @@ body:has(.level-card.boss.current) .game-level-container,
   90% { transform: translate(1px, 2px) rotate(0deg); }
   100% { transform: translate(1px, -2px) rotate(-1deg); }
 }
-.shake {
-  animation: shake 0.5s;
-  animation-iteration-count: 1;
-}
+.shake { animation: shake 0.5s; animation-iteration-count: 1; }
 
 /* Damage Flash */
 @keyframes flash-red {
@@ -339,16 +302,13 @@ body:has(.level-card.boss.current) .game-level-container,
     50% { box-shadow: inset 0 0 100px 50px rgba(255, 0, 0, 0.3); }
     100% { box-shadow: inset 0 0 0 0 rgba(255, 0, 0, 0); }
 }
-.damage-flash {
-    animation: flash-red 0.5s ease-out;
-}
+.damage-flash { animation: flash-red 0.5s ease-out; }
 
 
 .new-quiz-content { width: 100%; max-width: 900px; margin: 0 auto; z-index: 5; }
 
 .quiz-status-card {
-    display: flex;
-    gap: var(--space-lg);
+    display: flex; gap: var(--space-lg);
     padding: var(--space-md) var(--space-lg);
     background-color: rgba(12, 14, 26, 0.7);
     backdrop-filter: blur(10px);
@@ -392,50 +352,30 @@ body:has(.level-card.boss.current) .game-level-container,
 
 /* --- NEW: Interactive Challenge Styles --- */
 .interactive-playground {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
+    display: flex; flex-direction: column; gap: var(--space-md);
     min-height: 200px;
 }
 
-/* Sequence/Sorting Items */
 .sortable-item {
     padding: 1rem 1.5rem;
     background-color: var(--color-surface-hover);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius);
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display: flex; align-items: center; justify-content: space-between;
     transition: all 0.2s ease;
 }
-.sortable-item:hover {
-    border-color: var(--color-primary);
-    transform: translateX(4px);
-}
+.sortable-item:hover { border-color: var(--color-primary); transform: translateX(4px); }
 .sortable-item.selected {
     background-color: var(--color-primary-transparent);
     border-color: var(--color-primary);
     box-shadow: 0 0 10px var(--color-primary-transparent);
 }
 
-/* Drag and Drop Styles */
-.sortable-item[draggable="true"] {
-    cursor: grab;
-}
-.sortable-item[draggable="true"]:active {
-    cursor: grabbing;
-}
-.sortable-item.dragging {
-    opacity: 0.5;
-    border: 2px dashed var(--color-primary);
-    background-color: var(--color-surface);
-}
-.sortable-item.drag-over {
-    border-top: 2px solid var(--color-primary);
-    transform: translateY(5px);
-}
+.sortable-item[draggable="true"] { cursor: grab; }
+.sortable-item[draggable="true"]:active { cursor: grabbing; }
+.sortable-item.dragging { opacity: 0.5; border: 2px dashed var(--color-primary); background-color: var(--color-surface); }
+.sortable-item.drag-over { border-top: 2px solid var(--color-primary); transform: translateY(5px); }
 
 .sortable-item .sort-index {
     width: 28px; height: 28px;
@@ -449,11 +389,7 @@ body:has(.level-card.boss.current) .game-level-container,
 .sortable-item.incorrect { border-color: var(--color-error); background-color: var(--color-error-bg); }
 
 /* Match Columns */
-.match-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-xl);
-}
+.match-container { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-xl); }
 .match-column { display: flex; flex-direction: column; gap: var(--space-md); }
 .match-item {
     padding: 1rem;

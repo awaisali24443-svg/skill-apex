@@ -95,6 +95,43 @@
         </div>
     </section>
 
+    <!-- NEW: AI Persona Selection -->
+    <section class="settings-group card" aria-labelledby="persona-heading">
+        <h2 style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--color-primary);">Neural Personality</h2>
+        <p style="margin-bottom: 1.5rem; font-size: 0.95rem; color: var(--color-text-secondary);">Select the AI personality that guides your learning journey.</p>
+        
+        <div class="persona-grid">
+            <button class="persona-card selected" data-persona="apex">
+                <div class="persona-icon" style="color: var(--color-primary); border-color: var(--color-primary);">
+                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#cpu"/></svg>
+                </div>
+                <h3>Apex</h3>
+                <p>Balanced & Gamified.</p>
+            </button>
+            <button class="persona-card" data-persona="sage">
+                <div class="persona-icon" style="color: #9c27b0; border-color: #9c27b0;">
+                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#book-open"/></svg>
+                </div>
+                <h3>Sage</h3>
+                <p>Socratic & Deep.</p>
+            </button>
+            <button class="persona-card" data-persona="commander">
+                <div class="persona-icon" style="color: #f44336; border-color: #f44336;">
+                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#shield"/></svg>
+                </div>
+                <h3>Commander</h3>
+                <p>Strict & Disciplined.</p>
+            </button>
+            <button class="persona-card" data-persona="eli5">
+                <div class="persona-icon" style="color: #ff9800; border-color: #ff9800;">
+                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#star"/></svg>
+                </div>
+                <h3>ELI5</h3>
+                <p>Simple & Fun.</p>
+            </button>
+        </div>
+    </section>
+
     <section class="settings-group card" aria-labelledby="general-settings-heading">
         <h2 id="general-settings-heading" class="sr-only">General Settings</h2>
 
@@ -206,3 +243,51 @@
         </div>
     </div>
 </div>
+
+<style>
+/* Inline Persona Grid Styles */
+.persona-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: var(--space-md);
+    margin-top: var(--space-md);
+}
+
+.persona-card {
+    background: var(--color-surface-hover);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: var(--space-lg);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--color-text);
+}
+
+.persona-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--color-text-secondary);
+}
+
+.persona-card.selected {
+    border-color: var(--color-primary);
+    background: var(--color-primary-transparent);
+    box-shadow: 0 0 15px var(--color-primary-transparent);
+}
+
+.persona-icon {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid;
+    margin-bottom: var(--space-md);
+    background: rgba(0,0,0,0.1);
+}
+.persona-icon svg { width: 24px; height: 24px; stroke: currentColor; }
+
+.persona-card h3 { margin: 0 0 4px 0; font-size: 1rem; }
+.persona-card p { font-size: 0.8rem; color: var(--color-text-secondary); margin: 0; }
+</style>

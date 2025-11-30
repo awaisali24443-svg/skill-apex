@@ -1,7 +1,9 @@
 
+
+
 import { LOCAL_STORAGE_KEYS } from '../constants.js';
 import { showToast } from './toastService.js';
-import { db, doc, getDoc, setDoc, getUserId, isGuest } from './firebaseService.js';
+import { db, doc, getDoc, setDoc, getUserId, isGuest, updateLeaderboardScore } from './firebaseService.js';
 
 const defaultStats = {
     level: 1,
@@ -136,6 +138,8 @@ async function loadStats() {
                         window.dispatchEvent(new CustomEvent('gamification-updated'));
                     }
                 }
+                // Also update leaderboard just in case
+                updateLeaderboardScore(stats);
             }
         }
     } catch (e) {
@@ -163,6 +167,8 @@ async function saveStatsRemote() {
         const userId = getUserId();
         if (userId) {
             await setDoc(doc(db, "users", userId, "data", "gamification"), stats);
+            // Update Public Leaderboard
+            updateLeaderboardScore(stats);
         }
     } catch (e) {
         console.warn("Failed to save stats to cloud", e);

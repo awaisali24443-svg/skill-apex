@@ -2,6 +2,8 @@
 
 
 
+
+
 import * as apiService from '../../services/apiService.js';
 import * as learningPathService from '../../services/learningPathService.js';
 import * as markdownService from '../../services/markdownService.js';
@@ -53,6 +55,10 @@ let loadingTextInterval = null; // For dynamic loading messages
 
 // Drag and Drop State
 let dragStartIndex = null;
+
+// Typewriter
+let typewriterInterval = null;
+let isTyping = false;
 
 const PASS_THRESHOLD = 0.8;
 const LEVELS_PER_CHAPTER = 50;
@@ -405,24 +411,115 @@ async function preloadNextLevel() {
     }
 }
 
+// --- TYPEWRITER RENDERER ---
+function renderLessonTypewriter(htmlContent) {
+    if (typewriterInterval) clearInterval(typewriterInterval);
+    
+    // 1. Create a temporary container to parse HTML nodes
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlContent;
+    
+    const container = elements.lessonBody;
+    container.innerHTML = ''; // Clear previous
+    container.classList.add('typewriter-cursor');
+    
+    // Flatten DOM into a queue of "actions" (Append Node OR Append Text Char)
+    const actionQueue = [];
+    
+    function traverse(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            const text = node.textContent;
+            for (let char of text) {
+                actionQueue.push({ type: 'char', content: char });
+            }
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+            // Push an "open tag" action - actually we'll clone the node without children
+            const clone = node.cloneNode(false); // shallow clone
+            actionQueue.push({ type: 'element', content: clone });
+            
+            // Recurse children
+            node.childNodes.forEach(child => traverse(child));
+            
+            // We need a way to know "where" to append subsequent chars.
+            // Simplified approach: We reconstruct the tree pointer as we go.
+        }
+    }
+    
+    // Better Strategy: Tokenize by visual blocks, not pure characters, for stability.
+    // Actually, simple approach:
+    // 1. Set full HTML but HIDDEN.
+    // 2. Reveal words/chars via CSS? No, too complex.
+    
+    // Robust Approach:
+    // Just dump the HTML fully but use the 'typewriter' class to hide everything
+    // and then JS to reveal nodes?
+    // No, standard text node slicing is best.
+    
+    // Let's use the markdownService directly rendered string and manipulate it.
+    // We will just stream textContent of leaf nodes.
+    
+    container.innerHTML = htmlContent;
+    const allTextNodes = [];
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+    let node;
+    while(node = walker.nextNode()) allTextNodes.push(node);
+    
+    // Hide all text
+    const originalTexts = allTextNodes.map(n => n.textContent);
+    allTextNodes.forEach(n => n.textContent = '');
+    
+    isTyping = true;
+    let nodeIndex = 0;
+    let charIndex = 0;
+    
+    // Add "Skip" capability
+    elements.lessonBody.onclick = () => {
+        if (isTyping) {
+            clearInterval(typewriterInterval);
+            isTyping = false;
+            container.classList.remove('typewriter-cursor');
+            // Restore all text instantly
+            allTextNodes.forEach((n, i) => n.textContent = originalTexts[i]);
+            // Init diagram
+            if (window.mermaid) mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+        }
+    };
+
+    typewriterInterval = setInterval(() => {
+        if (nodeIndex >= allTextNodes.length) {
+            clearInterval(typewriterInterval);
+            isTyping = false;
+            container.classList.remove('typewriter-cursor');
+            if (window.mermaid) mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+            return;
+        }
+        
+        const currentNode = allTextNodes[nodeIndex];
+        const fullText = originalTexts[nodeIndex];
+        
+        if (charIndex < fullText.length) {
+            currentNode.textContent += fullText[charIndex];
+            charIndex++;
+            // Scroll to bottom if needed
+            container.scrollTop = container.scrollHeight;
+        } else {
+            nodeIndex++;
+            charIndex = 0;
+        }
+    }, 10); // Fast typing speed (10ms)
+}
+
 function renderLesson() {
-    if (!levelData.lesson) return; // Safety check
+    if (!levelData.lesson) return; 
 
     elements.lessonTitle.textContent = `Level ${levelContext.level}: ${levelContext.topic}`;
-    elements.lessonBody.innerHTML = markdownService.render(levelData.lesson);
+    const rawHtml = markdownService.render(levelData.lesson);
     
-    if (window.mermaid) {
-        setTimeout(() => {
-            try {
-                mermaid.init(undefined, document.querySelectorAll('.mermaid'));
-            } catch(e) {
-                console.error("Mermaid rendering error:", e);
-            }
-        }, 100);
-    }
-
     if(elements.readAloudBtn) elements.readAloudBtn.disabled = false;
     switchState('level-lesson-state');
+    
+    // Start Typewriter
+    renderLessonTypewriter(rawHtml);
 }
 
 // --- ANTI-CHEAT SYSTEM ---
@@ -1396,6 +1493,7 @@ export function init() {
 
 export function destroy() {
     clearInterval(timerInterval);
+    if (typewriterInterval) clearInterval(typewriterInterval);
     stopLoadingAnimation();
     stopAudio();
     removeAntiCheat(); // Crucial cleanup

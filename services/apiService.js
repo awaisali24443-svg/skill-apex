@@ -1,5 +1,6 @@
 
 import { showToast } from './toastService.js';
+import * as configService from './configService.js';
 
 /**
  * Handles the response from a fetch request.
@@ -52,6 +53,10 @@ async function fetchWithTimeout(url, options = {}, timeout = 30000) {
     }
 }
 
+function getPersona() {
+    return configService.getConfig().aiPersona || 'apex';
+}
+
 export async function fetchTopics() {
     try {
         const response = await fetchWithTimeout('/api/topics');
@@ -67,7 +72,7 @@ export async function generateJourneyPlan(topic) {
         const response = await fetchWithTimeout('/api/generate-journey-plan', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic })
+            body: JSON.stringify({ topic, persona: getPersona() })
         });
         return await handleResponse(response);
     } catch (error) {
@@ -81,7 +86,7 @@ export async function generateJourneyFromImage(imageBase64, mimeType) {
         const response = await fetchWithTimeout('/api/generate-journey-from-image', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageBase64, mimeType })
+            body: JSON.stringify({ imageBase64, mimeType, persona: getPersona() })
         }, 60000); // 60s timeout for heavier image processing
         return await handleResponse(response);
     } catch (error) {
@@ -94,7 +99,7 @@ export async function generateCurriculumOutline({ topic, totalLevels }) {
         const response = await fetchWithTimeout('/api/generate-curriculum-outline', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, totalLevels })
+            body: JSON.stringify({ topic, totalLevels, persona: getPersona() })
         });
         return await handleResponse(response);
     } catch (error) {
@@ -107,7 +112,7 @@ export async function generateLevelQuestions({ topic, level, totalLevels }) {
         const response = await fetchWithTimeout('/api/generate-level-questions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, level, totalLevels })
+            body: JSON.stringify({ topic, level, totalLevels, persona: getPersona() })
         });
         return await handleResponse(response);
     } catch (error) {
@@ -120,7 +125,7 @@ export async function generateInteractiveLevel({ topic, level }) {
         const response = await fetchWithTimeout('/api/generate-interactive-level', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, level })
+            body: JSON.stringify({ topic, level, persona: getPersona() })
         });
         return await handleResponse(response);
     } catch (error) {
@@ -135,7 +140,7 @@ export async function generateLevelLesson({ topic, level, totalLevels, questions
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             // Questions are now optional for parallel generation
-            body: JSON.stringify({ topic, level, totalLevels, questions: questions || null }),
+            body: JSON.stringify({ topic, level, totalLevels, questions: questions || null, persona: getPersona() }),
             signal: signal
         });
         return await handleResponse(response);
@@ -149,7 +154,7 @@ export async function generateBossBattle({ topic, chapter }) {
         const response = await fetchWithTimeout('/api/generate-boss-battle', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, chapter })
+            body: JSON.stringify({ topic, chapter, persona: getPersona() })
         });
         return await handleResponse(response);
     } catch (error) {
@@ -162,7 +167,7 @@ export async function generateHint({ topic, question, options }) {
         const response = await fetchWithTimeout('/api/generate-hint', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, question, options })
+            body: JSON.stringify({ topic, question, options, persona: getPersona() })
         });
         return await handleResponse(response);
     } catch (error) {
@@ -188,7 +193,7 @@ export async function explainConcept(topic, concept, context) {
         const response = await fetchWithTimeout('/api/explain-concept', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, concept, context })
+            body: JSON.stringify({ topic, concept, context, persona: getPersona() })
         });
         return await handleResponse(response);
     } catch (error) {
@@ -210,7 +215,7 @@ export async function explainError(topic, question, userChoice, correctChoice) {
         const response = await fetchWithTimeout('/api/explain-error', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, question, userChoice, correctChoice })
+            body: JSON.stringify({ topic, question, userChoice, correctChoice, persona: getPersona() })
         });
         return await handleResponse(response);
     } catch (error) {

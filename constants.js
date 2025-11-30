@@ -2,6 +2,7 @@
 
 
 
+
 export const LOCAL_STORAGE_KEYS = {
     CONFIG: 'knowledge-tester-config',
     LIBRARY: 'knowledge-tester-library',
@@ -22,6 +23,7 @@ export const ROUTES = [
     { path: '/topics', module: 'topic-list', name: 'Journeys', icon: 'git-branch', nav: true },
     { path: '/library', module: 'library', name: 'Library', icon: 'book', nav: true },
     { path: '/history', module: 'history', name: 'History', icon: 'archive', nav: true },
+    { path: '/leaderboard', module: 'leaderboard', name: 'Leaderboard', icon: 'award', nav: true },
     { path: '/profile', module: 'profile', name: 'Profile', icon: 'user', nav: true },
     { path: '/aural', module: 'aural', name: 'Aural Tutor', icon: 'mic', nav: true, fullBleed: true },
 

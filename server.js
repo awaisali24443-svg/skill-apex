@@ -16,24 +16,43 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 let topicsCache = null;
 
-// --- APEXCORE IDENTITY & SYSTEM INSTRUCTIONS ---
-const APEX_CORE_IDENTITY = `You are **ApexCore**, the master AI engine for the Skill Apex learning platform.
-Your function: Generate deeply structured, gamified, and adaptive learning content.
-Persona: A fusion of a Senior Educator, Cognitive Psychologist, and Lead Game Designer.
+// --- DYNAMIC PERSONA SYSTEM ---
+const PERSONA_DEFINITIONS = {
+    apex: `Persona: A fusion of a Senior Educator, Cognitive Psychologist, and Lead Game Designer.
+           Tone: Professional, encouraging, gamified, and precise.`,
+    
+    sage: `Persona: A Socratic Philosopher and Wise Mentor.
+           Tone: Thoughtful, deep, and inquisitive. 
+           Style: Often answer questions with guiding questions to provoke thought. Use metaphors from nature and logic.`,
+    
+    commander: `Persona: A Futuristic Military Drill Instructor.
+           Tone: Intense, direct, strict, and high-energy.
+           Style: No fluff. Focus on discipline, 'mission objectives', and 'tactical knowledge'. Call the user 'Recruit' or 'Operative'.`,
+    
+    eli5: `Persona: A Friendly Science Teacher for kids.
+           Tone: Gentle, enthusiastic, and very simple.
+           Style: Use many analogies (LEGOs, pizza, cars). Avoid jargon. Explain complex topics in the simplest terms possible.`
+};
 
-**CORE OPERATING RULES:**
-1. **Instructional Design:** Apply Bloom's Taxonomy. Concepts must spiral from simple definitions to complex application.
-2. **Gamification:** Treat knowledge acquisition as an RPG. Exams are "Boss Battles".
-3. **Visual Learning:** Always support abstract concepts with Mermaid.js diagrams or analogies.
-4. **Brevity:** High signal-to-noise ratio. Use bullet points, bold text, and emojis. No fluff.
-5. **Format:** Output strictly valid JSON when requested.
+function getSystemInstruction(personaKey = 'apex') {
+    const personaDesc = PERSONA_DEFINITIONS[personaKey] || PERSONA_DEFINITIONS.apex;
+    
+    return `You are **ApexCore**, the master AI engine for the Skill Apex learning platform.
+    ${personaDesc}
 
-**DIFFICULTY CLUSTERS:**
-- **Levels 1-10 (Novice):** Focus on definitions, identification, and basic concepts.
-- **Levels 11-30 (Pro):** Focus on scenarios, application, and "How-to".
-- **Levels 31-45 (Expert):** Focus on analysis, edge cases, and troubleshooting.
-- **Levels 46-50 (Mastery):** Multi-step reasoning, synthesis, and complex challenges.
-`;
+    **CORE OPERATING RULES:**
+    1. **Instructional Design:** Apply Bloom's Taxonomy. Concepts must spiral from simple definitions to complex application.
+    2. **Gamification:** Treat knowledge acquisition as an RPG. Exams are "Boss Battles".
+    3. **Visual Learning:** Always support abstract concepts with Mermaid.js diagrams or analogies.
+    4. **Format:** Output strictly valid JSON when requested.
+    
+    **DIFFICULTY CLUSTERS:**
+    - **Levels 1-10 (Novice):** Focus on definitions, identification, and basic concepts.
+    - **Levels 11-30 (Pro):** Focus on scenarios, application, and "How-to".
+    - **Levels 31-45 (Expert):** Focus on analysis, edge cases, and troubleshooting.
+    - **Levels 46-50 (Mastery):** Multi-step reasoning, synthesis, and complex challenges.
+    `;
+}
 
 // --- VALIDATION HELPERS ---
 function isValidTopic(topic) {
@@ -240,7 +259,7 @@ const dailyChallengeSchema = {
 
 // --- GEMINI SERVICE FUNCTIONS ---
 
-async function generateJourneyPlan(topic) {
+async function generateJourneyPlan(topic, persona) {
     if (!ai) throw new Error("AI Service not initialized.");
     const prompt = `Analyze the topic "${topic}".
     
@@ -259,7 +278,7 @@ async function generateJourneyPlan(topic) {
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
-                systemInstruction: APEX_CORE_IDENTITY,
+                systemInstruction: getSystemInstruction(persona),
                 responseMimeType: 'application/json',
                 responseSchema: journeyPlanSchema,
             }
@@ -271,7 +290,7 @@ async function generateJourneyPlan(topic) {
     }
 }
 
-async function generateJourneyPlanFromImage(imageBase64, mimeType) {
+async function generateJourneyPlanFromImage(imageBase64, mimeType, persona) {
     if (!ai) throw new Error("AI Service not initialized.");
     
     const prompt = `Analyze this image. Identify the educational concept, diagram, code snippet, or historical event shown.
@@ -298,7 +317,7 @@ async function generateJourneyPlanFromImage(imageBase64, mimeType) {
                 ]
             },
             config: {
-                systemInstruction: APEX_CORE_IDENTITY,
+                systemInstruction: getSystemInstruction(persona),
                 responseMimeType: 'application/json',
                 responseSchema: journeyPlanSchema,
             }
@@ -310,7 +329,7 @@ async function generateJourneyPlanFromImage(imageBase64, mimeType) {
     }
 }
 
-async function generateCurriculumOutline(topic, totalLevels) {
+async function generateCurriculumOutline(topic, totalLevels, persona) {
     if (!ai) throw new Error("AI Service not initialized.");
     const numChapters = Math.ceil(totalLevels / 50);
     const prompt = `A learning journey for the topic "${topic}" has been scoped to ${totalLevels} levels.
@@ -329,7 +348,7 @@ async function generateCurriculumOutline(topic, totalLevels) {
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
-                systemInstruction: APEX_CORE_IDENTITY,
+                systemInstruction: getSystemInstruction(persona),
                 responseMimeType: 'application/json',
                 responseSchema: curriculumOutlineSchema,
             }
@@ -341,7 +360,7 @@ async function generateCurriculumOutline(topic, totalLevels) {
     }
 }
 
-async function generateLevelQuestions(topic, level, totalLevels) {
+async function generateLevelQuestions(topic, level, totalLevels, persona) {
     if (!ai) throw new Error("AI Service not initialized.");
     
     // ApexCore Difficulty Clusters
@@ -375,7 +394,7 @@ async function generateLevelQuestions(topic, level, totalLevels) {
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
-                systemInstruction: APEX_CORE_IDENTITY,
+                systemInstruction: getSystemInstruction(persona),
                 responseMimeType: 'application/json',
                 responseSchema: questionsGenerationSchema,
             }
@@ -387,7 +406,7 @@ async function generateLevelQuestions(topic, level, totalLevels) {
     }
 }
 
-async function generateInteractiveLevel(topic, level) {
+async function generateInteractiveLevel(topic, level, persona) {
     if (!ai) throw new Error("AI Service not initialized.");
     
     const prompt = `Create an interactive challenge for the topic "${topic}" at Level ${level}.
@@ -406,7 +425,7 @@ async function generateInteractiveLevel(topic, level) {
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
-                systemInstruction: APEX_CORE_IDENTITY,
+                systemInstruction: getSystemInstruction(persona),
                 responseMimeType: 'application/json',
                 responseSchema: interactiveChallengeSchema,
             }
@@ -418,7 +437,7 @@ async function generateInteractiveLevel(topic, level) {
     }
 }
 
-async function generateLevelLesson(topic, level, totalLevels, questionsContext) {
+async function generateLevelLesson(topic, level, totalLevels, questionsContext, persona) {
     if (!ai) throw new Error("AI Service not initialized.");
     
     let contextInstruction = "";
@@ -451,7 +470,7 @@ async function generateLevelLesson(topic, level, totalLevels, questionsContext) 
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
-                systemInstruction: APEX_CORE_IDENTITY,
+                systemInstruction: getSystemInstruction(persona),
                 responseMimeType: 'application/json',
                 responseSchema: lessonGenerationSchema,
             }
@@ -463,7 +482,7 @@ async function generateLevelLesson(topic, level, totalLevels, questionsContext) 
     }
 }
 
-async function generateBossBattleContent(topic, chapter) {
+async function generateBossBattleContent(topic, chapter, persona) {
     if (!ai) throw new Error("AI Service not initialized.");
     const startLevel = (chapter - 1) * 50 + 1;
     const endLevel = chapter * 50;
@@ -483,7 +502,7 @@ async function generateBossBattleContent(topic, chapter) {
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
-                systemInstruction: APEX_CORE_IDENTITY,
+                systemInstruction: getSystemInstruction(persona),
                 responseMimeType: 'application/json',
                 responseSchema: bossBattleGenerationSchema,
             }
@@ -495,7 +514,7 @@ async function generateBossBattleContent(topic, chapter) {
     }
 }
 
-async function generateHint(topic, question, options) {
+async function generateHint(topic, question, options, persona) {
     if (!ai) throw new Error("AI Service not initialized.");
     
     const optionsString = options.map((opt, i) => `${String.fromCharCode(65 + i)}. ${opt}`).join('\n');
@@ -519,7 +538,7 @@ async function generateHint(topic, question, options) {
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
-                systemInstruction: APEX_CORE_IDENTITY,
+                systemInstruction: getSystemInstruction(persona),
                 responseMimeType: 'application/json',
                 responseSchema: hintGenerationSchema,
             }
@@ -562,7 +581,7 @@ async function generateSpeech(text) {
     }
 }
 
-async function explainConcept(topic, concept, context) {
+async function explainConcept(topic, concept, context, persona) {
     if (!ai) throw new Error("AI Service not initialized.");
     const prompt = `Topic: ${topic}
     Context: ${context}
@@ -581,7 +600,7 @@ async function explainConcept(topic, concept, context) {
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
-                systemInstruction: APEX_CORE_IDENTITY,
+                systemInstruction: getSystemInstruction(persona),
                 responseMimeType: 'application/json',
                 responseSchema: explanationSchema,
             }
@@ -593,7 +612,7 @@ async function explainConcept(topic, concept, context) {
     }
 }
 
-async function generateDailyChallenge() {
+async function generateDailyChallenge(persona) {
     if (!ai) throw new Error("AI Service not initialized.");
     const categories = ["Science", "Technology", "History", "Space", "Coding", "Biology"];
     const topic = categories[Math.floor(Math.random() * categories.length)];
@@ -607,7 +626,7 @@ async function generateDailyChallenge() {
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
-                systemInstruction: APEX_CORE_IDENTITY,
+                systemInstruction: getSystemInstruction(persona),
                 responseMimeType: 'application/json',
                 responseSchema: dailyChallengeSchema,
             }
@@ -619,7 +638,7 @@ async function generateDailyChallenge() {
     }
 }
 
-async function explainError(topic, question, userChoice, correctChoice) {
+async function explainError(topic, question, userChoice, correctChoice, persona) {
     if (!ai) throw new Error("AI Service not initialized.");
     const prompt = `The user answered a question about "${topic}" incorrectly.
     Question: "${question}"
@@ -635,7 +654,7 @@ async function explainError(topic, question, userChoice, correctChoice) {
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
-                systemInstruction: APEX_CORE_IDENTITY,
+                systemInstruction: getSystemInstruction(persona),
                 responseMimeType: 'application/json',
                 responseSchema: explanationSchema,
             }
@@ -655,29 +674,6 @@ const wss = new WebSocketServer({ server });
 
 // Increased payload limit to support base64 image uploads
 app.use(express.json({ limit: '10mb' }));
-
-// --- SEO: Explicit Routes for robots.txt and sitemap.xml ---
-app.get('/robots.txt', (req, res) => {
-    res.type('text/plain');
-    res.sendFile(path.join(__dirname, 'robots.txt'));
-});
-
-app.get('/sitemap.xml', (req, res) => {
-    res.type('application/xml');
-    res.sendFile(path.join(__dirname, 'sitemap.xml'));
-});
-
-// Serve the Env.js
-app.get('/env.js', (req, res) => {
-    res.type('application/javascript');
-    res.send(`
-        window.process = window.process || {};
-        window.process.env = window.process.env || {};
-        window.process.env.API_KEY = '${process.env.API_KEY || ""}';
-        // Add other env vars here if needed safely
-    `);
-});
-
 app.use(express.static(path.join(__dirname)));
 
 const apiLimiter = rateLimit({
@@ -696,10 +692,10 @@ app.get('/health', (req, res) => {
 });
 
 app.post('/api/generate-journey-plan', async (req, res) => {
-    const { topic } = req.body;
+    const { topic, persona } = req.body;
     if (!isValidTopic(topic)) return res.status(400).json({ error: 'Invalid parameter: topic' });
     try {
-        const plan = await generateJourneyPlan(topic);
+        const plan = await generateJourneyPlan(topic, persona);
         res.json(plan);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -708,10 +704,10 @@ app.post('/api/generate-journey-plan', async (req, res) => {
 
 // NEW: Image Analysis Endpoint
 app.post('/api/generate-journey-from-image', async (req, res) => {
-    const { imageBase64, mimeType } = req.body;
+    const { imageBase64, mimeType, persona } = req.body;
     if (!imageBase64 || !mimeType) return res.status(400).json({ error: 'Invalid parameters: image required' });
     try {
-        const plan = await generateJourneyPlanFromImage(imageBase64, mimeType);
+        const plan = await generateJourneyPlanFromImage(imageBase64, mimeType, persona);
         res.json(plan);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -719,10 +715,10 @@ app.post('/api/generate-journey-from-image', async (req, res) => {
 });
 
 app.post('/api/generate-curriculum-outline', async (req, res) => {
-    const { topic, totalLevels } = req.body;
+    const { topic, totalLevels, persona } = req.body;
     if (!isValidTopic(topic) || !isValidNumber(totalLevels)) return res.status(400).json({ error: 'Invalid parameters' });
     try {
-        const outline = await generateCurriculumOutline(topic, totalLevels);
+        const outline = await generateCurriculumOutline(topic, totalLevels, persona);
         res.json(outline);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -730,10 +726,10 @@ app.post('/api/generate-curriculum-outline', async (req, res) => {
 });
 
 app.post('/api/generate-level-questions', async (req, res) => {
-    const { topic, level, totalLevels } = req.body;
+    const { topic, level, totalLevels, persona } = req.body;
     if (!isValidTopic(topic) || !isValidNumber(level) || !isValidNumber(totalLevels)) return res.status(400).json({ error: 'Invalid parameters' });
     try {
-        const data = await generateLevelQuestions(topic, level, totalLevels);
+        const data = await generateLevelQuestions(topic, level, totalLevels, persona);
         res.json(data);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -741,10 +737,10 @@ app.post('/api/generate-level-questions', async (req, res) => {
 });
 
 app.post('/api/generate-interactive-level', async (req, res) => {
-    const { topic, level } = req.body;
+    const { topic, level, persona } = req.body;
     if (!isValidTopic(topic) || !isValidNumber(level)) return res.status(400).json({ error: 'Invalid parameters' });
     try {
-        const data = await generateInteractiveLevel(topic, level);
+        const data = await generateInteractiveLevel(topic, level, persona);
         res.json(data);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -752,11 +748,11 @@ app.post('/api/generate-interactive-level', async (req, res) => {
 });
 
 app.post('/api/generate-level-lesson', async (req, res) => {
-    const { topic, level, totalLevels, questions } = req.body;
+    const { topic, level, totalLevels, questions, persona } = req.body;
     // Relaxed validation: questions are optional now for parallel generation
     if (!isValidTopic(topic) || !isValidNumber(level) || !isValidNumber(totalLevels)) return res.status(400).json({ error: 'Invalid parameters' });
     try {
-        const data = await generateLevelLesson(topic, level, totalLevels, questions);
+        const data = await generateLevelLesson(topic, level, totalLevels, questions, persona);
         res.json(data);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -764,10 +760,10 @@ app.post('/api/generate-level-lesson', async (req, res) => {
 });
 
 app.post('/api/generate-boss-battle', async (req, res) => {
-    const { topic, chapter } = req.body;
+    const { topic, chapter, persona } = req.body;
     if (!isValidTopic(topic) || !isValidNumber(chapter)) return res.status(400).json({ error: 'Invalid parameters' });
     try {
-        const bossContent = await generateBossBattleContent(topic, chapter);
+        const bossContent = await generateBossBattleContent(topic, chapter, persona);
         res.json(bossContent);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -775,10 +771,10 @@ app.post('/api/generate-boss-battle', async (req, res) => {
 });
 
 app.post('/api/generate-hint', async (req, res) => {
-    const { topic, question, options } = req.body;
+    const { topic, question, options, persona } = req.body;
     if (!isValidTopic(topic) || !isValidText(question) || !options) return res.status(400).json({ error: 'Invalid parameters' });
     try {
-        const hint = await generateHint(topic, question, options);
+        const hint = await generateHint(topic, question, options, persona);
         res.json(hint);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -797,10 +793,10 @@ app.post('/api/generate-speech', async (req, res) => {
 });
 
 app.post('/api/explain-concept', async (req, res) => {
-    const { topic, concept, context } = req.body;
+    const { topic, concept, context, persona } = req.body;
     if (!isValidTopic(topic) || !isValidText(concept)) return res.status(400).json({ error: 'Invalid parameters' });
     try {
-        const result = await explainConcept(topic, concept, context || '');
+        const result = await explainConcept(topic, concept, context || '', persona);
         res.json(result);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -808,13 +804,13 @@ app.post('/api/explain-concept', async (req, res) => {
 });
 
 app.get('/api/daily-challenge', async (req, res) => {
-    try { res.json(await generateDailyChallenge()); } catch (e) { res.status(500).json({ error: e.message }); }
+    try { res.json(await generateDailyChallenge('apex')); } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.post('/api/explain-error', async (req, res) => {
-    const { topic, question, userChoice, correctChoice } = req.body;
+    const { topic, question, userChoice, correctChoice, persona } = req.body;
     if (!isValidTopic(topic) || !isValidText(question)) return res.status(400).json({ error: 'Invalid parameters' });
-    try { res.json(await explainError(topic, question, userChoice, correctChoice)); } catch (e) { res.status(500).json({ error: e.message }); }
+    try { res.json(await explainError(topic, question, userChoice, correctChoice, persona)); } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.get('/api/topics', async (req, res) => {

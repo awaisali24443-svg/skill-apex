@@ -1,0 +1,37 @@
+<div class="page-container leaderboard-container">
+    <header class="page-header">
+        <h1>Global Ranking</h1>
+        <p>Top operatives on the Skill Apex network.</p>
+    </header>
+
+    <div class="card leaderboard-card">
+        <div class="leaderboard-header">
+            <span class="col-rank">#</span>
+            <span class="col-user">User</span>
+            <span class="col-level">Level</span>
+            <span class="col-xp">XP</span>
+        </div>
+        <div id="leaderboard-list" class="leaderboard-list">
+            <!-- Injected via JS -->
+            <div class="loading-spinner-container">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="guest-leaderboard-msg" class="guest-msg" style="display: none;">
+        <p>You are in Guest Mode. <a href="/#/settings">Link your account</a> to appear on the leaderboard.</p>
+    </div>
+</div>
+
+<template id="leaderboard-item-template">
+    <div class="leaderboard-item">
+        <span class="col-rank rank-num"></span>
+        <div class="col-user user-info">
+            <div class="user-avatar-small"></div>
+            <span class="user-name"></span>
+        </div>
+        <span class="col-level level-num"></span>
+        <span class="col-xp xp-num"></span>
+    </div>
+</template>

@@ -1,7 +1,9 @@
 
+
+
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, setDoc, collection, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { 
     getAuth, 
     signInWithEmailAndPassword, 
@@ -137,6 +139,44 @@ function changePassword(newPassword) {
     return updatePassword(currentUser, newPassword);
 }
 
+// --- Leaderboard ---
+
+async function updateLeaderboardScore(stats) {
+    if (!currentUser || isGuest()) return; // Guests don't rank
+    
+    const userRef = doc(db, "leaderboard", currentUser.uid);
+    // Use part of email as username if not set, or 'User'
+    const name = currentUser.email ? currentUser.email.split('@')[0] : 'ApexUser';
+    
+    try {
+        await setDoc(userRef, {
+            username: name,
+            xp: stats.xp,
+            level: stats.level,
+            lastUpdated: new Date().toISOString()
+        }, { merge: true });
+    } catch(e) {
+        console.warn("Leaderboard update failed", e);
+    }
+}
+
+async function getLeaderboard(limitCount = 20) {
+    const lbRef = collection(db, "leaderboard");
+    const q = query(lbRef, orderBy("xp", "desc"), limit(limitCount));
+    
+    try {
+        const querySnapshot = await getDocs(q);
+        const results = [];
+        querySnapshot.forEach((doc) => {
+            results.push({ id: doc.id, ...doc.data() });
+        });
+        return results;
+    } catch(e) {
+        console.warn("Failed to fetch leaderboard", e);
+        return [];
+    }
+}
+
 export { 
     db, doc, getDoc, setDoc, 
     getUserId, getUserEmail, isGuest, getUserProvider,
@@ -144,5 +184,6 @@ export {
     login, register, loginWithGoogle, loginAsGuest, logout, 
     resetPassword, confirmReset,
     linkGoogle, linkEmail, reauthenticate, changePassword,
-    onAuthChange 
+    onAuthChange,
+    updateLeaderboardScore, getLeaderboard
 };
