@@ -1,71 +1,93 @@
 
-<div class="page-container profile-container">
+<div class="page-container profile-container sparked-layout">
     
-    <div class="profile-dashboard">
-        <!-- LEFT COLUMN: Identity & Core Stats -->
-        <aside class="profile-sidebar">
-            <div class="card identity-card">
-                <div class="identity-header-bg"></div>
-                <div class="identity-content">
-                    <div class="avatar-wrapper">
-                        <img src="assets/images/avatar-placeholder.png" alt="User Avatar" class="profile-avatar">
-                        <div class="level-badge" id="level-badge">1</div>
-                    </div>
-                    
-                    <h2 class="user-name">Operator</h2>
-                    <p class="user-title">Skill Apex Recruit</p>
-                    
-                    <div class="xp-container">
-                        <div class="xp-labels">
-                            <span>XP Progress</span>
-                            <span id="xp-text">0 / 100</span>
-                        </div>
-                        <div class="xp-track">
-                            <div id="xp-fill" class="xp-fill"></div>
-                        </div>
-                    </div>
-
-                    <div class="core-stats-row">
-                        <div class="core-stat">
-                            <svg class="icon"><use href="assets/icons/feather-sprite.svg#zap"/></svg>
-                            <span id="streak-stat">0</span>
-                            <small>Streak</small>
-                        </div>
-                        <div class="core-stat">
-                            <svg class="icon"><use href="assets/icons/feather-sprite.svg#target"/></svg>
-                            <span id="quizzes-stat">0</span>
-                            <small>Quizzes</small>
-                        </div>
-                        <div class="core-stat">
-                            <svg class="icon"><use href="assets/icons/feather-sprite.svg#check-circle"/></svg>
-                            <span id="avg-score-stat">0%</span>
-                            <small>Accuracy</small>
-                        </div>
-                    </div>
+    <!-- LEFT COLUMN: User Info & Widgets -->
+    <aside class="profile-sidebar">
+        
+        <!-- 1. Profile Card -->
+        <div class="card profile-card">
+            <div class="profile-banner"></div>
+            <div class="profile-content">
+                <div class="avatar-row">
+                    <img src="assets/images/avatar-placeholder.png" alt="Avatar" class="profile-avatar">
+                    <button class="edit-btn" title="Edit Profile">
+                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#settings"/></svg>
+                    </button>
                 </div>
-            </div>
-
-            <!-- Daily Protocol (Quests) moved to sidebar for better utility -->
-            <div class="card sidebar-quests">
-                <h3>Daily Protocol</h3>
-                <div id="daily-quests-list" class="quests-list">
-                    <!-- Quests injected here -->
-                </div>
-            </div>
-        </aside>
-
-        <!-- RIGHT COLUMN: Achievements & Trophies -->
-        <main class="profile-main">
-            <section class="achievements-section">
-                <header class="section-header">
-                    <h2>Achievement Vault</h2>
-                    <span class="badge-counter" id="achievement-count">0/20 Unlocked</span>
-                </header>
                 
-                <div id="achievements-grid" class="achievements-grid">
-                    <!-- Tiered Achievements injected here -->
+                <h2 class="user-name">Loading...</h2>
+                <div class="user-contact">
+                    <span id="user-email-text">...</span>
+                    <span>• +1 234 567 890</span>
                 </div>
-            </section>
-        </main>
-    </div>
+                
+                <div class="tags-row">
+                    <span class="tag">Member</span>
+                    <span class="tag">Donor</span>
+                    <span class="tag">Volunteer</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Recruitment Info Widget -->
+        <div class="card widget-card">
+            <h3 class="widget-title">Recruitment info</h3>
+            <p class="widget-sub">Add this tracking code to a campaign URL:</p>
+            
+            <div class="copy-field">
+                <input type="text" id="recruiter-id-input" value="recruiter_id=23" readonly>
+                <button class="copy-btn" id="copy-ref-btn">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#copy"/></svg> Copy
+                </button>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-outline" id="copy-donate-btn">Copy donate link</button>
+                <button class="btn btn-primary" id="copy-join-btn">Copy join link</button>
+            </div>
+        </div>
+
+        <!-- 3. Progress Widget -->
+        <div class="card widget-card">
+            <div class="widget-header">
+                <h3 class="widget-title">My achievements</h3>
+                <a href="#/history" class="view-all-link">View all</a>
+            </div>
+            
+            <div class="progress-display">
+                <div class="progress-stats">
+                    <span class="progress-percent" id="progress-percent">25%</span>
+                    <span class="progress-label">Profile progress</span>
+                    <span class="progress-sub">Well done. Keep it up!</span>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                </div>
+                <div class="progress-graphic">
+                    <!-- Clapping/Star graphic placeholder -->
+                    <svg viewBox="0 0 100 100" class="clapping-svg">
+                        <path d="M20,80 Q10,70 20,60 L30,40 L40,30 Q50,20 60,30 L50,50 Z" fill="#ffd54f" stroke="#000" stroke-width="2"/>
+                        <path d="M60,30 Q70,20 80,30 L70,50 L60,60 Q50,70 60,80 Z" fill="#ffb74d" stroke="#000" stroke-width="2"/>
+                        <circle cx="20" cy="30" r="2" fill="#000"/>
+                        <circle cx="80" cy="20" r="2" fill="#000"/>
+                        <circle cx="90" cy="50" r="2" fill="#000"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- RIGHT COLUMN: Achievements Grid -->
+    <main class="profile-main">
+        <header class="section-header">
+            <h1>Achievements</h1>
+            <p>Unlock your achievements by completing tasks on the platform</p>
+        </header>
+
+        <div id="achievements-grid" class="achievements-grid">
+            <!-- Achievements will be injected here via JS -->
+        </div>
+    </main>
+
 </div>

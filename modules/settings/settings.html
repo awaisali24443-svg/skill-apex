@@ -135,23 +135,7 @@
     <section class="settings-group card" aria-labelledby="general-settings-heading">
         <h2 id="general-settings-heading" class="sr-only">General Settings</h2>
 
-        <div class="setting-item">
-            <div class="setting-info">
-                <label for="theme-toggle-group">Theme</label>
-                <p id="theme-description">Select your preferred visual theme for the application.</p>
-            </div>
-            <div class="setting-control">
-                 <div class="segmented-control" id="theme-toggle-group" role="radiogroup" aria-describedby="theme-description">
-                     <div class="segmented-control-indicator"></div>
-                     <button role="radio" aria-checked="false" data-theme="light-cyber">Daylight</button>
-                     <button role="radio" aria-checked="false" data-theme="light-solar">Solar</button>
-                     <button role="radio" aria-checked="false" data-theme="dark">Bio</button>
-                     <button role="radio" aria-checked="false" data-theme="dark-cyber">Cyber</button>
-                     <button role="radio" aria-checked="false" data-theme="dark-arcane">Arcane</button>
-                     <button role="radio" aria-checked="false" data-theme="dark-nebula">Nebula</button>
-                 </div>
-            </div>
-        </div>
+        <!-- Theme Toggle Removed as per request -->
 
         <div class="setting-item">
             <div class="setting-info">
@@ -198,15 +182,13 @@
         </div>
     </section>
 
-    <p class="app-version">Version 4.3.0</p>
+    <p class="app-version">Version 4.4.0</p>
 </div>
 
-<!-- Link Email Modal -->
+<!-- Modal Markup Preserved -->
 <div id="link-email-modal" class="modal-backdrop" style="display: none;">
     <div class="modal-content">
-        <div class="modal-header">
-            <h2>Link Email Account</h2>
-        </div>
+        <div class="modal-header"><h2>Link Email Account</h2></div>
         <div class="modal-body">
             <p style="margin-bottom: 1rem;">Create a login to save your current progress permanently.</p>
             <input type="email" id="link-email-input" class="form-input" placeholder="Email" style="margin-bottom: 10px;">
@@ -220,21 +202,15 @@
     </div>
 </div>
 
-<!-- Change Password Modal -->
 <div id="update-password-modal" class="modal-backdrop" style="display: none;">
     <div class="modal-content">
-        <div class="modal-header">
-            <h2>Change Password</h2>
-        </div>
+        <div class="modal-header"><h2>Change Password</h2></div>
         <div class="modal-body">
             <p style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--color-text-secondary);">For your security, please verify your current password.</p>
-            
             <label class="form-label" style="font-size:0.9rem;">Current Password</label>
             <input type="password" id="current-pass-input" class="form-input" style="margin-bottom: 1rem;">
-            
             <label class="form-label" style="font-size:0.9rem;">New Password</label>
             <input type="password" id="new-pass-input" class="form-input">
-            
             <p id="update-pass-error" style="color: var(--color-error); display: none; margin-top: 10px; font-size: 0.9rem; background: var(--color-error-bg); padding: 8px; border-radius: 4px;"></p>
         </div>
         <div class="modal-footer">
@@ -245,49 +221,21 @@
 </div>
 
 <style>
-/* Inline Persona Grid Styles */
 .persona-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: var(--space-md);
-    margin-top: var(--space-md);
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-md); margin-top: var(--space-md);
 }
-
 .persona-card {
-    background: var(--color-surface-hover);
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    padding: var(--space-lg);
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    color: var(--color-text);
+    background: var(--color-surface-hover); border: 1px solid var(--color-border); border-radius: 12px;
+    padding: var(--space-lg); text-align: center; cursor: pointer; transition: all 0.2s ease;
+    display: flex; flex-direction: column; align-items: center; color: var(--color-text);
 }
-
-.persona-card:hover {
-    transform: translateY(-3px);
-    border-color: var(--color-text-secondary);
-}
-
-.persona-card.selected {
-    border-color: var(--color-primary);
-    background: var(--color-primary-transparent);
-    box-shadow: 0 0 15px var(--color-primary-transparent);
-}
-
+.persona-card:hover { transform: translateY(-3px); border-color: var(--color-text-secondary); }
+.persona-card.selected { border-color: var(--color-primary); background: var(--color-primary-transparent); box-shadow: 0 0 15px var(--color-primary-transparent); }
 .persona-icon {
-    width: 48px; height: 48px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    border: 2px solid;
-    margin-bottom: var(--space-md);
-    background: rgba(0,0,0,0.1);
+    width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    border: 2px solid; margin-bottom: var(--space-md); background: rgba(0,0,0,0.1);
 }
 .persona-icon svg { width: 24px; height: 24px; stroke: currentColor; }
-
 .persona-card h3 { margin: 0 0 4px 0; font-size: 1rem; }
 .persona-card p { font-size: 0.8rem; color: var(--color-text-secondary); margin: 0; }
 </style>

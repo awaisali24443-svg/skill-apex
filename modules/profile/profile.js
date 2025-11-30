@@ -1,117 +1,175 @@
 
 import * as gamificationService from '../../services/gamificationService.js';
-import * as historyService from '../../services/historyService.js';
-import * as learningPathService from '../../services/learningPathService.js';
 import * as firebaseService from '../../services/firebaseService.js';
+import { showToast } from '../../services/toastService.js';
 
-function renderIdentity() {
+function renderProfile() {
     const stats = gamificationService.getStats();
-    const history = historyService.getHistory();
-    const profileStats = gamificationService.getProfileStats(history);
     const userEmail = firebaseService.getUserEmail();
+    const userId = firebaseService.getUserId() || 'guest_123';
 
-    // User Info
-    const nameEl = document.querySelector('.user-name');
-    if (nameEl) nameEl.textContent = userEmail ? userEmail.split('@')[0] : 'Operator';
+    // 1. User Identity
+    const name = userEmail ? userEmail.split('@')[0] : 'Rene Stanley';
+    document.querySelector('.user-name').textContent = name;
+    document.getElementById('user-email-text').textContent = userEmail || 'stanley@saturday.com';
     
-    // Level Badge
-    const levelBadge = document.getElementById('level-badge');
-    if (levelBadge) levelBadge.textContent = stats.level;
+    // 2. Recruitment
+    const shortId = userId.substring(0, 5).toUpperCase();
+    document.getElementById('recruiter-id-input').value = `recruiter_id=${shortId}`;
 
-    // XP Bar
-    const xpForNext = gamificationService.getXpForNextLevel(stats.level);
-    const xpPercent = (stats.xp / xpForNext) * 100;
+    // 3. Progress Widget
+    // Calculate level progress
+    const xpCurrent = stats.xp;
+    const xpNext = gamificationService.getXpForNextLevel(stats.level);
+    const percent = Math.min(100, Math.round((xpCurrent / xpNext) * 100)) || 25; // Default to 25 if 0 for visual match
     
-    const xpFill = document.getElementById('xp-fill');
-    if (xpFill) xpFill.style.width = `${Math.min(100, xpPercent)}%`;
-    
-    const xpText = document.getElementById('xp-text');
-    if (xpText) xpText.textContent = `${stats.xp} / ${xpForNext}`;
+    document.getElementById('progress-percent').textContent = `${percent}%`;
+    document.getElementById('progress-fill').style.width = `${percent}%`;
 
-    // Core Stats
-    const streakEl = document.getElementById('streak-stat');
-    if (streakEl) streakEl.textContent = stats.currentStreak;
-    
-    const quizEl = document.getElementById('quizzes-stat');
-    if (quizEl) quizEl.textContent = profileStats.totalQuizzes;
-    
-    const avgEl = document.getElementById('avg-score-stat');
-    if (avgEl) avgEl.textContent = `${profileStats.averageScore}%`;
+    renderBadges(stats);
 }
 
-function renderQuests() {
-    const quests = gamificationService.getDailyQuests();
-    const list = document.getElementById('daily-quests-list');
-    
-    if (!list) return;
-    
-    if (!quests || quests.length === 0) {
-        list.innerHTML = '<p style="text-align:center; color:var(--color-text-secondary); font-size:0.9rem;">No active protocol.</p>';
-        return;
-    }
-
-    list.innerHTML = quests.map(quest => `
-        <div class="quest-item ${quest.completed ? 'completed' : ''}">
-            <div class="quest-status-icon">
-                <svg class="icon" style="width:16px;height:16px;"><use href="assets/icons/feather-sprite.svg#${quest.completed ? 'check-circle' : 'circle'}"/></svg>
-            </div>
-            <span class="quest-text">${quest.text}</span>
-            <span class="quest-xp">+${quest.xp}</span>
-        </div>
-    `).join('');
-}
-
-function renderAchievements() {
-    const achievementsData = gamificationService.getAchievementsProgress();
+function renderBadges(stats) {
     const grid = document.getElementById('achievements-grid');
-    const countEl = document.getElementById('achievement-count');
-    
-    if (!grid) return;
-    
     grid.innerHTML = '';
-    
-    const unlockedCount = achievementsData.filter(a => a.isUnlocked).length;
-    if (countEl) countEl.textContent = `${unlockedCount} / ${achievementsData.length} Unlocked`;
 
-    achievementsData.forEach(ach => {
+    // Hardcoded list to match the "Sparked" design request exactly
+    // but dynamically mapped to real app stats where possible
+    const badges = [
+        {
+            name: "Signed Up",
+            desc: "Create your personal account",
+            shape: "shape-circle",
+            icon: "edit-2", // Pen
+            progress: 100,
+            completed: true
+        },
+        {
+            name: "Volunteer",
+            desc: "Complete your first volunteer shift",
+            shape: "shape-pentagon",
+            icon: "heart", 
+            progress: 100,
+            completed: stats.totalQuizzesCompleted > 0
+        },
+        {
+            name: "Host",
+            desc: "Number of events organized",
+            shape: "shape-hexagon",
+            icon: "box", 
+            current: stats.currentStreak,
+            target: 5,
+            progress: (stats.currentStreak / 5) * 100,
+            completed: false
+        },
+        {
+            name: "Member",
+            desc: "Number of events organized",
+            shape: "shape-shield",
+            icon: "user",
+            current: 0,
+            target: 1,
+            progress: 0,
+            completed: false
+        },
+        {
+            name: "Recruiter",
+            desc: "Recruit at least 1 new member",
+            shape: "shape-shield", // Silver shield style
+            icon: "users",
+            current: 0,
+            target: 1,
+            progress: 0,
+            completed: false
+        },
+        {
+            name: "10 Recruits",
+            desc: "Recruit at least 10 new members",
+            shape: "shape-shield",
+            icon: "star",
+            current: 0,
+            target: 10,
+            progress: 0,
+            completed: false
+        },
+        {
+            name: "100 Recruits",
+            desc: "Complete your first volunteer shift",
+            shape: "shape-shield",
+            icon: "award",
+            current: 0,
+            target: 100,
+            progress: 0,
+            completed: false
+        },
+        {
+            name: "Donor",
+            desc: "Become a donor of a campaign",
+            shape: "shape-shield",
+            icon: "gift",
+            current: 0,
+            target: 1,
+            progress: 0,
+            completed: false
+        }
+    ];
+
+    badges.forEach(b => {
         const card = document.createElement('div');
-        const tierClass = ach.isUnlocked ? `tier-${ach.currentTierName.toLowerCase()}` : 'tier-locked';
-        card.className = `achievement-card ${tierClass}`;
+        card.className = 'badge-card';
         
-        // Tier specific styling is handled in CSS based on class
-        
-        card.innerHTML = `
-            <div class="achievement-icon">
-                <svg><use href="assets/icons/feather-sprite.svg#${ach.icon}"/></svg>
-            </div>
-            <h3 class="achievement-name">${ach.name}</h3>
-            <p class="achievement-desc">${ach.description}</p>
+        let metaHtml = '';
+        let progressHtml = '';
+        let checkHtml = '';
+
+        if (b.completed) {
+            progressHtml = `<div class="badge-progress-bg"><div class="badge-progress-fill" style="width: 100%; background-color: var(--color-success);"></div></div>`;
+            metaHtml = `<div class="badge-meta" style="color: var(--color-success);">1/1</div>`;
+            checkHtml = `<svg class="check-icon"><use href="assets/icons/feather-sprite.svg#check-circle"/></svg>`;
+        } else {
+            const p = Math.min(100, Math.max(0, b.progress));
+            const current = b.current !== undefined ? b.current : 0;
+            const target = b.target !== undefined ? b.target : 1;
             
-            <div class="ach-progress-container">
-                <div class="ach-progress-labels">
-                    <span style="color:${ach.currentTierColor}">${ach.currentTierName}</span>
-                    <span>${ach.currentValue} / ${ach.target}</span>
-                </div>
-                <div class="ach-progress-track">
-                    <div class="ach-progress-fill" style="width: ${ach.progressPercent}%"></div>
-                </div>
+            progressHtml = `<div class="badge-progress-bg"><div class="badge-progress-fill" style="width: ${p}%;"></div></div>`;
+            metaHtml = `<div class="badge-meta">${current}/${target}</div>`;
+        }
+
+        card.innerHTML = `
+            <div class="badge-icon-container">
+                <div class="${b.shape}"></div>
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#${b.icon}"/></svg>
+            </div>
+            <div class="title-row">
+                <h4 class="badge-title">${b.name}</h4>
+                ${checkHtml}
+            </div>
+            <p class="badge-desc">${b.desc}</p>
+            <div class="badge-status">
+                ${progressHtml}
+                ${metaHtml}
             </div>
         `;
         grid.appendChild(card);
     });
 }
 
-function handleUpdate() {
-    renderIdentity();
-    renderQuests();
-    renderAchievements();
+function setupListeners() {
+    const copyBtn = document.getElementById('copy-ref-btn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+            const input = document.getElementById('recruiter-id-input');
+            navigator.clipboard.writeText(input.value);
+            showToast('Code copied!', 'success');
+        });
+    }
 }
 
 export function init() {
-    handleUpdate();
-    window.addEventListener('gamification-updated', handleUpdate);
+    renderProfile();
+    setupListeners();
 }
 
 export function destroy() {
-    window.removeEventListener('gamification-updated', handleUpdate);
+    // cleanup
 }

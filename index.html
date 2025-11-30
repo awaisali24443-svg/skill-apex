@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,7 +15,7 @@
     <meta name="google-site-verification" content="HZFtJy73lWSryYV-dmlv7eXUg7HCUWUMXsptxvIIGtg" />
     
     <link rel="canonical" href="https://skill-apex.onrender.com" />
-    <meta name="theme-color" id="theme-color-meta" content="#0c0e1a">
+    <meta name="theme-color" id="theme-color-meta" content="#f0f2f5">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -36,12 +37,13 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Inter:wght@400;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     
     <!-- Mermaid.js for diagrams -->
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
 
-    <link id="theme-stylesheet" rel="stylesheet" href="themes/theme-dark-cyber.css">
+    <!-- Forced Light Theme for Sparked Design -->
+    <link id="theme-stylesheet" rel="stylesheet" href="themes/theme-light-cyber.css">
     <link rel="stylesheet" href="global/global.css">
 
     <!-- SEO: JSON-LD Structured Data -->
@@ -120,11 +122,8 @@
         </div>
     </noscript>
 
-    <!-- DEDICATED BACKGROUND LAYER -->
-    <div id="global-background">
-        <div class="bg-circuit"></div>
-        <div class="bg-aurora"></div>
-    </div>
+    <!-- Background Layer (Simplified for Light Theme) -->
+    <div id="global-background" style="background-color: var(--color-background);"></div>
 
     <!-- Auth Container (Overlay) -->
     <div id="auth-container"></div>
@@ -195,12 +194,12 @@
     <script src="global/global.js"></script>
     <script type="module" src="index.js"></script>
     <script>
-        // Initialize Mermaid with a dark theme configuration
+        // Initialize Mermaid
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof mermaid !== 'undefined') {
                 mermaid.initialize({ 
                     startOnLoad: false, 
-                    theme: 'dark',
+                    theme: 'base',
                     securityLevel: 'loose',
                     fontFamily: 'Inter'
                 });
