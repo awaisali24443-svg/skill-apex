@@ -1,47 +1,59 @@
 
 :root {
-    /* --- Color Palette: Sparked Dashboard --- */
+    /* --- Color Palette: Professional Metals & Deep Navy --- */
 
-    /* Primary Colors */
-    --color-primary: #0052cc;   /* Royal Blue */
-    --color-primary-hover: #0045b0;
-    --color-secondary: #6554c0; /* Deep Purple */
-    --color-accent: #ffab00;    /* Amber/Gold */
+    /* Primary Colors - Deep Metallic Blue */
+    --color-primary: #003366;   /* Oxford Blue */
+    --color-primary-hover: #002244;
+    
+    /* Secondary Colors - Rich Purple/Indigo */
+    --color-secondary: #4a148c; /* Deep Purple */
+    
+    /* Metallic Accents */
+    --color-gold: #D4AF37;
+    --color-silver: #C0C0C0;
+    --color-bronze: #CD7F32;
+    --color-platinum: #E5E4E2;
+    
+    --color-accent: var(--color-gold); /* Default accent is Gold */
 
     /* Background & Surface Colors */
-    --color-background: #f0f2f5; /* Light Gray Dashboard Background */
-    --color-surface: #ffffff;    /* Pure White Cards */
+    --color-background: #f4f6f8; /* Light Gray-Blue Tint */
+    --color-surface: #ffffff;    /* Pure White */
     --color-card-background: #ffffff;
-    --color-surface-hover: #f7f8fa;
-    --color-surface-active: #ebecf0;
+    --color-surface-hover: #f8f9fa;
+    --color-surface-active: #e9ecef;
 
     /* Text Colors */
-    --color-text: #172b4d;       /* Dark Navy/Black for high contrast */
-    --color-text-secondary: #6b778c; /* Muted Blue-Gray */
+    --color-text: #1a1a1a;       /* Near Black */
+    --color-text-secondary: #5f6368; /* Slate Gray */
 
     /* Border & Accent Colors */
-    --color-border: #dfe1e6;
+    --color-border: #e0e0e0;
 
     /* Transparent Variants */
-    --color-primary-transparent: rgba(0, 82, 204, 0.1);
-    --color-primary-transparent-heavy: rgba(0, 82, 204, 0.2);
-    --color-secondary-transparent: rgba(101, 84, 192, 0.1);
-    --color-secondary-transparent-heavy: rgba(101, 84, 192, 0.2);
-    --color-accent-transparent: rgba(255, 171, 0, 0.15);
-    --color-surface-transparent: rgba(255, 255, 255, 0.8);
+    --color-primary-transparent: rgba(0, 51, 102, 0.1);
+    --color-primary-transparent-heavy: rgba(0, 51, 102, 0.25);
+    --color-secondary-transparent: rgba(74, 20, 140, 0.1);
+    --color-secondary-transparent-heavy: rgba(74, 20, 140, 0.25);
+    --color-accent-transparent: rgba(212, 175, 55, 0.15);
+    --color-surface-transparent: rgba(255, 255, 255, 0.9);
 
     /* Feedback Colors */
-    --color-success: #36b37e;
-    --color-error: #ff5630;
-    --color-success-bg: rgba(54, 179, 126, 0.1);
-    --color-error-bg: rgba(255, 86, 48, 0.1);
-    --color-success-border: #36b37e;
-    --color-error-border: #ff5630;
+    --color-success: #2e7d32; /* Forest Green */
+    --color-error: #c62828;   /* Crimson Red */
+    --color-success-bg: rgba(46, 125, 50, 0.1);
+    --color-error-bg: rgba(198, 40, 40, 0.1);
+    --color-success-border: #2e7d32;
+    --color-error-border: #c62828;
     
     /* Gradients */
-    --brand-gradient: linear-gradient(135deg, #0052cc 0%, #2684ff 100%);
+    --brand-gradient: linear-gradient(135deg, #003366 0%, #0056b3 100%);
+    --gold-gradient: linear-gradient(135deg, #FFD700 0%, #FDB931 50%, #C49102 100%);
+    --silver-gradient: linear-gradient(135deg, #E0E0E0 0%, #B0B0B0 50%, #808080 100%);
+    --bronze-gradient: linear-gradient(135deg, #E6AC6E 0%, #CD7F32 50%, #8B4513 100%);
     
     /* Shadows */
-    --shadow-card: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-    --shadow-hover: 0 4px 8px rgba(0,0,0,0.12);
+    --shadow-card: 0 2px 4px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-hover: 0 10px 20px rgba(0,0,0,0.12), 0 6px 6px rgba(0,0,0,0.1);
 }

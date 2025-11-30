@@ -4,7 +4,6 @@
     font-size: 1.5rem;
     color: var(--color-text);
     font-weight: 700;
-    letter-spacing: -0.5px;
 }
 
 /* Filter Badge */
@@ -19,81 +18,62 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-sm);
-    background: rgba(0, 184, 212, 0.1);
+    background: var(--color-surface);
     border: 1px solid var(--color-primary);
     padding: 8px 16px;
     border-radius: 50px;
     color: var(--color-primary);
     font-weight: 600;
-    font-size: 0.9rem;
-    box-shadow: 0 0 15px var(--color-primary-transparent);
+    box-shadow: 0 2px 5px var(--color-primary-transparent);
 }
 
-.btn-icon-small {
-    background: none; border: none; padding: 0;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: var(--color-primary); opacity: 0.7;
-    transition: all 0.2s;
-}
-.btn-icon-small:hover { opacity: 1; transform: scale(1.1); }
-
-
-/* --- JOURNEY CREATOR CARD: The Blueprint --- */
+/* --- JOURNEY CREATOR CARD --- */
 .journey-creator-card {
     display: flex; gap: var(--space-xl); align-items: center;
     padding: 3rem; margin-bottom: var(--space-xxl);
-    border: 1px solid rgba(255,255,255,0.1);
-    background-color: #0d1117;
-    
-    /* Technical Grid Pattern using Global Var */
-    background-image: var(--bg-business);
-    background-size: 40px 40px;
+    background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+    color: white;
+    border: none;
+    position: relative;
+    overflow: hidden;
 }
 
 .journey-creator-card::after {
-    content: '';
-    position: absolute; top: -100px; right: -100px; width: 300px; height: 300px;
-    background: var(--color-primary);
-    opacity: 0.08; border-radius: 50%; filter: blur(80px);
+    content: ''; position: absolute; inset: 0;
+    background-image: var(--bg-business);
+    opacity: 0.1; pointer-events: none;
 }
 
 .creator-icon {
     width: 80px; height: 80px; flex-shrink: 0;
-    background: var(--brand-gradient);
+    background: rgba(255,255,255,0.2);
     border-radius: 20px;
     display: flex; align-items: center; justify-content: center;
     color: #fff;
-    box-shadow: 0 10px 30px var(--color-primary-transparent-heavy);
-    position: relative; z-index: 2;
-    transform: rotate(-3deg);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255,255,255,0.3);
 }
-.creator-icon svg { width: 40px; height: 40px; }
 
-.creator-content { position: relative; z-index: 2; flex-grow: 1; }
-.creator-content h2 { margin-top: 0; margin-bottom: var(--space-sm); color: #fff; font-size: 1.8rem; }
-.creator-content p { margin-bottom: var(--space-lg); color: rgba(255,255,255,0.7); font-size: 1.1rem; }
+.creator-content h2 { color: white; margin-top: 0; }
+.creator-content p { color: rgba(255,255,255,0.8); }
 
-.creator-form { display: flex; gap: var(--space-md); align-items: center; }
-
-.input-group { display: flex; flex-grow: 1; position: relative; align-items: center; }
 .input-group .form-input {
-    width: 100%; padding: 1rem 1.2rem; padding-right: 50px;
-    background: rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.15);
-    color: #fff; height: 50px; font-size: 1.05rem;
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.3);
+    color: white;
 }
-.input-group .form-input:focus { border-color: var(--color-primary); }
+.input-group .form-input::placeholder { color: rgba(255,255,255,0.6); }
+.input-group .form-input:focus { background: rgba(255,255,255,0.2); border-color: white; }
 
-.scan-btn {
-    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-    background: rgba(255,255,255,0.1); border: none; color: rgba(255,255,255,0.8);
-    padding: 8px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; z-index: 5;
+#generate-btn {
+    background: var(--color-gold);
+    color: #000;
+    border: none;
+    font-weight: 700;
 }
-.scan-btn:hover { background: var(--color-primary); color: #000; }
+#generate-btn:hover { filter: brightness(1.1); }
 
-#generate-btn { height: 50px; padding: 0 2rem; font-size: 1rem; }
-
-
-/* --- Topic Grid --- */
+/* --- TOPIC GRID --- */
 .topic-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -102,9 +82,6 @@
 
 .topic-card {
     cursor: pointer;
-    animation: fade-slide-in 0.4s ease-out forwards;
-    opacity: 0;
-    transform: translateY(20px);
     aspect-ratio: 16 / 9;
     display: flex;
     flex-direction: column;
@@ -114,120 +91,57 @@
     overflow: hidden;
     color: #fff;
     border-radius: var(--border-radius);
-    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-    border: 1px solid rgba(255,255,255,0.1);
-    background-color: var(--color-surface);
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
 }
 
-/* Holographic Hover */
 .topic-card:hover {
     transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    border-color: rgba(255,255,255,0.5);
-    z-index: 10;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
 }
 
-/* Gradient Overlay for Text Readability */
+/* Gradient Overlay */
 .topic-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 60%, transparent 100%);
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
     z-index: 1;
 }
 
-/* --- PROCEDURAL TOPIC BACKGROUNDS (Using Global Variables) --- */
+/* --- RICH BACKGROUND IMAGES (Using CSS Gradients + SVGs) --- */
 
 /* Tech / Programming */
 .topic-card.topic-programming {
-    background-color: #0a192f;
-    background-image: var(--bg-tech);
-    background-size: 100px 100px;
-}
-.topic-card.topic-programming::after {
-    content: ''; position: absolute; inset: 0;
-    background: radial-gradient(circle at 10% 10%, rgba(0, 184, 212, 0.2), transparent 70%);
+    background: radial-gradient(circle at 10% 10%, #003366, #000000);
+    background-image: var(--bg-tech), radial-gradient(circle at 10% 10%, #0056b3, #001a33);
+    background-size: cover;
 }
 
-/* History / Arts / Philosophy */
+/* History / Arts */
 .topic-card.topic-arts, .topic-card.topic-philosophy {
-    background-color: #2c1a1a;
-    background-image: var(--bg-history);
-    background-size: 120px 120px;
-}
-.topic-card.topic-arts::after {
-    content: ''; position: absolute; inset: 0;
-    background: radial-gradient(circle at 90% 10%, rgba(212, 175, 55, 0.2), transparent 70%);
+    background: radial-gradient(circle at 50% 50%, #8B4513, #3E2723);
+    background-image: var(--bg-history), radial-gradient(circle at 50% 50%, #A1887F, #3E2723);
+    background-size: cover;
 }
 
-/* Science / Space / Medicine */
+/* Science */
 .topic-card.topic-space, .topic-card.topic-biology, .topic-card.topic-medicine {
-    background-color: #051e22;
-    background-image: var(--bg-science);
-    background-size: 60px 100px;
-}
-.topic-card.topic-space::after {
-    content: ''; position: absolute; inset: 0;
-    background: radial-gradient(circle at 50% 50%, rgba(118, 255, 3, 0.1), transparent 80%);
+    background: radial-gradient(circle at 90% 90%, #00695C, #004D40);
+    background-image: var(--bg-science), radial-gradient(circle at 90% 90%, #26A69A, #004D40);
+    background-size: cover;
 }
 
-/* Finance / Robotics */
+/* Finance / Business */
 .topic-card.topic-finance, .topic-card.topic-robotics {
-    background-color: #1a1a2e;
-    background-image: var(--bg-business);
-    background-size: 40px 40px;
-}
-.topic-card.topic-finance::after {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(156, 39, 176, 0.2), transparent);
+    background: radial-gradient(circle at 0% 100%, #FFD700, #FF8F00);
+    background-image: var(--bg-business), radial-gradient(circle at 0% 100%, #FFECB3, #FF6F00);
+    background-size: cover;
 }
 
-
-.topic-card-content { position: relative; z-index: 2; width: 100%; }
-
-.topic-name {
-    color: #fff; margin-bottom: 6px; font-size: 1.4rem; font-weight: 700;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-}
-
-.topic-description {
-    color: rgba(255, 255, 255, 0.8);
-    margin-bottom: 0; line-height: 1.5; font-size: 0.9rem;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-}
-
-/* Interest Cards (Onboarding) */
-.interest-card {
-    background-color: rgba(30, 30, 40, 0.5);
-    border: 1px solid rgba(255,255,255,0.1);
-    padding: var(--space-xl);
-    height: 200px;
-    border-radius: 24px;
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-    gap: var(--space-md); cursor: pointer; transition: all 0.3s ease;
-}
-.interest-card:hover { transform: translateY(-5px); }
-
-/* Interest Specifics */
-.interest-card.cs { border-color: var(--color-primary); box-shadow: 0 0 30px var(--color-primary-transparent); }
-.interest-card.cs .interest-icon { color: var(--color-primary); border-color: var(--color-primary); background: var(--color-primary-transparent); }
-
-.interest-card.history { border-color: #d4af37; box-shadow: 0 0 30px rgba(212, 175, 55, 0.2); }
-.interest-card.history .interest-icon { color: #d4af37; border-color: #d4af37; background: rgba(212, 175, 55, 0.1); }
-
-.interest-card.science { border-color: #76ff03; box-shadow: 0 0 30px rgba(118, 255, 3, 0.2); }
-.interest-card.science .interest-icon { color: #76ff03; border-color: #76ff03; background: rgba(118, 255, 3, 0.1); }
-
-.interest-card.business { border-color: #ff9100; box-shadow: 0 0 30px rgba(255, 145, 0, 0.2); }
-.interest-card.business .interest-icon { color: #ff9100; border-color: #ff9100; background: rgba(255, 145, 0, 0.1); }
-
-.interest-icon {
-    width: 64px; height: 64px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.2);
-    display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05);
-}
-.interest-icon svg { width: 32px; height: 32px; stroke-width: 2px; }
+.topic-card-content { position: relative; z-index: 2; }
+.topic-name { font-size: 1.5rem; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.6); margin-bottom: 4px; }
+.topic-description { font-size: 0.95rem; opacity: 0.9; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
 @media (max-width: 600px) {
     .journey-creator-card { flex-direction: column; text-align: center; padding: var(--space-lg); }
-    .creator-form { flex-direction: column; width: 100%; }
 }

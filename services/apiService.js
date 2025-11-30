@@ -2,14 +2,6 @@
 import { showToast } from './toastService.js';
 import * as configService from './configService.js';
 
-/**
- * Handles the response from a fetch request.
- * Throws an error if the response is not ok.
- * @param {Response} response - The fetch response object.
- * @returns {Promise<object>} The JSON response data.
- * @throws {Error} If the API response is not ok.
- * @private
- */
 async function handleResponse(response) {
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred.', details: response.statusText }));
@@ -19,14 +11,10 @@ async function handleResponse(response) {
     return response.json();
 }
 
-/**
- * Helper to fetch with a timeout.
- */
-async function fetchWithTimeout(url, options = {}, timeout = 30000) {
+async function fetchWithTimeout(url, options = {}, timeout = 60000) { // Increased to 60s
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
     
-    // If the caller provided a signal (e.g., for user cancellation), we need to respect it too.
     if (options.signal) {
         options.signal.addEventListener('abort', () => {
             clearTimeout(id);
@@ -35,19 +23,14 @@ async function fetchWithTimeout(url, options = {}, timeout = 30000) {
     }
 
     try {
-        const response = await fetch(url, {
-            ...options,
-            signal: controller.signal
-        });
+        const response = await fetch(url, { ...options, signal: controller.signal });
         clearTimeout(id);
         return response;
     } catch (error) {
         clearTimeout(id);
         if (error.name === 'AbortError') {
-             // If user cancelled (passed signal), treat as user abort.
              if (options.signal && options.signal.aborted) throw error;
-             // Otherwise, treat as network timeout.
-             throw new Error("Request timed out.");
+             throw new Error("Request timed out. The AI is taking too long.");
         }
         throw error;
     }
@@ -68,157 +51,106 @@ export async function fetchTopics() {
 }
 
 export async function generateJourneyPlan(topic) {
-    try {
-        const response = await fetchWithTimeout('/api/generate-journey-plan', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, persona: getPersona() })
-        });
-        return await handleResponse(response);
-    } catch (error) {
-        throw error;
-    }
+    const response = await fetchWithTimeout('/api/generate-journey-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic, persona: getPersona() })
+    });
+    return await handleResponse(response);
 }
 
-// NEW: Frontend call for image-based generation
 export async function generateJourneyFromImage(imageBase64, mimeType) {
-    try {
-        const response = await fetchWithTimeout('/api/generate-journey-from-image', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageBase64, mimeType, persona: getPersona() })
-        }, 60000); // 60s timeout for heavier image processing
-        return await handleResponse(response);
-    } catch (error) {
-        throw error;
-    }
+    const response = await fetchWithTimeout('/api/generate-journey-from-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64, mimeType, persona: getPersona() })
+    }, 60000); 
+    return await handleResponse(response);
 }
 
 export async function generateCurriculumOutline({ topic, totalLevels }) {
-    try {
-        const response = await fetchWithTimeout('/api/generate-curriculum-outline', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, totalLevels, persona: getPersona() })
-        });
-        return await handleResponse(response);
-    } catch (error) {
-        throw error;
-    }
+    const response = await fetchWithTimeout('/api/generate-curriculum-outline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic, totalLevels, persona: getPersona() })
+    });
+    return await handleResponse(response);
 }
 
 export async function generateLevelQuestions({ topic, level, totalLevels }) {
-    try {
-        const response = await fetchWithTimeout('/api/generate-level-questions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, level, totalLevels, persona: getPersona() })
-        });
-        return await handleResponse(response);
-    } catch (error) {
-        throw error;
-    }
+    const response = await fetchWithTimeout('/api/generate-level-questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic, level, totalLevels, persona: getPersona() })
+    });
+    return await handleResponse(response);
 }
 
 export async function generateInteractiveLevel({ topic, level }) {
-    try {
-        const response = await fetchWithTimeout('/api/generate-interactive-level', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, level, persona: getPersona() })
-        });
-        return await handleResponse(response);
-    } catch (error) {
-        throw error;
-    }
+    const response = await fetchWithTimeout('/api/generate-interactive-level', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic, level, persona: getPersona() })
+    });
+    return await handleResponse(response);
 }
 
 export async function generateLevelLesson({ topic, level, totalLevels, questions, signal }) {
-    try {
-        // Pass the AbortSignal to allow user cancellation, combined with timeout logic in fetchWithTimeout
-        const response = await fetchWithTimeout('/api/generate-level-lesson', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            // Questions are now optional for parallel generation
-            body: JSON.stringify({ topic, level, totalLevels, questions: questions || null, persona: getPersona() }),
-            signal: signal
-        });
-        return await handleResponse(response);
-    } catch (error) {
-        throw error;
-    }
+    const response = await fetchWithTimeout('/api/generate-level-lesson', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic, level, totalLevels, questions: questions || null, persona: getPersona() }),
+        signal: signal
+    });
+    return await handleResponse(response);
 }
 
 export async function generateBossBattle({ topic, chapter }) {
-    try {
-        const response = await fetchWithTimeout('/api/generate-boss-battle', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, chapter, persona: getPersona() })
-        });
-        return await handleResponse(response);
-    } catch (error) {
-        throw error;
-    }
+    const response = await fetchWithTimeout('/api/generate-boss-battle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic, chapter, persona: getPersona() })
+    });
+    return await handleResponse(response);
 }
 
 export async function generateHint({ topic, question, options }) {
-    try {
-        const response = await fetchWithTimeout('/api/generate-hint', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, question, options, persona: getPersona() })
-        });
-        return await handleResponse(response);
-    } catch (error) {
-        throw error;
-    }
+    const response = await fetchWithTimeout('/api/generate-hint', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic, question, options, persona: getPersona() })
+    });
+    return await handleResponse(response);
 }
 
 export async function generateSpeech(text) {
-    try {
-        const response = await fetchWithTimeout('/api/generate-speech', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text })
-        });
-        return await handleResponse(response);
-    } catch (error) {
-        throw error;
-    }
+    const response = await fetchWithTimeout('/api/generate-speech', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+    });
+    return await handleResponse(response);
 }
 
 export async function explainConcept(topic, concept, context) {
-    try {
-        const response = await fetchWithTimeout('/api/explain-concept', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, concept, context, persona: getPersona() })
-        });
-        return await handleResponse(response);
-    } catch (error) {
-        throw error;
-    }
+    const response = await fetchWithTimeout('/api/explain-concept', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic, concept, context, persona: getPersona() })
+    });
+    return await handleResponse(response);
 }
 
 export async function fetchDailyChallenge() {
-    try {
-        const response = await fetchWithTimeout('/api/daily-challenge');
-        return await handleResponse(response);
-    } catch (error) {
-        throw error;
-    }
+    const response = await fetchWithTimeout('/api/daily-challenge');
+    return await handleResponse(response);
 }
 
 export async function explainError(topic, question, userChoice, correctChoice) {
-    try {
-        const response = await fetchWithTimeout('/api/explain-error', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, question, userChoice, correctChoice, persona: getPersona() })
-        });
-        return await handleResponse(response);
-    } catch (error) {
-        throw error;
-    }
+    const response = await fetchWithTimeout('/api/explain-error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic, question, userChoice, correctChoice, persona: getPersona() })
+    });
+    return await handleResponse(response);
 }
