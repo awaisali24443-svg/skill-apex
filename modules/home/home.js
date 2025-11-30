@@ -1,5 +1,6 @@
 
 
+
 import * as gamificationService from '../../services/gamificationService.js';
 import * as historyService from '../../services/historyService.js';
 import * as learningPathService from '../../services/learningPathService.js';
@@ -70,7 +71,7 @@ function renderStreak() {
     const streakCounter = document.getElementById('streak-counter');
     if (stats.currentStreak > 0) {
         streakCounter.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="/assets/icons/feather-sprite.svg#zap"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="assets/icons/feather-sprite.svg#zap"/></svg>
             <span><strong>${stats.currentStreak} Day</strong> Streak</span>
         `;
         streakCounter.style.display = 'inline-flex';
@@ -89,14 +90,14 @@ function renderPrimaryAction() {
     const description = document.getElementById('primary-action-description');
 
     if (path && path.currentLevel <= path.totalLevels) {
-        card.href = `/#/game/${encodeURIComponent(path.goal)}`;
-        icon.innerHTML = `<svg><use href="/assets/icons/feather-sprite.svg#play"/></svg>`;
+        card.href = `#/game/${encodeURIComponent(path.goal)}`;
+        icon.innerHTML = `<svg><use href="assets/icons/feather-sprite.svg#play"/></svg>`;
         title.textContent = 'Resume Journey';
         description.textContent = `Jump back into "${path.goal}" at Level ${path.currentLevel}`;
     } else {
         // Logic: If they have a saved interest, 'Start New' goes to topics list which is pre-filtered
-        card.href = '/#/topics';
-        icon.innerHTML = `<svg><use href="/assets/icons/feather-sprite.svg#plus"/></svg>`;
+        card.href = '#/topics';
+        icon.innerHTML = `<svg><use href="assets/icons/feather-sprite.svg#plus"/></svg>`;
         title.textContent = 'Start New Adventure';
         description.textContent = 'Generate a custom learning path on any topic you can imagine.';
     }
@@ -119,7 +120,7 @@ function renderRecentHistory() {
                 <span class="history-mini-score">${item.score !== undefined ? item.score + '/' + item.totalQuestions : 'Audio'}</span>
             </div>
             <button class="btn-small retry-btn" data-topic="${cleanTopic(item.topic)}">
-                <svg class="icon"><use href="/assets/icons/feather-sprite.svg#rotate-ccw"/></svg>
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#rotate-ccw"/></svg>
             </button>
         </div>
     `).join('');
