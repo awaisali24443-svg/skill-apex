@@ -691,6 +691,17 @@ app.get('/health', (req, res) => {
     res.status(200).send('OK');
 });
 
+// Serve SEO files
+app.get('/robots.txt', (req, res) => {
+    res.type('text/plain');
+    res.sendFile(path.join(__dirname, 'robots.txt'));
+});
+
+app.get('/sitemap.xml', (req, res) => {
+    res.type('application/xml');
+    res.sendFile(path.join(__dirname, 'sitemap.xml'));
+});
+
 app.post('/api/generate-journey-plan', async (req, res) => {
     const { topic, persona } = req.body;
     if (!isValidTopic(topic)) return res.status(400).json({ error: 'Invalid parameter: topic' });
