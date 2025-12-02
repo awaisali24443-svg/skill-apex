@@ -9,15 +9,22 @@ let resetOobCode = null;
 function toggleMode() {
     isLoginMode = !isLoginMode;
     
-    elements.title.textContent = isLoginMode ? 'System Login' : 'New Registration';
-    elements.subtitle.textContent = isLoginMode ? 'Identify yourself to access the neural network.' : 'Create a new profile to begin your journey.';
-    elements.submitBtnText.textContent = isLoginMode ? 'Connect' : 'Register';
-    elements.toggleText.textContent = isLoginMode ? 'New user?' : 'Already have an account?';
-    elements.toggleBtn.textContent = isLoginMode ? 'Initialize New Account' : 'Login with Existing ID';
+    // Update Text for Split Layout
+    if (isLoginMode) {
+        elements.title.innerHTML = 'Welcome Back <span class="wave-emoji">👋</span>';
+        elements.subtitle.textContent = "Today is a new day. It's your day. You shape it. Sign in to start managing your projects.";
+        elements.submitBtnText.textContent = 'Sign in';
+        elements.toggleText.textContent = "Don't you have an account?";
+        elements.toggleBtn.textContent = 'Sign up';
+    } else {
+        elements.title.innerHTML = 'Create Account <span class="wave-emoji">🚀</span>';
+        elements.subtitle.textContent = "Join the Skill Apex network. Forge your path to mastery today.";
+        elements.submitBtnText.textContent = 'Sign up';
+        elements.toggleText.textContent = 'Already have an account?';
+        elements.toggleBtn.textContent = 'Sign in';
+    }
+
     elements.error.style.display = 'none';
-    
-    // Hide forgot button in register mode
-    if (elements.forgotBtn) elements.forgotBtn.style.display = isLoginMode ? 'block' : 'none';
 }
 
 async function handleSubmit(e) {
@@ -44,6 +51,9 @@ async function handleSubmit(e) {
         }
     } catch (error) {
         handleError(error);
+    } finally {
+        // Only reset button if error occurs (redirect handles success)
+        // But if register success, we might stay on page? No, index.js usually redirects.
     }
 }
 
@@ -65,12 +75,12 @@ async function handleGuestLogin() {
     }
 }
 
-// --- Reset Password Logic (Request Link) ---
+// --- Reset Password Logic ---
 function openResetModal() {
     elements.resetModal.style.display = 'block';
-    elements.resetEmailInput.value = elements.emailInput.value; // Pre-fill if available
+    elements.resetEmailInput.value = elements.emailInput.value; 
     elements.resetEmailInput.focus();
-    elements.resetFeedback.style.display = 'none';
+    elements.resetFeedback.textContent = '';
 }
 
 function closeResetModal() {
@@ -85,15 +95,11 @@ async function handleResetSubmit() {
     const originalText = btn.textContent;
     btn.disabled = true;
     btn.textContent = "Sending...";
-    elements.resetFeedback.style.display = 'none';
 
     try {
-        // This now uses custom settings to redirect back to the app
         await firebaseService.resetPassword(email);
         elements.resetFeedback.textContent = `Reset link sent to ${email}. Check your inbox.`;
         elements.resetFeedback.style.color = 'var(--color-success)';
-        elements.resetFeedback.style.backgroundColor = 'var(--color-success-bg)';
-        elements.resetFeedback.style.display = 'block';
         
         setTimeout(() => {
             closeResetModal();
@@ -101,72 +107,37 @@ async function handleResetSubmit() {
             btn.textContent = originalText;
         }, 3000);
     } catch (error) {
-        console.error("Reset Password Error:", error);
         let msg = "Failed to send reset email.";
         if (error.code === 'auth/user-not-found') msg = "No account found with this email.";
-        if (error.code === 'auth/invalid-email') msg = "Invalid email address.";
-        
         elements.resetFeedback.textContent = msg;
         elements.resetFeedback.style.color = 'var(--color-error)';
-        elements.resetFeedback.style.backgroundColor = 'var(--color-error-bg)';
-        elements.resetFeedback.style.display = 'block';
         btn.disabled = false;
         btn.textContent = originalText;
     }
 }
 
-// --- Confirm New Password Logic (From Email Link) ---
 async function handleNewPasswordSubmit() {
     if (!resetOobCode) return;
-    
     const newPassword = elements.newPasswordInput.value.trim();
-    if (newPassword.length < 6) {
-        elements.newPasswordFeedback.textContent = "Password must be at least 6 characters.";
-        elements.newPasswordFeedback.style.color = 'var(--color-error)';
-        elements.newPasswordFeedback.style.backgroundColor = 'var(--color-error-bg)';
-        elements.newPasswordFeedback.style.display = 'block';
-        return;
-    }
+    if (newPassword.length < 6) return;
 
     const btn = elements.confirmNewPasswordBtn;
-    const originalText = btn.textContent;
     btn.disabled = true;
     btn.textContent = "Updating...";
-    elements.newPasswordFeedback.style.display = 'none';
 
     try {
         await firebaseService.confirmReset(resetOobCode, newPassword);
-        
-        elements.newPasswordFeedback.textContent = "Password updated successfully! Logging you in...";
-        elements.newPasswordFeedback.style.color = 'var(--color-success)';
-        elements.newPasswordFeedback.style.backgroundColor = 'var(--color-success-bg)';
-        elements.newPasswordFeedback.style.display = 'block';
-        
         showToast("Password updated! Please sign in.", "success");
-        
-        // Clear params to prevent re-triggering
         window.history.replaceState({}, document.title, window.location.pathname);
         resetOobCode = null;
-
         setTimeout(() => {
             elements.newPasswordModal.style.display = 'none';
-            // Auto-fill login email if possible? Hard to know email here without asking.
-            // Just focus login
             elements.passwordInput.focus();
         }, 2000);
-
     } catch (error) {
-        console.error("Confirm Password Error:", error);
-        let msg = "Failed to reset password. Link may be expired.";
-        if (error.code === 'auth/expired-action-code') msg = "This link has expired. Please request a new one.";
-        if (error.code === 'auth/invalid-action-code') msg = "Invalid link. Please request a new one.";
-        
-        elements.newPasswordFeedback.textContent = msg;
-        elements.newPasswordFeedback.style.color = 'var(--color-error)';
-        elements.newPasswordFeedback.style.backgroundColor = 'var(--color-error-bg)';
-        elements.newPasswordFeedback.style.display = 'block';
+        elements.newPasswordFeedback.textContent = "Failed to reset password.";
         btn.disabled = false;
-        btn.textContent = originalText;
+        btn.textContent = "Update";
     }
 }
 
@@ -178,25 +149,20 @@ function handleError(error) {
     else if (msg.includes('wrong-password')) msg = 'Incorrect credentials.';
     else if (msg.includes('email-already-in-use')) msg = 'Email already registered.';
     else if (msg.includes('weak-password')) msg = 'Password must be at least 6 characters.';
-    else if (msg.includes('popup-closed-by-user')) msg = 'Sign-in cancelled.';
-    else if (msg.includes('too-many-requests')) msg = 'Too many attempts. Try again later.';
     
     elements.error.textContent = msg;
     elements.error.style.display = 'block';
     
-    // Reset Button
     elements.submitBtn.disabled = false;
     elements.submitBtnText.style.display = 'block';
     elements.submitBtnSpinner.style.display = 'none';
 }
 
 function checkUrlForReset() {
-    // Check both standard query params and hash-based params (depending on router behavior)
     const urlParams = new URLSearchParams(window.location.search);
     let mode = urlParams.get('mode');
     let oobCode = urlParams.get('oobCode');
 
-    // Fallback: Check hash if router moves params there
     if (!mode || !oobCode) {
         const hashParts = window.location.hash.split('?');
         if (hashParts.length > 1) {
@@ -208,12 +174,7 @@ function checkUrlForReset() {
 
     if (mode === 'resetPassword' && oobCode) {
         resetOobCode = oobCode;
-        console.log("Password Reset Mode Detected.");
-        
-        // Clean URL visually to hide codes/keys immediately
         window.history.replaceState({}, document.title, window.location.pathname);
-        
-        // Show Modal
         if (elements.newPasswordModal) {
             elements.newPasswordModal.style.display = 'block';
             elements.newPasswordInput.focus();
@@ -224,13 +185,11 @@ function checkUrlForReset() {
 export function init() {
     const container = document.getElementById('auth-container');
     
-    // Fetch HTML manually since this module loads before the router can help
     fetch('./modules/auth/auth.html')
         .then(res => res.text())
         .then(html => {
             container.innerHTML = html;
             
-            // Inject CSS dynamically (Only if not already present)
             if (!document.querySelector('link[href="./modules/auth/auth.css"]')) {
                 const link = document.createElement('link');
                 link.rel = 'stylesheet';
@@ -238,7 +197,6 @@ export function init() {
                 document.head.appendChild(link);
             }
             
-            // Bind Elements
             elements = {
                 form: document.getElementById('auth-form'),
                 emailInput: document.getElementById('auth-email'),
@@ -255,14 +213,12 @@ export function init() {
                 toggleText: document.getElementById('auth-toggle-text'),
                 error: document.getElementById('auth-error'),
                 
-                // Reset Modal Elements
                 resetModal: document.getElementById('reset-password-modal'),
                 resetEmailInput: document.getElementById('reset-email-input'),
                 cancelResetBtn: document.getElementById('cancel-reset-btn'),
                 confirmResetBtn: document.getElementById('confirm-reset-btn'),
                 resetFeedback: document.getElementById('reset-feedback'),
 
-                // New Password Modal Elements
                 newPasswordModal: document.getElementById('new-password-modal'),
                 newPasswordInput: document.getElementById('new-password-input'),
                 confirmNewPasswordBtn: document.getElementById('confirm-new-password-btn'),
@@ -279,14 +235,12 @@ export function init() {
             if (elements.confirmResetBtn) elements.confirmResetBtn.addEventListener('click', handleResetSubmit);
             if (elements.confirmNewPasswordBtn) elements.confirmNewPasswordBtn.addEventListener('click', handleNewPasswordSubmit);
             
-            // Close modal on backdrop click
             if (elements.resetModal) {
                 elements.resetModal.addEventListener('click', (e) => {
                     if (e.target === elements.resetModal) closeResetModal();
                 });
             }
 
-            // Check if we arrived here via a reset email link
             checkUrlForReset();
         });
 }
