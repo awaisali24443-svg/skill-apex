@@ -35,6 +35,10 @@ function renderProfile() {
     }, 100);
 
     renderAchievements(stats);
+    
+    // Hide Skeleton, Show Content
+    if (elements.skeleton) elements.skeleton.style.display = 'none';
+    if (elements.content) elements.content.style.display = 'grid';
 }
 
 function renderAchievements(stats) {
@@ -176,10 +180,18 @@ export function init() {
         recruiterInput: document.getElementById('recruiter-id-input'),
         progressPercent: document.getElementById('progress-percent'),
         progressCircle: document.getElementById('progress-circle-path'),
-        copyBtn: document.getElementById('copy-ref-btn')
+        copyBtn: document.getElementById('copy-ref-btn'),
+        skeleton: document.getElementById('profile-skeleton'),
+        content: document.getElementById('profile-content')
     };
     
-    renderProfile();
+    // Simulate slight loading delay for skeleton effect if data is instant (better UX)
+    if (gamificationService.getStats()) {
+        setTimeout(renderProfile, 300);
+    } else {
+        renderProfile();
+    }
+    
     setupDragDrop();
     
     elements.editBtn.addEventListener('click', toggleNameEdit);

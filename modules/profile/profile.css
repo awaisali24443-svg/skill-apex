@@ -1,11 +1,35 @@
 
 .sparked-layout {
+    /* Main container now wraps the internal parts */
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.sparked-layout-inner, .profile-skeleton {
     display: grid;
     grid-template-columns: 340px 1fr;
     gap: 32px;
-    max-width: 1400px;
-    margin: 0 auto;
     align-items: start;
+    width: 100%;
+}
+
+/* Skeleton Specifics */
+.skeleton-card {
+    background: var(--color-surface);
+    overflow: hidden;
+    position: relative;
+    padding: 0;
+}
+.profile-skeleton .skeleton {
+    background: rgba(255,255,255,0.05);
+    border-radius: 4px;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 0.8; }
+    100% { opacity: 0.5; }
 }
 
 /* --- SIDEBAR --- */
@@ -221,6 +245,6 @@
 }
 
 @media (max-width: 900px) {
-    .sparked-layout { grid-template-columns: 1fr; }
+    .sparked-layout-inner, .profile-skeleton { grid-template-columns: 1fr; }
     .profile-sidebar { position: relative; top: 0; }
 }

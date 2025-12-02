@@ -14,11 +14,9 @@ import { init as initVoice, toggleListening } from './services/voiceCommandServi
 import * as authModule from './modules/auth/auth.js';
 
 // --- GLOBAL ERROR TRAP ---
-// Catches crashes during startup to prevent "Infinite Spinner"
 window.onerror = function(msg, url, line, col, error) {
     const splash = document.getElementById('splash-screen');
     if (splash && !splash.classList.contains('hidden')) {
-        // Only override splash if app hasn't started yet
         splash.innerHTML = `
             <div style="color:#ef4444; text-align:center; padding:40px; font-family:sans-serif;">
                 <h3 style="margin-bottom:10px;">Startup Error</h3>
@@ -31,6 +29,8 @@ window.onerror = function(msg, url, line, col, error) {
 
 const moduleCache = new Map();
 let currentModule = null;
+let currentNavigationId = 0; // RACE CONDITION FIX: Track active navigation
+let hasInitialized = false; // RACE CONDITION FIX: Prevent double init
 
 async function fetchModule(moduleName) {
     if (moduleCache.has(moduleName)) {
@@ -76,6 +76,9 @@ async function loadModule(route) {
     const appContainer = document.getElementById('app');
     if (!appContainer) return;
 
+    // RACE CONDITION FIX: Increment ID. If ID changes during await, abort.
+    const navigationId = ++currentNavigationId;
+
     if (currentModule && currentModule.js.destroy) {
         try {
             currentModule.js.destroy();
@@ -87,7 +90,16 @@ async function loadModule(route) {
     const renderNewModule = async () => {
         try {
             stateService.setCurrentRoute(route);
+            
+            // 1. Fetch Module
             const moduleData = await fetchModule(route.module);
+            
+            // CRITICAL CHECK: Did the user navigate away while we were fetching?
+            if (navigationId !== currentNavigationId) {
+                console.log(`Navigation to ${route.module} aborted (stale).`);
+                return;
+            }
+
             currentModule = moduleData;
 
             appContainer.innerHTML = '';
@@ -103,9 +115,13 @@ async function loadModule(route) {
 
             appContainer.innerHTML = moduleData.html;
 
+            // 2. Init Module
             if (moduleData.js.init) {
                 await moduleData.js.init();
             }
+            
+            // Check again after init (some inits are async)
+            if (navigationId !== currentNavigationId) return;
             
             stateService.clearNavigationContext();
 
@@ -126,6 +142,7 @@ async function loadModule(route) {
             }
 
         } catch (error) {
+            if (navigationId !== currentNavigationId) return;
             console.error("Failed to load module:", error);
             const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
             appContainer.innerHTML = `
@@ -139,22 +156,13 @@ async function loadModule(route) {
     };
 
     if (document.startViewTransition) {
-        const transition = document.startViewTransition(async () => {
+        document.startViewTransition(async () => {
              await renderNewModule();
         });
     } else {
-        await new Promise(resolve => {
-            const handler = (event) => {
-                if (event.target === appContainer) {
-                    appContainer.removeEventListener('transitionend', handler);
-                    resolve();
-                }
-            };
-            appContainer.addEventListener('transitionend', handler);
-            appContainer.classList.add('fade-out');
-            setTimeout(resolve, 350);
-        });
-        
+        // Legacy Fade
+        appContainer.classList.add('fade-out');
+        await new Promise(r => setTimeout(r, 200)); // Shortened fade for responsiveness
         await renderNewModule();
         appContainer.classList.remove('fade-out');
     }
@@ -227,7 +235,6 @@ function showLevelUpModal(level) {
 
 async function preloadCriticalModules() {
     const modulesToPreload = ['topic-list', 'game-map', 'game-level', 'quiz-review'];
-    
     for (const moduleName of modulesToPreload) {
         try {
             await Promise.all([
@@ -235,14 +242,10 @@ async function preloadCriticalModules() {
                 fetch(`./modules/${moduleName}/${moduleName}.css`).then(res => res.text()),
                 import(`./modules/${moduleName}/${moduleName}.js`)
             ]);
-        } catch (e) {
-            // Ignore errors in background preload
-        }
+        } catch (e) {}
     }
-    console.log('All critical modules preloaded.');
 }
 
-// Helper to reliably remove splash screen
 function removeSplashScreen() {
     const splashScreen = document.getElementById('splash-screen');
     if (!splashScreen || splashScreen.classList.contains('hidden')) return;
@@ -255,17 +258,13 @@ function removeSplashScreen() {
         if (!hasBeenWelcomed) {
             showWelcomeScreen();
         }
-        // Defer heavy lifting slightly
         setTimeout(preloadCriticalModules, 200);
     };
 
     splashScreen.classList.add('hidden');
+    splashScreen.style.pointerEvents = 'none';
     
-    // Race: transitionend vs setTimeout safety net
-    // If browser is backgrounded, transitionend might not fire.
-    // Timeout ensures we never get stuck.
     const safetyTimer = setTimeout(finalize, 600);
-    
     splashScreen.addEventListener('transitionend', () => {
         clearTimeout(safetyTimer);
         finalize();
@@ -274,6 +273,9 @@ function removeSplashScreen() {
 
 // --- APP INITIALIZATION ---
 function initializeAppContent(user) {
+    if (hasInitialized) return;
+    hasInitialized = true;
+
     // 1. Initialize Services
     learningPathService.init();
     historyService.init();
@@ -315,28 +317,34 @@ function initializeAppContent(user) {
     // 4. Start Router
     handleRouteChange();
 
-    // 5. Hide Overlay
+    // 5. Switch Screens
     authModule.destroy(); 
     document.getElementById('app-wrapper').style.display = 'flex'; 
     document.getElementById('auth-container').style.display = 'none';
 
-    // 6. Remove Splash
     removeSplashScreen();
 }
 
-function showAuthScreen() {
+async function showAuthScreen() {
+    // CRITICAL RACE CONDITION FIX:
+    // If app initialized while we were waiting to call this, abort immediately.
+    if (hasInitialized) return;
+
+    // Load auth module
+    await authModule.init(); 
+    
+    // SECOND CHECK: Did initialization happen while we were awaiting init()?
+    // If so, abort showing auth, because the app is already running.
+    if (hasInitialized) return;
+
+    document.getElementById('app-wrapper').style.display = 'none'; 
+    document.getElementById('auth-container').style.display = 'flex';
+    
     const splashScreen = document.getElementById('splash-screen');
-    // We only remove splash if Auth module is fully rendered, handled internally by Auth if needed,
-    // but typically we just fade it out once auth container is visible.
-    // For now, let's remove splash immediately when showing auth.
     if (splashScreen) {
         splashScreen.classList.add('hidden');
         setTimeout(() => { if(splashScreen.parentNode) splashScreen.remove(); }, 500);
     }
-    
-    document.getElementById('app-wrapper').style.display = 'none'; 
-    document.getElementById('auth-container').style.display = 'flex';
-    authModule.init(); 
 }
 
 async function main() {
@@ -353,26 +361,32 @@ async function main() {
             });
         }
 
-        // --- ROBUST LOADING ---
-        // Safety timeout in case Firebase never responds
+        // RACE CONDITION FIX:
+        // Firebase is fast, but network can be slow. 
+        // We set a timeout to show the Auth screen if Firebase takes too long.
+        // BUT, we use the `hasInitialized` flag to ensure we don't double-render.
+        
         const authTimeout = setTimeout(() => {
-            console.warn("Auth check timed out. Forcing Auth screen.");
+            console.warn("Auth check timed out. Defaulting to Auth Screen.");
             showAuthScreen();
-        }, 5000); // 5 seconds max wait
+        }, 3500);
 
         firebaseService.onAuthChange((user) => {
-            clearTimeout(authTimeout); // Cancel fallback
+            clearTimeout(authTimeout);
+            
             if (user) {
                 console.log('User authenticated:', user.email);
                 initializeAppContent(user);
             } else {
-                console.log('No user. Showing Auth screen.');
+                console.log('No user session.');
+                // Only show Auth screen if we haven't already shown it (via timeout)
+                // or if we are not already initialized.
                 showAuthScreen();
             }
         });
 
     } catch (error) {
-        console.error("A critical error occurred during application startup:", error);
+        console.error("Critical startup error:", error);
         showFatalError(error);
     }
 }
