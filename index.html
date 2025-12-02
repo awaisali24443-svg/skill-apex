@@ -102,7 +102,7 @@
         });
 
         // --- FAILSAFE LOADER ---
-        // If app initialization hangs for more than 6 seconds, check status
+        // If app initialization hangs for more than 8 seconds, check status
         setTimeout(() => {
             const splash = document.getElementById('splash-screen');
             const auth = document.getElementById('auth-container');
@@ -129,7 +129,7 @@
                     `;
                 }
             }
-        }, 6000);
+        }, 8000);
     </script>
 </body>
 </html>

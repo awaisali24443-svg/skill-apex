@@ -1,4 +1,3 @@
-
 import { ROUTES, LOCAL_STORAGE_KEYS } from './constants.js';
 import * as configService from './services/configService.js';
 import { renderSidebar } from './services/sidebarService.js';
@@ -31,6 +30,7 @@ const moduleCache = new Map();
 let currentModule = null;
 let currentNavigationId = 0; // RACE CONDITION FIX: Track active navigation
 let hasInitialized = false; // RACE CONDITION FIX: Prevent double init
+let isAuthLock = false; // Lock to prevent auth screen / app screen fighting
 
 async function fetchModule(moduleName) {
     if (moduleCache.has(moduleName)) {
@@ -255,7 +255,7 @@ function removeSplashScreen() {
             splashScreen.parentNode.removeChild(splashScreen);
         }
         const hasBeenWelcomed = localStorage.getItem(LOCAL_STORAGE_KEYS.WELCOME_COMPLETED);
-        if (!hasBeenWelcomed) {
+        if (!hasBeenWelcomed && hasInitialized) { // Only show welcome if entered app
             showWelcomeScreen();
         }
         setTimeout(preloadCriticalModules, 200);
@@ -273,8 +273,9 @@ function removeSplashScreen() {
 
 // --- APP INITIALIZATION ---
 function initializeAppContent(user) {
-    if (hasInitialized) return;
+    if (hasInitialized || isAuthLock) return;
     hasInitialized = true;
+    isAuthLock = true; // Lock further auth changes
 
     // 1. Initialize Services
     learningPathService.init();
@@ -327,23 +328,28 @@ function initializeAppContent(user) {
 
 async function showAuthScreen() {
     // CRITICAL RACE CONDITION FIX:
-    // If app initialized while we were waiting to call this, abort immediately.
-    if (hasInitialized) return;
+    if (hasInitialized || isAuthLock) return;
+    isAuthLock = true; // Lock immediately to prevent double fetch
 
-    // Load auth module
-    await authModule.init(); 
-    
-    // SECOND CHECK: Did initialization happen while we were awaiting init()?
-    // If so, abort showing auth, because the app is already running.
-    if (hasInitialized) return;
+    try {
+        // Load auth module
+        await authModule.init(); 
+        
+        // SECOND CHECK: Did initialization happen somehow while we were awaiting?
+        if (hasInitialized) {
+            isAuthLock = false; // Reset lock if we aborted
+            return;
+        }
 
-    document.getElementById('app-wrapper').style.display = 'none'; 
-    document.getElementById('auth-container').style.display = 'flex';
-    
-    const splashScreen = document.getElementById('splash-screen');
-    if (splashScreen) {
-        splashScreen.classList.add('hidden');
-        setTimeout(() => { if(splashScreen.parentNode) splashScreen.remove(); }, 500);
+        document.getElementById('app-wrapper').style.display = 'none'; 
+        document.getElementById('auth-container').style.display = 'flex';
+        
+        removeSplashScreen();
+    } catch (e) {
+        console.error("Critical Auth Load Error:", e);
+        // Fallback: If auth fails to load, remove splash anyway so user isn't stuck on black screen
+        // They will see a broken auth page, but at least the failsafe retry button will be visible or they can try reload
+        removeSplashScreen();
     }
 }
 
@@ -364,24 +370,33 @@ async function main() {
         // RACE CONDITION FIX:
         // Firebase is fast, but network can be slow. 
         // We set a timeout to show the Auth screen if Firebase takes too long.
-        // BUT, we use the `hasInitialized` flag to ensure we don't double-render.
         
         const authTimeout = setTimeout(() => {
-            console.warn("Auth check timed out. Defaulting to Auth Screen.");
-            showAuthScreen();
+            if (!hasInitialized && !isAuthLock) {
+                console.warn("Auth check timed out. Defaulting to Auth Screen.");
+                showAuthScreen();
+            }
         }, 3500);
 
         firebaseService.onAuthChange((user) => {
             clearTimeout(authTimeout);
             
+            // If we are already locked into showing Auth screen or App, ignore later updates
+            // (Unless it's a legitimate logout/login which refreshes page usually)
+            if (isAuthLock && !user) return; 
+
             if (user) {
-                console.log('User authenticated:', user.email);
-                initializeAppContent(user);
+                // If user arrives late but we showed auth screen, we should switch to app
+                // But simplified: reloading page on login handles this better.
+                // For now, if we haven't init, init.
+                if (!hasInitialized) {
+                    isAuthLock = false; // Unlock to allow init
+                    initializeAppContent(user);
+                }
             } else {
-                console.log('No user session.');
-                // Only show Auth screen if we haven't already shown it (via timeout)
-                // or if we are not already initialized.
-                showAuthScreen();
+                if (!hasInitialized && !isAuthLock) {
+                    showAuthScreen();
+                }
             }
         });
 

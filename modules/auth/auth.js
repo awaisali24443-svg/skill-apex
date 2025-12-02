@@ -9,21 +9,21 @@ function toggleMode() {
     isLoginMode = !isLoginMode;
     
     if (isLoginMode) {
-        elements.title.innerHTML = 'Welcome Back <span class="wave-emoji">👋</span>';
-        elements.subtitle.textContent = "Today is a new day. It's your day. You shape it. Sign in to start managing your projects.";
-        elements.submitBtnText.textContent = 'Sign in';
-        elements.toggleText.textContent = "Don't you have an account?";
-        elements.toggleBtn.textContent = 'Sign up';
+        if(elements.title) elements.title.innerHTML = 'Welcome Back <span class="wave-emoji">👋</span>';
+        if(elements.subtitle) elements.subtitle.textContent = "Today is a new day. It's your day. You shape it. Sign in to start managing your projects.";
+        if(elements.submitBtnText) elements.submitBtnText.textContent = 'Sign in';
+        if(elements.toggleText) elements.toggleText.textContent = "Don't you have an account?";
+        if(elements.toggleBtn) elements.toggleBtn.textContent = 'Sign up';
     } else {
-        elements.title.innerHTML = 'Create Account <span class="wave-emoji">🚀</span>';
-        elements.subtitle.textContent = "Join the Skill Apex network. Forge your path to mastery today.";
-        elements.submitBtnText.textContent = 'Sign up';
-        elements.toggleText.textContent = 'Already have an account?';
-        elements.toggleBtn.textContent = 'Sign in';
+        if(elements.title) elements.title.innerHTML = 'Create Account <span class="wave-emoji">🚀</span>';
+        if(elements.subtitle) elements.subtitle.textContent = "Join the Skill Apex network. Forge your path to mastery today.";
+        if(elements.submitBtnText) elements.submitBtnText.textContent = 'Sign up';
+        if(elements.toggleText) elements.toggleText.textContent = 'Already have an account?';
+        if(elements.toggleBtn) elements.toggleBtn.textContent = 'Sign in';
     }
 
-    elements.error.style.display = 'none';
-    elements.form.reset();
+    if(elements.error) elements.error.style.display = 'none';
+    if(elements.form) elements.form.reset();
 }
 
 async function handleSubmit(e) {
@@ -176,71 +176,106 @@ function checkUrlForReset() {
     }
 }
 
+function renderFallbackAuth() {
+    const container = document.getElementById('auth-container');
+    container.innerHTML = `
+        <div style="background:white; padding:30px; border-radius:16px; width:100%; max-width:400px; margin:auto; text-align:center;">
+            <h2 style="margin-bottom:20px; color:#111;">Sign In</h2>
+            <form id="auth-form" style="display:flex; flex-direction:column; gap:15px;">
+                <input type="email" id="auth-email" placeholder="Email" style="padding:10px; border:1px solid #ccc; border-radius:8px;">
+                <input type="password" id="auth-password" placeholder="Password" style="padding:10px; border:1px solid #ccc; border-radius:8px;">
+                <button type="submit" id="auth-submit-btn" style="padding:12px; background:#0066ff; color:white; border:none; border-radius:8px; cursor:pointer;">
+                    <span class="btn-text">Sign In</span>
+                    <div class="spinner" style="display:none;">...</div>
+                </button>
+            </form>
+            <div id="auth-error" style="color:red; margin-top:10px;"></div>
+            <div style="margin-top:20px;">
+                <button id="guest-login-btn" style="background:none; border:none; color:#555; cursor:pointer; text-decoration:underline;">Continue as Guest</button>
+            </div>
+        </div>
+    `;
+    return Promise.resolve();
+}
+
 export function init() {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         const container = document.getElementById('auth-container');
         
+        // Anti-fragile: If fetch fails, render fallback
         fetch('./modules/auth/auth.html')
-            .then(res => res.text())
+            .then(res => {
+                if (!res.ok) throw new Error("Failed to load auth template");
+                return res.text();
+            })
             .then(html => {
                 container.innerHTML = html;
                 
+                // Only inject css if not already present
                 if (!document.querySelector('link[href="./modules/auth/auth.css"]')) {
                     const link = document.createElement('link');
                     link.rel = 'stylesheet';
                     link.href = './modules/auth/auth.css';
                     document.head.appendChild(link);
                 }
-                
-                elements = {
-                    form: document.getElementById('auth-form'),
-                    emailInput: document.getElementById('auth-email'),
-                    passwordInput: document.getElementById('auth-password'),
-                    submitBtn: document.getElementById('auth-submit-btn'),
-                    submitBtnText: document.querySelector('#auth-submit-btn .btn-text'),
-                    submitBtnSpinner: document.querySelector('#auth-submit-btn .spinner'),
-                    toggleBtn: document.getElementById('auth-toggle-btn'),
-                    guestBtn: document.getElementById('guest-login-btn'),
-                    googleBtn: document.getElementById('google-login-btn'),
-                    forgotBtn: document.getElementById('forgot-password-btn'),
-                    title: document.getElementById('auth-title'),
-                    subtitle: document.getElementById('auth-subtitle'),
-                    toggleText: document.getElementById('auth-toggle-text'),
-                    error: document.getElementById('auth-error'),
-                    
-                    resetModal: document.getElementById('reset-password-modal'),
-                    resetEmailInput: document.getElementById('reset-email-input'),
-                    cancelResetBtn: document.getElementById('cancel-reset-btn'),
-                    confirmResetBtn: document.getElementById('confirm-reset-btn'),
-                    resetFeedback: document.getElementById('reset-feedback'),
-
-                    newPasswordModal: document.getElementById('new-password-modal'),
-                    newPasswordInput: document.getElementById('new-password-input'),
-                    confirmNewPasswordBtn: document.getElementById('confirm-new-password-btn'),
-                    newPasswordFeedback: document.getElementById('new-password-feedback')
-                };
-                
-                if(elements.form) elements.form.addEventListener('submit', handleSubmit);
-                if(elements.toggleBtn) elements.toggleBtn.addEventListener('click', toggleMode);
-                if(elements.guestBtn) elements.guestBtn.addEventListener('click', handleGuestLogin);
-                if(elements.googleBtn) elements.googleBtn.addEventListener('click', handleGoogleLogin);
-                
-                if (elements.forgotBtn) elements.forgotBtn.addEventListener('click', openResetModal);
-                if (elements.cancelResetBtn) elements.cancelResetBtn.addEventListener('click', closeResetModal);
-                if (elements.confirmResetBtn) elements.confirmResetBtn.addEventListener('click', handleResetSubmit);
-                if (elements.confirmNewPasswordBtn) elements.confirmNewPasswordBtn.addEventListener('click', handleNewPasswordSubmit);
-                
-                if (elements.resetModal) {
-                    elements.resetModal.addEventListener('click', (e) => {
-                        if (e.target === elements.resetModal) closeResetModal();
-                    });
-                }
-
+                bindEvents();
                 checkUrlForReset();
                 resolve();
             })
-            .catch(reject);
+            .catch(err => {
+                console.warn("Using fallback auth UI due to load error:", err);
+                renderFallbackAuth().then(() => {
+                    bindEvents();
+                    resolve();
+                });
+            });
     });
+}
+
+function bindEvents() {
+    elements = {
+        form: document.getElementById('auth-form'),
+        emailInput: document.getElementById('auth-email'),
+        passwordInput: document.getElementById('auth-password'),
+        submitBtn: document.getElementById('auth-submit-btn'),
+        submitBtnText: document.querySelector('#auth-submit-btn .btn-text'),
+        submitBtnSpinner: document.querySelector('#auth-submit-btn .spinner'),
+        toggleBtn: document.getElementById('auth-toggle-btn'),
+        guestBtn: document.getElementById('guest-login-btn'),
+        googleBtn: document.getElementById('google-login-btn'),
+        forgotBtn: document.getElementById('forgot-password-btn'),
+        title: document.getElementById('auth-title'),
+        subtitle: document.getElementById('auth-subtitle'),
+        toggleText: document.getElementById('auth-toggle-text'),
+        error: document.getElementById('auth-error'),
+        
+        resetModal: document.getElementById('reset-password-modal'),
+        resetEmailInput: document.getElementById('reset-email-input'),
+        cancelResetBtn: document.getElementById('cancel-reset-btn'),
+        confirmResetBtn: document.getElementById('confirm-reset-btn'),
+        resetFeedback: document.getElementById('reset-feedback'),
+
+        newPasswordModal: document.getElementById('new-password-modal'),
+        newPasswordInput: document.getElementById('new-password-input'),
+        confirmNewPasswordBtn: document.getElementById('confirm-new-password-btn'),
+        newPasswordFeedback: document.getElementById('new-password-feedback')
+    };
+    
+    if(elements.form) elements.form.addEventListener('submit', handleSubmit);
+    if(elements.toggleBtn) elements.toggleBtn.addEventListener('click', toggleMode);
+    if(elements.guestBtn) elements.guestBtn.addEventListener('click', handleGuestLogin);
+    if(elements.googleBtn) elements.googleBtn.addEventListener('click', handleGoogleLogin);
+    
+    if (elements.forgotBtn) elements.forgotBtn.addEventListener('click', openResetModal);
+    if (elements.cancelResetBtn) elements.cancelResetBtn.addEventListener('click', closeResetModal);
+    if (elements.confirmResetBtn) elements.confirmResetBtn.addEventListener('click', handleResetSubmit);
+    if (elements.confirmNewPasswordBtn) elements.confirmNewPasswordBtn.addEventListener('click', handleNewPasswordSubmit);
+    
+    if (elements.resetModal) {
+        elements.resetModal.addEventListener('click', (e) => {
+            if (e.target === elements.resetModal) closeResetModal();
+        });
+    }
 }
 
 export function destroy() {
