@@ -13,7 +13,7 @@ function toggleMode() {
         elements.title.innerHTML = 'Welcome Back <span class="wave-emoji">👋</span>';
         elements.subtitle.textContent = "Today is a new day. It's your day. You shape it. Sign in to start managing your projects.";
         elements.submitBtnText.textContent = 'Sign in';
-        elements.toggleText.textContent = "Don't have an account?";
+        elements.toggleText.textContent = "Don't you have an account?";
         elements.toggleBtn.textContent = 'Sign up';
     } else {
         elements.title.innerHTML = 'Create Account <span class="wave-emoji">🚀</span>';
