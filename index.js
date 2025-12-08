@@ -1,7 +1,6 @@
 
-// index.js - Safe Bootloader
-// We use dynamic imports for EVERYTHING to ensure this script body always runs
-// and can catch loading errors gracefully.
+// index.js - Safe Bootloader v7.0
+// We use dynamic imports for EVERYTHING to ensure this script body always runs.
 
 const AppRefs = {
     firebase: null,
@@ -49,38 +48,59 @@ function showWelcomeScreen(constants) {
 // --- BOOT PROCESS ---
 
 async function bootstrap() {
-    console.log("System: Booting...");
+    console.log("System: Booting v7.0.0...");
     
     try {
         // Step 1: Load Constants (Safe Local)
-        AppRefs.constants = await import('./constants.js');
+        try {
+            AppRefs.constants = await import('./constants.js');
+        } catch (e) {
+            throw new Error("Failed to load application constants. Please refresh.");
+        }
         const { ROUTES } = AppRefs.constants;
 
-        // Step 2: Load Firebase (External - Risky)
-        // We catch errors here to allow the app to boot in "Offline/Error" mode if needed
+        // Step 2: Load Firebase (External - May fail if offline/blocked)
         try {
+            console.log("System: Loading Firebase...");
             AppRefs.firebase = await import('./services/firebaseService.js');
         } catch (fbError) {
-            console.error("Firebase load failed:", fbError);
-            throw new Error("Could not connect to cloud services. Please check your internet connection.");
+            console.warn("Firebase load failed (Offline or Blocked):", fbError);
+            // We continue, but services relying on Firebase will degrade gracefully
         }
 
         // Step 3: Setup Auth Listener
-        console.log("System: Connecting to Identity Service...");
-        AppRefs.firebase.onAuthChange(async (user) => {
-            if (user) {
-                await transitionToApp(user);
-            } else {
-                await transitionToAuth();
-            }
-        });
+        if (AppRefs.firebase && AppRefs.firebase.onAuthChange) {
+            console.log("System: Connecting to Identity Service...");
+            AppRefs.firebase.onAuthChange(async (user) => {
+                if (user) {
+                    await transitionToApp(user);
+                } else {
+                    await transitionToAuth();
+                }
+            });
+        } else {
+            // Fallback for extreme failure -> Auth UI
+            console.warn("System: Identity Service Unavailable. Attempting fallback.");
+            await transitionToAuth();
+        }
 
-        // Step 4: Register Service Worker (Non-blocking)
+        // Step 4: Register Service Worker
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW failed:', e));
+            navigator.serviceWorker.register('sw.js').then(reg => {
+                console.log('SW Registered:', reg.scope);
+                reg.onupdatefound = () => {
+                    const installingWorker = reg.installing;
+                    installingWorker.onstatechange = () => {
+                        if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            console.log('New content available; please refresh.');
+                        }
+                    };
+                };
+            }).catch(e => console.warn('SW failed:', e));
         }
 
     } catch (fatalError) {
+        // If we catch here, it means we couldn't even load constants
         window.showFatalError("Startup Failed", fatalError.message);
     }
 }
@@ -98,7 +118,8 @@ async function transitionToAuth() {
         await AppRefs.authModule.init();
         removeSplashScreen();
     } catch (e) {
-        window.showFatalError("Auth Module Error", "Failed to load authentication interface.");
+        console.error(e);
+        window.showFatalError("Auth Module Error", "Failed to load authentication interface.\n" + e.message);
     }
 }
 

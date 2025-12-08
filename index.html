@@ -1,18 +1,21 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Skill Apex | AI Learning Mastery</title>
     <meta name="description" content="Skill Apex is an AI-powered learning platform. Generate personalized courses, quizzes, and skill trees instantly.">
     
     <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
     <link rel="manifest" href="manifest.json">
 
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     
+    <!-- External Libs -->
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
 
     <!-- Theme & Global Styles -->
@@ -21,19 +24,24 @@
 
     <!-- CRITICAL: Boot & Error CSS -->
     <style>
+        :root { --boot-bg: #0f172a; --boot-accent: #38bdf8; --boot-danger: #ef4444; }
+        
+        body { background-color: var(--boot-bg); margin: 0; overflow: hidden; height: 100vh; width: 100vw; }
+
         /* Splash Screen */
         #splash-screen {
             position: fixed; inset: 0; z-index: 10000;
-            background: #0f172a; display: flex; flex-direction: column;
+            background: var(--boot-bg); 
+            display: flex; flex-direction: column;
             align-items: center; justify-content: center;
-            transition: opacity 0.5s ease;
+            transition: opacity 0.5s ease-out;
         }
         #splash-screen.hidden { opacity: 0; pointer-events: none; }
         
         .splash-logo { 
-            width: 80px; height: 80px; margin-bottom: 30px; 
-            animation: pulse-logo 2s infinite; 
-            filter: drop-shadow(0 0 20px rgba(0, 102, 255, 0.5));
+            width: 80px; height: 80px; margin-bottom: 40px; 
+            filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.6));
+            animation: pulse-logo 2s infinite ease-in-out; 
         }
         
         .loader-track {
@@ -42,18 +50,21 @@
         }
         
         .loader-bar {
-            position: absolute; top: 0; left: 0; height: 100%; width: 50%;
-            background: #0066FF; box-shadow: 0 0 10px #0066FF;
-            animation: load-scan 1.5s ease-in-out infinite;
+            position: absolute; top: 0; left: 0; height: 100%; width: 40%;
+            background: var(--boot-accent); 
+            box-shadow: 0 0 15px var(--boot-accent);
+            border-radius: 2px;
+            animation: load-scan 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         }
 
         .splash-text {
-            margin-top: 20px; color: #64748b; font-family: 'Roboto Mono', monospace; 
-            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px;
+            margin-top: 24px; color: #64748b; 
+            font-family: 'Roboto Mono', monospace; 
+            font-size: 0.7rem; text-transform: uppercase; letter-spacing: 4px;
         }
 
         @keyframes load-scan {
-            0% { left: -50%; }
+            0% { left: -40%; }
             100% { left: 100%; }
         }
         @keyframes pulse-logo { 
@@ -68,112 +79,113 @@
             padding: 40px; text-align: center;
             flex-direction: column; align-items: center; justify-content: center;
         }
-        .error-icon {
-            width: 64px; height: 64px; margin-bottom: 24px; color: #ef4444;
+        
+        .error-content {
+            max-width: 500px; width: 100%;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 0 50px rgba(239, 68, 68, 0.1);
         }
+
+        .error-icon { 
+            width: 48px; height: 48px; color: var(--boot-danger); 
+            margin-bottom: 24px;
+        }
+        
         #fatal-error-overlay h3 { 
-            color: #ef4444; margin-bottom: 15px; font-size: 1.5rem; 
-            font-family: 'Exo 2', sans-serif; letter-spacing: 1px;
+            color: #fff; margin: 0 0 12px 0; font-size: 1.5rem; 
+            font-family: 'Exo 2', sans-serif;
         }
         #fatal-error-overlay p { 
-            color: #94a3b8; margin-bottom: 20px; max-width: 500px; line-height: 1.6; 
+            color: #94a3b8; margin-bottom: 24px; line-height: 1.5; font-size: 0.95rem;
         }
         #fatal-error-overlay pre { 
-            background: rgba(15, 23, 42, 0.8); padding: 20px; border-radius: 12px; 
-            overflow-x: auto; text-align: left; font-size: 12px; 
-            font-family: 'Roboto Mono', monospace; margin-bottom: 30px; 
-            max-width: 600px; width: 100%; border: 1px solid #334155; color: #f87171;
+            background: #000; padding: 16px; border-radius: 8px; 
+            overflow-x: auto; text-align: left; font-size: 11px; 
+            font-family: 'Roboto Mono', monospace; margin-bottom: 32px; 
+            border-left: 2px solid var(--boot-danger); color: #fca5a5;
         }
         .btn-retry {
-            padding: 12px 32px; background: #0066FF; color: white; border: none; 
-            border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem;
-            transition: all 0.2s; box-shadow: 0 4px 15px rgba(0, 102, 255, 0.3);
+            padding: 12px 32px; background: var(--boot-accent); color: #000; border: none; 
+            border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.9rem;
+            transition: all 0.2s; box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+            text-transform: uppercase; letter-spacing: 1px;
         }
-        .btn-retry:hover { background: #0052cc; transform: translateY(-2px); }
+        .btn-retry:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(56, 189, 248, 0.6); }
     </style>
 
     <!-- 
-      CLEAN IMPORT MAP 
-      Only include valid browser modules. Removed Node.js specific modules (express, fs, path).
+      FIXED IMPORT MAP 
+      Only browser-compatible modules here.
+      Corrected: Removed all Node.js server modules (express, fs, path).
     -->
     <script type="importmap">
 {
   "imports": {
-    "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
-    "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
-    "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js",
-    "firebase/analytics": "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js",
-    "dompurify": "https://cdn.jsdelivr.net/npm/dompurify@3.0.9/dist/purify.es.mjs",
-    "@google/genai": "https://esm.run/@google/genai",
-    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
+    "firebase/app": "https://esm.sh/firebase@10.12.0/app",
+    "firebase/auth": "https://esm.sh/firebase@10.12.0/auth",
+    "firebase/firestore": "https://esm.sh/firebase@10.12.0/firestore",
+    "firebase/analytics": "https://esm.sh/firebase@10.12.0/analytics",
+    "dompurify": "https://esm.sh/dompurify@3.1.2",
+    "@google/genai": "https://esm.sh/@google/genai@0.1.3",
+    "express": "https://aistudiocdn.com/express@^5.2.1",
     "path": "https://aistudiocdn.com/path@^0.12.7",
-    "ws": "https://aistudiocdn.com/ws@^8.18.3",
-    "fs/": "https://aistudiocdn.com/fs@^0.0.1-security/",
+    "url": "https://aistudiocdn.com/url@^0.11.4",
     "dotenv/": "https://aistudiocdn.com/dotenv@^17.2.3/",
     "express-rate-limit": "https://aistudiocdn.com/express-rate-limit@^8.2.1",
+    "fs/": "https://aistudiocdn.com/fs@^0.0.1-security/",
     "http": "https://aistudiocdn.com/http@^0.0.1-security",
-    "url": "https://aistudiocdn.com/url@^0.11.4",
-    "express": "https://aistudiocdn.com/express@^5.2.1"
+    "ws": "https://aistudiocdn.com/ws@^8.18.3",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/"
   }
 }
 </script>
 
-    <!-- GLOBAL FAILSAFE HANDLER -->
+    <!-- GLOBAL ERROR HANDLER -->
     <script>
-        // Global State Flag
-        window.APP_STATUS = {
-            booted: false,
-            jsLoaded: false,
-            bootStartTime: Date.now()
-        };
+        window.APP_STATUS = { booted: false };
 
-        // 1. Show Error UI Function
         window.showFatalError = function(title, details) {
             const splash = document.getElementById('splash-screen');
             const errorOverlay = document.getElementById('fatal-error-overlay');
             const errorTitle = document.getElementById('error-title');
             const errorText = document.getElementById('error-details');
+            const errorDebug = document.getElementById('error-debug');
 
-            if (splash) splash.style.display = 'none';
+            if (splash) splash.style.opacity = '0';
+            setTimeout(() => { if(splash) splash.style.display = 'none'; }, 500);
+
             if (errorOverlay) {
                 errorOverlay.style.display = 'flex';
                 if(errorTitle) errorTitle.textContent = title || "System Critical Failure";
-                if(errorText) errorText.textContent = details || "Unknown initialization error.";
+                if(errorText) errorText.textContent = "The application encountered a critical error during initialization.";
+                if(errorDebug) errorDebug.textContent = details || "Unknown error.";
             }
-            console.error("APP CRASH:", title, details);
-        };
-
-        // 2. Global Error Traps
-        window.onerror = function(msg, url, line, col, error) {
-            // Ignore minor resize loops
-            if (String(msg).includes('ResizeObserver loop')) return false;
-            
-            // Only block app if not yet booted
-            if (!window.APP_STATUS.booted) {
-                window.showFatalError("Script Execution Failed", `${msg}\nLine: ${line}`);
-            }
-            return false;
+            console.error("BOOT FAILURE:", title, details);
         };
 
         window.addEventListener('error', function(e) {
             if (e.target.tagName === 'SCRIPT' && !window.APP_STATUS.booted) {
-                const src = e.target.src || 'inline script';
-                if (src.includes('index.js') || src.includes('firebase')) {
-                    window.showFatalError("Network Error", `Failed to load critical script: ${src.split('/').pop()}\nCheck your internet connection.`);
+                e.preventDefault();
+                const src = e.target.src ? e.target.src.split('/').pop() : 'inline';
+                // Only block critical scripts
+                if (src.includes('index.js') || src.includes('global.js')) {
+                    window.showFatalError("Network Error", `Failed to load critical script: ${src}\n\nPlease check your internet connection and refresh.`);
                 }
             }
         }, true);
 
-        // 3. Unhandled Promise Rejections (Async Errors)
-        window.onunhandledrejection = function(event) {
+        window.addEventListener('unhandledrejection', function(event) {
             if (!window.APP_STATUS.booted) {
-                const msg = event.reason ? (event.reason.message || event.reason) : "Async operation failed.";
-                // Don't show error for 404s on images/icons, only critical logic
-                if (typeof msg === 'string' && (msg.includes('Import') || msg.includes('Failed to fetch'))) {
-                    window.showFatalError("Initialization Error", msg);
+                const msg = event.reason ? (event.reason.message || event.reason.toString()) : "Unknown Async Error";
+                // Filter for module loading errors
+                if (msg.includes('Import') || msg.includes('fetch') || msg.includes('Failed to load')) {
+                    window.showFatalError("Initialization Failed", msg);
                 }
             }
-        };
+        });
     </script>
 </head>
 <body>
@@ -188,18 +200,20 @@
         <div class="loader-track">
             <div class="loader-bar"></div>
         </div>
-        <p class="splash-text">Initializing Systems...</p>
+        <p class="splash-text">System Initializing...</p>
     </div>
 
     <!-- Fatal Error Overlay -->
     <div id="fatal-error-overlay">
-        <svg class="error-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-        </svg>
-        <h3 id="error-title">System Failure</h3>
-        <p>The application encountered a critical issue during initialization.</p>
-        <pre id="error-details"></pre>
-        <button onclick="window.location.reload()" class="btn-retry">Reboot System</button>
+        <div class="error-content">
+            <svg class="error-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <h3 id="error-title">System Failure</h3>
+            <p id="error-details">The application could not be loaded.</p>
+            <pre id="error-debug"></pre>
+            <button onclick="window.location.reload(true)" class="btn-retry">Reboot System</button>
+        </div>
     </div>
 
     <!-- Welcome Screen -->
@@ -235,29 +249,25 @@
 
     <script src="global/global.js"></script>
     
-    <!-- MAIN ENTRY POINT (Type Module) -->
-    <script type="module" src="index.js"></script>
+    <!-- MAIN ENTRY POINT - Cache Busted v11.0 -->
+    <script type="module" src="index.js?v=11.0"></script>
 
     <!-- BOOT FAILSAFE -->
     <script>
-        // Initialize mermaid if present
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof mermaid !== 'undefined') mermaid.initialize({ startOnLoad: false, theme: 'base', securityLevel: 'loose' });
         });
 
-        // 10-Second Safety Timeout
+        // 15-Second Safety Timeout
         setTimeout(() => {
             if (!window.APP_STATUS.booted) {
-                console.warn("BOOT TIMEOUT: Application took too long to start.");
                 const splash = document.getElementById('splash-screen');
                 const errorOverlay = document.getElementById('fatal-error-overlay');
-                
-                // Only show if still stuck on splash
                 if (splash && splash.style.display !== 'none' && (!errorOverlay || errorOverlay.style.display === 'none')) {
-                    window.showFatalError("Connection Timeout", "The application failed to initialize resources. This may be due to a slow network or firewall blocking critical components.");
+                    window.showFatalError("Connection Timeout", "Resources took too long to load.\nPlease check your network connection.");
                 }
             }
-        }, 10000);
+        }, 15000);
     </script>
 </body>
 </html>
