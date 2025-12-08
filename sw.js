@@ -1,25 +1,23 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 16.0.0-REFINE
+ * @version 17.0.0-FIX-IMPORTS
  *
  * Forces a clean install of all assets to apply critical updates.
  */
 
-const CACHE_NAME = 'skill-apex-v16-refine';
+const CACHE_NAME = 'skill-apex-v17-imports';
 const OLD_CACHES = [
+    'skill-apex-v16-refine',
     'skill-apex-v15-fix-init',
     'skill-apex-v14-offline-fix',
-    'skill-apex-v13-rewrite',
-    'skill-apex-v12-hotfix',
-    'skill-apex-v11-hotfix',
-    'skill-apex-v10-fixed'
+    'skill-apex-v13-rewrite'
 ];
 
 const APP_SHELL_URLS = [
     '/',
     'index.html',
-    'index.js?v=16.0',
+    'index.js?v=17.0',
     'constants.js',
     'manifest.json',
     'data/topics.json',
