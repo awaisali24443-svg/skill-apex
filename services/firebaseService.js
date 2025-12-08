@@ -31,10 +31,14 @@ const firebaseConfig = {
   measurementId: "G-17Z8MFNP7J"
 };
 
-// Guarded Initialization
+// Internal State
 let app, analytics, db, auth, googleProvider;
 let isInitialized = false;
+let isOfflineMode = false;
+let currentUser = null;
+let authChangeCallback = null;
 
+// --- INITIALIZATION ---
 try {
     app = initializeApp(firebaseConfig);
     analytics = getAnalytics(app);
@@ -44,77 +48,161 @@ try {
     isInitialized = true;
     console.log("Firebase initialized successfully.");
 } catch (e) {
-    console.error("Firebase Initialization Failed:", e);
-    // We let the module load but methods will fail gracefully or throw specific errors
+    console.warn("Firebase Initialization Failed (Offline Mode Active):", e);
+    isOfflineMode = true;
+    isInitialized = true; // We set this true to allow the app to boot in fallback mode
 }
 
-let currentUser = null;
-
-// Helpers
+// --- HELPERS ---
 function ensureInit() {
-    if (!isInitialized) throw new Error("Cloud services are not available.");
+    if (!isInitialized) throw new Error("Service initialization failed completely.");
 }
 
-function getUserId() { return currentUser ? currentUser.uid : null; }
+function triggerAuthChange() {
+    if (authChangeCallback) {
+        authChangeCallback(currentUser);
+    }
+}
+
+// --- GETTERS ---
+function getUserId() { 
+    return currentUser ? currentUser.uid : null; 
+}
+
 function getUserEmail() {
     if (!currentUser) return null;
     if (currentUser.isAnonymous) return 'Guest User';
     return currentUser.email;
 }
+
 function getUserName() {
     if (!currentUser) return 'Agent';
     return currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'Agent');
 }
-function getUserPhoto() { return currentUser ? currentUser.photoURL : null; }
-function isGuest() { return currentUser ? currentUser.isAnonymous : false; }
+
+function getUserPhoto() { 
+    return currentUser ? currentUser.photoURL : null; 
+}
+
+function isGuest() { 
+    return currentUser ? currentUser.isAnonymous : false; 
+}
+
 function getUserProvider() {
     if (!currentUser) return null;
     if (currentUser.isAnonymous) return 'anonymous';
-    return currentUser.providerData.length > 0 ? currentUser.providerData[0].providerId : 'unknown';
+    return (currentUser.providerData && currentUser.providerData.length > 0) ? currentUser.providerData[0].providerId : 'unknown';
 }
 
-// Auth Actions
-function login(email, password) { ensureInit(); return signInWithEmailAndPassword(auth, email, password); }
-function register(email, password) { ensureInit(); return createUserWithEmailAndPassword(auth, email, password); }
-function loginWithGoogle() { ensureInit(); return signInWithPopup(auth, googleProvider); }
-function loginAsGuest() { ensureInit(); return signInAnonymously(auth); }
-function logout() { ensureInit(); return firebaseSignOut(auth); }
-
-function resetPassword(email) {
-    ensureInit();
-    const url = window.location.origin + window.location.pathname;
-    const actionCodeSettings = { url: `${url}?mode=resetPassword`, handleCodeInApp: true };
-    return sendPasswordResetEmail(auth, email, actionCodeSettings);
-}
-function confirmReset(code, newPassword) { ensureInit(); return confirmPasswordReset(auth, code, newPassword); }
+// --- AUTH ACTIONS ---
 
 function onAuthChange(callback) {
-    if (!isInitialized) {
-        console.warn("Auth unavailable, defaulting to null user.");
-        // Simulate auth check failure after a tick
-        setTimeout(() => callback(null), 100);
+    authChangeCallback = callback;
+    
+    if (isOfflineMode) {
+        // In offline mode, check if we have a stored fake session
+        const storedUser = sessionStorage.getItem('offline_user');
+        if (storedUser) {
+            currentUser = JSON.parse(storedUser);
+            setTimeout(() => callback(currentUser), 50);
+        } else {
+            setTimeout(() => callback(null), 50);
+        }
         return () => {};
     }
+
+    // Normal Mode
     return onAuthStateChanged(auth, (user) => {
         currentUser = user;
         callback(user);
     });
 }
 
+function loginAsGuest() {
+    ensureInit();
+    if (isOfflineMode) {
+        currentUser = { 
+            uid: 'guest_' + Date.now(), 
+            isAnonymous: true, 
+            email: null, 
+            displayName: 'Offline Guest',
+            photoURL: null,
+            providerData: []
+        };
+        sessionStorage.setItem('offline_user', JSON.stringify(currentUser));
+        triggerAuthChange();
+        return Promise.resolve(currentUser);
+    }
+    return signInAnonymously(auth);
+}
+
+function login(email, password) { 
+    ensureInit(); 
+    if (isOfflineMode) return Promise.reject(new Error("Cannot login: Offline Mode Active"));
+    return signInWithEmailAndPassword(auth, email, password); 
+}
+
+function register(email, password) { 
+    ensureInit(); 
+    if (isOfflineMode) return Promise.reject(new Error("Cannot register: Offline Mode Active"));
+    return createUserWithEmailAndPassword(auth, email, password); 
+}
+
+function loginWithGoogle() { 
+    ensureInit(); 
+    if (isOfflineMode) return Promise.reject(new Error("Cannot use Google: Offline Mode Active"));
+    return signInWithPopup(auth, googleProvider); 
+}
+
+function logout() { 
+    ensureInit(); 
+    if (isOfflineMode) {
+        currentUser = null;
+        sessionStorage.removeItem('offline_user');
+        triggerAuthChange();
+        return Promise.resolve();
+    }
+    return firebaseSignOut(auth); 
+}
+
+function resetPassword(email) {
+    ensureInit();
+    if (isOfflineMode) return Promise.reject(new Error("Offline Mode"));
+    const url = window.location.origin + window.location.pathname;
+    const actionCodeSettings = { url: `${url}?mode=resetPassword`, handleCodeInApp: true };
+    return sendPasswordResetEmail(auth, email, actionCodeSettings);
+}
+
+function confirmReset(code, newPassword) { 
+    ensureInit(); 
+    if (isOfflineMode) return Promise.reject(new Error("Offline Mode"));
+    return confirmPasswordReset(auth, code, newPassword); 
+}
+
 function updateUserProfile(profileData) {
     ensureInit();
     if (!currentUser) return Promise.reject(new Error("No user logged in"));
+    
+    if (isOfflineMode) {
+        currentUser = { ...currentUser, ...profileData };
+        sessionStorage.setItem('offline_user', JSON.stringify(currentUser));
+        triggerAuthChange();
+        return Promise.resolve();
+    }
+
     return updateProfile(currentUser, profileData).then(() => currentUser.reload());
 }
 
 function linkGoogle() {
     ensureInit();
+    if (isOfflineMode) return Promise.reject(new Error("Offline Mode"));
     if (!currentUser) return Promise.reject("No user");
     return linkWithPopup(currentUser, googleProvider);
 }
 
 function linkEmail(email, password) {
     ensureInit();
+    if (isOfflineMode) return Promise.reject(new Error("Offline Mode"));
     if (!currentUser) return Promise.reject("No user");
     const credential = EmailAuthProvider.credential(email, password);
     return linkWithCredential(currentUser, credential);
@@ -122,6 +210,7 @@ function linkEmail(email, password) {
 
 function reauthenticate(password) {
     ensureInit();
+    if (isOfflineMode) return Promise.resolve(); // Mock success for guest
     if (!currentUser) return Promise.reject(new Error("No user"));
     const cred = EmailAuthProvider.credential(currentUser.email, password);
     return reauthenticateWithCredential(currentUser, cred);
@@ -129,15 +218,18 @@ function reauthenticate(password) {
 
 function changePassword(newPassword) {
     ensureInit();
+    if (isOfflineMode) return Promise.reject(new Error("Offline Mode"));
     if (!currentUser) return Promise.reject(new Error("No user"));
     return updatePassword(currentUser, newPassword);
 }
 
+// --- DATA ACTIONS (No-op in offline mode) ---
+
 async function updateLeaderboardScore(stats) {
-    if (!isInitialized || !currentUser || isGuest()) return;
-    const userRef = doc(db, "leaderboard", currentUser.uid);
-    const name = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'ApexUser');
+    if (!isInitialized || isOfflineMode || !currentUser || isGuest()) return;
     try {
+        const userRef = doc(db, "leaderboard", currentUser.uid);
+        const name = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'ApexUser');
         await setDoc(userRef, {
             username: name,
             xp: stats.xp,
@@ -148,7 +240,7 @@ async function updateLeaderboardScore(stats) {
 }
 
 async function getLeaderboard(limitCount = 20) {
-    if (!isInitialized) return [];
+    if (!isInitialized || isOfflineMode) return [];
     try {
         const lbRef = collection(db, "leaderboard");
         const q = query(lbRef, orderBy("xp", "desc"), limit(limitCount));
