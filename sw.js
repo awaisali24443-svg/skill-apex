@@ -1,29 +1,25 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 15.0.0-FIX-INIT
+ * @version 16.0.0-REFINE
  *
- * Forces a clean install of all assets to fix broken service initialization.
+ * Forces a clean install of all assets to apply critical updates.
  */
 
-const CACHE_NAME = 'skill-apex-v15-fix-init';
-// List of old cache names to aggressively delete
+const CACHE_NAME = 'skill-apex-v16-refine';
 const OLD_CACHES = [
+    'skill-apex-v15-fix-init',
     'skill-apex-v14-offline-fix',
     'skill-apex-v13-rewrite',
     'skill-apex-v12-hotfix',
     'skill-apex-v11-hotfix',
-    'skill-apex-v10-fixed',
-    'skill-apex-v9-fix',
-    'skill-apex-v8-emergency',
-    'skill-apex-v7-stable', 
-    'skill-apex-v6.0.0-clean-reboot'
+    'skill-apex-v10-fixed'
 ];
 
 const APP_SHELL_URLS = [
     '/',
     'index.html',
-    'index.js?v=14.0',
+    'index.js?v=16.0',
     'constants.js',
     'manifest.json',
     'data/topics.json',
@@ -57,33 +53,27 @@ const APP_SHELL_URLS = [
     // Modules
     'modules/auth/auth.html', 'modules/auth/auth.css', 'modules/auth/auth.js',
     'modules/home/home.html', 'modules/home/home.css', 'modules/home/home.js',
-    'modules/topic-list/topic-list.html', 'modules/topic-list/topic-list.css', 'modules/topic-list/topic-list.js'
+    'modules/topic-list/topic-list.html', 'modules/topic-list/topic-list.css', 'modules/topic-list/topic-list.js',
+    'modules/aural/aural.html', 'modules/aural/aural.css', 'modules/aural/aural.js'
 ];
 
 self.addEventListener('install', (event) => {
-    // Force immediate takeover
     self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            console.log('[SW] Caching App Shell v15.0');
-            return cache.addAll(APP_SHELL_URLS).catch(err => {
-                console.error('[SW] Cache addAll failed:', err);
-            });
+            return cache.addAll(APP_SHELL_URLS).catch(err => console.error('[SW] Cache failed:', err));
         })
     );
 });
 
 self.addEventListener('activate', (event) => {
-    // Claim clients immediately
     event.waitUntil(
         Promise.all([
             self.clients.claim(),
             caches.keys().then((cacheNames) => {
                 return Promise.all(
                     cacheNames.map((cacheName) => {
-                        // Aggressively delete anything that isn't the current cache
                         if (cacheName !== CACHE_NAME) {
-                            console.log('[SW] Deleting old cache:', cacheName);
                             return caches.delete(cacheName);
                         }
                     })
@@ -95,11 +85,8 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
     const { request } = event;
-    
-    // Ignore non-GET requests or browser-extension requests
     if (request.method !== 'GET' || !request.url.startsWith('http')) return;
 
-    // Stale-while-revalidate strategy
     event.respondWith(
         caches.match(request).then((cachedResponse) => {
             const fetchPromise = fetch(request).then((networkResponse) => {
@@ -108,10 +95,7 @@ self.addEventListener('fetch', (event) => {
                     caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
                 }
                 return networkResponse;
-            }).catch(err => {
-                // If offline and no cache, throw
-                if (!cachedResponse) throw err;
-            });
+            }).catch(() => {});
             return cachedResponse || fetchPromise;
         })
     );

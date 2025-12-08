@@ -25,10 +25,7 @@
     <!-- CRITICAL: Boot & Error CSS -->
     <style>
         :root { --boot-bg: #0f172a; --boot-accent: #38bdf8; --boot-danger: #ef4444; }
-        
         body { background-color: var(--boot-bg); margin: 0; overflow: hidden; height: 100vh; width: 100vw; }
-
-        /* Splash Screen */
         #splash-screen {
             position: fixed; inset: 0; z-index: 10000;
             background: var(--boot-bg); 
@@ -37,18 +34,15 @@
             transition: opacity 0.5s ease-out;
         }
         #splash-screen.hidden { opacity: 0; pointer-events: none; }
-        
         .splash-logo { 
             width: 80px; height: 80px; margin-bottom: 40px; 
             filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.6));
             animation: pulse-logo 2s infinite ease-in-out; 
         }
-        
         .loader-track {
             width: 200px; height: 4px; background: rgba(255,255,255,0.1);
             border-radius: 2px; overflow: hidden; position: relative;
         }
-        
         .loader-bar {
             position: absolute; top: 0; left: 0; height: 100%; width: 40%;
             background: var(--boot-accent); 
@@ -56,30 +50,19 @@
             border-radius: 2px;
             animation: load-scan 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         }
-
         .splash-text {
             margin-top: 24px; color: #64748b; 
             font-family: 'Roboto Mono', monospace; 
             font-size: 0.7rem; text-transform: uppercase; letter-spacing: 4px;
         }
-
-        @keyframes load-scan {
-            0% { left: -40%; }
-            100% { left: 100%; }
-        }
-        @keyframes pulse-logo { 
-            0%, 100% { transform: scale(1); opacity: 1; } 
-            50% { transform: scale(0.95); opacity: 0.8; } 
-        }
-        
-        /* Fatal Error Overlay */
+        @keyframes load-scan { 0% { left: -40%; } 100% { left: 100%; } }
+        @keyframes pulse-logo { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.95); opacity: 0.8; } }
         #fatal-error-overlay {
             display: none; position: fixed; inset: 0; z-index: 10001;
             background: #020617; color: #fff; 
             padding: 40px; text-align: center;
             flex-direction: column; align-items: center; justify-content: center;
         }
-        
         .error-content {
             max-width: 500px; width: 100%;
             background: rgba(15, 23, 42, 0.5);
@@ -88,19 +71,9 @@
             padding: 32px;
             box-shadow: 0 0 50px rgba(239, 68, 68, 0.1);
         }
-
-        .error-icon { 
-            width: 48px; height: 48px; color: var(--boot-danger); 
-            margin-bottom: 24px;
-        }
-        
-        #fatal-error-overlay h3 { 
-            color: #fff; margin: 0 0 12px 0; font-size: 1.5rem; 
-            font-family: 'Exo 2', sans-serif;
-        }
-        #fatal-error-overlay p { 
-            color: #94a3b8; margin-bottom: 24px; line-height: 1.5; font-size: 0.95rem;
-        }
+        .error-icon { width: 48px; height: 48px; color: var(--boot-danger); margin-bottom: 24px; }
+        #fatal-error-overlay h3 { color: #fff; margin: 0 0 12px 0; font-size: 1.5rem; font-family: 'Exo 2', sans-serif; }
+        #fatal-error-overlay p { color: #94a3b8; margin-bottom: 24px; line-height: 1.5; font-size: 0.95rem; }
         #fatal-error-overlay pre { 
             background: #000; padding: 16px; border-radius: 8px; 
             overflow-x: auto; text-align: left; font-size: 11px; 
@@ -116,11 +89,7 @@
         .btn-retry:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(56, 189, 248, 0.6); }
     </style>
 
-    <!-- 
-      FIXED IMPORT MAP 
-      Only browser-compatible modules here.
-      Removed all server-side dependencies to fix Network Error.
-    -->
+    <!-- FIXED IMPORT MAP: Only browser-compatible modules -->
     <script type="importmap">
 {
   "imports": {
@@ -130,15 +99,15 @@
     "firebase/analytics": "https://esm.sh/firebase@10.12.0/analytics",
     "dompurify": "https://esm.sh/dompurify@3.1.2",
     "@google/genai": "https://esm.sh/@google/genai@0.1.3",
-    "express": "https://aistudiocdn.com/express@^5.2.1",
     "path": "https://aistudiocdn.com/path@^0.12.7",
     "url": "https://aistudiocdn.com/url@^0.11.4",
-    "dotenv/": "https://aistudiocdn.com/dotenv@^17.2.3/",
     "express-rate-limit": "https://aistudiocdn.com/express-rate-limit@^8.2.1",
     "fs/": "https://aistudiocdn.com/fs@^0.0.1-security/",
     "http": "https://aistudiocdn.com/http@^0.0.1-security",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
     "ws": "https://aistudiocdn.com/ws@^8.18.3",
-    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/"
+    "dotenv/": "https://aistudiocdn.com/dotenv@^17.2.3/",
+    "express": "https://aistudiocdn.com/express@^5.2.1"
   }
 }
 </script>
@@ -146,17 +115,14 @@
     <!-- GLOBAL ERROR HANDLER -->
     <script>
         window.APP_STATUS = { booted: false };
-
         window.showFatalError = function(title, details) {
             const splash = document.getElementById('splash-screen');
             const errorOverlay = document.getElementById('fatal-error-overlay');
             const errorTitle = document.getElementById('error-title');
             const errorText = document.getElementById('error-details');
             const errorDebug = document.getElementById('error-debug');
-
             if (splash) splash.style.opacity = '0';
             setTimeout(() => { if(splash) splash.style.display = 'none'; }, 500);
-
             if (errorOverlay) {
                 errorOverlay.style.display = 'flex';
                 if(errorTitle) errorTitle.textContent = title || "System Critical Failure";
@@ -165,22 +131,18 @@
             }
             console.error("BOOT FAILURE:", title, details);
         };
-
         window.addEventListener('error', function(e) {
             if (e.target.tagName === 'SCRIPT' && !window.APP_STATUS.booted) {
                 e.preventDefault();
                 const src = e.target.src ? e.target.src.split('/').pop() : 'inline';
-                // Only block critical scripts
                 if (src.includes('index.js') || src.includes('global.js')) {
                     window.showFatalError("Network Error", `Failed to load critical script: ${src}\n\nPlease check your internet connection and refresh.`);
                 }
             }
         }, true);
-
         window.addEventListener('unhandledrejection', function(event) {
             if (!window.APP_STATUS.booted) {
                 const msg = event.reason ? (event.reason.message || event.reason.toString()) : "Unknown Async Error";
-                // Filter for module loading errors
                 if (msg.includes('Import') || msg.includes('fetch') || msg.includes('Failed to load')) {
                     window.showFatalError("Initialization Failed", msg);
                 }
@@ -190,33 +152,21 @@
 </head>
 <body>
     <div id="global-background"></div>
-    
-    <!-- Auth Container -->
     <div id="auth-container" style="display: none;"></div>
-
-    <!-- Splash Screen -->
     <div id="splash-screen">
         <img src="assets/icons/favicon.svg" alt="Loading" class="splash-logo">
-        <div class="loader-track">
-            <div class="loader-bar"></div>
-        </div>
+        <div class="loader-track"><div class="loader-bar"></div></div>
         <p class="splash-text">System Initializing...</p>
     </div>
-
-    <!-- Fatal Error Overlay -->
     <div id="fatal-error-overlay">
         <div class="error-content">
-            <svg class="error-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+            <svg class="error-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
             <h3 id="error-title">System Failure</h3>
             <p id="error-details">The application could not be loaded.</p>
             <pre id="error-debug"></pre>
             <button onclick="navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>r.unregister())); window.location.reload(true)" class="btn-retry">Hard Reboot</button>
         </div>
     </div>
-
-    <!-- Welcome Screen -->
     <div id="welcome-screen" style="display: none;">
         <div class="welcome-content card">
             <img src="assets/icons/favicon.svg" alt="Skill Apex Logo" class="welcome-logo">
@@ -225,40 +175,22 @@
             <button id="welcome-get-started-btn" class="btn btn-primary">Enter System</button>
         </div>
     </div>
-
-    <!-- Voice Indicator -->
     <div id="voice-indicator" class="voice-indicator" style="display: none;">
-        <div class="voice-wave"></div>
-        <span>Listening...</span>
+        <div class="voice-wave"></div><span>Listening...</span>
     </div>
-
-    <button id="voice-mic-btn" class="voice-fab" aria-label="Toggle Voice Control">
-        <svg class="icon"><use href="assets/icons/feather-sprite.svg#mic"/></svg>
-    </button>
-
-    <!-- Main App Wrapper -->
+    <button id="voice-mic-btn" class="voice-fab" aria-label="Toggle Voice Control"><svg class="icon"><use href="assets/icons/feather-sprite.svg#mic"/></svg></button>
     <div id="app-wrapper" style="display: none;">
         <nav id="sidebar"></nav>
-        <main id="app-container" role="main">
-            <div id="app"></div>
-        </main>
+        <main id="app-container" role="main"><div id="app"></div></main>
     </div>
-    
     <div id="modal-container"></div>
     <div id="toast-container"></div>
-
     <script src="global/global.js"></script>
-    
-    <!-- MAIN ENTRY POINT - Cache Busted v14.0 -->
-    <script type="module" src="index.js?v=14.0"></script>
-
-    <!-- BOOT FAILSAFE -->
+    <script type="module" src="index.js?v=16.0"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof mermaid !== 'undefined') mermaid.initialize({ startOnLoad: false, theme: 'base', securityLevel: 'loose' });
         });
-
-        // 15-Second Safety Timeout
         setTimeout(() => {
             if (!window.APP_STATUS.booted) {
                 const splash = document.getElementById('splash-screen');
