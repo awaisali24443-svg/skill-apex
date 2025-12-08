@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -119,7 +118,7 @@
     <!-- 
       FIXED IMPORT MAP 
       Only browser-compatible modules here.
-      Corrected: Removed all Node.js server modules (express, fs, path).
+      Removed all server-side dependencies to fix Network Error.
     -->
     <script type="importmap">
 {
@@ -212,7 +211,7 @@
             <h3 id="error-title">System Failure</h3>
             <p id="error-details">The application could not be loaded.</p>
             <pre id="error-debug"></pre>
-            <button onclick="window.location.reload(true)" class="btn-retry">Reboot System</button>
+            <button onclick="navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>r.unregister())); window.location.reload(true)" class="btn-retry">Hard Reboot</button>
         </div>
     </div>
 
@@ -249,8 +248,8 @@
 
     <script src="global/global.js"></script>
     
-    <!-- MAIN ENTRY POINT - Cache Busted v11.0 -->
-    <script type="module" src="index.js?v=11.0"></script>
+    <!-- MAIN ENTRY POINT - Cache Busted v13.0 -->
+    <script type="module" src="index.js?v=13.0"></script>
 
     <!-- BOOT FAILSAFE -->
     <script>

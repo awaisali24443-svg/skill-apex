@@ -1,5 +1,5 @@
 
-// index.js - Safe Bootloader v7.0
+// index.js - Safe Bootloader v13.0
 // We use dynamic imports for EVERYTHING to ensure this script body always runs.
 
 const AppRefs = {
@@ -48,7 +48,7 @@ function showWelcomeScreen(constants) {
 // --- BOOT PROCESS ---
 
 async function bootstrap() {
-    console.log("System: Booting v7.0.0...");
+    console.log("System: Booting v13.0...");
     
     try {
         // Step 1: Load Constants (Safe Local)
@@ -60,16 +60,18 @@ async function bootstrap() {
         const { ROUTES } = AppRefs.constants;
 
         // Step 2: Load Firebase (External - May fail if offline/blocked)
+        let firebaseLoaded = false;
         try {
             console.log("System: Loading Firebase...");
             AppRefs.firebase = await import('./services/firebaseService.js');
+            firebaseLoaded = true;
         } catch (fbError) {
             console.warn("Firebase load failed (Offline or Blocked):", fbError);
             // We continue, but services relying on Firebase will degrade gracefully
         }
 
         // Step 3: Setup Auth Listener
-        if (AppRefs.firebase && AppRefs.firebase.onAuthChange) {
+        if (firebaseLoaded && AppRefs.firebase && AppRefs.firebase.onAuthChange) {
             console.log("System: Connecting to Identity Service...");
             AppRefs.firebase.onAuthChange(async (user) => {
                 if (user) {
@@ -79,7 +81,7 @@ async function bootstrap() {
                 }
             });
         } else {
-            // Fallback for extreme failure -> Auth UI
+            // Fallback for extreme failure -> Auth UI (Guest Mode force)
             console.warn("System: Identity Service Unavailable. Attempting fallback.");
             await transitionToAuth();
         }

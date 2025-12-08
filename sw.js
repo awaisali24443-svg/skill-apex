@@ -1,14 +1,16 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 11.0.0-HOTFIX
+ * @version 13.0.0-REWRITE
  *
  * Forces a clean install of all assets to fix broken import maps.
  */
 
-const CACHE_NAME = 'skill-apex-v11-hotfix';
+const CACHE_NAME = 'skill-apex-v13-rewrite';
 // List of old cache names to aggressively delete
 const OLD_CACHES = [
+    'skill-apex-v12-hotfix',
+    'skill-apex-v11-hotfix',
     'skill-apex-v10-fixed',
     'skill-apex-v9-fix',
     'skill-apex-v8-emergency',
@@ -21,7 +23,7 @@ const OLD_CACHES = [
 const APP_SHELL_URLS = [
     '/',
     'index.html',
-    'index.js?v=11.0',
+    'index.js?v=13.0',
     'constants.js',
     'manifest.json',
     'data/topics.json',
@@ -63,7 +65,7 @@ self.addEventListener('install', (event) => {
     self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            console.log('[SW] Caching App Shell v11.0');
+            console.log('[SW] Caching App Shell v13.0');
             return cache.addAll(APP_SHELL_URLS).catch(err => {
                 console.error('[SW] Cache addAll failed:', err);
             });
