@@ -1,14 +1,15 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 14.0.0-OFFLINE-FIX
+ * @version 15.0.0-FIX-INIT
  *
- * Forces a clean install of all assets to fix broken import maps.
+ * Forces a clean install of all assets to fix broken service initialization.
  */
 
-const CACHE_NAME = 'skill-apex-v14-offline-fix';
+const CACHE_NAME = 'skill-apex-v15-fix-init';
 // List of old cache names to aggressively delete
 const OLD_CACHES = [
+    'skill-apex-v14-offline-fix',
     'skill-apex-v13-rewrite',
     'skill-apex-v12-hotfix',
     'skill-apex-v11-hotfix',
@@ -64,7 +65,7 @@ self.addEventListener('install', (event) => {
     self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            console.log('[SW] Caching App Shell v14.0');
+            console.log('[SW] Caching App Shell v15.0');
             return cache.addAll(APP_SHELL_URLS).catch(err => {
                 console.error('[SW] Cache addAll failed:', err);
             });
