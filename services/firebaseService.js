@@ -34,23 +34,10 @@ const firebaseConfig = {
 // Internal State
 let app, analytics, db, auth, googleProvider;
 let isInitialized = false;
-let isOfflineMode = false;
 let currentUser = null;
 let authChangeCallback = null;
 
-// --- MOCK DB HELPERS (Kept for historical compatibility but disabled by default) ---
-function getMockDB() {
-    try { return JSON.parse(localStorage.getItem('kt_mock_users') || '[]'); } 
-    catch(e) { return []; }
-}
-
-function saveMockDB(users) {
-    localStorage.setItem('kt_mock_users', JSON.stringify(users));
-}
-
 // --- INITIALIZATION ---
-// Removed the fallback to offline mode. If this fails, the app will likely stop working,
-// which ensures we don't accidentally enter a broken offline state without the user knowing.
 try {
     app = initializeApp(firebaseConfig);
     analytics = getAnalytics(app);
@@ -60,20 +47,13 @@ try {
     isInitialized = true;
     console.log("Firebase initialized successfully.");
 } catch (e) {
-    console.error("Firebase Init Failed:", e);
-    // isOfflineMode = true; // DISABLED: We want to force online connection attempt
+    console.warn("Firebase Init Failed (Running in Limited Mode):", e);
     isInitialized = false; 
 }
 
 // --- HELPERS ---
 function ensureInit() {
-    if (!isInitialized) throw new Error("Service initialization failed. Please check your internet connection.");
-}
-
-function triggerAuthChange() {
-    if (authChangeCallback) {
-        authChangeCallback(currentUser);
-    }
+    if (!isInitialized) throw new Error("Cloud services unavailable. Check connection.");
 }
 
 // --- GETTERS ---
@@ -97,7 +77,7 @@ function getUserPhoto() {
 }
 
 function isGuest() { 
-    return currentUser ? currentUser.isAnonymous : false; 
+    return currentUser ? currentUser.isAnonymous : true; 
 }
 
 function getUserProvider() {
@@ -111,7 +91,14 @@ function getUserProvider() {
 function onAuthChange(callback) {
     authChangeCallback = callback;
     
-    // Normal Mode Only
+    if (!isInitialized || !auth) {
+        console.warn("Auth not initialized, defaulting to null user.");
+        // If auth failed, simulate no user (which triggers login screen)
+        // or effectively 'Guest' if we wanted to force it, but null is safer for bootstrapping.
+        callback(null); 
+        return () => {};
+    }
+
     return onAuthStateChanged(auth, (user) => {
         currentUser = user;
         callback(user);
