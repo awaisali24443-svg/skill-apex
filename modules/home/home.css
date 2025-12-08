@@ -15,7 +15,7 @@
 .home-header h1 {
     margin-bottom: 0.2rem;
     color: var(--color-text);
-    font-size: 2rem;
+    font-size: 2.5rem;
     letter-spacing: -1px;
     font-family: var(--font-family-heading);
     text-transform: uppercase;
@@ -24,7 +24,7 @@
 .home-header p {
     margin-bottom: 0;
     color: var(--color-text-secondary);
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-family: var(--font-family-mono);
 }
 
@@ -32,21 +32,21 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 16px;
-    background: rgba(255, 152, 0, 0.15);
-    border: 1px solid rgba(255, 152, 0, 0.4);
+    padding: 8px 20px;
+    background: rgba(255, 152, 0, 0.1);
+    border: 1px solid rgba(255, 152, 0, 0.3);
     border-radius: 50px;
     font-family: var(--font-family-mono);
     color: #ff9800;
     font-weight: 700;
-    box-shadow: 0 0 20px rgba(255, 152, 0, 0.15);
-    font-size: 0.85rem;
+    box-shadow: 0 0 20px rgba(255, 152, 0, 0.1);
+    font-size: 0.9rem;
     animation: pulse-orange 3s infinite;
 }
 
 @keyframes pulse-orange {
-    0%, 100% { box-shadow: 0 0 20px rgba(255, 152, 0, 0.15); }
-    50% { box-shadow: 0 0 30px rgba(255, 152, 0, 0.3); }
+    0%, 100% { box-shadow: 0 0 20px rgba(255, 152, 0, 0.1); }
+    50% { box-shadow: 0 0 30px rgba(255, 152, 0, 0.2); }
 }
 
 /* Dashboard Grid */
@@ -70,12 +70,10 @@
 
 /* --- HERO CARD: Command Center --- */
 .hero-card {
-    min-height: 280px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    min-height: 300px;
     position: relative;
     overflow: hidden;
+    padding: 0; /* Content handles padding */
     
     background-color: #030712;
     background-image: 
@@ -83,20 +81,23 @@
         linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px), 
         linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
     background-size: 100% 100%, 40px 40px, 40px 40px;
-    border: 1px solid rgba(56, 189, 248, 0.3);
+    border: 1px solid rgba(56, 189, 248, 0.2);
     box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+    text-decoration: none; /* remove link underline */
+    display: block;
 }
 
 .hero-card:hover {
     border-color: var(--color-primary);
     box-shadow: 0 0 60px rgba(14, 165, 233, 0.2);
+    transform: translateY(-4px);
 }
 
 /* Scanning Line Effect */
 .hero-card::after {
     content: '';
     position: absolute;
-    top: 0; left: 0; width: 100%; height: 4px;
+    top: 0; left: 0; width: 100%; height: 2px;
     background: var(--color-primary);
     box-shadow: 0 0 20px var(--color-primary);
     opacity: 0.5;
@@ -112,34 +113,55 @@
 }
 
 .hero-card .card-content {
-    display: flex;
-    align-items: center;
+    /* Grid Layout for Perfect Alignment */
+    display: grid;
+    grid-template-columns: auto 1fr auto; /* Icon | Text | Arrow */
     gap: 32px;
+    align-items: center;
     position: relative;
     z-index: 2;
-    padding: 32px;
+    height: 100%;
+    padding: 48px;
 }
 
 .hero-icon {
-    width: 80px; height: 80px;
-    background: rgba(14, 165, 233, 0.1);
+    width: 96px; height: 96px;
+    background: rgba(14, 165, 233, 0.05);
     border: 1px solid var(--color-primary);
-    border-radius: 20px;
+    border-radius: 24px;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 0 30px rgba(14, 165, 233, 0.2);
+    box-shadow: 0 0 30px rgba(14, 165, 233, 0.1);
     color: var(--color-primary);
-    transform: rotate(-10deg);
+    transform: rotate(-5deg);
     transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.hero-card:hover .hero-icon { transform: rotate(0deg) scale(1.1); color: #fff; background: var(--color-primary); }
-.hero-icon svg { width: 40px; height: 40px; filter: drop-shadow(0 0 10px currentColor); }
+.hero-card:hover .hero-icon { transform: rotate(0deg) scale(1.05); color: #fff; background: var(--color-primary); }
+.hero-icon svg { width: 48px; height: 48px; filter: drop-shadow(0 0 10px currentColor); }
 
-.hero-text { flex-grow: 1; }
-.hero-text h2 { margin-bottom: 0.5rem; font-size: 2.2rem; color: #fff; font-family: var(--font-family-heading); text-transform: uppercase; letter-spacing: 1px; }
-.hero-text p { font-size: 1.1rem; color: var(--color-text-secondary); margin: 0; max-width: 450px; }
+.hero-text { 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center;
+}
+.hero-text h2 { 
+    margin-bottom: 0.75rem; 
+    font-size: 2.5rem; 
+    color: #fff; 
+    font-family: var(--font-family-heading); 
+    text-transform: uppercase; 
+    letter-spacing: 1px; 
+    line-height: 1.1;
+}
+.hero-text p { 
+    font-size: 1.2rem; 
+    color: var(--color-text-secondary); 
+    margin: 0; 
+    max-width: 500px; 
+    line-height: 1.6;
+}
 
 .hero-arrow {
-    width: 48px; height: 48px;
+    width: 56px; height: 56px;
     display: flex; align-items: center; justify-content: center;
     border-radius: 50%;
     border: 1px solid rgba(255,255,255,0.1);
@@ -150,7 +172,7 @@
     background: var(--color-primary);
     color: #fff;
     border-color: var(--color-primary);
-    transform: translateX(10px);
+    transform: translateX(8px);
     box-shadow: 0 0 20px var(--color-primary);
 }
 
@@ -160,6 +182,7 @@
     border: 1px solid rgba(255, 193, 7, 0.2);
     position: relative;
     overflow: hidden;
+    padding: 0;
 }
 
 .daily-challenge-card::before {
@@ -168,30 +191,32 @@
 }
 
 .daily-challenge-card .card-content {
-    display: flex; align-items: center; gap: 24px; padding: 24px; position: relative; z-index: 2;
+    display: flex; align-items: center; gap: 24px; padding: 24px 32px; position: relative; z-index: 2;
 }
 
 .challenge-icon {
-    width: 56px; height: 56px;
-    border-radius: 16px;
+    width: 64px; height: 64px;
+    border-radius: 18px;
     background: rgba(255, 193, 7, 0.1);
     color: var(--color-accent);
     border: 1px solid var(--color-accent);
     display: flex; align-items: center; justify-content: center;
     box-shadow: 0 0 15px rgba(255, 193, 7, 0.1);
 }
+.challenge-icon svg { width: 32px; height: 32px; }
 
-.challenge-text h3 { margin: 0 0 4px 0; font-size: 1.2rem; color: #fff; }
-.challenge-text p { margin: 0; font-size: 0.9rem; color: var(--color-text-secondary); }
+.challenge-text h3 { margin: 0 0 6px 0; font-size: 1.25rem; color: #fff; }
+.challenge-text p { margin: 0; font-size: 0.95rem; color: var(--color-text-secondary); }
 
 #start-daily-challenge-btn {
     margin-left: auto;
     background: transparent;
     border: 1px solid var(--color-accent);
     color: var(--color-accent);
-    padding: 0.6rem 1.2rem;
-    border-radius: 8px;
-    font-size: 0.85rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    white-space: nowrap;
 }
 #start-daily-challenge-btn:hover {
     background: var(--color-accent);
@@ -200,26 +225,27 @@
 }
 
 /* --- Widgets --- */
+.dashboard-widget { padding: 24px; }
 .dashboard-widget h3 {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 2px;
     color: var(--color-text-secondary);
-    margin-bottom: 16px;
+    margin-bottom: 20px;
     font-weight: 700;
 }
 
 #memory-health-widget {
     background: linear-gradient(to bottom, rgba(16, 185, 129, 0.05), transparent);
-    border-top: 2px solid var(--color-success);
+    border-top: 3px solid var(--color-success);
 }
 
 .health-bar-container { 
-    height: 6px; 
+    height: 8px; 
     background: rgba(255,255,255,0.1); 
-    border-radius: 3px; 
+    border-radius: 4px; 
     overflow: hidden;
-    margin: 12px 0;
+    margin: 16px 0;
 }
 .health-bar-fill {
     height: 100%;
@@ -231,11 +257,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem;
+    padding: 1.25rem;
     background: rgba(255,255,255,0.02);
     border: 1px solid transparent;
-    border-radius: 12px;
+    border-radius: 16px;
     transition: all 0.2s;
+    margin-bottom: 12px;
 }
 .dashboard-card-small:hover { 
     background: rgba(255,255,255,0.05); 
@@ -243,15 +270,22 @@
     transform: translateX(4px);
 }
 
-.history-mini-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 2px; }
-.history-mini-score { font-size: 0.8rem; font-family: var(--font-family-mono); color: var(--color-text-secondary); }
+.history-mini-title { font-weight: 600; font-size: 1rem; margin-bottom: 4px; color: var(--color-text); }
+.history-mini-score { font-size: 0.85rem; font-family: var(--font-family-mono); color: var(--color-text-secondary); }
 
-.btn-small { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: transparent; border: 1px solid var(--color-border); color: var(--color-text-secondary); cursor: pointer; transition: all 0.2s; }
+.btn-small { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: transparent; border: 1px solid var(--color-border); color: var(--color-text-secondary); cursor: pointer; transition: all 0.2s; }
 .btn-small:hover { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-transparent); }
 
 @media (max-width: 900px) {
     .dashboard-grid { grid-template-columns: 1fr; }
     .hero-card { min-height: auto; text-align: center; }
-    .hero-card .card-content { flex-direction: column; gap: 20px; }
+    .hero-card .card-content { 
+        grid-template-columns: 1fr; 
+        gap: 24px; 
+        padding: 32px 24px;
+        justify-items: center;
+    }
     .hero-arrow { display: none; }
+    .daily-challenge-card .card-content { flex-direction: column; text-align: center; }
+    #start-daily-challenge-btn { margin-left: 0; width: 100%; }
 }
