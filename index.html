@@ -92,28 +92,31 @@
         .btn-retry:hover { background: #0052cc; transform: translateY(-2px); }
     </style>
 
-    <!-- IMPORT MAP -->
+    <!-- 
+      CLEAN IMPORT MAP 
+      Only include valid browser modules. Removed Node.js specific modules (express, fs, path).
+    -->
     <script type="importmap">
-    {
-      "imports": {
-        "express": "https://aistudiocdn.com/express@^5.1.0",
-        "path": "https://aistudiocdn.com/path@^0.12.7",
-        "dotenv/": "https://aistudiocdn.com/dotenv@^17.2.3/",
-        "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
-        "ws": "https://aistudiocdn.com/ws@^8.18.3",
-        "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
-        "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
-        "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js",
-        "firebase/analytics": "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js",
-        "dompurify": "https://aistudiocdn.com/dompurify@^3.0.5",
-        "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
-        "url": "https://aistudiocdn.com/url@^0.11.4",
-        "fs/": "https://aistudiocdn.com/fs@^0.0.1-security/",
-        "http": "https://aistudiocdn.com/http@^0.0.1-security",
-        "express-rate-limit": "https://aistudiocdn.com/express-rate-limit@^8.2.1"
-      }
-    }
-    </script>
+{
+  "imports": {
+    "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+    "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js",
+    "firebase/analytics": "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js",
+    "dompurify": "https://cdn.jsdelivr.net/npm/dompurify@3.0.9/dist/purify.es.mjs",
+    "@google/genai": "https://esm.run/@google/genai",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
+    "path": "https://aistudiocdn.com/path@^0.12.7",
+    "ws": "https://aistudiocdn.com/ws@^8.18.3",
+    "fs/": "https://aistudiocdn.com/fs@^0.0.1-security/",
+    "dotenv/": "https://aistudiocdn.com/dotenv@^17.2.3/",
+    "express-rate-limit": "https://aistudiocdn.com/express-rate-limit@^8.2.1",
+    "http": "https://aistudiocdn.com/http@^0.0.1-security",
+    "url": "https://aistudiocdn.com/url@^0.11.4",
+    "express": "https://aistudiocdn.com/express@^5.2.1"
+  }
+}
+</script>
 
     <!-- GLOBAL FAILSAFE HANDLER -->
     <script>
@@ -155,9 +158,8 @@
         window.addEventListener('error', function(e) {
             if (e.target.tagName === 'SCRIPT' && !window.APP_STATUS.booted) {
                 const src = e.target.src || 'inline script';
-                // Only care if it's our main module or firebase
                 if (src.includes('index.js') || src.includes('firebase')) {
-                    window.showFatalError("Resource Load Failure", `Failed to load critical script: ${src.split('/').pop()}\nCheck your internet connection.`);
+                    window.showFatalError("Network Error", `Failed to load critical script: ${src.split('/').pop()}\nCheck your internet connection.`);
                 }
             }
         }, true);
@@ -166,7 +168,10 @@
         window.onunhandledrejection = function(event) {
             if (!window.APP_STATUS.booted) {
                 const msg = event.reason ? (event.reason.message || event.reason) : "Async operation failed.";
-                window.showFatalError("Initialization Error", msg);
+                // Don't show error for 404s on images/icons, only critical logic
+                if (typeof msg === 'string' && (msg.includes('Import') || msg.includes('Failed to fetch'))) {
+                    window.showFatalError("Initialization Error", msg);
+                }
             }
         };
     </script>
@@ -230,7 +235,7 @@
 
     <script src="global/global.js"></script>
     
-    <!-- MAIN ENTRY POINT -->
+    <!-- MAIN ENTRY POINT (Type Module) -->
     <script type="module" src="index.js"></script>
 
     <!-- BOOT FAILSAFE -->
@@ -240,20 +245,19 @@
             if (typeof mermaid !== 'undefined') mermaid.initialize({ startOnLoad: false, theme: 'base', securityLevel: 'loose' });
         });
 
-        // 8-Second Safety Timeout
-        // If JS doesn't remove splash screen by then, we assume it crashed silently.
+        // 10-Second Safety Timeout
         setTimeout(() => {
             if (!window.APP_STATUS.booted) {
                 console.warn("BOOT TIMEOUT: Application took too long to start.");
                 const splash = document.getElementById('splash-screen');
                 const errorOverlay = document.getElementById('fatal-error-overlay');
                 
-                // If we aren't already showing an error, show timeout error
+                // Only show if still stuck on splash
                 if (splash && splash.style.display !== 'none' && (!errorOverlay || errorOverlay.style.display === 'none')) {
-                    window.showFatalError("Connection Timeout", "The application failed to initialize resources. Please check your internet connection and try again.");
+                    window.showFatalError("Connection Timeout", "The application failed to initialize resources. This may be due to a slow network or firewall blocking critical components.");
                 }
             }
-        }, 8000);
+        }, 10000);
     </script>
 </body>
 </html>

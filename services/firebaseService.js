@@ -1,3 +1,4 @@
+
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore, doc, getDoc, setDoc, collection, query, orderBy, limit, getDocs } from "firebase/firestore";
@@ -32,6 +33,7 @@ const firebaseConfig = {
 
 // Guarded Initialization
 let app, analytics, db, auth, googleProvider;
+let isInitialized = false;
 
 try {
     app = initializeApp(firebaseConfig);
@@ -39,13 +41,19 @@ try {
     db = getFirestore(app);
     auth = getAuth(app);
     googleProvider = new GoogleAuthProvider();
+    isInitialized = true;
+    console.log("Firebase initialized successfully.");
 } catch (e) {
     console.error("Firebase Initialization Failed:", e);
-    // Throwing here allows the dynamic import in index.js to catch it and show the Error UI
-    throw new Error("Cloud Service Initialization Failed: " + e.message);
+    // We let the module load but methods will fail gracefully or throw specific errors
 }
 
 let currentUser = null;
+
+// Helpers
+function ensureInit() {
+    if (!isInitialized) throw new Error("Cloud services are not available.");
+}
 
 function getUserId() { return currentUser ? currentUser.uid : null; }
 function getUserEmail() {
@@ -65,20 +73,28 @@ function getUserProvider() {
     return currentUser.providerData.length > 0 ? currentUser.providerData[0].providerId : 'unknown';
 }
 
-function login(email, password) { return signInWithEmailAndPassword(auth, email, password); }
-function register(email, password) { return createUserWithEmailAndPassword(auth, email, password); }
-function loginWithGoogle() { return signInWithPopup(auth, googleProvider); }
-function loginAsGuest() { return signInAnonymously(auth); }
-function logout() { return firebaseSignOut(auth); }
+// Auth Actions
+function login(email, password) { ensureInit(); return signInWithEmailAndPassword(auth, email, password); }
+function register(email, password) { ensureInit(); return createUserWithEmailAndPassword(auth, email, password); }
+function loginWithGoogle() { ensureInit(); return signInWithPopup(auth, googleProvider); }
+function loginAsGuest() { ensureInit(); return signInAnonymously(auth); }
+function logout() { ensureInit(); return firebaseSignOut(auth); }
 
 function resetPassword(email) {
+    ensureInit();
     const url = window.location.origin + window.location.pathname;
     const actionCodeSettings = { url: `${url}?mode=resetPassword`, handleCodeInApp: true };
     return sendPasswordResetEmail(auth, email, actionCodeSettings);
 }
-function confirmReset(code, newPassword) { return confirmPasswordReset(auth, code, newPassword); }
+function confirmReset(code, newPassword) { ensureInit(); return confirmPasswordReset(auth, code, newPassword); }
 
 function onAuthChange(callback) {
+    if (!isInitialized) {
+        console.warn("Auth unavailable, defaulting to null user.");
+        // Simulate auth check failure after a tick
+        setTimeout(() => callback(null), 100);
+        return () => {};
+    }
     return onAuthStateChanged(auth, (user) => {
         currentUser = user;
         callback(user);
@@ -86,34 +102,39 @@ function onAuthChange(callback) {
 }
 
 function updateUserProfile(profileData) {
+    ensureInit();
     if (!currentUser) return Promise.reject(new Error("No user logged in"));
     return updateProfile(currentUser, profileData).then(() => currentUser.reload());
 }
 
 function linkGoogle() {
+    ensureInit();
     if (!currentUser) return Promise.reject("No user");
     return linkWithPopup(currentUser, googleProvider);
 }
 
 function linkEmail(email, password) {
+    ensureInit();
     if (!currentUser) return Promise.reject("No user");
     const credential = EmailAuthProvider.credential(email, password);
     return linkWithCredential(currentUser, credential);
 }
 
 function reauthenticate(password) {
+    ensureInit();
     if (!currentUser) return Promise.reject(new Error("No user"));
     const cred = EmailAuthProvider.credential(currentUser.email, password);
     return reauthenticateWithCredential(currentUser, cred);
 }
 
 function changePassword(newPassword) {
+    ensureInit();
     if (!currentUser) return Promise.reject(new Error("No user"));
     return updatePassword(currentUser, newPassword);
 }
 
 async function updateLeaderboardScore(stats) {
-    if (!currentUser || isGuest()) return;
+    if (!isInitialized || !currentUser || isGuest()) return;
     const userRef = doc(db, "leaderboard", currentUser.uid);
     const name = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'ApexUser');
     try {
@@ -127,6 +148,7 @@ async function updateLeaderboardScore(stats) {
 }
 
 async function getLeaderboard(limitCount = 20) {
+    if (!isInitialized) return [];
     try {
         const lbRef = collection(db, "leaderboard");
         const q = query(lbRef, orderBy("xp", "desc"), limit(limitCount));
