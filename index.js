@@ -1,5 +1,4 @@
-
-// index.js - Safe Bootloader v13.0
+// index.js - Safe Bootloader v25.0
 // We use dynamic imports for EVERYTHING to ensure this script body always runs.
 
 const AppRefs = {
@@ -48,7 +47,7 @@ function showWelcomeScreen(constants) {
 // --- BOOT PROCESS ---
 
 async function bootstrap() {
-    console.log("System: Booting v13.0...");
+    console.log("System: Booting v25.0...");
     
     try {
         // Step 1: Load Constants (Safe Local)

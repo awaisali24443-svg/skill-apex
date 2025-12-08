@@ -1,4 +1,3 @@
-
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore, doc, getDoc, setDoc, collection, query, orderBy, limit, getDocs } from "firebase/firestore";
@@ -21,6 +20,7 @@ import {
     updateProfile 
 } from "firebase/auth";
 
+// CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyDgdLWA8yVvKZB_QV2Aj8Eenx--O8-ftFY",
   authDomain: "knowledge-tester-web.firebaseapp.com",
@@ -38,7 +38,19 @@ let isOfflineMode = false;
 let currentUser = null;
 let authChangeCallback = null;
 
+// --- MOCK DB HELPERS (Kept for historical compatibility but disabled by default) ---
+function getMockDB() {
+    try { return JSON.parse(localStorage.getItem('kt_mock_users') || '[]'); } 
+    catch(e) { return []; }
+}
+
+function saveMockDB(users) {
+    localStorage.setItem('kt_mock_users', JSON.stringify(users));
+}
+
 // --- INITIALIZATION ---
+// Removed the fallback to offline mode. If this fails, the app will likely stop working,
+// which ensures we don't accidentally enter a broken offline state without the user knowing.
 try {
     app = initializeApp(firebaseConfig);
     analytics = getAnalytics(app);
@@ -48,14 +60,14 @@ try {
     isInitialized = true;
     console.log("Firebase initialized successfully.");
 } catch (e) {
-    console.warn("Firebase Initialization Failed (Offline Mode Active):", e);
-    isOfflineMode = true;
-    isInitialized = true; // We set this true to allow the app to boot in fallback mode
+    console.error("Firebase Init Failed:", e);
+    // isOfflineMode = true; // DISABLED: We want to force online connection attempt
+    isInitialized = false; 
 }
 
 // --- HELPERS ---
 function ensureInit() {
-    if (!isInitialized) throw new Error("Service initialization failed completely.");
+    if (!isInitialized) throw new Error("Service initialization failed. Please check your internet connection.");
 }
 
 function triggerAuthChange() {
@@ -99,75 +111,43 @@ function getUserProvider() {
 function onAuthChange(callback) {
     authChangeCallback = callback;
     
-    if (isOfflineMode) {
-        // In offline mode, check if we have a stored fake session
-        const storedUser = sessionStorage.getItem('offline_user');
-        if (storedUser) {
-            currentUser = JSON.parse(storedUser);
-            setTimeout(() => callback(currentUser), 50);
-        } else {
-            setTimeout(() => callback(null), 50);
-        }
-        return () => {};
-    }
-
-    // Normal Mode
+    // Normal Mode Only
     return onAuthStateChanged(auth, (user) => {
         currentUser = user;
         callback(user);
+    }, (error) => {
+        console.error("Auth Listener Error:", error);
+        callback(null);
     });
 }
 
 function loginAsGuest() {
     ensureInit();
-    if (isOfflineMode) {
-        currentUser = { 
-            uid: 'guest_' + Date.now(), 
-            isAnonymous: true, 
-            email: null, 
-            displayName: 'Offline Guest',
-            photoURL: null,
-            providerData: []
-        };
-        sessionStorage.setItem('offline_user', JSON.stringify(currentUser));
-        triggerAuthChange();
-        return Promise.resolve(currentUser);
-    }
     return signInAnonymously(auth);
 }
 
 function login(email, password) { 
     ensureInit(); 
-    if (isOfflineMode) return Promise.reject(new Error("Cannot login: Offline Mode Active"));
-    return signInWithEmailAndPassword(auth, email, password); 
+    return signInWithEmailAndPassword(auth, email, password);
 }
 
 function register(email, password) { 
     ensureInit(); 
-    if (isOfflineMode) return Promise.reject(new Error("Cannot register: Offline Mode Active"));
-    return createUserWithEmailAndPassword(auth, email, password); 
+    return createUserWithEmailAndPassword(auth, email, password);
 }
 
 function loginWithGoogle() { 
     ensureInit(); 
-    if (isOfflineMode) return Promise.reject(new Error("Cannot use Google: Offline Mode Active"));
     return signInWithPopup(auth, googleProvider); 
 }
 
 function logout() { 
     ensureInit(); 
-    if (isOfflineMode) {
-        currentUser = null;
-        sessionStorage.removeItem('offline_user');
-        triggerAuthChange();
-        return Promise.resolve();
-    }
     return firebaseSignOut(auth); 
 }
 
 function resetPassword(email) {
     ensureInit();
-    if (isOfflineMode) return Promise.reject(new Error("Offline Mode"));
     const url = window.location.origin + window.location.pathname;
     const actionCodeSettings = { url: `${url}?mode=resetPassword`, handleCodeInApp: true };
     return sendPasswordResetEmail(auth, email, actionCodeSettings);
@@ -175,34 +155,23 @@ function resetPassword(email) {
 
 function confirmReset(code, newPassword) { 
     ensureInit(); 
-    if (isOfflineMode) return Promise.reject(new Error("Offline Mode"));
     return confirmPasswordReset(auth, code, newPassword); 
 }
 
 function updateUserProfile(profileData) {
     ensureInit();
     if (!currentUser) return Promise.reject(new Error("No user logged in"));
-    
-    if (isOfflineMode) {
-        currentUser = { ...currentUser, ...profileData };
-        sessionStorage.setItem('offline_user', JSON.stringify(currentUser));
-        triggerAuthChange();
-        return Promise.resolve();
-    }
-
     return updateProfile(currentUser, profileData).then(() => currentUser.reload());
 }
 
 function linkGoogle() {
     ensureInit();
-    if (isOfflineMode) return Promise.reject(new Error("Offline Mode"));
     if (!currentUser) return Promise.reject("No user");
     return linkWithPopup(currentUser, googleProvider);
 }
 
 function linkEmail(email, password) {
     ensureInit();
-    if (isOfflineMode) return Promise.reject(new Error("Offline Mode"));
     if (!currentUser) return Promise.reject("No user");
     const credential = EmailAuthProvider.credential(email, password);
     return linkWithCredential(currentUser, credential);
@@ -210,7 +179,6 @@ function linkEmail(email, password) {
 
 function reauthenticate(password) {
     ensureInit();
-    if (isOfflineMode) return Promise.resolve(); // Mock success for guest
     if (!currentUser) return Promise.reject(new Error("No user"));
     const cred = EmailAuthProvider.credential(currentUser.email, password);
     return reauthenticateWithCredential(currentUser, cred);
@@ -218,15 +186,14 @@ function reauthenticate(password) {
 
 function changePassword(newPassword) {
     ensureInit();
-    if (isOfflineMode) return Promise.reject(new Error("Offline Mode"));
     if (!currentUser) return Promise.reject(new Error("No user"));
     return updatePassword(currentUser, newPassword);
 }
 
-// --- DATA ACTIONS (No-op in offline mode) ---
+// --- DATA ACTIONS ---
 
 async function updateLeaderboardScore(stats) {
-    if (!isInitialized || isOfflineMode || !currentUser || isGuest()) return;
+    if (!isInitialized || !currentUser || isGuest()) return;
     try {
         const userRef = doc(db, "leaderboard", currentUser.uid);
         const name = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'ApexUser');
@@ -240,7 +207,7 @@ async function updateLeaderboardScore(stats) {
 }
 
 async function getLeaderboard(limitCount = 20) {
-    if (!isInitialized || isOfflineMode) return [];
+    if (!isInitialized) return [];
     try {
         const lbRef = collection(db, "leaderboard");
         const q = query(lbRef, orderBy("xp", "desc"), limit(limitCount));
