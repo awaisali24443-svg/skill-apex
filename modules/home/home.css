@@ -17,281 +17,258 @@
     color: var(--color-text);
     font-size: var(--fs-h1);
     letter-spacing: -1px;
-    font-family: var(--font-family-heading);
-    text-transform: uppercase;
 }
 
 .home-header p {
     margin-bottom: 0;
     color: var(--color-text-secondary);
-    font-size: 1.1rem;
-    font-family: var(--font-family-mono);
+    font-size: 1.15rem;
 }
 
 .streak-counter {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 20px;
-    background: rgba(255, 152, 0, 0.1);
+    gap: var(--space-sm);
+    padding: 8px 16px;
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.1), rgba(255, 152, 0, 0.05));
     border: 1px solid rgba(255, 152, 0, 0.3);
     border-radius: 50px;
     font-family: var(--font-family-mono);
-    color: #ff9800;
+    color: #ffa726;
     font-weight: 700;
-    box-shadow: 0 0 20px rgba(255, 152, 0, 0.1);
-    font-size: 0.9rem;
-    animation: pulse-orange 3s infinite;
-}
-
-@keyframes pulse-orange {
-    0%, 100% { box-shadow: 0 0 20px rgba(255, 152, 0, 0.1); }
-    50% { box-shadow: 0 0 30px rgba(255, 152, 0, 0.2); }
+    box-shadow: 0 0 15px rgba(255, 152, 0, 0.1);
+    animation: fade-in 0.5s ease-out 0.3s forwards;
 }
 
 /* Dashboard Grid */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 32px;
+    grid-template-columns: 1fr 380px;
+    gap: var(--space-xl);
 }
 
 .dashboard-main {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: var(--space-lg);
 }
 
 .dashboard-sidebar {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: var(--space-lg);
 }
 
-/* --- HERO CARD: Command Center --- */
+/* --- HERO CARD: Neon Horizon --- */
 .hero-card {
-    min-height: 320px;
-    position: relative;
-    overflow: hidden;
-    padding: 0; /* Content handles padding */
-    
-    background-color: #030712;
-    background-image: 
-        radial-gradient(circle at 100% 0%, rgba(14, 165, 233, 0.15) 0%, transparent 50%),
-        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px), 
-        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-    background-size: 100% 100%, 40px 40px, 40px 40px;
-    border: 1px solid rgba(56, 189, 248, 0.2);
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
-    text-decoration: none; /* remove link underline */
-    display: block;
-    
-    /* Flex as fallback, but Grid is used inside */
+    min-height: 260px;
     display: flex;
+    flex-direction: column;
+    justify-content: center;
+    
+    /* Deep Tech Background using Global Variable */
+    background-color: #05050a;
+    background-image: 
+        var(--bg-tech), /* Circuit pattern */
+        linear-gradient(to bottom, transparent 50%, rgba(0, 184, 212, 0.1) 100%), /* Horizon Glow */
+        radial-gradient(circle at 50% 0%, rgba(255,255,255,0.05) 0%, transparent 60%); /* Top Light */
+    background-size: 200px 200px, 100% 100%, 100% 100%;
+    background-position: center center;
+    border: 1px solid rgba(0, 184, 212, 0.2);
 }
 
 .hero-card:hover {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 60px rgba(14, 165, 233, 0.2);
-    transform: translateY(-4px);
+    border-color: rgba(0, 184, 212, 0.4);
+    box-shadow: 0 10px 40px rgba(0, 184, 212, 0.15);
 }
 
-/* Scanning Line Effect */
+/* Shimmer Effect */
 .hero-card::after {
     content: '';
     position: absolute;
-    top: 0; left: 0; width: 100%; height: 2px;
-    background: var(--color-primary);
-    box-shadow: 0 0 20px var(--color-primary);
-    opacity: 0.5;
-    animation: scan-vertical 4s ease-in-out infinite;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(to right, transparent 0%, rgba(255,255,255,0.03) 50%, transparent 100%);
+    transform: skewX(-20deg) translateX(-150%);
+    transition: transform 0.5s;
+    animation: shimmer 6s infinite;
     pointer-events: none;
+    z-index: 1;
 }
 
-@keyframes scan-vertical {
-    0% { top: 0%; opacity: 0; }
-    10% { opacity: 0.5; }
-    90% { opacity: 0.5; }
-    100% { top: 100%; opacity: 0; }
+@keyframes shimmer {
+    0% { transform: skewX(-20deg) translateX(-150%); }
+    20% { transform: skewX(-20deg) translateX(150%); }
+    100% { transform: skewX(-20deg) translateX(150%); }
+}
+
+.hero-bg-glow {
+    position: absolute;
+    top: -50%; right: -10%; width: 500px; height: 500px;
+    background: radial-gradient(circle, var(--color-primary) 0%, transparent 70%);
+    filter: blur(100px);
+    opacity: 0.15;
+    border-radius: 50%;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    z-index: 0;
+    pointer-events: none;
+}
+.hero-card:hover .hero-bg-glow { 
+    opacity: 0.25; 
+    transform: scale(1.1) translate(-20px, 20px);
 }
 
 .hero-card .card-content {
-    /* CSS Grid for Layout */
-    width: 100%;
-    display: grid;
-    grid-template-columns: auto 1fr auto; /* Icon | Text | Arrow */
-    grid-template-rows: 1fr;
-    gap: 48px; /* Breathing room */
-    align-items: center; /* Vertical Center */
-    
+    display: flex;
+    align-items: center;
+    gap: var(--space-xl);
     position: relative;
     z-index: 2;
-    padding: 64px;
 }
 
 .hero-icon {
-    width: 110px; height: 110px;
-    background: rgba(14, 165, 233, 0.05);
-    border: 1px solid var(--color-primary);
-    border-radius: 28px;
+    width: 90px; height: 90px;
+    background: var(--brand-gradient);
+    border-radius: 24px;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 0 30px rgba(14, 165, 233, 0.1);
-    color: var(--color-primary);
+    box-shadow: 0 20px 40px var(--color-primary-transparent-heavy);
     transform: rotate(-5deg);
     transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1px solid rgba(255,255,255,0.2);
 }
-.hero-card:hover .hero-icon { transform: rotate(0deg) scale(1.05); color: #fff; background: var(--color-primary); }
-.hero-icon svg { width: 56px; height: 56px; filter: drop-shadow(0 0 10px currentColor); }
+.hero-card:hover .hero-icon { transform: rotate(0deg) scale(1.05) translateY(-5px); }
+.hero-icon svg { width: 44px; height: 44px; color: #fff; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
 
-.hero-text { 
-    display: flex; 
-    flex-direction: column; 
-    justify-content: center;
-}
-.hero-text h2 { 
-    margin-bottom: 1rem; 
-    font-size: 2.75rem; 
-    color: #fff; 
-    font-family: var(--font-family-heading); 
-    text-transform: uppercase; 
-    letter-spacing: 1px; 
-    line-height: 1.1;
-}
-.hero-text p { 
-    font-size: 1.25rem; 
-    color: var(--color-text-secondary); 
-    margin: 0; 
-    max-width: 600px; 
-    line-height: 1.6;
-}
+.hero-text { flex-grow: 1; }
+.hero-text h2 { margin-bottom: 0.75rem; font-size: 2rem; color: #fff; text-shadow: 0 4px 20px rgba(0,0,0,0.5); letter-spacing: -0.5px; }
+.hero-text p { font-size: 1.15rem; color: rgba(255,255,255,0.85); margin: 0; max-width: 500px; line-height: 1.5; }
 
 .hero-arrow {
-    width: 64px; height: 64px;
+    width: 56px; height: 56px;
     display: flex; align-items: center; justify-content: center;
     border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.1);
-    color: var(--color-text-secondary);
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
     transition: all 0.3s ease;
 }
 .hero-card:hover .hero-arrow {
-    background: var(--color-primary);
-    color: #fff;
-    border-color: var(--color-primary);
-    transform: translateX(12px);
-    box-shadow: 0 0 30px var(--color-primary);
+    background: #fff;
+    color: var(--color-primary);
+    transform: translateX(10px);
+    box-shadow: 0 0 30px rgba(255,255,255,0.3);
 }
 
-/* --- DAILY CHALLENGE CARD --- */
+/* --- DAILY CHALLENGE CARD: Solar Flare --- */
 .daily-challenge-card {
-    background: linear-gradient(135deg, rgba(20, 10, 30, 0.9), rgba(10, 5, 20, 0.95));
-    border: 1px solid rgba(255, 193, 7, 0.2);
-    position: relative;
-    overflow: hidden;
-    padding: 0;
+    background: linear-gradient(135deg, rgba(60, 20, 40, 0.95), rgba(40, 20, 10, 0.95));
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    /* Solar/Abstract Pattern */
+    background-image: var(--bg-arts); 
+    background-size: 150px 150px;
 }
 
-.daily-challenge-card::before {
-    content: ''; position: absolute; inset: 0;
-    background: radial-gradient(circle at top right, rgba(255, 193, 7, 0.1), transparent 70%);
+.daily-challenge-card:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 10px 40px rgba(255, 64, 129, 0.2);
 }
 
 .daily-challenge-card .card-content {
-    display: flex; align-items: center; gap: 24px; padding: 24px 32px; position: relative; z-index: 2;
+    display: flex; align-items: center; gap: var(--space-lg);
+    position: relative; z-index: 2;
 }
 
 .challenge-icon {
-    width: 64px; height: 64px;
-    border-radius: 18px;
-    background: rgba(255, 193, 7, 0.1);
+    width: 56px; height: 56px;
+    border-radius: 16px;
+    background: rgba(255, 193, 7, 0.15);
     color: var(--color-accent);
-    border: 1px solid var(--color-accent);
+    border: 1px solid rgba(255, 193, 7, 0.3);
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 0 15px rgba(255, 193, 7, 0.1);
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.1);
+    animation: pulse-soft 3s infinite;
 }
-.challenge-icon svg { width: 32px; height: 32px; }
+
+@keyframes pulse-soft {
+    0%, 100% { box-shadow: 0 0 20px rgba(255, 193, 7, 0.1); }
+    50% { box-shadow: 0 0 30px rgba(255, 193, 7, 0.3); }
+}
 
 .challenge-text h3 { margin: 0 0 6px 0; font-size: 1.25rem; color: #fff; }
-.challenge-text p { margin: 0; font-size: 0.95rem; color: var(--color-text-secondary); }
+.challenge-text p { margin: 0; font-size: 0.95rem; color: rgba(255,255,255,0.7); }
 
 #start-daily-challenge-btn {
-    margin-left: auto;
     background: transparent;
     border: 1px solid var(--color-accent);
     color: var(--color-accent);
-    padding: 0.75rem 1.5rem;
-    border-radius: 10px;
-    font-size: 0.9rem;
-    white-space: nowrap;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
 }
 #start-daily-challenge-btn:hover {
     background: var(--color-accent);
     color: #000;
-    box-shadow: 0 0 20px var(--color-accent);
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.4);
+}
+
+/* Completed State */
+.daily-challenge-card.completed {
+    background: rgba(22, 26, 30, 0.6);
+    border-color: var(--color-success);
+    opacity: 0.8;
+}
+.daily-challenge-card.completed .challenge-icon {
+    background: var(--color-success-bg);
+    color: var(--color-success);
+    border-color: var(--color-success-border);
+    animation: none;
+}
+.daily-challenge-card.completed #start-daily-challenge-btn { 
+    border-color: var(--color-success); 
+    color: var(--color-success);
 }
 
 /* --- Widgets --- */
-.dashboard-widget { padding: 24px; }
 .dashboard-widget h3 {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 1.5px;
     color: var(--color-text-secondary);
-    margin-bottom: 20px;
+    margin-bottom: var(--space-lg);
     font-weight: 700;
 }
 
 #memory-health-widget {
-    background: linear-gradient(to bottom, rgba(16, 185, 129, 0.05), transparent);
-    border-top: 3px solid var(--color-success);
+    border-left: 4px solid var(--color-success);
+    /* Business Grid Pattern for Stats */
+    background-image: var(--bg-business);
+    background-size: 40px 40px;
+    background-color: rgba(22, 30, 22, 0.4);
 }
 
-.health-bar-container { 
-    height: 8px; 
-    background: rgba(255,255,255,0.1); 
-    border-radius: 4px; 
-    overflow: hidden;
-    margin: 16px 0;
-}
-.health-bar-fill {
-    height: 100%;
-    background: var(--color-success);
-    box-shadow: 0 0 10px var(--color-success);
-}
+.health-bar-container { background: rgba(255,255,255,0.05); }
 
 .dashboard-card-small {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.25rem;
+    padding: 1.2rem;
+    margin-bottom: var(--space-md);
     background: rgba(255,255,255,0.02);
-    border: 1px solid transparent;
-    border-radius: 16px;
-    transition: all 0.2s;
-    margin-bottom: 12px;
 }
 .dashboard-card-small:hover { 
     background: rgba(255,255,255,0.05); 
-    border-color: rgba(255,255,255,0.1);
     transform: translateX(4px);
 }
 
-.history-mini-title { font-weight: 600; font-size: 1rem; margin-bottom: 4px; color: var(--color-text); }
-.history-mini-score { font-size: 0.85rem; font-family: var(--font-family-mono); color: var(--color-text-secondary); }
+.history-mini-title { font-size: 1rem; color: var(--color-text); }
 
-.btn-small { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: transparent; border: 1px solid var(--color-border); color: var(--color-text-secondary); cursor: pointer; transition: all 0.2s; }
-.btn-small:hover { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-transparent); }
+.btn-small { width: 36px; height: 36px; border-radius: 50%; }
 
 @media (max-width: 900px) {
     .dashboard-grid { grid-template-columns: 1fr; }
     .hero-card { min-height: auto; text-align: center; }
-    .hero-card .card-content { 
-        grid-template-columns: 1fr; 
-        grid-template-rows: auto;
-        gap: 32px; 
-        padding: 40px 24px;
-        justify-items: center;
-    }
+    .hero-card .card-content { flex-direction: column; gap: var(--space-md); }
     .hero-arrow { display: none; }
-    .daily-challenge-card .card-content { flex-direction: column; text-align: center; }
-    #start-daily-challenge-btn { margin-left: 0; width: 100%; }
+    .hero-text h2 { font-size: 1.75rem; }
+    .hero-bg-glow { top: 0; right: 0; width: 100%; height: 100%; opacity: 0.1; }
 }

@@ -11,7 +11,7 @@ async function handleResponse(response) {
     return response.json();
 }
 
-async function fetchWithTimeout(url, options = {}, timeout = 90000) { // Increased to 90s for Pro model
+async function fetchWithTimeout(url, options = {}, timeout = 60000) { // Increased to 60s
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
     
@@ -30,7 +30,7 @@ async function fetchWithTimeout(url, options = {}, timeout = 90000) { // Increas
         clearTimeout(id);
         if (error.name === 'AbortError') {
              if (options.signal && options.signal.aborted) throw error;
-             throw new Error("Request timed out. The AI is taking too long to generate this quest.");
+             throw new Error("Request timed out. The AI is taking too long.");
         }
         throw error;
     }
@@ -64,7 +64,7 @@ export async function generateJourneyFromImage(imageBase64, mimeType) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ imageBase64, mimeType, persona: getPersona() })
-    }, 90000); 
+    }, 60000); 
     return await handleResponse(response);
 }
 

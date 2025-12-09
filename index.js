@@ -1,15 +1,20 @@
+import { ROUTES, LOCAL_STORAGE_KEYS } from './constants.js';
 
-// index.js - Safe Bootloader v40.0
-// We use dynamic imports for EVERYTHING to ensure this script body always runs.
-
+// --- BOOTSTRAPPER STATE ---
+// We hold references here since we don't static import services to prevent race conditions
 const AppRefs = {
     firebase: null,
-    constants: null,
-    authModule: null,
-    currentModule: null
+    config: null,
+    sidebar: null,
+    error: null,
+    moduleCache: new Map(),
+    currentModule: null,
+    currentNavId: 0,
+    authModule: null
 };
 
-// --- DOM UTILS ---
+// --- CORE UTILITIES (Defined locally to avoid import dependencies) ---
+
 function getElement(id) { return document.getElementById(id); }
 
 function removeSplashScreen() {
@@ -18,127 +23,153 @@ function removeSplashScreen() {
         splash.classList.add('hidden');
         setTimeout(() => {
             if (splash.parentNode) splash.parentNode.removeChild(splash);
-            window.APP_STATUS.booted = true;
-            
-            // Show welcome if needed
-            const constants = AppRefs.constants;
-            if (constants && getElement('app-wrapper').style.display !== 'none' && !localStorage.getItem(constants.LOCAL_STORAGE_KEYS.WELCOME_COMPLETED)) {
-                showWelcomeScreen(constants);
+            // Show welcome if first time and we are NOT on auth screen
+            if (getElement('app-wrapper').style.display !== 'none' && !localStorage.getItem(LOCAL_STORAGE_KEYS.WELCOME_COMPLETED)) {
+                showWelcomeScreen();
             }
         }, 600);
-    } else {
-        window.APP_STATUS.booted = true;
     }
+    // Signal to failsafe that we made it
+    window.APP_STATUS.booted = true;
 }
 
-function showWelcomeScreen(constants) {
+function showWelcomeScreen() {
     const screen = getElement('welcome-screen');
     const btn = getElement('welcome-get-started-btn');
     if (screen && btn) {
         screen.style.display = 'flex';
         requestAnimationFrame(() => screen.classList.add('visible'));
         btn.onclick = () => {
-            localStorage.setItem(constants.LOCAL_STORAGE_KEYS.WELCOME_COMPLETED, 'true');
+            localStorage.setItem(LOCAL_STORAGE_KEYS.WELCOME_COMPLETED, 'true');
             screen.classList.remove('visible');
             setTimeout(() => screen.remove(), 500);
         };
     }
 }
 
-// --- BOOT PROCESS ---
+// --- MODULE LOADER ---
 
-async function bootstrap() {
-    console.log("System: Booting v40.0...");
-    
+async function loadModule(route) {
+    const appContainer = getElement('app');
+    if (!appContainer) return;
+
+    const navId = ++AppRefs.currentNavId;
+
+    // Cleanup previous
+    if (AppRefs.currentModule && AppRefs.currentModule.js && AppRefs.currentModule.js.destroy) {
+        try { AppRefs.currentModule.js.destroy(); } catch (e) { console.warn("Module destroy error", e); }
+    }
+
     try {
-        // Step 1: Load Constants (Safe Local)
-        try {
-            AppRefs.constants = await import('./constants.js');
-        } catch (e) {
-            throw new Error("Failed to load application constants. Please refresh.");
-        }
-        const { ROUTES } = AppRefs.constants;
+        // Fetch Module Assets
+        const basePath = `./modules/${route.module}/${route.module}`;
+        const [html, css, jsModule] = await Promise.all([
+            fetch(`${basePath}.html`).then(r => { if(!r.ok) throw new Error("HTML 404"); return r.text(); }),
+            fetch(`${basePath}.css`).then(r => { if(!r.ok) throw new Error("CSS 404"); return r.text(); }),
+            import(`${basePath}.js`)
+        ]);
 
-        // Step 2: Load Firebase (External - May fail if offline/blocked)
-        let firebaseLoaded = false;
-        try {
-            console.log("System: Loading Firebase...");
-            AppRefs.firebase = await import('./services/firebaseService.js');
-            firebaseLoaded = true;
-        } catch (fbError) {
-            console.warn("Firebase load failed (Offline or Blocked):", fbError);
-            // We continue, but services relying on Firebase will degrade gracefully
-        }
+        if (navId !== AppRefs.currentNavId) return; // Stale navigation
 
-        // Step 3: Setup Auth Listener
-        if (firebaseLoaded && AppRefs.firebase && AppRefs.firebase.onAuthChange) {
-            console.log("System: Connecting to Identity Service...");
-            AppRefs.firebase.onAuthChange(async (user) => {
-                if (user) {
-                    await transitionToApp(user);
-                } else {
-                    await transitionToAuth();
-                }
-            });
-        } else {
-            // Fallback for extreme failure -> Auth UI (Guest Mode force)
-            console.warn("System: Identity Service Unavailable. Attempting fallback.");
-            await transitionToAuth();
+        // Update CSS
+        let styleTag = getElement('module-style');
+        if (!styleTag) {
+            styleTag = document.createElement('style');
+            styleTag.id = 'module-style';
+            document.head.appendChild(styleTag);
+        }
+        styleTag.textContent = css;
+
+        // Render HTML
+        appContainer.innerHTML = html;
+        const containerEl = getElement('app-container');
+        if (containerEl) {
+            containerEl.scrollTop = 0;
+            if (route.fullBleed) containerEl.classList.add('full-bleed-container');
+            else containerEl.classList.remove('full-bleed-container');
         }
 
-        // Step 4: Register Service Worker
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').then(reg => {
-                console.log('SW Registered:', reg.scope);
-                reg.onupdatefound = () => {
-                    const installingWorker = reg.installing;
-                    installingWorker.onstatechange = () => {
-                        if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            console.log('New content available; please refresh.');
-                        }
-                    };
-                };
-            }).catch(e => console.warn('SW failed:', e));
-        }
+        // Init Logic
+        AppRefs.currentModule = { js: jsModule };
+        if (jsModule.init) await jsModule.init();
 
-    } catch (fatalError) {
-        // If we catch here, it means we couldn't even load constants
-        window.showFatalError("Startup Failed", fatalError.message);
+        // Update Sidebar Active State
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            link.classList.remove('active');
+            const href = link.getAttribute('href');
+            if (href && href.slice(1) === route.path) link.classList.add('active');
+        });
+
+    } catch (e) {
+        console.error(`Failed to load module ${route.module}:`, e);
+        appContainer.innerHTML = `<div class="card" style="padding:2rem; text-align:center; color:#ef4444;">
+            <h3>Module Load Error</h3><p>${e.message}</p>
+        </div>`;
     }
 }
 
+function router() {
+    const hash = window.location.hash.slice(1) || '/';
+    let route = ROUTES.find(r => r.path === hash);
+    
+    // Simple parameterized route matching
+    if (!route) {
+        // Find route with :param
+        const dynamicRoute = ROUTES.find(r => r.path.includes(':'));
+        if (dynamicRoute) {
+            const base = dynamicRoute.path.split('/:')[0];
+            if (hash.startsWith(base)) {
+                route = dynamicRoute;
+                // We'd parse params here if needed, usually passed via StateService
+            }
+        }
+    }
+
+    if (!route) route = ROUTES.find(r => r.path === '/'); // Default to home
+    
+    loadModule(route);
+}
+
+// --- INITIALIZATION ---
+
 async function transitionToAuth() {
-    console.log("System: Loading Auth Module...");
+    console.log("Boot: Transitioning to Auth");
     getElement('app-wrapper').style.display = 'none';
     const authContainer = getElement('auth-container');
     authContainer.style.display = 'block';
 
-    try {
-        if (!AppRefs.authModule) {
+    if (!AppRefs.authModule) {
+        try {
             AppRefs.authModule = await import('./modules/auth/auth.js');
+        } catch (e) {
+            console.error("Failed to load Auth module", e);
+            throw new Error("Could not load authentication system.");
         }
-        await AppRefs.authModule.init();
-        removeSplashScreen();
-    } catch (e) {
-        console.error(e);
-        window.showFatalError("Auth Module Error", "Failed to load authentication interface.\n" + e.message);
     }
+    
+    await AppRefs.authModule.init();
+    removeSplashScreen();
 }
 
 async function transitionToApp(user) {
-    console.log("System: Loading Application Core...");
+    console.log("Boot: Transitioning to App");
     getElement('auth-container').style.display = 'none';
     getElement('app-wrapper').style.display = 'flex';
 
-    if (AppRefs.authModule) {
-        try { AppRefs.authModule.destroy(); } catch(e){}
-    }
+    if (AppRefs.authModule) AppRefs.authModule.destroy();
 
     try {
-        // Load Core Services in parallel
+        // Load Core Services Parallel (Dynamic Import for safety)
         const [
-            configSvc, sidebarSvc, historySvc, gamificationSvc, 
-            learningPathSvc, soundSvc, stateSvc, themeSvc, voiceSvc
+            configSvc,
+            sidebarSvc,
+            historySvc,
+            gamificationSvc,
+            learningPathSvc,
+            soundSvc,
+            stateSvc,
+            themeSvc,
+            voiceSvc
         ] = await Promise.all([
             import('./services/configService.js'),
             import('./services/sidebarService.js'),
@@ -151,136 +182,81 @@ async function transitionToApp(user) {
             import('./services/voiceCommandService.js')
         ]);
 
-        // Initialize State
+        AppRefs.config = configSvc;
+        AppRefs.sidebar = sidebarSvc;
+
+        // Initialize Services
         configSvc.init();
         stateSvc.initState();
         themeSvc.applyTheme(configSvc.getConfig().theme);
         
-        // Initialize Business Logic
         historySvc.init();
         gamificationSvc.init();
-        learningPathSvc.init();
+        learningPathSvc.init(); 
         soundSvc.init(configSvc);
-        voiceSvc.init();
-
+        
         // Render Sidebar
-        sidebarSvc.renderSidebar(getElement('sidebar'));
+        const sidebarEl = getElement('sidebar');
+        if (sidebarEl) sidebarSvc.renderSidebar(sidebarEl);
 
-        // Router
-        setupRouter(ROUTES, stateSvc);
+        // Voice Init (Lazy load)
+        setTimeout(() => voiceSvc.init(), 2000);
+        const micBtn = getElement('voice-mic-btn');
+        if (micBtn) {
+            micBtn.onclick = () => {
+                voiceSvc.toggleListening();
+                micBtn.classList.toggle('active');
+            };
+        }
+
+        // Start Router
+        window.addEventListener('hashchange', router);
+        router(); // Initial Route
 
     } catch (e) {
-        console.error("App Transition Error:", e);
-        window.showFatalError("Core Service Failure", "The application core failed to load.\n" + e.message);
+        console.error("App Transition Failed", e);
+        throw new Error("Failed to start application services: " + e.message);
+    } finally {
+        removeSplashScreen();
     }
 }
 
-function setupRouter(routes, stateSvc) {
-    const handleHashChange = async () => {
-        const hash = window.location.hash.slice(1) || '/';
-        
-        // Simple Route Matching
-        let match = routes.find(r => r.path === hash);
-        let params = {};
+// --- BOOT ENTRY POINT ---
+async function bootstrap() {
+    try {
+        window.APP_STATUS.jsLoaded = true;
+        console.log("Boot: Starting...");
 
-        // Dynamic Route Matching (e.g., /game/:topic)
-        if (!match) {
-            for (const r of routes) {
-                if (r.path.includes(':')) {
-                    const routeParts = r.path.split('/');
-                    const hashParts = hash.split('/');
-                    if (routeParts.length === hashParts.length) {
-                        let isMatch = true;
-                        let tempParams = {};
-                        for (let i = 0; i < routeParts.length; i++) {
-                            if (routeParts[i].startsWith(':')) {
-                                tempParams[routeParts[i].slice(1)] = decodeURIComponent(hashParts[i]);
-                            } else if (routeParts[i] !== hashParts[i]) {
-                                isMatch = false;
-                                break;
-                            }
-                        }
-                        if (isMatch) {
-                            match = r;
-                            params = tempParams;
-                            break;
-                        }
-                    }
-                }
-            }
+        // 1. Dynamic Import Firebase
+        // This isolates the CDN dependency so index.js parses successfully even if CDN is down.
+        try {
+            AppRefs.firebase = await import('./services/firebaseService.js');
+        } catch (e) {
+            console.error("Firebase Import Error:", e);
+            throw new Error("Could not connect to Cloud Services (Firebase). Check internet connection.");
         }
 
-        if (match) {
-            // Unload previous module if needed
-            if (AppRefs.currentModule && AppRefs.currentModule.destroy) {
-                try { AppRefs.currentModule.destroy(); } catch(e){}
-            }
-
-            // Update State
-            match.params = params;
-            stateSvc.setCurrentRoute(match);
-
-            // Update UI Layout
-            const appContainer = getElement('app-container');
-            const sidebar = getElement('sidebar');
-            
-            if (match.fullBleed) {
-                appContainer.classList.add('full-bleed');
-                sidebar.classList.add('hidden');
+        // 2. Setup Auth Listener
+        console.log("Boot: Listening for Auth");
+        AppRefs.firebase.onAuthChange(user => {
+            if (user) {
+                transitionToApp(user);
             } else {
-                appContainer.classList.remove('full-bleed');
-                sidebar.classList.remove('hidden');
+                transitionToAuth();
             }
+        });
 
-            // Update Active Link
-            document.querySelectorAll('.sidebar-link').forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href') === `#${match.path}`) link.classList.add('active');
+        // 3. Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW failed:', e));
             });
-
-            try {
-                // Dynamic Import Module
-                const modulePath = `./modules/${match.module}/${match.module}.js`;
-                const htmlPath = `./modules/${match.module}/${match.module}.html`;
-                const cssPath = `./modules/${match.module}/${match.module}.css`;
-
-                // Load HTML
-                const response = await fetch(htmlPath);
-                if (!response.ok) throw new Error(`HTML Load Failed: ${htmlPath}`);
-                const html = await response.text();
-                getElement('app').innerHTML = html;
-
-                // Load CSS (once)
-                if (!document.querySelector(`link[href="${cssPath}"]`)) {
-                    const link = document.createElement('link');
-                    link.rel = 'stylesheet';
-                    link.href = cssPath;
-                    document.head.appendChild(link);
-                }
-
-                // Load JS
-                const module = await import(modulePath);
-                AppRefs.currentModule = module;
-                if (module.init) await module.init();
-                
-                // Clear temp context after successful load
-                stateSvc.clearNavigationContext();
-                
-                removeSplashScreen();
-
-            } catch (e) {
-                console.error("Route Error:", e);
-                getElement('app').innerHTML = `<div class="error-state"><h2>Failed to load module</h2><p>${e.message}</p><button class="btn" onclick="window.location.reload()">Reload</button></div>`;
-            }
-        } else {
-            // 404 - Redirect Home
-            window.location.hash = '/';
         }
-    };
 
-    window.addEventListener('hashchange', handleHashChange);
-    handleHashChange(); // Initial load
+    } catch (fatalError) {
+        window.showFatalError("Startup Failed", fatalError.message);
+    }
 }
 
-// Start
+// Ignite
 bootstrap();

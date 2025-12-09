@@ -2,147 +2,258 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skill Apex | AI Learning Mastery</title>
-
     <meta name="description" content="Skill Apex is an AI-powered learning platform. Generate personalized courses, quizzes, and skill trees instantly.">
-
+    
     <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
     <link rel="manifest" href="manifest.json">
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-
-    <!-- External Libs -->
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
 
     <!-- Theme & Global Styles -->
     <link id="theme-stylesheet" rel="stylesheet" href="themes/theme-light-cyber.css">
     <link rel="stylesheet" href="global/global.css">
 
-    <!-- FIXED IMPORT MAP -->
-    <script async src="https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js"></script>
-
-    <script type="importmap">
-{
-  "imports": {
-    "firebase/app": "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js",
-    "firebase/auth": "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js",
-    "firebase/firestore": "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js",
-    "firebase/analytics": "https://www.gstatic.com/firebasejs/10.13.1/firebase-analytics.js",
-    "dompurify": "https://esm.sh/dompurify@3.1.6",
-    "express": "https://aistudiocdn.com/express@^5.2.1",
-    "path": "https://aistudiocdn.com/path@^0.12.7",
-    "url": "https://aistudiocdn.com/url@^0.11.4",
-    "dotenv/": "https://aistudiocdn.com/dotenv@^17.2.3/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.32.0",
-    "express-rate-limit": "https://aistudiocdn.com/express-rate-limit@^8.2.1",
-    "fs/": "https://aistudiocdn.com/fs@^0.0.1-security/",
-    "http": "https://aistudiocdn.com/http@^0.0.1-security",
-    "ws": "https://aistudiocdn.com/ws@^8.18.3",
-    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/"
-  }
-}
-</script>
-
-    <!-- ERROR & SPLASH CSS -->
+    <!-- CRITICAL: Boot & Error CSS -->
     <style>
-        :root { --boot-bg:#020617; --boot-accent:#0ea5e9; --boot-danger:#ef4444; }
-        body { background:var(--boot-bg); margin:0; overflow:hidden; height:100vh; width:100vw; }
-
+        /* Splash Screen */
         #splash-screen {
-            position:fixed; inset:0; z-index:10000;
-            background:var(--boot-bg); display:flex;
-            flex-direction:column; align-items:center; justify-content:center;
-            transition:opacity .5s ease-out;
+            position: fixed; inset: 0; z-index: 10000;
+            background: #0f172a; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            transition: opacity 0.5s ease;
         }
-        #splash-screen.hidden { opacity:0; pointer-events:none; }
-        .splash-logo { width:96px; height:96px; margin-bottom:48px; filter:drop-shadow(0 0 30px rgba(14,165,233,.5)); animation:pulse-logo 3s infinite; }
-        .loader-container { width:240px; height:4px; background:rgba(255,255,255,.05); border-radius:2px; overflow:hidden; }
-        .loader-bar { height:100%; width:40%; background:var(--boot-accent); animation:load-scan 1.4s infinite; }
+        #splash-screen.hidden { opacity: 0; pointer-events: none; }
+        
+        .splash-logo { 
+            width: 80px; height: 80px; margin-bottom: 30px; 
+            animation: pulse-logo 2s infinite; 
+            filter: drop-shadow(0 0 20px rgba(0, 102, 255, 0.5));
+        }
+        
+        .loader-track {
+            width: 200px; height: 4px; background: rgba(255,255,255,0.1);
+            border-radius: 2px; overflow: hidden; position: relative;
+        }
+        
+        .loader-bar {
+            position: absolute; top: 0; left: 0; height: 100%; width: 50%;
+            background: #0066FF; box-shadow: 0 0 10px #0066FF;
+            animation: load-scan 1.5s ease-in-out infinite;
+        }
 
-        @keyframes load-scan { 0% { transform:translateX(-100%); } 100% { transform:translateX(200%); } }
-        @keyframes pulse-logo { 0%,100% { transform:scale(1) } 50% { transform:scale(.95); opacity:.8 } }
+        .splash-text {
+            margin-top: 20px; color: #64748b; font-family: 'Roboto Mono', monospace; 
+            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px;
+        }
 
+        @keyframes load-scan {
+            0% { left: -50%; }
+            100% { left: 100%; }
+        }
+        @keyframes pulse-logo { 
+            0%, 100% { transform: scale(1); opacity: 1; } 
+            50% { transform: scale(0.95); opacity: 0.8; } 
+        }
+        
+        /* Fatal Error Overlay */
         #fatal-error-overlay {
-            display:none; position:fixed; inset:0; z-index:10001;
-            background:#020617; color:#fff; padding:40px; text-align:center;
-            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            display: none; position: fixed; inset: 0; z-index: 10001;
+            background: #020617; color: #fff; 
+            padding: 40px; text-align: center;
+            flex-direction: column; align-items: center; justify-content: center;
         }
-        .error-content { max-width:500px; background:rgba(15,23,42,0.6); border:1px solid rgba(239,68,68,.3); border-radius:16px; padding:32px; }
-        pre { background:#000; padding:16px; border-radius:8px; color:#fca5a5; font-size:11px; border-left:2px solid var(--boot-danger); }
-        .btn-retry { padding:12px 32px; background:var(--boot-accent); color:#fff; border:none; border-radius:8px; font-weight:700; }
+        .error-icon {
+            width: 64px; height: 64px; margin-bottom: 24px; color: #ef4444;
+        }
+        #fatal-error-overlay h3 { 
+            color: #ef4444; margin-bottom: 15px; font-size: 1.5rem; 
+            font-family: 'Exo 2', sans-serif; letter-spacing: 1px;
+        }
+        #fatal-error-overlay p { 
+            color: #94a3b8; margin-bottom: 20px; max-width: 500px; line-height: 1.6; 
+        }
+        #fatal-error-overlay pre { 
+            background: rgba(15, 23, 42, 0.8); padding: 20px; border-radius: 12px; 
+            overflow-x: auto; text-align: left; font-size: 12px; 
+            font-family: 'Roboto Mono', monospace; margin-bottom: 30px; 
+            max-width: 600px; width: 100%; border: 1px solid #334155; color: #f87171;
+        }
+        .btn-retry {
+            padding: 12px 32px; background: #0066FF; color: white; border: none; 
+            border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem;
+            transition: all 0.2s; box-shadow: 0 4px 15px rgba(0, 102, 255, 0.3);
+        }
+        .btn-retry:hover { background: #0052cc; transform: translateY(-2px); }
     </style>
 
-    <!-- GLOBAL ERROR HANDLER -->
-    <script>
-        window.APP_STATUS = { booted: false };
-
-        window.showFatalError = function(title, details) {
-            document.getElementById("splash-screen").style.display = "none";
-            const overlay = document.getElementById("fatal-error-overlay");
-            overlay.style.display = "flex";
-            document.getElementById("error-title").textContent = title || "Critical Error";
-            document.getElementById("error-debug").textContent = details || "Unknown error";
-        };
-
-        window.addEventListener("error", e => {
-            if (!window.APP_STATUS.booted) {
-                window.showFatalError("System Error", e.error?.message || e.message);
-            }
-        });
-
-        window.addEventListener("unhandledrejection", e => {
-            if (!window.APP_STATUS.booted) {
-                window.showFatalError("Async Error", e.reason?.message || String(e.reason));
-            }
-        });
+    <!-- IMPORT MAP -->
+    <script type="importmap">
+    {
+      "imports": {
+        "express": "https://aistudiocdn.com/express@^5.1.0",
+        "path": "https://aistudiocdn.com/path@^0.12.7",
+        "dotenv/": "https://aistudiocdn.com/dotenv@^17.2.3/",
+        "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+        "ws": "https://aistudiocdn.com/ws@^8.18.3",
+        "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+        "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js",
+        "firebase/analytics": "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js",
+        "dompurify": "https://aistudiocdn.com/dompurify@^3.0.5",
+        "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
+        "url": "https://aistudiocdn.com/url@^0.11.4",
+        "fs/": "https://aistudiocdn.com/fs@^0.0.1-security/",
+        "http": "https://aistudiocdn.com/http@^0.0.1-security",
+        "express-rate-limit": "https://aistudiocdn.com/express-rate-limit@^8.2.1"
+      }
+    }
     </script>
 
+    <!-- GLOBAL FAILSAFE HANDLER -->
+    <script>
+        // Global State Flag
+        window.APP_STATUS = {
+            booted: false,
+            jsLoaded: false,
+            bootStartTime: Date.now()
+        };
+
+        // 1. Show Error UI Function
+        window.showFatalError = function(title, details) {
+            const splash = document.getElementById('splash-screen');
+            const errorOverlay = document.getElementById('fatal-error-overlay');
+            const errorTitle = document.getElementById('error-title');
+            const errorText = document.getElementById('error-details');
+
+            if (splash) splash.style.display = 'none';
+            if (errorOverlay) {
+                errorOverlay.style.display = 'flex';
+                if(errorTitle) errorTitle.textContent = title || "System Critical Failure";
+                if(errorText) errorText.textContent = details || "Unknown initialization error.";
+            }
+            console.error("APP CRASH:", title, details);
+        };
+
+        // 2. Global Error Traps
+        window.onerror = function(msg, url, line, col, error) {
+            // Ignore minor resize loops
+            if (String(msg).includes('ResizeObserver loop')) return false;
+            
+            // Only block app if not yet booted
+            if (!window.APP_STATUS.booted) {
+                window.showFatalError("Script Execution Failed", `${msg}\nLine: ${line}`);
+            }
+            return false;
+        };
+
+        window.addEventListener('error', function(e) {
+            if (e.target.tagName === 'SCRIPT' && !window.APP_STATUS.booted) {
+                const src = e.target.src || 'inline script';
+                // Only care if it's our main module or firebase
+                if (src.includes('index.js') || src.includes('firebase')) {
+                    window.showFatalError("Resource Load Failure", `Failed to load critical script: ${src.split('/').pop()}\nCheck your internet connection.`);
+                }
+            }
+        }, true);
+
+        // 3. Unhandled Promise Rejections (Async Errors)
+        window.onunhandledrejection = function(event) {
+            if (!window.APP_STATUS.booted) {
+                const msg = event.reason ? (event.reason.message || event.reason) : "Async operation failed.";
+                window.showFatalError("Initialization Error", msg);
+            }
+        };
+    </script>
 </head>
-
 <body>
+    <div id="global-background"></div>
+    
+    <!-- Auth Container -->
+    <div id="auth-container" style="display: none;"></div>
 
-<div id="global-background"></div>
-<div id="auth-container" style="display:none;"></div>
-
-<!-- SPLASH SCREEN -->
-<div id="splash-screen">
-    <img src="assets/icons/favicon.svg" class="splash-logo">
-    <div class="loader-container"><div class="loader-bar"></div></div>
-    <p class="splash-text">System Initializing...</p>
-</div>
-
-<!-- ERROR OVERLAY -->
-<div id="fatal-error-overlay">
-    <div class="error-content">
-        <h3 id="error-title">System Failure</h3>
-        <pre id="error-debug"></pre>
-        <button onclick="location.reload()" class="btn-retry">Reload</button>
+    <!-- Splash Screen -->
+    <div id="splash-screen">
+        <img src="assets/icons/favicon.svg" alt="Loading" class="splash-logo">
+        <div class="loader-track">
+            <div class="loader-bar"></div>
+        </div>
+        <p class="splash-text">Initializing Systems...</p>
     </div>
-</div>
 
-<!-- APP WRAPPER -->
-<div id="app-wrapper" style="display:none;">
-    <nav id="sidebar"></nav>
-    <main id="app-container"><div id="app"></div></main>
-</div>
+    <!-- Fatal Error Overlay -->
+    <div id="fatal-error-overlay">
+        <svg class="error-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <h3 id="error-title">System Failure</h3>
+        <p>The application encountered a critical issue during initialization.</p>
+        <pre id="error-details"></pre>
+        <button onclick="window.location.reload()" class="btn-retry">Reboot System</button>
+    </div>
 
-<!-- UI Elements -->
-<div id="modal-container"></div>
-<div id="toast-container"></div>
+    <!-- Welcome Screen -->
+    <div id="welcome-screen" style="display: none;">
+        <div class="welcome-content card">
+            <img src="assets/icons/favicon.svg" alt="Skill Apex Logo" class="welcome-logo">
+            <h1>Skill Apex</h1>
+            <p>Reach the peak of mastery.</p>
+            <button id="welcome-get-started-btn" class="btn btn-primary">Enter System</button>
+        </div>
+    </div>
 
-<!-- MAIN SCRIPTS -->
-<script src="global/global.js"></script>
-<script type="module" src="index.js?v=40.0"></script>
+    <!-- Voice Indicator -->
+    <div id="voice-indicator" class="voice-indicator" style="display: none;">
+        <div class="voice-wave"></div>
+        <span>Listening...</span>
+    </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    if (window.mermaid) mermaid.initialize({ startOnLoad: false, theme: "base", securityLevel: "loose" });
-});
-</script>
+    <button id="voice-mic-btn" class="voice-fab" aria-label="Toggle Voice Control">
+        <svg class="icon"><use href="assets/icons/feather-sprite.svg#mic"/></svg>
+    </button>
 
+    <!-- Main App Wrapper -->
+    <div id="app-wrapper" style="display: none;">
+        <nav id="sidebar"></nav>
+        <main id="app-container" role="main">
+            <div id="app"></div>
+        </main>
+    </div>
+    
+    <div id="modal-container"></div>
+    <div id="toast-container"></div>
+
+    <script src="global/global.js"></script>
+    
+    <!-- MAIN ENTRY POINT -->
+    <script type="module" src="index.js"></script>
+
+    <!-- BOOT FAILSAFE -->
+    <script>
+        // Initialize mermaid if present
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof mermaid !== 'undefined') mermaid.initialize({ startOnLoad: false, theme: 'base', securityLevel: 'loose' });
+        });
+
+        // 8-Second Safety Timeout
+        // If JS doesn't remove splash screen by then, we assume it crashed silently.
+        setTimeout(() => {
+            if (!window.APP_STATUS.booted) {
+                console.warn("BOOT TIMEOUT: Application took too long to start.");
+                const splash = document.getElementById('splash-screen');
+                const errorOverlay = document.getElementById('fatal-error-overlay');
+                
+                // If we aren't already showing an error, show timeout error
+                if (splash && splash.style.display !== 'none' && (!errorOverlay || errorOverlay.style.display === 'none')) {
+                    window.showFatalError("Connection Timeout", "The application failed to initialize resources. Please check your internet connection and try again.");
+                }
+            }
+        }, 8000);
+    </script>
 </body>
 </html>
