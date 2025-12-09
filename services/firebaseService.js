@@ -1,6 +1,4 @@
 
-
-
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore, doc, getDoc, setDoc, collection, query, orderBy, limit, getDocs } from "firebase/firestore";
@@ -130,9 +128,11 @@ function onAuthChange(callback) {
 function updateUserProfile(profileData) {
     if (!currentUser) return Promise.reject(new Error("No user logged in"));
     // profileData can contain { displayName: string, photoURL: string }
-    return updateProfile(currentUser, profileData).then(() => {
-        // Force refresh of current user object
-        currentUser.reload();
+    return updateProfile(currentUser, profileData).then(async () => {
+        // Force refresh of current user object to ensure getters return new data
+        await currentUser.reload();
+        // Notify other components (like sidebar) to update
+        window.dispatchEvent(new CustomEvent('profile-updated'));
     });
 }
 

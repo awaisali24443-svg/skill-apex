@@ -2,6 +2,23 @@
 import { ROUTES, FEATURES } from '../constants.js';
 import * as firebaseService from './firebaseService.js';
 
+// Global listener to update sidebar elements when profile changes (e.g. from Profile module)
+window.addEventListener('profile-updated', () => {
+    const img = document.querySelector('.sidebar-profile-header .profile-avatar-img');
+    const nameText = document.querySelector('.sidebar-profile-header .profile-name');
+    
+    if (img) {
+        const photoURL = firebaseService.getUserPhoto();
+        if (photoURL) {
+            img.src = photoURL;
+        }
+    }
+    
+    if (nameText) {
+        nameText.textContent = firebaseService.getUserName();
+    }
+});
+
 /**
  * Creates the HTML for a single navigation link.
  */
@@ -32,7 +49,9 @@ export function renderSidebar(container) {
     });
 
     const userEmail = firebaseService.getUserEmail() || 'Guest';
-    const userName = userEmail.split('@')[0];
+    // Use getUserName for display name logic which handles display name > email split > default
+    const displayName = firebaseService.getUserName();
+    const photoURL = firebaseService.getUserPhoto() || 'assets/images/avatar-placeholder.png';
     const isGuest = firebaseService.isGuest();
 
     const html = `
@@ -46,10 +65,10 @@ export function renderSidebar(container) {
         <!-- Header: Facenote Style Profile -->
         <div class="sidebar-profile-header">
             <div class="profile-avatar-container">
-                <img src="assets/images/avatar-placeholder.png" alt="Profile" class="profile-avatar-img">
+                <img src="${photoURL}" alt="Profile" class="profile-avatar-img">
             </div>
             <div class="profile-info-text">
-                <span class="profile-name">${userName}</span>
+                <span class="profile-name">${displayName}</span>
                 <span class="profile-role">My Account</span>
             </div>
             <svg class="icon profile-chevron"><use href="assets/icons/feather-sprite.svg#chevron-down"/></svg>
