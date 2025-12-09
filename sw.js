@@ -1,24 +1,25 @@
+
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 27.0.0-FINAL-FIX
+ * @version 34.0.0-DEPLOY-FIX
  *
  * Forces a clean install of all assets to apply critical updates.
  */
 
-const CACHE_NAME = 'skill-apex-v27-final-fix';
+const CACHE_NAME = 'skill-apex-v34-DEPLOY-FIX';
 const OLD_CACHES = [
-    'skill-apex-v26-final-fix',
-    'skill-apex-v25-final',
-    'skill-apex-v24-final',
-    'skill-apex-v23-online-fix',
-    'skill-apex-v22-auth-fix',
-    'skill-apex-v21-auth-fix'
+    'skill-apex-v33-SEO-FIX',
+    'skill-apex-v32-CLEAN',
+    'skill-apex-v31-REAL-fix',
+    'skill-apex-v30-fix-final',
+    'skill-apex-v29-fix-final',
+    'skill-apex-v28-fix-deploy'
 ];
 
 const APP_SHELL_URLS = [
     '/',
     'index.html',
-    'index.js?v=27.0',
+    'index.js?v=34.0',
     'constants.js',
     'manifest.json',
     'data/topics.json',

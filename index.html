@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -93,25 +94,15 @@
         .btn-retry:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(56, 189, 248, 0.6); }
     </style>
 
-    <!-- FIXED IMPORT MAP: Only browser-compatible modules -->
+    <!-- FIXED IMPORT MAP: Valid ESM Links for Browser -->
     <script type="importmap">
 {
   "imports": {
-    "firebase/app": "https://esm.sh/firebase@10.12.0/app",
-    "firebase/auth": "https://esm.sh/firebase@10.12.0/auth",
-    "firebase/firestore": "https://esm.sh/firebase@10.12.0/firestore",
-    "firebase/analytics": "https://esm.sh/firebase@10.12.0/analytics",
-    "dompurify": "https://esm.sh/dompurify@3.1.2",
-    "@google/genai": "https://esm.sh/@google/genai@0.1.3",
-    "express": "https://aistudiocdn.com/express@^5.2.1",
-    "dotenv/": "https://aistudiocdn.com/dotenv@^17.2.3/",
-    "ws": "https://aistudiocdn.com/ws@^8.18.3",
+    "firebase/app": "https://esm.sh/firebase@10.8.0/app",
+    "firebase/analytics": "https://esm.sh/firebase@10.8.0/analytics",
+    "firebase/firestore": "https://esm.sh/firebase@10.8.0/firestore",
+    "firebase/auth": "https://esm.sh/firebase@10.8.0/auth",
     "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
-    "path": "https://aistudiocdn.com/path@^0.12.7",
-    "express-rate-limit": "https://aistudiocdn.com/express-rate-limit@^8.2.1",
-    "http": "https://aistudiocdn.com/http@^0.0.1-security",
-    "url": "https://aistudiocdn.com/url@^0.11.4",
-    "fs/": "https://aistudiocdn.com/fs@^0.0.1-security/"
   }
 }
 </script>
@@ -190,7 +181,7 @@
     <div id="modal-container"></div>
     <div id="toast-container"></div>
     <script src="global/global.js"></script>
-    <script type="module" src="index.js?v=27.0"></script>
+    <script type="module" src="index.js?v=34.0"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof mermaid !== 'undefined') mermaid.initialize({ startOnLoad: false, theme: 'base', securityLevel: 'loose' });
