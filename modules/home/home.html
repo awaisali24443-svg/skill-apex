@@ -1,101 +1,107 @@
 
 <div class="page-container home-container">
-    <!-- Header Section -->
+    <!-- Header Section: Greeting & Quick Stats -->
     <header class="dashboard-header">
         <div class="greeting-container">
-            <h1 class="fade-in">Dashboard</h1>
-            <p class="fade-in-delay">Track your progress and expand your knowledge.</p>
+            <h1 class="fade-in">Central Command</h1>
+            <p class="fade-in-delay">Welcome back, Agent. Your neural network is online.</p>
         </div>
         
-        <!-- Quick Stats Row -->
-        <div class="stats-row fade-in-delay-2">
-            <div class="stat-card" id="streak-stat-card">
-                <div class="stat-icon orange">
+        <!-- Quick Stats Row (Dashboard Top) -->
+        <div class="stats-overview fade-in-delay-2">
+            <div class="stat-card glass-panel" id="streak-stat-card">
+                <div class="stat-icon-wrapper gradient-orange">
                     <svg class="icon"><use href="assets/icons/feather-sprite.svg#zap"/></svg>
                 </div>
-                <div class="stat-info">
+                <div class="stat-content">
                     <span class="stat-value" id="streak-value">0</span>
                     <span class="stat-label">Day Streak</span>
                 </div>
             </div>
             
-            <div class="stat-card">
-                <div class="stat-icon blue">
+            <div class="stat-card glass-panel">
+                <div class="stat-icon-wrapper gradient-blue">
                     <svg class="icon"><use href="assets/icons/feather-sprite.svg#star"/></svg>
                 </div>
-                <div class="stat-info">
+                <div class="stat-content">
                     <span class="stat-value" id="xp-value">0</span>
                     <span class="stat-label">Total XP</span>
                 </div>
             </div>
 
-            <div class="stat-card" id="health-stat-card">
-                <div class="stat-icon green">
+            <div class="stat-card glass-panel" id="health-stat-card">
+                <div class="stat-icon-wrapper gradient-green">
                     <svg class="icon"><use href="assets/icons/feather-sprite.svg#activity"/></svg>
                 </div>
-                <div class="stat-info">
+                <div class="stat-content">
                     <span class="stat-value" id="health-value">100%</span>
-                    <span class="stat-label">Memory Health</span>
+                    <span class="stat-label">Memory Integrity</span>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Content Grid -->
+    <!-- Main Dashboard Grid -->
     <div class="dashboard-grid">
         
-        <!-- Column 1: Main Action (Hero) -->
-        <div class="grid-column main-column">
+        <!-- Primary Column: Hero & Recents -->
+        <div class="grid-column primary-column">
+            <!-- Hero Card: Main Call to Action -->
             <a id="primary-action-card" href="#" class="card hero-card">
+                <div class="hero-bg-effect"></div>
                 <div class="hero-content">
-                    <div class="hero-badge" id="hero-badge" style="display:none;">RESUME</div>
-                    <h2 id="primary-action-title">Start New Adventure</h2>
-                    <p id="primary-action-description">Choose a topic and let the AI generate a custom curriculum for you.</p>
-                    <div class="hero-cta">
-                        <span class="btn-text">Begin</span>
+                    <div class="hero-status-pill" id="hero-badge" style="display:none;">RESUME MISSION</div>
+                    <h2 id="primary-action-title">Initiate New Operation</h2>
+                    <p id="primary-action-description">Select a knowledge domain to generate a personalized curriculum.</p>
+                    <div class="hero-cta-button">
+                        <span class="btn-text">Engage</span>
                         <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
                     </div>
                 </div>
-                <div class="hero-visual">
+                <div class="hero-visual-icon">
                     <svg class="icon" id="primary-action-icon"><use href="assets/icons/feather-sprite.svg#map"/></svg>
                 </div>
-                <div class="hero-bg-glow"></div>
             </a>
 
             <!-- Recent History List -->
-            <div class="section-header">
-                <h3>Recent Missions</h3>
-            </div>
-            <div id="recent-history-container" class="history-list">
-                <!-- Injected via JS -->
-                <div class="empty-state-small">No recent activity.</div>
+            <div class="section-container">
+                <h3 class="section-title">Recent Activity</h3>
+                <div id="recent-history-container" class="history-list-compact">
+                    <!-- Injected via JS -->
+                    <div class="empty-state-compact">
+                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#archive"/></svg>
+                        <span>No recent missions found.</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Column 2: Side Actions -->
-        <div class="grid-column side-column">
+        <!-- Side Column: Challenges & Tools -->
+        <div class="grid-column secondary-column">
             
-            <!-- Daily Challenge -->
-            <div id="daily-challenge-card" class="card challenge-card">
-                <div class="card-header">
-                    <div class="icon-box purple">
+            <!-- Daily Challenge Widget -->
+            <div id="daily-challenge-card" class="card widget-card challenge-widget">
+                <div class="widget-header">
+                    <div class="widget-icon gradient-purple">
                         <svg class="icon"><use href="assets/icons/feather-sprite.svg#target"/></svg>
                     </div>
-                    <h3>Daily Micro-Challenge</h3>
+                    <h3>Daily Protocol</h3>
                 </div>
-                <p id="daily-challenge-status">Answer a quick question to keep your streak alive.</p>
-                <button id="start-daily-challenge-btn" class="btn btn-primary full-width">Play Now (+200 XP)</button>
+                <p class="widget-desc" id="daily-challenge-status">Complete your daily micro-challenge to maintain your streak.</p>
+                <button id="start-daily-challenge-btn" class="btn btn-primary full-width">
+                    <span>Execute (+200 XP)</span>
+                </button>
             </div>
 
-            <!-- Neural Integrity / Repair Action (Hidden unless needed) -->
-            <div id="repair-memory-widget" class="card repair-card" style="display: none;">
-                <div class="card-header">
-                    <div class="icon-box red">
+            <!-- Memory Repair Widget (Conditional) -->
+            <div id="repair-memory-widget" class="card widget-card repair-widget" style="display: none;">
+                <div class="widget-header">
+                    <div class="widget-icon gradient-red">
                         <svg class="icon"><use href="assets/icons/feather-sprite.svg#alert-triangle"/></svg>
                     </div>
-                    <h3>Memory Decay Detected</h3>
+                    <h3>Decay Detected</h3>
                 </div>
-                <p id="repair-text">Some topics are fading from your long-term memory.</p>
+                <p class="widget-desc">Knowledge retention dropping in some sectors.</p>
                 <button id="repair-memory-btn" class="btn btn-outline-danger full-width">Repair Pathways</button>
             </div>
 
@@ -103,7 +109,7 @@
     </div>
 </div>
 
-<!-- ONBOARDING OVERLAY (Kept same logic) -->
+<!-- Onboarding Overlay (Preserved) -->
 <div id="onboarding-overlay" class="onboarding-overlay" style="display: none;">
     <div class="onboarding-content">
         <div class="onboarding-header">

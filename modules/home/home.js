@@ -54,7 +54,10 @@ function renderStats() {
     // Repair Widget Logic
     const repairWidget = document.getElementById('repair-memory-widget');
     if (health < 80) {
-        healthCard.querySelector('.stat-icon').classList.replace('green', 'red');
+        // Change icon gradient to red warning style if health is low
+        const iconWrapper = healthCard.querySelector('.stat-icon-wrapper');
+        iconWrapper.className = 'stat-icon-wrapper gradient-red';
+        
         if(repairWidget) {
             repairWidget.style.display = 'block';
             document.getElementById('repair-memory-btn').onclick = () => {
@@ -67,6 +70,9 @@ function renderStats() {
         }
     } else {
         if(repairWidget) repairWidget.style.display = 'none';
+        // Reset to green
+        const iconWrapper = healthCard.querySelector('.stat-icon-wrapper');
+        iconWrapper.className = 'stat-icon-wrapper gradient-green';
     }
 }
 
@@ -84,15 +90,15 @@ function renderPrimaryAction() {
     if (path && path.currentLevel <= path.totalLevels) {
         card.href = `#/game/${encodeURIComponent(path.goal)}`;
         badge.style.display = 'inline-block';
-        badge.textContent = `LEVEL ${path.currentLevel}`;
+        badge.textContent = `RESUME: LEVEL ${path.currentLevel}`;
         title.textContent = path.goal;
         description.textContent = path.description || "Continue your path to mastery.";
-        cta.textContent = "Resume Journey";
+        cta.textContent = "Resume Mission";
         icon.innerHTML = `<svg><use href="assets/icons/feather-sprite.svg#play"/></svg>`;
     } else {
         card.href = '#/topics';
         badge.style.display = 'none';
-        title.textContent = 'Start New Adventure';
+        title.textContent = 'Initiate New Operation';
         description.textContent = 'Select a topic and let AI generate a personalized curriculum.';
         cta.textContent = 'Explore Topics';
         icon.innerHTML = `<svg><use href="assets/icons/feather-sprite.svg#map"/></svg>`;
@@ -105,7 +111,11 @@ function renderRecentHistory() {
     if (!container) return;
     
     if (history.length === 0) {
-        container.innerHTML = '<div class="empty-state-small">No recent missions. Start one above!</div>';
+        container.innerHTML = `
+            <div class="empty-state-compact">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#archive"/></svg>
+                <span>No recent missions found.</span>
+            </div>`;
         return;
     }
     
@@ -115,9 +125,9 @@ function renderRecentHistory() {
         <div class="history-item-row">
             <div class="hist-info">
                 <h4>${cleanTopic(item.topic)}</h4>
-                <span class="hist-meta">${new Date(item.date).toLocaleDateString()} • ${item.score !== undefined ? item.score + '/' + item.totalQuestions : 'Audio'}</span>
+                <span class="hist-meta">${new Date(item.date).toLocaleDateString()} • ${item.score !== undefined ? item.score + '/' + item.totalQuestions : 'Audio Session'}</span>
             </div>
-            <button class="btn-icon-tiny retry-btn" data-topic="${cleanTopic(item.topic)}">
+            <button class="btn-icon-tiny retry-btn" data-topic="${cleanTopic(item.topic)}" title="Replay">
                 <svg class="icon"><use href="assets/icons/feather-sprite.svg#rotate-ccw"/></svg>
             </button>
         </div>
@@ -141,9 +151,9 @@ async function initDailyChallenge() {
     
     if (gamificationService.isDailyChallengeCompleted()) {
         card.classList.add('completed');
-        statusText.textContent = "You've completed today's challenge. Great work!";
+        statusText.textContent = "Protocol complete. System optimized.";
         challengeBtn.disabled = true;
-        challengeBtn.textContent = "Challenge Complete";
+        challengeBtn.innerHTML = `<span>Completed</span> <svg class="icon"><use href="assets/icons/feather-sprite.svg#check-circle"/></svg>`;
         return;
     }
     
@@ -153,8 +163,6 @@ async function initDailyChallenge() {
         
         try {
             const challenge = await apiService.fetchDailyChallenge();
-            // Reuse the simple modal logic from before, or enhance it.
-            // For simplicity, we keep the alert/modal flow but make it cleaner.
             
             const optionsHtml = challenge.options.map((opt, i) => 
                 `<button class="btn option-btn" data-idx="${i}" style="width:100%; margin-bottom:8px; text-align:left;">${opt}</button>`
@@ -192,11 +200,11 @@ async function initDailyChallenge() {
                     showToast("Correct! +200 XP", "success");
                     gamificationService.completeDailyChallenge();
                     card.classList.add('completed');
-                    statusText.textContent = "Challenge Completed!";
-                    challengeBtn.textContent = "Done";
+                    statusText.textContent = "Protocol complete.";
+                    challengeBtn.innerHTML = `<span>Completed</span> <svg class="icon"><use href="assets/icons/feather-sprite.svg#check-circle"/></svg>`;
                 } else {
                     showToast(`Wrong! Answer: ${challenge.options[challenge.correctAnswerIndex]}`, "error");
-                    challengeBtn.textContent = "Try Again Later";
+                    challengeBtn.textContent = "Retry Tomorrow";
                 }
                 
                 modalContainer.style.display = 'none';
@@ -206,13 +214,13 @@ async function initDailyChallenge() {
             document.getElementById('cancel-challenge').onclick = () => {
                 modalContainer.style.display = 'none';
                 challengeBtn.disabled = false;
-                challengeBtn.textContent = "Play Now (+200 XP)";
+                challengeBtn.textContent = "Execute (+200 XP)";
             };
 
         } catch (e) {
             showToast("Failed to load challenge.", "error");
             challengeBtn.disabled = false;
-            challengeBtn.textContent = "Play Now (+200 XP)";
+            challengeBtn.textContent = "Execute (+200 XP)";
         }
     };
 }
