@@ -277,23 +277,33 @@ function initializeAppContent(user) {
     document.getElementById('auth-container').style.display = 'none';
 
     if (splashScreen && !splashScreen.classList.contains('hidden')) {
+        splashScreen.classList.add('hidden');
+        
         const onTransitionEnd = () => {
-            splashScreen.remove();
+            splashScreen.style.display = 'none'; // Ensure it's out of layout
             const hasBeenWelcomed = localStorage.getItem(LOCAL_STORAGE_KEYS.WELCOME_COMPLETED);
             if (!hasBeenWelcomed) {
                 showWelcomeScreen();
             }
             setTimeout(preloadCriticalModules, 500);
         };
+        
         splashScreen.addEventListener('transitionend', onTransitionEnd, { once: true });
-        splashScreen.classList.add('hidden');
-        setTimeout(() => { if (document.body.contains(splashScreen)) onTransitionEnd(); }, 600);
+        // Fallback if transition doesn't fire
+        setTimeout(onTransitionEnd, 700);
     }
 }
 
 function showAuthScreen() {
     const splashScreen = document.getElementById('splash-screen');
-    if (splashScreen) splashScreen.remove();
+    
+    // Animate splash out to reveal auth screen
+    if (splashScreen && !splashScreen.classList.contains('hidden')) {
+        splashScreen.classList.add('hidden');
+        splashScreen.addEventListener('transitionend', () => {
+            splashScreen.style.display = 'none';
+        }, { once: true });
+    }
     
     document.getElementById('app-wrapper').style.display = 'none'; // Hide App
     document.getElementById('auth-container').style.display = 'flex';

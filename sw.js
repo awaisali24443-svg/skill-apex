@@ -1,13 +1,12 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 5.4.0
+ * @version 5.6.0 (Expo Final Build)
  *
  * This service worker implements a robust offline-first caching strategy.
- * Updated to force refresh for Dashboard UI updates.
  */
 
-const CACHE_NAME = 'skill-apex-v5.4.0';
+const CACHE_NAME = 'skill-apex-v5.6.0';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [

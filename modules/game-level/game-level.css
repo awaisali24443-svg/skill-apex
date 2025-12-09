@@ -21,6 +21,21 @@
     border-radius: var(--border-radius);
     position: relative;
     overflow: hidden;
+    /* Card-like effect */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Specific styling for Lesson State to look like a Study Card */
+#level-lesson-state .state-content {
+    background-color: var(--color-surface);
+    /* Subtle paper texture or gradient if desired */
+    background-image: linear-gradient(to bottom, var(--color-surface), var(--color-surface-hover));
+    text-align: left; /* Better for reading */
+    max-height: 85vh; /* Ensure it fits in screen like a card */
+    box-shadow: 
+        0 20px 40px -10px rgba(0,0,0,0.3), 
+        0 0 0 1px var(--color-border);
 }
 
 /* Top accent bar */
@@ -28,6 +43,69 @@
     content: ''; position: absolute; top:0; left:0; width:100%; height:4px;
     background: var(--brand-gradient);
     z-index: 10;
+}
+
+/* Lesson Typography */
+.lesson-header {
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+}
+.lesson-header h1 {
+    font-size: 1.5rem;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.lesson-body {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: var(--space-md);
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--color-text);
+    /* Custom Scrollbar for the inner content */
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+}
+
+/* Markdown Elements in Lesson */
+.lesson-body h3 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--color-secondary);
+    font-size: 1.2rem;
+}
+.lesson-body p {
+    margin-bottom: 1rem;
+}
+.lesson-body ul {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+}
+.lesson-body li {
+    margin-bottom: 0.5rem;
+}
+.lesson-body strong {
+    color: var(--color-accent);
+}
+.lesson-body code {
+    background: rgba(0,0,0,0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: var(--font-family-mono);
+    font-size: 0.9em;
+    color: var(--color-primary);
+}
+
+.lesson-footer {
+    margin-top: var(--space-lg);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 /* Quiz Header */
@@ -122,6 +200,21 @@
 .results-icon.failed { background-color: var(--color-error-bg); color: var(--color-error); }
 .results-icon svg { width: 40px; height: 40px; }
 
+/* Ask AI Popup */
+.ask-ai-container {
+    position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+    width: 90%; max-width: 400px;
+    background: var(--color-surface-active);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--border-radius);
+    padding: var(--space-lg);
+    box-shadow: var(--shadow-float);
+    z-index: 20;
+    animation: fade-slide-in 0.3s;
+}
+.ask-ai-content h3 { color: var(--color-primary); margin-top: 0; font-size: 1rem; }
+.ask-ai-content p { font-size: 0.9rem; color: var(--color-text); margin-bottom: 1rem; }
+
 /* Animations */
 @keyframes fade-slide-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -129,4 +222,6 @@
     .options-grid { grid-template-columns: 1fr; }
     .quiz-status-card { flex-direction: column; }
     #timer-text { font-size: 1.5rem; }
+    .lesson-footer { flex-direction: column; gap: 10px; }
+    .lesson-footer button { width: 100%; }
 }
