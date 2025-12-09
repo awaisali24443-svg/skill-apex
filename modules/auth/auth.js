@@ -1,6 +1,7 @@
 
 import * as firebaseService from '../../services/firebaseService.js';
 import { showToast } from '../../services/toastService.js';
+import { LOCAL_STORAGE_KEYS } from '../../constants.js';
 
 let elements = {};
 let isLoginMode = true;
@@ -56,8 +57,113 @@ async function handleGoogleLogin() {
     }
 }
 
+function populateGuestData() {
+    // Inject sample data if the user has no existing data, 
+    // ensuring the guest experience looks professional and populated.
+
+    if (!localStorage.getItem(LOCAL_STORAGE_KEYS.GAMIFICATION)) {
+        const sampleStats = {
+            level: 5,
+            xp: 2450,
+            currentStreak: 4,
+            lastQuizDate: new Date().toISOString(),
+            totalQuizzesCompleted: 12,
+            totalPerfectQuizzes: 8,
+            questionsSaved: 3,
+            dailyQuests: { date: new Date().toDateString(), quests: [] },
+            dailyChallenge: { date: new Date().toDateString(), completed: false }
+        };
+        localStorage.setItem(LOCAL_STORAGE_KEYS.GAMIFICATION, JSON.stringify(sampleStats));
+    }
+
+    if (!localStorage.getItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS)) {
+        const sampleJourneys = [
+            {
+                id: "journey_sample_1",
+                goal: "Cybersecurity Ops",
+                description: "Mastering network defense, encryption protocols, and ethical hacking methodologies.",
+                currentLevel: 12,
+                totalLevels: 50,
+                styleClass: "topic-space",
+                createdAt: new Date().toISOString()
+            }
+        ];
+        localStorage.setItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS, JSON.stringify(sampleJourneys));
+    }
+
+    if (!localStorage.getItem(LOCAL_STORAGE_KEYS.HISTORY)) {
+        const now = Date.now();
+        const day = 86400000;
+        const sampleHistory = [
+            {
+                id: `quiz_sample_${now}`,
+                type: "quiz",
+                topic: "Cybersecurity Ops - Level 11",
+                score: 5,
+                totalQuestions: 5,
+                difficulty: "medium",
+                date: new Date(now - day * 0.1).toISOString(),
+                xpGained: 50
+            },
+            {
+                id: `aural_sample_${now}`,
+                type: "aural",
+                topic: "Aural Tutor Session",
+                date: new Date(now - day * 1.5).toISOString(),
+                duration: 185,
+                transcript: [],
+                xpGained: 45
+            },
+            {
+                id: `quiz_sample_${now-1}`,
+                type: "quiz",
+                topic: "Cybersecurity Ops - Level 10",
+                score: 4,
+                totalQuestions: 5,
+                difficulty: "medium",
+                date: new Date(now - day * 2).toISOString(),
+                xpGained: 40
+            },
+             {
+                id: `quiz_sample_${now-2}`,
+                type: "quiz",
+                topic: "Cybersecurity Ops - Level 9",
+                score: 5,
+                totalQuestions: 5,
+                difficulty: "medium",
+                date: new Date(now - day * 3).toISOString(),
+                xpGained: 50
+            }
+        ];
+        localStorage.setItem(LOCAL_STORAGE_KEYS.HISTORY, JSON.stringify(sampleHistory));
+    }
+
+    if (!localStorage.getItem(LOCAL_STORAGE_KEYS.LIBRARY)) {
+        const sampleLibrary = [
+            {
+                question: "What is the difference between symmetric and asymmetric encryption?",
+                options: ["Key length", "Symmetric uses one key, asymmetric uses two", "Speed only", "Complexity"],
+                correctAnswerIndex: 1,
+                explanation: "Symmetric encryption uses a single shared secret key for both encryption and decryption, while asymmetric uses a public key for encryption and a private key for decryption.",
+                id: "q_sample_1",
+                srs: { interval: 1, repetitions: 0, easeFactor: 2.5, nextReviewDate: Date.now(), lastReviewed: null }
+            },
+            {
+                question: "Identify the core principle of Zero Trust Architecture.",
+                options: ["Trust but verify", "Never trust, always verify", "Trust internal networks", "Verify only external"],
+                correctAnswerIndex: 1,
+                explanation: "Zero Trust assumes no user or device is trustworthy by default, regardless of location relative to the network perimeter.",
+                id: "q_sample_2",
+                srs: { interval: 1, repetitions: 0, easeFactor: 2.5, nextReviewDate: Date.now(), lastReviewed: null }
+            }
+        ];
+        localStorage.setItem(LOCAL_STORAGE_KEYS.LIBRARY, JSON.stringify(sampleLibrary));
+    }
+}
+
 async function handleGuestLogin() {
     try {
+        populateGuestData(); // Inject data before login triggers app init
         await firebaseService.loginAsGuest();
         // Auth listener handles redirect
     } catch (error) {

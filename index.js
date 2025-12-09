@@ -10,7 +10,7 @@ import * as themeService from './services/themeService.js';
 import * as gamificationService from './services/gamificationService.js';
 import * as stateService from './services/stateService.js';
 import * as firebaseService from './services/firebaseService.js';
-import { init as initVoice, toggleListening } from './services/voiceCommandService.js';
+import { init as initVoice, toggleListening, isSupported as isVoiceSupported } from './services/voiceCommandService.js';
 import * as authModule from './modules/auth/auth.js';
 
 const moduleCache = new Map();
@@ -56,6 +56,30 @@ function matchRoute(path) {
     return null;
 }
 
+function updateGlobalUI(route) {
+    // 1. Manage Voice FAB Visibility
+    const fab = document.getElementById('voice-mic-btn');
+    if (fab) {
+        // Hide FAB on immersive routes where it conflicts with other mic buttons or gameplay
+        const immersiveModules = ['aural', 'game-level'];
+        const shouldHide = immersiveModules.includes(route.module) || !isVoiceSupported();
+        
+        if (shouldHide) {
+            fab.style.opacity = '0';
+            fab.style.pointerEvents = 'none';
+        } else {
+            fab.style.opacity = '1';
+            fab.style.pointerEvents = 'auto';
+        }
+    }
+
+    // 2. Manage Full Bleed Layouts
+    const container = document.getElementById('app-container');
+    if (container) {
+        container.classList.toggle('full-bleed-container', !!route.fullBleed);
+    }
+}
+
 async function loadModule(route) {
     const appContainer = document.getElementById('app');
     if (!appContainer) return;
@@ -71,11 +95,12 @@ async function loadModule(route) {
     const renderNewModule = async () => {
         try {
             stateService.setCurrentRoute(route);
+            updateGlobalUI(route); // Update global UI elements based on route
+
             const moduleData = await fetchModule(route.module);
             currentModule = moduleData;
 
             appContainer.innerHTML = '';
-            document.getElementById('app-container')?.classList.toggle('full-bleed-container', !!route.fullBleed);
             
             let styleTag = document.getElementById('module-style');
             if (!styleTag) {
@@ -243,6 +268,11 @@ function initializeAppContent(user) {
     
     const voiceToggleBtn = document.getElementById('voice-mic-btn');
     if (voiceToggleBtn) {
+        // Initial visibility check
+        if (!isVoiceSupported()) {
+            voiceToggleBtn.style.display = 'none';
+        }
+        
         voiceToggleBtn.addEventListener('click', () => {
             toggleListening();
             voiceToggleBtn.classList.toggle('active');

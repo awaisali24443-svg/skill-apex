@@ -315,6 +315,87 @@ svg { max-width: 100%; display: block; }
 }
 .btn-primary:active { transform: translateY(1px); }
 
+/* --- VOICE COMMAND FAB & INDICATOR --- */
+.voice-fab {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--color-surface);
+    color: var(--color-primary);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    cursor: pointer;
+    transition: all 0.3s var(--transition-bounce);
+    backdrop-filter: blur(10px);
+}
+
+.voice-fab:hover {
+    transform: scale(1.1) translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 184, 212, 0.3);
+    background: var(--color-surface-active);
+}
+
+.voice-fab.active {
+    background: var(--color-error);
+    color: white;
+    border-color: transparent;
+    animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.voice-indicator {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 1001;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    animation: slideDownFade 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideDownFade {
+    from { transform: translate(-50%, -20px); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
+}
+
+.voice-wave {
+    width: 4px;
+    height: 16px;
+    background: var(--color-primary);
+    border-radius: 2px;
+    animation: voice-wave 1s ease-in-out infinite;
+}
+.voice-wave:nth-child(2) { animation-delay: 0.1s; height: 24px; }
+.voice-wave:nth-child(3) { animation-delay: 0.2s; }
+
+@keyframes voice-wave {
+    0%, 100% { transform: scaleY(0.5); opacity: 0.5; }
+    50% { transform: scaleY(1.2); opacity: 1; }
+}
+
 /* --- UTILS --- */
 .fade-in { animation: fadeIn 0.5s ease-out forwards; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -390,6 +471,12 @@ svg { max-width: 100%; display: block; }
         padding: 24px 20px; 
         padding-bottom: 100px; /* Space for fixed nav */
         width: 100%;
+    }
+    
+    /* Reposition Voice FAB on Mobile */
+    .voice-fab {
+        bottom: 90px;
+        right: 20px;
     }
     
     .footer-links { display: none; }
