@@ -17,7 +17,7 @@ function createNavLink(route) {
 }
 
 /**
- * Renders the Tactical Navigation Rail.
+ * Renders the Floating Glass Sidebar (Facenote Style).
  */
 export function renderSidebar(container) {
     container.setAttribute('aria-label', 'Main Navigation');
@@ -32,40 +32,67 @@ export function renderSidebar(container) {
     });
 
     const userEmail = firebaseService.getUserEmail() || 'Guest';
-    const userName = firebaseService.getUserName() || 'Agent';
-    const userPhoto = firebaseService.getUserPhoto() || 'assets/images/avatar-placeholder.png';
+    const userName = userEmail.split('@')[0];
+    const isGuest = firebaseService.isGuest();
 
     const html = `
-        <!-- Top: Brand Identity -->
-        <div class="sidebar-brand" onclick="window.location.hash = '/'">
-            <img src="assets/icons/favicon.svg" alt="Skill Apex" class="brand-logo">
-            <span class="brand-text">Skill Apex</span>
+        <!-- Top: Window Controls -->
+        <div class="window-controls">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
         </div>
 
+        <!-- Header: Facenote Style Profile -->
+        <div class="sidebar-profile-header">
+            <div class="profile-avatar-container">
+                <img src="assets/images/avatar-placeholder.png" alt="Profile" class="profile-avatar-img">
+            </div>
+            <div class="profile-info-text">
+                <span class="profile-name">${userName}</span>
+                <span class="profile-role">My Account</span>
+            </div>
+            <svg class="icon profile-chevron"><use href="assets/icons/feather-sprite.svg#chevron-down"/></svg>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
         <!-- Menu -->
-        <div class="sidebar-menu-label">Main Console</div>
+        <div class="sidebar-menu-label">MENU</div>
         <ul class="sidebar-links">
             ${filteredMainLinks.map(link => createNavLink(link)).join('')}
         </ul>
 
         <div class="sidebar-spacer"></div>
 
-        <div class="sidebar-menu-label">System</div>
-        <ul class="sidebar-links">
+        <!-- Bottom Actions -->
+        <ul class="sidebar-links footer-links">
             ${settingsLink ? createNavLink(settingsLink) : ''}
+            <button id="sidebar-logout-btn" class="sidebar-link logout-link">
+                <div class="link-icon-wrapper">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#power"/></svg>
+                </div>
+                <span class="text">Log Out</span>
+            </button>
         </ul>
-
-        <!-- Bottom: Profile Badge -->
-        <div class="sidebar-profile" onclick="window.location.hash = '/profile'">
-            <div class="profile-avatar-container">
-                <img src="${userPhoto}" alt="Profile" class="profile-avatar-img">
-            </div>
-            <div class="profile-info-text">
-                <span class="profile-name">${userName}</span>
-                <span class="profile-role">Operative</span>
-            </div>
-        </div>
     `;
     
     container.innerHTML = html;
+
+    // Attach Logout Listener
+    const logoutBtn = document.getElementById('sidebar-logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            const { showConfirmationModal } = await import('./modalService.js');
+            const confirmed = await showConfirmationModal({
+                title: 'Log Out',
+                message: 'Are you sure you want to sign out?',
+                confirmText: 'Log Out',
+                danger: true
+            });
+            if (confirmed) {
+                firebaseService.logout();
+            }
+        });
+    }
 }

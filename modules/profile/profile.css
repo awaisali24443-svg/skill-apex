@@ -1,35 +1,11 @@
 
 .sparked-layout {
-    /* Main container now wraps the internal parts */
-    width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-.sparked-layout-inner, .profile-skeleton {
     display: grid;
     grid-template-columns: 340px 1fr;
     gap: 32px;
+    max-width: 1400px;
+    margin: 0 auto;
     align-items: start;
-    width: 100%;
-}
-
-/* Skeleton Specifics */
-.skeleton-card {
-    background: var(--color-surface);
-    overflow: hidden;
-    position: relative;
-    padding: 0;
-}
-.profile-skeleton .skeleton {
-    background: rgba(255,255,255,0.05);
-    border-radius: 4px;
-    animation: pulse 1.5s infinite ease-in-out;
-}
-@keyframes pulse {
-    0% { opacity: 0.5; }
-    50% { opacity: 0.8; }
-    100% { opacity: 0.5; }
 }
 
 /* --- SIDEBAR --- */
@@ -140,19 +116,9 @@
 }
 
 .progress-circle-container { text-align: center; }
-.circular-chart { display: block; margin: 0 auto; max-width: 140px; max-height: 140px; }
-.circle-bg { fill: none; stroke: var(--color-border); stroke-width: 2.5; opacity: 0.3; }
-
-/* Perfected Neon Chart Style */
-.circle { 
-    fill: none; 
-    stroke-width: 2.5; 
-    stroke-linecap: round; 
-    stroke: url(#gradient-neon); /* References the SVG linearGradient */
-    filter: drop-shadow(0 0 6px var(--color-primary)); 
-    transition: stroke-dasharray 1s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
+.circular-chart { display: block; margin: 0 auto; max-width: 120px; max-height: 120px; }
+.circle-bg { fill: none; stroke: var(--color-border); stroke-width: 2.5; }
+.circle { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke: var(--color-primary); transition: stroke-dasharray 1s ease-out; }
 .percentage { fill: var(--color-text); font-family: var(--font-family-heading); font-weight: bold; font-size: 0.5em; text-anchor: middle; }
 .progress-sub { margin-top: 8px; font-size: 0.85rem; color: var(--color-text-secondary); }
 
@@ -182,69 +148,59 @@
     gap: 24px;
 }
 
-/* Updated for Darker Contrast & Metal Pop - PUBG Style */
 .achievement-card {
-    /* Dark semi-transparent background for contrast against bright metal icons */
-    background: linear-gradient(145deg, rgba(20, 25, 40, 0.8), rgba(10, 15, 30, 0.9));
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-surface);
+    border: 1px solid var(--glass-border);
     border-radius: 20px;
     padding: 32px 24px;
     text-align: center;
     position: relative;
     transition: all 0.3s var(--transition-bounce);
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
 
 .achievement-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: var(--shadow-float);
+    border-color: transparent;
+}
+
+/* Hover metallic border effect */
+.achievement-card:hover::before {
+    content: ''; position: absolute; inset: 0;
+    border-radius: 20px; padding: 2px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), var(--color-primary));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; pointer-events: none;
 }
 
 .achievement-icon-wrapper {
-    width: 140px; height: 140px; margin: 0 auto 16px auto;
+    width: 100px; height: 100px; margin: 0 auto 24px auto;
     position: relative; display: flex; align-items: center; justify-content: center;
-    /* CSS Color drives the SVG fill/stroke via currentColor */
-    color: var(--color-text-secondary); 
-    transition: color 0.3s ease, filter 0.3s ease;
 }
 
-.achievement-card.locked .achievement-icon-wrapper {
-    filter: grayscale(100%) opacity(0.2) brightness(0.5);
-    color: #555;
-}
-
-/* Dynamic Glow based on Color */
-.achievement-card.unlocked .achievement-icon-wrapper {
-    filter: drop-shadow(0 0 20px currentColor);
-}
-
-.achievement-card.unlocked:hover .achievement-icon-wrapper {
+.achievement-card.locked .achievement-icon-wrapper { filter: grayscale(100%) opacity(0.4); }
+.achievement-card.unlocked .achievement-icon-wrapper svg {
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.15));
     transform: scale(1.1);
-    filter: drop-shadow(0 0 40px currentColor);
 }
 
-.achievement-icon-wrapper svg {
-    width: 100%; height: 100%;
-    overflow: visible;
-}
+.achievement-icon-wrapper svg { width: 80px; height: 80px; transition: transform 0.3s ease; }
 
-.ach-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 8px; color: #fff; letter-spacing: 0.5px; }
-.ach-desc { font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-bottom: 24px; line-height: 1.4; }
+.ach-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; color: var(--color-text); }
+.ach-desc { font-size: 0.9rem; color: var(--color-text-secondary); margin-bottom: 24px; line-height: 1.4; }
 
 .ach-progress-bar {
-    height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden;
-    margin-top: auto;
+    height: 6px; background: var(--color-surface-hover); border-radius: 10px; overflow: hidden;
 }
-.ach-progress-fill { height: 100%; background: var(--color-primary); border-radius: 10px; box-shadow: 0 0 10px var(--color-primary); }
+.ach-progress-fill { height: 100%; background: var(--color-primary); border-radius: 10px; }
 
 .ach-meta {
     display: block; text-align: right; font-size: 0.75rem; font-weight: 700; 
-    color: rgba(255,255,255,0.5); margin-top: 8px;
+    color: var(--color-text-secondary); margin-top: 8px;
 }
 
 @media (max-width: 900px) {
-    .sparked-layout-inner, .profile-skeleton { grid-template-columns: 1fr; }
+    .sparked-layout { grid-template-columns: 1fr; }
     .profile-sidebar { position: relative; top: 0; }
 }

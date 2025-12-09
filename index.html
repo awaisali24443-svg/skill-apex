@@ -1,224 +1,183 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Skill Apex | AI Learning Mastery</title>
-    <meta name="description" content="Skill Apex is an AI-powered learning platform. Generate personalized courses, quizzes, and skill trees instantly.">
+    <title>Skill Apex | AI Learning Mastery & Quiz Generator</title>
+    <meta name="description" content="Skill Apex is an AI-powered learning platform. Generate personalized courses, quizzes, and skill trees instantly. Master coding, history, science, and more with gamified education.">
+    <meta name="keywords" content="AI learning, quiz generator, skill tree, education app, gamified learning, artificial intelligence tutor, Skill Apex, online courses, study helper, AI & Machine Learning, Cybersecurity & Ethical Hacking, Cloud Native & DevOps, Data Science & Analytics, Full-Stack Web Development, Mobile App Development, Game Development & Design, Blockchain & Web3, Python, World War II, Ancient Rome, Quantum Physics, Human Biology, Digital Marketing, Financial Literacy">
+    <meta name="author" content="Skill Apex">
+    <meta name="robots" content="index, follow">
+    <meta name="googlebot" content="index, follow">
+    
+    <!-- GOOGLE VERIFICATION CODE -->
+    <meta name="google-site-verification" content="HZFtJy73lWSryYV-dmlv7eXUg7HCUWUMXsptxvIIGtg" />
+    
+    <link rel="canonical" href="https://skill-apex.onrender.com" />
+    <meta name="theme-color" id="theme-color-meta" content="#f0f2f5">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://skill-apex.onrender.com">
+    <meta property="og:title" content="Skill Apex | AI Learning Mastery">
+    <meta property="og:description" content="Master any topic instantly with the power of AI. Create custom learning paths and challenge yourself.">
+    <meta property="og:image" content="assets/images/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://skill-apex.onrender.com">
+    <meta property="twitter:title" content="Skill Apex | AI Learning Mastery">
+    <meta property="twitter:description" content="Master any topic instantly with the power of AI. Create custom learning paths and challenge yourself.">
+    <meta property="twitter:image" content="assets/images/og-image.png">
     
     <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
     <link rel="manifest" href="manifest.json">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     
+    <!-- Mermaid.js for diagrams -->
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
 
-    <!-- Theme & Global Styles -->
+    <!-- Forced Light Theme for Sparked Design -->
     <link id="theme-stylesheet" rel="stylesheet" href="themes/theme-light-cyber.css">
     <link rel="stylesheet" href="global/global.css">
 
-    <!-- CRITICAL: Boot & Error CSS -->
-    <style>
-        /* Splash Screen */
-        #splash-screen {
-            position: fixed; inset: 0; z-index: 10000;
-            background: #0f172a; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            transition: opacity 0.5s ease;
-        }
-        #splash-screen.hidden { opacity: 0; pointer-events: none; }
-        
-        .splash-logo { 
-            width: 80px; height: 80px; margin-bottom: 30px; 
-            animation: pulse-logo 2s infinite; 
-            filter: drop-shadow(0 0 20px rgba(0, 102, 255, 0.5));
-        }
-        
-        .loader-track {
-            width: 200px; height: 4px; background: rgba(255,255,255,0.1);
-            border-radius: 2px; overflow: hidden; position: relative;
-        }
-        
-        .loader-bar {
-            position: absolute; top: 0; left: 0; height: 100%; width: 50%;
-            background: #0066FF; box-shadow: 0 0 10px #0066FF;
-            animation: load-scan 1.5s ease-in-out infinite;
-        }
-
-        .splash-text {
-            margin-top: 20px; color: #64748b; font-family: 'Roboto Mono', monospace; 
-            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px;
-        }
-
-        @keyframes load-scan {
-            0% { left: -50%; }
-            100% { left: 100%; }
-        }
-        @keyframes pulse-logo { 
-            0%, 100% { transform: scale(1); opacity: 1; } 
-            50% { transform: scale(0.95); opacity: 0.8; } 
-        }
-        
-        /* Fatal Error Overlay */
-        #fatal-error-overlay {
-            display: none; position: fixed; inset: 0; z-index: 10001;
-            background: #020617; color: #fff; 
-            padding: 40px; text-align: center;
-            flex-direction: column; align-items: center; justify-content: center;
-        }
-        .error-icon {
-            width: 64px; height: 64px; margin-bottom: 24px; color: #ef4444;
-        }
-        #fatal-error-overlay h3 { 
-            color: #ef4444; margin-bottom: 15px; font-size: 1.5rem; 
-            font-family: 'Exo 2', sans-serif; letter-spacing: 1px;
-        }
-        #fatal-error-overlay p { 
-            color: #94a3b8; margin-bottom: 20px; max-width: 500px; line-height: 1.6; 
-        }
-        #fatal-error-overlay pre { 
-            background: rgba(15, 23, 42, 0.8); padding: 20px; border-radius: 12px; 
-            overflow-x: auto; text-align: left; font-size: 12px; 
-            font-family: 'Roboto Mono', monospace; margin-bottom: 30px; 
-            max-width: 600px; width: 100%; border: 1px solid #334155; color: #f87171;
-        }
-        .btn-retry {
-            padding: 12px 32px; background: #0066FF; color: white; border: none; 
-            border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem;
-            transition: all 0.2s; box-shadow: 0 4px 15px rgba(0, 102, 255, 0.3);
-        }
-        .btn-retry:hover { background: #0052cc; transform: translateY(-2px); }
-    </style>
-
-    <!-- IMPORT MAP -->
-    <script type="importmap">
+    <!-- SEO: JSON-LD Structured Data -->
+    <script type="application/ld+json">
     {
-      "imports": {
-        "express": "https://aistudiocdn.com/express@^5.1.0",
-        "path": "https://aistudiocdn.com/path@^0.12.7",
-        "dotenv/": "https://aistudiocdn.com/dotenv@^17.2.3/",
-        "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
-        "ws": "https://aistudiocdn.com/ws@^8.18.3",
-        "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
-        "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
-        "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js",
-        "firebase/analytics": "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js",
-        "dompurify": "https://aistudiocdn.com/dompurify@^3.0.5",
-        "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
-        "url": "https://aistudiocdn.com/url@^0.11.4",
-        "fs/": "https://aistudiocdn.com/fs@^0.0.1-security/",
-        "http": "https://aistudiocdn.com/http@^0.0.1-security",
-        "express-rate-limit": "https://aistudiocdn.com/express-rate-limit@^8.2.1"
-      }
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Skill Apex",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web",
+      "url": "https://skill-apex.onrender.com",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "An AI-powered learning journey application. Generate custom curriculums, take quizzes, and track your knowledge progression in a gamified environment.",
+      "featureList": "AI Course Generation, Gamified Quizzes, Skill Trees, Spaced Repetition, Voice Tutor",
+      "screenshot": "assets/images/og-image.png"
     }
     </script>
-
-    <!-- GLOBAL FAILSAFE HANDLER -->
-    <script>
-        // Global State Flag
-        window.APP_STATUS = {
-            booted: false,
-            jsLoaded: false,
-            bootStartTime: Date.now()
-        };
-
-        // 1. Show Error UI Function
-        window.showFatalError = function(title, details) {
-            const splash = document.getElementById('splash-screen');
-            const errorOverlay = document.getElementById('fatal-error-overlay');
-            const errorTitle = document.getElementById('error-title');
-            const errorText = document.getElementById('error-details');
-
-            if (splash) splash.style.display = 'none';
-            if (errorOverlay) {
-                errorOverlay.style.display = 'flex';
-                if(errorTitle) errorTitle.textContent = title || "System Critical Failure";
-                if(errorText) errorText.textContent = details || "Unknown initialization error.";
-            }
-            console.error("APP CRASH:", title, details);
-        };
-
-        // 2. Global Error Traps
-        window.onerror = function(msg, url, line, col, error) {
-            // Ignore minor resize loops
-            if (String(msg).includes('ResizeObserver loop')) return false;
-            
-            // Only block app if not yet booted
-            if (!window.APP_STATUS.booted) {
-                window.showFatalError("Script Execution Failed", `${msg}\nLine: ${line}`);
-            }
-            return false;
-        };
-
-        window.addEventListener('error', function(e) {
-            if (e.target.tagName === 'SCRIPT' && !window.APP_STATUS.booted) {
-                const src = e.target.src || 'inline script';
-                // Only care if it's our main module or firebase
-                if (src.includes('index.js') || src.includes('firebase')) {
-                    window.showFatalError("Resource Load Failure", `Failed to load critical script: ${src.split('/').pop()}\nCheck your internet connection.`);
-                }
-            }
-        }, true);
-
-        // 3. Unhandled Promise Rejections (Async Errors)
-        window.onunhandledrejection = function(event) {
-            if (!window.APP_STATUS.booted) {
-                const msg = event.reason ? (event.reason.message || event.reason) : "Async operation failed.";
-                window.showFatalError("Initialization Error", msg);
-            }
-        };
-    </script>
+<script type="importmap">
+{
+  "imports": {
+    "express": "https://aistudiocdn.com/express@^5.1.0",
+    "path": "https://aistudiocdn.com/path@^0.12.7",
+    "dotenv/": "https://aistudiocdn.com/dotenv@^17.2.3/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "express-rate-limit": "https://aistudiocdn.com/express-rate-limit@^8.2.1",
+    "ws": "https://aistudiocdn.com/ws@^8.18.3",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
+    "url": "https://aistudiocdn.com/url@^0.11.4",
+    "fs/": "https://aistudiocdn.com/fs@^0.0.1-security/",
+    "http": "https://aistudiocdn.com/http@^0.0.1-security",
+    "dompurify": "https://aistudiocdn.com/dompurify@^3.3.0"
+  }
+}
+</script>
 </head>
 <body>
-    <div id="global-background"></div>
-    
-    <!-- Auth Container -->
-    <div id="auth-container" style="display: none;"></div>
+    <!-- Fallback content for Crawlers/No-JS -->
+    <noscript>
+        <div style="padding: 20px; color: #333; background: #fff;">
+            <h1>Skill Apex - AI Powered Learning</h1>
+            <p>Skill Apex is a next-generation education platform that uses Artificial Intelligence to create personalized learning paths, quizzes, and flashcards.</p>
+            
+            <h2>Popular Learning Paths</h2>
+            <ul>
+                <li><strong>AI & Machine Learning:</strong> From neural networks to LLMs. Master Python, TensorFlow, and PyTorch.</li>
+                <li><strong>Cybersecurity & Ethical Hacking:</strong> Learn penetration testing, network security, and cryptography.</li>
+                <li><strong>Cloud Native & DevOps:</strong> Architect scalable systems. Dive into AWS/GCP, Docker, Kubernetes, and CI/CD pipelines.</li>
+                <li><strong>Data Science & Analytics:</strong> Turn raw data into actionable insights. Explore data analysis, visualization, statistical modeling, and big data technologies.</li>
+                <li><strong>Full-Stack Web Development:</strong> Build complete web apps from server to screen. Master JavaScript, React, Node.js, and modern database technologies.</li>
+                <li><strong>Mobile App Development:</strong> Create applications for billions of users. Learn Swift for iOS or Kotlin for Android and build the next big app.</li>
+                <li><strong>Game Development & Design:</strong> Bring virtual worlds to life. Master game engines like Unity or Unreal, C#, and the principles of interactive design.</li>
+                <li><strong>Blockchain & Web3:</strong> Explore the decentralized future. Understand cryptocurrencies, smart contracts, and build DApps on the blockchain.</li>
+            </ul>
 
-    <!-- Splash Screen -->
-    <div id="splash-screen">
-        <img src="assets/icons/favicon.svg" alt="Loading" class="splash-logo">
-        <div class="loader-track">
-            <div class="loader-bar"></div>
+            <h2>Start Your Journey</h2>
+            <p>Select from our core disciplines:</p>
+            <ul>
+                <li><strong>Computer Science:</strong> Python, Web Dev, AI, Hacking</li>
+                <li><strong>History:</strong> WWII, Ancient Rome, Industrial Revolution, Pakistan History</li>
+                <li><strong>Science:</strong> Quantum Physics, Human Biology, Space Exploration, Organic Chemistry</li>
+                <li><strong>Business:</strong> Digital Marketing, Financial Literacy, Entrepreneurship, Stock Market</li>
+            </ul>
+
+            <h2>Features</h2>
+            <ul>
+                <li><strong>AI Curriculum Generation:</strong> Create a course on any topic instantly.</li>
+                <li><strong>Gamified Learning:</strong> Earn XP, level up, and maintain streaks.</li>
+                <li><strong>Voice Tutor:</strong> Converse with an AI tutor to learn concepts through speech.</li>
+                <li><strong>Spaced Repetition:</strong> Smart flashcards to ensure long-term retention.</li>
+            </ul>
+            <p>Please enable JavaScript to use the full application.</p>
         </div>
-        <p class="splash-text">Initializing Systems...</p>
+    </noscript>
+
+    <!-- Background Layer (Simplified for Light Theme) -->
+    <div id="global-background" style="background-color: var(--color-background);"></div>
+
+    <!-- Auth Container (Overlay) -->
+    <div id="auth-container"></div>
+
+    <div id="splash-screen">
+        <img src="assets/icons/favicon.svg" alt="Skill Apex Logo" class="splash-logo">
+        <div class="spinner" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
     </div>
 
-    <!-- Fatal Error Overlay -->
-    <div id="fatal-error-overlay">
-        <svg class="error-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-        </svg>
-        <h3 id="error-title">System Failure</h3>
-        <p>The application encountered a critical issue during initialization.</p>
-        <pre id="error-details"></pre>
-        <button onclick="window.location.reload()" class="btn-retry">Reboot System</button>
-    </div>
-
-    <!-- Welcome Screen -->
     <div id="welcome-screen" style="display: none;">
         <div class="welcome-content card">
             <img src="assets/icons/favicon.svg" alt="Skill Apex Logo" class="welcome-logo">
             <h1>Skill Apex</h1>
-            <p>Reach the peak of mastery.</p>
-            <button id="welcome-get-started-btn" class="btn btn-primary">Enter System</button>
+            <p>Reach the peak of mastery. Forge new skills with adaptive AI curriculum.</p>
+            <ul class="features-list">
+                <li>
+                    <div class="icon-badge">
+                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#cpu"/></svg>
+                    </div>
+                    <span>Adaptive AI Curriculum</span>
+                </li>
+                <li>
+                    <div class="icon-badge">
+                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#git-branch"/></svg>
+                    </div>
+                    <span>Personalized Paths</span>
+                </li>
+                <li>
+                    <div class="icon-badge">
+                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#star"/></svg>
+                    </div>
+                    <span>Skill Gamification</span>
+                </li>
+            </ul>
+            <button id="welcome-get-started-btn" class="btn btn-primary">Enter Skill Apex</button>
         </div>
     </div>
 
-    <!-- Voice Indicator -->
+    <!-- Voice Listening Indicator -->
     <div id="voice-indicator" class="voice-indicator" style="display: none;">
+        <div class="voice-wave"></div>
+        <div class="voice-wave"></div>
         <div class="voice-wave"></div>
         <span>Listening...</span>
     </div>
 
+    <!-- Floating Voice Mic Button -->
     <button id="voice-mic-btn" class="voice-fab" aria-label="Toggle Voice Control">
         <svg class="icon"><use href="assets/icons/feather-sprite.svg#mic"/></svg>
     </button>
 
-    <!-- Main App Wrapper -->
-    <div id="app-wrapper" style="display: none;">
+    <div id="app-wrapper">
         <nav id="sidebar"></nav>
         <main id="app-container" role="main">
             <div id="app"></div>
@@ -227,33 +186,25 @@
     
     <div id="modal-container"></div>
     <div id="toast-container"></div>
+    
+    <div id="offline-indicator" class="offline-indicator" style="display: none;" role="status" aria-live="assertive">
+        You are currently offline. Some features may be unavailable.
+    </div>
 
     <script src="global/global.js"></script>
-    
-    <!-- MAIN ENTRY POINT -->
     <script type="module" src="index.js"></script>
-
-    <!-- BOOT FAILSAFE -->
     <script>
-        // Initialize mermaid if present
+        // Initialize Mermaid
         document.addEventListener('DOMContentLoaded', () => {
-            if (typeof mermaid !== 'undefined') mermaid.initialize({ startOnLoad: false, theme: 'base', securityLevel: 'loose' });
-        });
-
-        // 8-Second Safety Timeout
-        // If JS doesn't remove splash screen by then, we assume it crashed silently.
-        setTimeout(() => {
-            if (!window.APP_STATUS.booted) {
-                console.warn("BOOT TIMEOUT: Application took too long to start.");
-                const splash = document.getElementById('splash-screen');
-                const errorOverlay = document.getElementById('fatal-error-overlay');
-                
-                // If we aren't already showing an error, show timeout error
-                if (splash && splash.style.display !== 'none' && (!errorOverlay || errorOverlay.style.display === 'none')) {
-                    window.showFatalError("Connection Timeout", "The application failed to initialize resources. Please check your internet connection and try again.");
-                }
+            if (typeof mermaid !== 'undefined') {
+                mermaid.initialize({ 
+                    startOnLoad: false, 
+                    theme: 'base',
+                    securityLevel: 'loose',
+                    fontFamily: 'Inter'
+                });
             }
-        }, 8000);
+        });
     </script>
 </body>
 </html>

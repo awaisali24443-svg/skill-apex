@@ -1,13 +1,13 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 5.6.0
+ * @version 5.2.0
  *
  * This service worker implements a robust offline-first caching strategy.
- * Updated for stability fixes and race condition handling.
+ * Updated to force refresh for Sparked UI & PUBG-style assets.
  */
 
-const CACHE_NAME = 'skill-apex-v5.6.0';
+const CACHE_NAME = 'skill-apex-v5.2.0';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [

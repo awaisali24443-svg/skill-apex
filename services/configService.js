@@ -2,7 +2,7 @@
 import { LOCAL_STORAGE_KEYS } from '../constants.js';
 
 const defaultConfig = {
-    theme: 'light-cyber', 
+    theme: 'light-cyber', // Forced default
     enableSound: true,
     animationIntensity: 'full', 
     aiPersona: 'apex' 
@@ -15,6 +15,8 @@ function loadConfig() {
         const storedConfig = localStorage.getItem(LOCAL_STORAGE_KEYS.CONFIG);
         if (storedConfig) {
             currentConfig = { ...defaultConfig, ...JSON.parse(storedConfig) };
+            // Ensure we override theme even if user had one saved, to enforce the design request
+            currentConfig.theme = 'light-cyber'; 
         }
     } catch (e) {
         console.error("Failed to load config", e);

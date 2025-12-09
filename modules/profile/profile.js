@@ -35,10 +35,6 @@ function renderProfile() {
     }, 100);
 
     renderAchievements(stats);
-    
-    // Hide Skeleton, Show Content
-    if (elements.skeleton) elements.skeleton.style.display = 'none';
-    if (elements.content) elements.content.style.display = 'grid';
 }
 
 function renderAchievements(stats) {
@@ -51,23 +47,11 @@ function renderAchievements(stats) {
         const card = document.createElement('div');
         card.className = `achievement-card ${ach.isUnlocked ? 'unlocked' : 'locked'}`;
         
-        // Define Metallic Colors for the SVG via CSS Color property
-        // The 3D filter uses this color for the base fill, while lighting stays white
-        let metalColor = '#444'; // Default Locked
-        if (ach.isUnlocked) {
-            switch(ach.currentTierName) {
-                case 'Bronze': metalColor = '#CD7F32'; break; // Bronze
-                case 'Silver': metalColor = '#C0C0C0'; break; // Silver
-                case 'Gold': metalColor = '#FFD700'; break;   // Gold
-                case 'Diamond': metalColor = '#00BFFF'; break; // Deep Sky Blue (Diamond)
-                default: metalColor = '#ffffff';
-            }
-        }
-
         let progressHtml = '';
+        
         if (ach.isMaxed) {
             progressHtml = `
-                <div class="ach-progress-bar"><div class="ach-progress-fill" style="width:100%; background:var(--color-success); box-shadow:0 0 10px var(--color-success)"></div></div>
+                <div class="ach-progress-bar"><div class="ach-progress-fill" style="width:100%; background:var(--color-success)"></div></div>
                 <span class="ach-meta" style="color:var(--color-success)">MAX TIER</span>
             `;
         } else {
@@ -78,11 +62,10 @@ function renderAchievements(stats) {
         }
 
         card.innerHTML = `
-            <div class="achievement-icon-wrapper" style="color: ${metalColor}">
+            <div class="achievement-icon-wrapper">
                 <svg class="icon"><use href="assets/icons/achievements.svg#${ach.icon}"/></svg>
             </div>
             <h4 class="ach-title">${ach.name}</h4>
-            <div class="ach-tier-badge" style="font-size:0.7rem; text-transform:uppercase; color:${metalColor}; font-weight:700; margin-bottom:4px; text-shadow: 0 0 10px ${metalColor};">${ach.isUnlocked ? ach.currentTierName : 'Locked'}</div>
             <p class="ach-desc">${ach.description}</p>
             ${progressHtml}
         `;
@@ -180,18 +163,10 @@ export function init() {
         recruiterInput: document.getElementById('recruiter-id-input'),
         progressPercent: document.getElementById('progress-percent'),
         progressCircle: document.getElementById('progress-circle-path'),
-        copyBtn: document.getElementById('copy-ref-btn'),
-        skeleton: document.getElementById('profile-skeleton'),
-        content: document.getElementById('profile-content')
+        copyBtn: document.getElementById('copy-ref-btn')
     };
     
-    // Simulate slight loading delay for skeleton effect if data is instant (better UX)
-    if (gamificationService.getStats()) {
-        setTimeout(renderProfile, 300);
-    } else {
-        renderProfile();
-    }
-    
+    renderProfile();
     setupDragDrop();
     
     elements.editBtn.addEventListener('click', toggleNameEdit);

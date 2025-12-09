@@ -8,12 +8,9 @@ const defaultStats = {
     xp: 0,
     currentStreak: 0,
     lastQuizDate: null,
-    totalQuizzesCompleted: 0,
+    totalQuizzesCompleted: 0, // Explicit tracking
     totalPerfectQuizzes: 0,
     questionsSaved: 0,
-    bossBattlesWon: 0,
-    auralMinutes: 0,
-    journeysStarted: 0,
     dailyQuests: { date: null, quests: [] },
     dailyChallenge: { date: null, completed: false }
 };
@@ -32,18 +29,6 @@ const ACHIEVEMENTS = {
             { name: 'Silver', target: 50, color: '#c0c0c0' },
             { name: 'Gold', target: 100, color: '#ffd700' },
             { name: 'Diamond', target: 500, color: '#b9f2ff' }
-        ]
-    },
-    warlord: { 
-        name: "Warlord", 
-        description: "Defeat Boss Levels.", 
-        icon: "swords", 
-        metric: (s) => s.bossBattlesWon,
-        tiers: [
-            { name: 'Bronze', target: 1, color: '#cd7f32' },
-            { name: 'Silver', target: 5, color: '#c0c0c0' },
-            { name: 'Gold', target: 25, color: '#ffd700' },
-            { name: 'Diamond', target: 100, color: '#b9f2ff' }
         ]
     },
     streak_master: { 
@@ -70,40 +55,16 @@ const ACHIEVEMENTS = {
             { name: 'Diamond', target: 100, color: '#b9f2ff' }
         ]
     },
-    oracle: { 
-        name: "Oracle", 
-        description: "Minutes spent in Aural Mode.", 
-        icon: "headphones", 
-        metric: (s) => s.auralMinutes,
-        tiers: [
-            { name: 'Bronze', target: 15, color: '#cd7f32' },
-            { name: 'Silver', target: 60, color: '#c0c0c0' },
-            { name: 'Gold', target: 300, color: '#ffd700' },
-            { name: 'Diamond', target: 1000, color: '#b9f2ff' }
-        ]
-    },
     librarian: { 
         name: "Librarian", 
         description: "Save questions to your library.", 
         icon: "archive", 
-        metric: (s) => s.questionsSaved, 
+        metric: (s) => s.questionsSaved, // Needs to be updated manually
         tiers: [
             { name: 'Bronze', target: 5, color: '#cd7f32' },
             { name: 'Silver', target: 20, color: '#c0c0c0' },
             { name: 'Gold', target: 100, color: '#ffd700' },
             { name: 'Diamond', target: 500, color: '#b9f2ff' }
-        ]
-    },
-    pioneer: { 
-        name: "Pioneer", 
-        description: "Start unique Learning Journeys.", 
-        icon: "compass", 
-        metric: (s) => s.journeysStarted,
-        tiers: [
-            { name: 'Bronze', target: 2, color: '#cd7f32' },
-            { name: 'Silver', target: 5, color: '#c0c0c0' },
-            { name: 'Gold', target: 15, color: '#ffd700' },
-            { name: 'Diamond', target: 50, color: '#b9f2ff' }
         ]
     },
     veteran: {
@@ -133,6 +94,7 @@ async function loadStats() {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.GAMIFICATION);
         const storedData = stored ? JSON.parse(stored) : {};
         
+        // Merge with default to ensure new fields (like totalQuizzesCompleted) exist
         stats = { ...defaultStats, ...storedData };
         
         checkDailyQuests();
@@ -211,13 +173,6 @@ export function completeDailyChallenge() {
         return true;
     }
     return false;
-}
-
-export function incrementStat(statName, amount = 1) {
-    if (typeof stats[statName] === 'number') {
-        stats[statName] += amount;
-        saveStats();
-    }
 }
 
 export function checkQuestProgress(action) {
@@ -307,6 +262,7 @@ export function updateStatsOnQuizCompletion(quizAttempt, history) {
 
     const scorePercent = quizAttempt.totalQuestions > 0 ? quizAttempt.score / quizAttempt.totalQuestions : 0;
     
+    // Updates internal counters inside checkQuestProgress
     checkQuestProgress({ type: 'complete_level', data: { scorePercent } });
 
     let xpForNextLevel = getXpForNextLevel(stats.level);
@@ -325,6 +281,9 @@ export function updateStatsOnQuizCompletion(quizAttempt, history) {
     saveStats();
 }
 
+/**
+ * Returns full achievement data including current tier status.
+ */
 export function getAchievementsProgress() {
     return Object.entries(ACHIEVEMENTS).map(([id, data]) => {
         const currentValue = data.metric(stats) || 0;
@@ -335,6 +294,7 @@ export function getAchievementsProgress() {
         let target = data.tiers[0].target;
         let isMaxed = false;
 
+        // Determine Tier
         for (let i = 0; i < data.tiers.length; i++) {
             const tier = data.tiers[i];
             if (currentValue >= tier.target) {
@@ -345,7 +305,7 @@ export function getAchievementsProgress() {
                 } else {
                     isMaxed = true;
                     nextTier = null;
-                    target = currentValue;
+                    target = currentValue; // Cap it
                 }
             } else {
                 nextTier = tier;
@@ -354,10 +314,12 @@ export function getAchievementsProgress() {
             }
         }
 
+        // Calculate Progress Percentage to Next Tier
         if (isMaxed) {
             progress = 100;
         } else {
             const prevTarget = currentTier ? currentTier.target : 0;
+            // Progress within the current band
             const bandTotal = target - prevTarget;
             const bandCurrent = currentValue - prevTarget;
             progress = Math.max(0, Math.min(100, (bandCurrent / bandTotal) * 100));
@@ -389,6 +351,7 @@ export function getProfileStats(history) {
     return { totalQuizzes, totalQuestions, averageScore };
 }
 
+// Memory Health helpers remain the same...
 function getTopicLastPlayedDates(history) {
     const topicDates = {};
     history.forEach(h => {
@@ -437,4 +400,28 @@ export function calculateMemoryHealth(history) {
     else if (avgHealth < 80) status = 'Decaying';
 
     return { health: Math.round(avgHealth), status, oldestTopic };
+}
+
+export function getDetailedTopicHealth(history) {
+    const topicDates = getTopicLastPlayedDates(history);
+    const now = Date.now();
+    const DAY_MS = 86400000;
+    
+    const results = {};
+    
+    Object.keys(topicDates).forEach(topic => {
+        const daysSince = (now - topicDates[topic]) / DAY_MS;
+        let decay = 0;
+        if (daysSince > GRACE_PERIOD_DAYS) {
+            decay = Math.min(100, (daysSince - GRACE_PERIOD_DAYS) * DECAY_RATE_PER_DAY);
+        }
+        const health = Math.max(0, 100 - decay);
+        let status = 'Stable';
+        if (health < 50) status = 'Critical';
+        else if (health < 80) status = 'Decaying';
+        
+        results[topic] = { health: Math.round(health), status, daysSince: Math.floor(daysSince) };
+    });
+    
+    return results;
 }

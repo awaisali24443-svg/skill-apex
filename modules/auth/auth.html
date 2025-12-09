@@ -1,93 +1,102 @@
 
 <div class="auth-page-wrapper">
-    <div class="auth-card">
-        <!-- Left Side: Form Content -->
-        <div class="auth-content-side">
-            <div class="auth-header">
-                <h1 id="auth-title">Welcome Back <span class="wave-emoji">👋</span></h1>
-                <p id="auth-subtitle">Today is a new day. It's your day. You shape it. Sign in to start managing your projects.</p>
-            </div>
+    <div class="auth-card card">
+        <div class="auth-header">
+            <img src="assets/icons/favicon.svg" alt="Logo" class="auth-logo">
+            <h1 id="auth-title">Skill Apex</h1>
+            <p id="auth-subtitle">Reach the peak of mastery. Sign in to begin.</p>
+        </div>
 
-            <form id="auth-form" class="auth-form">
-                <div class="form-group">
-                    <label for="auth-email" class="form-label">Email</label>
-                    <input type="email" id="auth-email" class="form-input" placeholder="Example@email.com" required>
+        <form id="auth-form" class="auth-form">
+            <div class="form-group">
+                <label for="auth-email" class="form-label">Email</label>
+                <div class="input-with-icon">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#user"/></svg>
+                    <input type="email" id="auth-email" class="form-input" placeholder="user@domain.com" required>
                 </div>
-                
-                <div class="form-group">
+            </div>
+            
+            <div class="form-group">
+                <div class="label-row">
                     <label for="auth-password" class="form-label">Password</label>
-                    <input type="password" id="auth-password" class="form-input" placeholder="At least 8 characters" required minlength="6">
+                    <button type="button" id="forgot-password-btn" class="btn-link-small">Forgot?</button>
                 </div>
-
-                <div class="form-actions">
-                    <button type="button" id="forgot-password-btn" class="btn-link-blue">Forgot Password?</button>
+                <div class="input-with-icon">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#lock"/></svg>
+                    <input type="password" id="auth-password" class="form-input" placeholder="••••••••" required minlength="6">
                 </div>
-
-                <div id="auth-error" class="auth-error" style="display: none;"></div>
-
-                <button type="submit" id="auth-submit-btn" class="btn btn-dark btn-block">
-                    <span class="btn-text">Sign in</span>
-                    <div class="spinner" style="display: none; width: 20px; height: 20px; border-width: 2px;"></div>
-                </button>
-            </form>
-
-            <div class="auth-divider">
-                <div class="line"></div>
-                <span>Or sign in with</span>
-                <div class="line"></div>
             </div>
 
-            <div class="social-actions">
-                <button id="google-login-btn" class="btn btn-social">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="social-icon">
-                    <span>Sign in with Google</span>
-                </button>
-                <button id="guest-login-btn" class="btn btn-social">
-                    <svg class="icon social-icon" viewBox="0 0 24 24"><use href="assets/icons/feather-sprite.svg#user"/></svg>
-                    <span>Sign in as Guest</span>
-                </button>
-            </div>
+            <div id="auth-error" class="auth-error" style="display: none;"></div>
 
-            <div class="auth-footer">
-                <span id="auth-toggle-text">Don't you have an account?</span>
-                <button id="auth-toggle-btn" class="btn-link-blue">Sign up</button>
-            </div>
+            <button type="submit" id="auth-submit-btn" class="btn btn-primary btn-block">
+                <span class="btn-text">Sign In</span>
+                <div class="spinner" style="display: none; width: 20px; height: 20px; border-width: 2px;"></div>
+            </button>
+        </form>
 
-            <p class="copyright">© 2024 ALL RIGHTS RESERVED</p>
+        <div class="auth-footer">
+            <p id="auth-toggle-text">New user?</p>
+            <button id="auth-toggle-btn" class="btn-text">Create Account</button>
         </div>
 
-        <!-- Right Side: Art Image (Inset) -->
-        <div class="auth-image-side">
-            <img src="https://images.unsplash.com/photo-1563089145-599997674d42?q=80&w=2370&auto=format&fit=crop" alt="Floral Art" class="auth-hero-img">
+        <div class="guest-divider">
+            <span>OR</span>
         </div>
+
+        <button id="google-login-btn" class="btn btn-google btn-block">
+            <svg class="google-icon" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Sign in with Google
+        </button>
+
+        <button id="guest-login-btn" class="btn btn-ghost btn-block" style="margin-top: 10px;">
+            Continue as Guest (Anonymous)
+        </button>
     </div>
 </div>
 
-<!-- Password Reset Modals -->
+<!-- Reset Password Modal -->
 <div id="reset-password-modal" class="modal-backdrop" style="display: none;">
     <div class="modal-content">
-        <div class="modal-header"><h2>Reset Password</h2></div>
+        <div class="modal-header">
+            <h2>Reset Password</h2>
+        </div>
         <div class="modal-body">
-            <p>Enter your email to receive reset instructions.</p>
-            <input type="email" id="reset-email-input" class="form-input" placeholder="Example@email.com">
-            <p id="reset-feedback" class="feedback-msg"></p>
+            <p style="margin-bottom: 1rem; color: var(--color-text-secondary);">Enter your email address. We'll send you a link to reset your password.</p>
+            <div class="input-with-icon">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#mail"/></svg>
+                <input type="email" id="reset-email-input" class="form-input" placeholder="user@domain.com">
+            </div>
+            <p id="reset-feedback" style="display: none; margin-top: 10px; font-size: 0.9rem; padding: 8px; border-radius: 4px;"></p>
         </div>
         <div class="modal-footer">
             <button id="cancel-reset-btn" class="btn">Cancel</button>
-            <button id="confirm-reset-btn" class="btn btn-primary">Send</button>
+            <button id="confirm-reset-btn" class="btn btn-primary">Send Link</button>
         </div>
     </div>
 </div>
 
+<!-- Set New Password Modal (Redirection Target) -->
 <div id="new-password-modal" class="modal-backdrop" style="display: none;">
     <div class="modal-content">
-        <div class="modal-header"><h2>New Password</h2></div>
+        <div class="modal-header">
+            <h2>Set New Password</h2>
+        </div>
         <div class="modal-body">
-            <input type="password" id="new-password-input" class="form-input" placeholder="New Password">
-            <p id="new-password-feedback" class="feedback-msg"></p>
+            <p style="margin-bottom: 1rem;">Create a new secure password for your account.</p>
+            <div class="input-with-icon">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#lock"/></svg>
+                <input type="password" id="new-password-input" class="form-input" placeholder="New Password" required minlength="6">
+            </div>
+            <p id="new-password-feedback" style="display: none; margin-top: 10px; font-size: 0.9rem; padding: 8px; border-radius: 4px;"></p>
         </div>
         <div class="modal-footer">
-            <button id="confirm-new-password-btn" class="btn btn-primary">Update</button>
+            <button id="confirm-new-password-btn" class="btn btn-primary">Update Password</button>
         </div>
     </div>
 </div>

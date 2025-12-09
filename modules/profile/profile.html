@@ -1,131 +1,89 @@
 
 <div class="page-container profile-container sparked-layout">
     
-    <!-- SKELETON STATE -->
-    <div id="profile-skeleton" class="profile-skeleton">
-        <aside class="profile-sidebar">
-            <div class="card profile-identity-card skeleton-card">
-                <div class="skeleton" style="height: 120px; width: 100%;"></div>
-                <div class="profile-info" style="display:flex; flex-direction:column; align-items:center; margin-top: -60px;">
-                    <div class="skeleton" style="width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--color-surface);"></div>
-                    <div class="skeleton" style="width: 150px; height: 30px; margin-top: 20px;"></div>
-                    <div class="skeleton" style="width: 200px; height: 16px; margin-top: 10px;"></div>
-                    <div class="skeleton" style="width: 180px; height: 24px; margin-top: 15px; border-radius: 12px;"></div>
-                </div>
-            </div>
-            <div class="card widget-card skeleton-card">
-                <div class="skeleton" style="width: 60%; height: 20px; margin-bottom: 20px;"></div>
-                <div class="skeleton" style="width: 120px; height: 120px; border-radius: 50%; margin: 0 auto;"></div>
-            </div>
-        </aside>
-        <main class="profile-main">
-            <div class="section-heading">
-                <div class="skeleton" style="width: 250px; height: 40px; margin-bottom: 10px;"></div>
-                <div class="skeleton" style="width: 350px; height: 20px;"></div>
-            </div>
-            <div class="achievements-grid">
-                <div class="card skeleton-card" style="height: 250px;"></div>
-                <div class="card skeleton-card" style="height: 250px;"></div>
-                <div class="card skeleton-card" style="height: 250px;"></div>
-                <div class="card skeleton-card" style="height: 250px;"></div>
-                <div class="card skeleton-card" style="height: 250px;"></div>
-                <div class="card skeleton-card" style="height: 250px;"></div>
-            </div>
-        </main>
-    </div>
-
-    <!-- ACTUAL CONTENT (Hidden Initially) -->
-    <div id="profile-content" style="display: none; width: 100%;" class="sparked-layout-inner">
-        <!-- LEFT COLUMN: Identity & Controls -->
-        <aside class="profile-sidebar">
+    <!-- LEFT COLUMN: Identity & Controls -->
+    <aside class="profile-sidebar">
+        
+        <!-- Identity Card -->
+        <div class="card profile-identity-card">
+            <div class="profile-banner-bg"></div>
             
-            <!-- Identity Card -->
-            <div class="card profile-identity-card">
-                <div class="profile-banner-bg"></div>
-                
-                <div class="profile-avatar-section" id="avatar-drop-zone">
-                    <div class="avatar-ring">
-                        <img src="assets/images/avatar-placeholder.png" alt="Avatar" id="profile-avatar-img" class="avatar-img">
-                        <div class="avatar-overlay">
-                            <svg class="icon"><use href="assets/icons/feather-sprite.svg#camera"/></svg>
-                        </div>
-                    </div>
-                    <input type="file" id="avatar-upload" accept="image/*" class="sr-only">
-                </div>
-
-                <div class="profile-info">
-                    <div class="name-row">
-                        <h2 id="user-name-display">Agent</h2>
-                        <button class="btn-icon-tiny" id="edit-profile-btn">
-                            <svg class="icon"><use href="assets/icons/feather-sprite.svg#edit-2"/></svg>
-                        </button>
-                    </div>
-                    
-                    <div class="edit-name-wrapper" id="edit-name-wrapper" style="display: none;">
-                        <input type="text" id="user-name-input" class="modern-input" placeholder="Codename">
-                        <button id="save-name-btn" class="btn-save">
-                            <svg class="icon"><use href="assets/icons/feather-sprite.svg#check-circle"/></svg>
-                        </button>
-                    </div>
-
-                    <span class="user-email" id="user-email-text">Loading...</span>
-                    
-                    <div class="level-badge-row">
-                        <div class="status-pill blue">Operative</div>
-                        <div class="status-pill purple">Beta Access</div>
+            <div class="profile-avatar-section" id="avatar-drop-zone">
+                <div class="avatar-ring">
+                    <img src="assets/images/avatar-placeholder.png" alt="Avatar" id="profile-avatar-img" class="avatar-img">
+                    <div class="avatar-overlay">
+                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#camera"/></svg>
                     </div>
                 </div>
+                <input type="file" id="avatar-upload" accept="image/*" class="sr-only">
             </div>
 
-            <!-- Stats Widget -->
-            <div class="card widget-card">
-                <div class="widget-header">
-                    <h3>Skill Progress</h3>
-                </div>
-                <div class="progress-circle-container">
-                    <!-- SVG Circle Progress with Neon Gradient -->
-                    <svg viewBox="0 0 36 36" class="circular-chart">
-                        <defs>
-                            <linearGradient id="gradient-neon" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stop-color="#0066FF" />
-                                <stop offset="100%" stop-color="#00D4FF" />
-                            </linearGradient>
-                        </defs>
-                        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                        <path class="circle" id="progress-circle-path" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                        <text x="18" y="20.35" class="percentage" id="progress-percent">0%</text>
-                    </svg>
-                    <p class="progress-sub">XP to Next Level</p>
-                </div>
-            </div>
-
-            <!-- Invite Widget -->
-            <div class="card widget-card">
-                <div class="widget-header">
-                    <h3>Recruitment</h3>
-                </div>
-                <p class="widget-desc">Invite new agents to the network.</p>
-                <div class="copy-input-group">
-                    <input type="text" id="recruiter-id-input" readonly value="...">
-                    <button id="copy-ref-btn">
-                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#copy"/></svg>
+            <div class="profile-info">
+                <div class="name-row">
+                    <h2 id="user-name-display">Agent</h2>
+                    <button class="btn-icon-tiny" id="edit-profile-btn">
+                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#edit-2"/></svg>
                     </button>
                 </div>
-            </div>
+                
+                <div class="edit-name-wrapper" id="edit-name-wrapper" style="display: none;">
+                    <input type="text" id="user-name-input" class="modern-input" placeholder="Codename">
+                    <button id="save-name-btn" class="btn-save">
+                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#check-circle"/></svg>
+                    </button>
+                </div>
 
-        </aside>
-
-        <!-- RIGHT COLUMN: Achievements & Showcase -->
-        <main class="profile-main">
-            <div class="section-heading">
-                <h1>Achievements</h1>
-                <p>Milestones unlocked in the field.</p>
+                <span class="user-email" id="user-email-text">Loading...</span>
+                
+                <div class="level-badge-row">
+                    <div class="status-pill blue">Operative</div>
+                    <div class="status-pill purple">Beta Access</div>
+                </div>
             </div>
+        </div>
 
-            <div id="achievements-grid" class="achievements-grid">
-                <!-- Items injected by JS -->
+        <!-- Stats Widget -->
+        <div class="card widget-card">
+            <div class="widget-header">
+                <h3>Skill Progress</h3>
             </div>
-        </main>
-    </div>
+            <div class="progress-circle-container">
+                <!-- SVG Circle Progress handled by CSS/JS -->
+                <svg viewBox="0 0 36 36" class="circular-chart blue">
+                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="circle" id="progress-circle-path" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <text x="18" y="20.35" class="percentage" id="progress-percent">0%</text>
+                </svg>
+                <p class="progress-sub">XP to Next Level</p>
+            </div>
+        </div>
+
+        <!-- Invite Widget -->
+        <div class="card widget-card">
+            <div class="widget-header">
+                <h3>Recruitment</h3>
+            </div>
+            <p class="widget-desc">Invite new agents to the network.</p>
+            <div class="copy-input-group">
+                <input type="text" id="recruiter-id-input" readonly value="...">
+                <button id="copy-ref-btn">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#copy"/></svg>
+                </button>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- RIGHT COLUMN: Achievements & Showcase -->
+    <main class="profile-main">
+        <div class="section-heading">
+            <h1>Achievements</h1>
+            <p>Milestones unlocked in the field.</p>
+        </div>
+
+        <div id="achievements-grid" class="achievements-grid">
+            <!-- Items injected by JS -->
+        </div>
+    </main>
 
 </div>

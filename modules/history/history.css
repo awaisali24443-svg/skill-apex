@@ -113,7 +113,7 @@
     justify-content: center;
 }
 
-/* Fix for Quiz Circle Colors & GLOW */
+/* Fix for Quiz Circle Colors */
 .circular-chart {
     display: block;
     max-width: 100%;
@@ -129,11 +129,11 @@
     stroke-width: 2.8;
     stroke-linecap: round;
     transition: stroke-dasharray 1s ease-out;
+    /* Explicit fallback if theme vars fail, but variables are preferred */
     stroke: var(--color-primary); 
-    filter: drop-shadow(0 0 4px var(--color-primary));
 }
-.history-entry.passed .circle { stroke: var(--color-success); filter: drop-shadow(0 0 4px var(--color-success)); }
-.history-entry.failed .circle { stroke: var(--color-error); filter: drop-shadow(0 0 4px var(--color-error)); }
+.history-entry.passed .circle { stroke: var(--color-success); }
+.history-entry.failed .circle { stroke: var(--color-error); }
 
 .percentage {
     position: absolute;

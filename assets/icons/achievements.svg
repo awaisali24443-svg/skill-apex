@@ -1,129 +1,89 @@
 
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
   <defs>
-    <!-- ADVANCED 3D METAL BADGE FILTER -->
-    <filter id="metal-badge" x="-50%" y="-50%" width="200%" height="200%">
-      <!-- 1. Drop Shadow -->
-      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000" flood-opacity="0.6"/>
+    <!-- METALLIC GRADIENTS -->
+    <linearGradient id="grad-gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF8D6" />
+      <stop offset="30%" stop-color="#FFC107" />
+      <stop offset="70%" stop-color="#FF9800" />
+      <stop offset="100%" stop-color="#8F6B29" />
+    </linearGradient>
+    
+    <linearGradient id="grad-silver" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="30%" stop-color="#E0E0E0" />
+      <stop offset="70%" stop-color="#9E9E9E" />
+      <stop offset="100%" stop-color="#616161" />
+    </linearGradient>
+    
+    <linearGradient id="grad-bronze" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE0B2" />
+      <stop offset="30%" stop-color="#D84315" />
+      <stop offset="70%" stop-color="#8D6E63" />
+      <stop offset="100%" stop-color="#5D4037" />
+    </linearGradient>
+    
+    <linearGradient id="grad-diamond" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E0F7FA" />
+      <stop offset="30%" stop-color="#40C4FF" />
+      <stop offset="70%" stop-color="#00B0FF" />
+      <stop offset="100%" stop-color="#01579B" />
+    </linearGradient>
+
+    <!-- 3D FILTER: BEVEL & SPECULAR LIGHTING -->
+    <filter id="metallic-bevel" x="-50%" y="-50%" width="200%" height="200%">
+      <!-- 1. Create blurred alpha for depth -->
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1" result="blur" />
       
-      <!-- 2. Bevel Logic -->
-      <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur"/>
-      <feSpecularLighting in="blur" surfaceScale="4" specularConstant="1.5" specularExponent="25" lighting-color="#ffffff" result="specOut">
-        <fePointLight x="-50" y="-100" z="400" />
+      <!-- 2. Create offset for shadow/highlight direction -->
+      <feOffset in="blur" dx="1" dy="2" result="offsetBlur" />
+      
+      <!-- 3. Specular Lighting for shine -->
+      <feSpecularLighting in="blur" surfaceScale="5" specularConstant="1.2" specularExponent="25" lighting-color="#ffffff" result="specOut">
+        <fePointLight x="-5000" y="-10000" z="20000" />
       </feSpecularLighting>
+      
+      <!-- 4. Composite specular onto source -->
       <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut" />
       
-      <!-- 3. Emboss Effect -->
-      <feDiffuseLighting in="blur" surfaceScale="2" lighting-color="#ffffff" result="diffuseOut">
-         <feDistantLight azimuth="45" elevation="60" />
-      </feDiffuseLighting>
-      <feComposite in="diffuseOut" in2="SourceAlpha" operator="in" result="diffuseOut" />
-
-      <!-- 4. Composition -->
+      <!-- 5. Merge Gradient Fill + Specular Highlight + Drop Shadow -->
       <feMerge>
-        <feMergeNode in="SourceGraphic"/> 
-        <feMergeNode in="diffuseOut"/>
-        <feMergeNode in="specOut"/>
+        <feMergeNode in="SourceGraphic" /> <!-- The gradient fill -->
+        <feMergeNode in="specOut" />       <!-- The shine -->
       </feMerge>
+      
+      <!-- 6. Drop Shadow -->
+      <feDropShadow dx="2" dy="4" stdDeviation="2" flood-color="rgba(0,0,0,0.4)" />
     </filter>
-
-    <!-- Gloss Overlay Gradient -->
-    <linearGradient id="gloss-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="white" stop-opacity="0.4"/>
-      <stop offset="50%" stop-color="white" stop-opacity="0"/>
-      <stop offset="100%" stop-color="black" stop-opacity="0.2"/>
-    </linearGradient>
   </defs>
 
-  <!-- SCHOLAR (Book on Shield) -->
-  <symbol id="book" viewBox="0 0 100 100">
-    <g filter="url(#metal-badge)">
-        <path d="M50 5 L90 20 V50 C90 75 50 95 50 95 C50 95 10 75 10 50 V20 L50 5 Z" fill="currentColor" stroke="#ffffff" stroke-width="2" stroke-opacity="0.3"/>
-        <path d="M50 5 L90 20 V50 C90 75 50 95 50 95 C50 95 10 75 10 50 V20 L50 5 Z" fill="url(#gloss-gradient)"/>
-        <path d="M30 35 H70 A5 5 0 0 1 75 40 V75 A5 5 0 0 1 70 80 H30 A5 5 0 0 1 25 75 V40 A5 5 0 0 1 30 35 Z M30 35 V80 M70 35 V80" fill="none" stroke="#222" stroke-width="4" stroke-linecap="round" filter="drop-shadow(0px 1px 0px rgba(255,255,255,0.5))"/>
-        <path d="M30 50 H70 M30 65 H70" stroke="#222" stroke-width="3" opacity="0.6"/>
-    </g>
+  <!-- Pen (Scholar) - Bronze Style -->
+  <symbol id="book" viewBox="0 0 24 24">
+    <path fill="url(#grad-bronze)" filter="url(#metallic-bevel)" d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+    <path fill="url(#grad-bronze)" filter="url(#metallic-bevel)" d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
   </symbol>
 
-  <!-- CONSISTENCY (Bolt on Hexagon) -->
-  <symbol id="zap" viewBox="0 0 100 100">
-    <g filter="url(#metal-badge)">
-        <path d="M50 5 L90 27 V73 L50 95 L10 73 V27 L50 5 Z" fill="currentColor" stroke="#ffffff" stroke-width="2" stroke-opacity="0.3"/>
-        <path d="M50 5 L90 27 V73 L50 95 L10 73 V27 L50 5 Z" fill="url(#gloss-gradient)"/>
-        <path d="M55 20 L35 50 H50 L45 80 L65 50 H50 L55 20 Z" fill="#222" stroke="#222" stroke-width="2" filter="drop-shadow(0px 1px 0px rgba(255,255,255,0.5))"/>
-    </g>
+  <!-- Zap (Consistency) - Gold Style -->
+  <symbol id="zap" viewBox="0 0 24 24">
+    <polygon fill="url(#grad-gold)" filter="url(#metallic-bevel)" points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
   </symbol>
 
-  <!-- SNIPER (Target on Circle) -->
-  <symbol id="target" viewBox="0 0 100 100">
-    <g filter="url(#metal-badge)">
-        <circle cx="50" cy="50" r="45" fill="currentColor" stroke="#ffffff" stroke-width="2" stroke-opacity="0.3"/>
-        <circle cx="50" cy="50" r="45" fill="url(#gloss-gradient)"/>
-        <circle cx="50" cy="50" r="30" fill="none" stroke="#222" stroke-width="4" filter="drop-shadow(0px 1px 0px rgba(255,255,255,0.5))"/>
-        <circle cx="50" cy="50" r="15" fill="none" stroke="#222" stroke-width="4"/>
-        <circle cx="50" cy="50" r="6" fill="#222"/>
-        <path d="M50 5 V20 M50 80 V95 M5 50 H20 M80 50 H95" stroke="#222" stroke-width="3"/>
-    </g>
+  <!-- Target (Sniper) - Diamond Style -->
+  <symbol id="target" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="10" stroke="url(#grad-diamond)" stroke-width="3" fill="none" filter="url(#metallic-bevel)"/>
+    <circle cx="12" cy="12" r="6" stroke="url(#grad-diamond)" stroke-width="3" fill="none" filter="url(#metallic-bevel)"/>
+    <circle cx="12" cy="12" r="2" fill="url(#grad-diamond)" filter="url(#metallic-bevel)"/>
   </symbol>
 
-  <!-- LIBRARIAN (Box on Square) -->
-  <symbol id="archive" viewBox="0 0 100 100">
-    <g filter="url(#metal-badge)">
-        <rect x="15" y="15" width="70" height="70" rx="12" fill="currentColor" stroke="#ffffff" stroke-width="2" stroke-opacity="0.3"/>
-        <rect x="15" y="15" width="70" height="70" rx="12" fill="url(#gloss-gradient)"/>
-        <path d="M25 35 H75 V75 H25 Z" fill="none" stroke="#222" stroke-width="4" filter="drop-shadow(0px 1px 0px rgba(255,255,255,0.5))"/>
-        <path d="M20 35 L30 25 H70 L80 35" fill="none" stroke="#222" stroke-width="4"/>
-        <line x1="25" y1="35" x2="75" y2="35" stroke="#222" stroke-width="4"/>
-        <circle cx="50" cy="55" r="5" fill="#222"/>
-    </g>
+  <!-- Archive (Librarian) - Silver Style -->
+  <symbol id="archive" viewBox="0 0 24 24">
+    <path fill="url(#grad-silver)" filter="url(#metallic-bevel)" d="M21 8v13H3V8"/>
+    <path fill="url(#grad-silver)" filter="url(#metallic-bevel)" d="M1 3h22v5H1z"/>
+    <path fill="url(#grad-silver)" filter="url(#metallic-bevel)" d="M10 12h4"/>
   </symbol>
 
-  <!-- VETERAN (Star on Starburst) -->
-  <symbol id="star" viewBox="0 0 100 100">
-    <g filter="url(#metal-badge)">
-        <path d="M50 10 L62 38 L90 38 L68 56 L76 85 L50 70 L24 85 L32 56 L10 38 L38 38 Z" fill="currentColor" stroke="#ffffff" stroke-width="2" stroke-opacity="0.3"/>
-        <path d="M50 10 L62 38 L90 38 L68 56 L76 85 L50 70 L24 85 L32 56 L10 38 L38 38 Z" fill="url(#gloss-gradient)"/>
-        <path d="M50 25 L58 45 L80 45 L62 58 L68 80 L50 68 L32 80 L38 58 L20 45 L42 45 Z" fill="none" stroke="#222" stroke-width="3" filter="drop-shadow(0px 1px 0px rgba(255,255,255,0.5))"/>
-    </g>
+  <!-- Star (Veteran) - Gold Style -->
+  <symbol id="star" viewBox="0 0 24 24">
+    <polygon fill="url(#grad-gold)" filter="url(#metallic-bevel)" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
   </symbol>
-
-  <!-- WARLORD (Swords on Pentagon) - Boss Battles -->
-  <symbol id="swords" viewBox="0 0 100 100">
-    <g filter="url(#metal-badge)">
-        <!-- Pentagon Shield -->
-        <path d="M50 5 L95 35 V75 L50 95 L5 75 V35 Z" fill="currentColor" stroke="#ffffff" stroke-width="2" stroke-opacity="0.3"/>
-        <path d="M50 5 L95 35 V75 L50 95 L5 75 V35 Z" fill="url(#gloss-gradient)"/>
-        <!-- Crossed Swords -->
-        <path d="M25 25 L75 75 M75 25 L25 75" stroke="#222" stroke-width="6" stroke-linecap="round" filter="drop-shadow(0px 1px 0px rgba(255,255,255,0.5))"/>
-        <circle cx="25" cy="25" r="3" fill="#222"/>
-        <circle cx="75" cy="75" r="3" fill="#222"/>
-        <circle cx="75" cy="25" r="3" fill="#222"/>
-        <circle cx="25" cy="75" r="3" fill="#222"/>
-    </g>
-  </symbol>
-
-  <!-- ORACLE (Headphones on Circle) - Aural Mode -->
-  <symbol id="headphones" viewBox="0 0 100 100">
-    <g filter="url(#metal-badge)">
-        <circle cx="50" cy="50" r="45" fill="currentColor" stroke="#ffffff" stroke-width="2" stroke-opacity="0.3"/>
-        <circle cx="50" cy="50" r="45" fill="url(#gloss-gradient)"/>
-        <!-- Headphones -->
-        <path d="M25 55 V75 A1 1 0 0 0 35 75 V55 A1 1 0 0 0 25 55" fill="none" stroke="#222" stroke-width="5" stroke-linecap="round" filter="drop-shadow(0px 1px 0px rgba(255,255,255,0.5))"/>
-        <path d="M65 55 V75 A1 1 0 0 0 75 75 V55 A1 1 0 0 0 65 55" fill="none" stroke="#222" stroke-width="5" stroke-linecap="round" filter="drop-shadow(0px 1px 0px rgba(255,255,255,0.5))"/>
-        <path d="M30 55 C30 25 70 25 70 55" fill="none" stroke="#222" stroke-width="4" stroke-linecap="round"/>
-    </g>
-  </symbol>
-
-  <!-- PIONEER (Compass on Rounded Square) - Journeys -->
-  <symbol id="compass" viewBox="0 0 100 100">
-    <g filter="url(#metal-badge)">
-        <rect x="15" y="15" width="70" height="70" rx="15" fill="currentColor" stroke="#ffffff" stroke-width="2" stroke-opacity="0.3"/>
-        <rect x="15" y="15" width="70" height="70" rx="15" fill="url(#gloss-gradient)"/>
-        <!-- Compass -->
-        <circle cx="50" cy="50" r="25" fill="none" stroke="#222" stroke-width="3" filter="drop-shadow(0px 1px 0px rgba(255,255,255,0.5))"/>
-        <path d="M50 25 L50 30 M50 70 L50 75 M25 50 L30 50 M70 50 L75 50" stroke="#222" stroke-width="3"/>
-        <path d="M50 35 L55 50 L50 65 L45 50 Z" fill="#222"/>
-    </g>
-  </symbol>
-
 </svg>
