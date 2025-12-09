@@ -74,12 +74,19 @@ function cleanAndParseJSON(text) {
         // 1. Try direct parse
         return JSON.parse(text);
     } catch (e) {
-        // 2. Strip markdown code blocks
+        // 2. Strip markdown code blocks and aggressive cleanup
         let clean = text.replace(/```json/g, '').replace(/```/g, '');
         
-        // 3. Extract content between first { and last }
-        const firstOpen = clean.indexOf('{');
-        const lastClose = clean.lastIndexOf('}');
+        // 3. Extract content between first { or [ and last } or ]
+        const firstOpen = clean.search(/[\{\[]/);
+        // Find last occurrence of } or ]
+        let lastClose = -1;
+        for (let i = clean.length - 1; i >= 0; i--) {
+            if (clean[i] === '}' || clean[i] === ']') {
+                lastClose = i;
+                break;
+            }
+        }
         
         if (firstOpen !== -1 && lastClose !== -1) {
             clean = clean.substring(firstOpen, lastClose + 1);
@@ -98,10 +105,11 @@ function cleanAndParseJSON(text) {
 let ai;
 try {
     if (!process.env.API_KEY) {
-        throw new Error('API_KEY is not defined in environment variables.');
+        console.warn("WARNING: API_KEY is not defined. AI features will fail.");
+    } else {
+        ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        console.log('GoogleGenAI initialized successfully.');
     }
-    ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    console.log('GoogleGenAI initialized successfully.');
 } catch (error) {
     console.error(`Failed to initialize GoogleGenAI: ${error.message}`);
 }
@@ -334,7 +342,7 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
         return cleanAndParseJSON(response.text);
     } catch (error) {
         console.error(`Gemini API Error (Level Questions):`, error);
-        throw new Error('Failed to generate questions.');
+        throw new Error('Failed to generate questions. Please try again.');
     }
 }
 
@@ -396,8 +404,9 @@ async function generateBossBattleContent(topic, chapter, persona) {
     Return JSON.`;
 
     try {
+        // Changed to gemini-2.5-flash for reliability/speed on boss battles too
         const response = await ai.models.generateContent({
-            model: 'gemini-3-pro-preview', // Keep Pro for complex boss battles
+            model: 'gemini-2.5-flash',
             contents: prompt,
             config: {
                 systemInstruction: getSystemInstruction(persona),
