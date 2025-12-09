@@ -247,8 +247,8 @@ export function init() {
                 submitBtnText: document.querySelector('#auth-submit-btn .btn-text'),
                 submitBtnSpinner: document.querySelector('#auth-submit-btn .spinner'),
                 toggleBtn: document.getElementById('auth-toggle-btn'),
-                guestBtn: document.getElementById('guest-login-btn'),
                 googleBtn: document.getElementById('google-login-btn'),
+                guestBtn: document.getElementById('guest-login-btn'),
                 forgotBtn: document.getElementById('forgot-password-btn'),
                 title: document.getElementById('auth-title'),
                 subtitle: document.getElementById('auth-subtitle'),
@@ -271,8 +271,8 @@ export function init() {
             
             if(elements.form) elements.form.addEventListener('submit', handleSubmit);
             if(elements.toggleBtn) elements.toggleBtn.addEventListener('click', toggleMode);
-            if(elements.guestBtn) elements.guestBtn.addEventListener('click', handleGuestLogin);
             if(elements.googleBtn) elements.googleBtn.addEventListener('click', handleGoogleLogin);
+            if(elements.guestBtn) elements.guestBtn.addEventListener('click', handleGuestLogin);
             
             if (elements.forgotBtn) elements.forgotBtn.addEventListener('click', openResetModal);
             if (elements.cancelResetBtn) elements.cancelResetBtn.addEventListener('click', closeResetModal);

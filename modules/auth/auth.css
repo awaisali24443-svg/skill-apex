@@ -209,15 +209,20 @@
 }
 .btn-google svg { width: 20px; height: 20px; }
 
-.btn-ghost {
-    background: transparent;
-    color: rgba(255, 255, 255, 0.5);
-    margin-top: 1rem;
-    font-size: 0.9rem;
-}
-.btn-ghost:hover {
-    color: white;
+.btn-guest {
     background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    margin-top: 0.75rem;
+    backdrop-filter: blur(10px);
+}
+.btn-guest:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+.btn-guest svg {
+    width: 20px; height: 20px; stroke: currentColor; opacity: 0.8;
 }
 
 /* --- Footer & Divider --- */
