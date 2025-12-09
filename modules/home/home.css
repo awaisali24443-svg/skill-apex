@@ -74,6 +74,12 @@
     gap: var(--space-lg);
 }
 
+.grid-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
 /* --- Hero Card --- */
 .hero-card {
     display: flex;
@@ -88,7 +94,7 @@
     text-decoration: none;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     box-shadow: var(--shadow-card);
-    margin-bottom: var(--space-xl);
+    min-height: 220px;
 }
 
 .hero-card:hover {
@@ -152,7 +158,6 @@
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius);
     padding: 1.5rem;
-    margin-bottom: var(--space-lg);
     box-shadow: var(--shadow-card);
 }
 
@@ -179,7 +184,7 @@
 
 /* --- Recent History --- */
 .section-title {
-    font-size: 1rem; color: var(--color-text-secondary);
+    font-size: 0.9rem; color: var(--color-text-secondary);
     text-transform: uppercase; letter-spacing: 1px; font-weight: 700;
     margin-bottom: 1rem;
 }
