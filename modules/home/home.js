@@ -1,82 +1,72 @@
 
-
-
 import * as gamificationService from '../../services/gamificationService.js';
 import * as historyService from '../../services/historyService.js';
 import * as learningPathService from '../../services/learningPathService.js';
 import * as stateService from '../../services/stateService.js';
 import * as apiService from '../../services/apiService.js';
-import * as levelCacheService from '../../services/levelCacheService.js';
+import * as firebaseService from '../../services/firebaseService.js';
 import { showToast } from '../../services/toastService.js';
 
 let historyClickHandler;
 let challengeBtn;
 
 function checkOnboarding() {
-    // Check if user has already selected an interest
     const existingInterest = learningPathService.getUserInterest();
     const overlay = document.getElementById('onboarding-overlay');
     
-    // If user has already chosen, DO NOT show popup.
-    // Remove it from DOM entirely to prevent any visual glitches
     if (existingInterest) {
-        if (overlay) {
-            overlay.style.display = 'none'; // Instant hide
-            overlay.classList.remove('visible');
-            overlay.remove(); // Remove from DOM
-        }
+        if (overlay) overlay.remove();
         return;
     }
     
     if (overlay) {
         overlay.style.display = 'flex';
-        // Force reflow
-        void overlay.offsetWidth;
-        // Add visible class for transition
         overlay.classList.add('visible');
         
-        // Add listeners to buttons
         overlay.querySelectorAll('.interest-card').forEach(card => {
-            // Remove old listeners to prevent duplicates if re-initialized
             const newCard = card.cloneNode(true);
             card.parentNode.replaceChild(newCard, card);
             
             newCard.addEventListener('click', () => {
                 const category = newCard.dataset.category;
-                
-                // SAVE THE CHOICE PERMANENTLY FIRST
                 learningPathService.saveUserInterest(category);
-
-                // Fade out
                 overlay.classList.remove('visible');
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    overlay.remove(); // Remove from DOM after fade
-                }, 400); 
-
-                if (category === 'custom') {
-                    // For custom, we just go to the standard list
-                    window.location.hash = '#/topics';
-                } else {
-                    // For preset, we also go to topics, but the list module will filter/preload
-                    window.location.hash = '#/topics';
-                }
+                setTimeout(() => { overlay.remove(); }, 400); 
+                window.location.hash = '#/topics';
             });
         });
     }
 }
 
-function renderStreak() {
+function renderStats() {
     const stats = gamificationService.getStats();
-    const streakCounter = document.getElementById('streak-counter');
-    if (stats.currentStreak > 0) {
-        streakCounter.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="assets/icons/feather-sprite.svg#zap"/></svg>
-            <span><strong>${stats.currentStreak} Day</strong> Streak</span>
-        `;
-        streakCounter.style.display = 'inline-flex';
+    const history = historyService.getHistory();
+    const { health } = gamificationService.calculateMemoryHealth(history);
+
+    // Update Top Row Stats
+    document.getElementById('streak-value').textContent = stats.currentStreak;
+    document.getElementById('xp-value').textContent = stats.xp.toLocaleString();
+    
+    const healthVal = document.getElementById('health-value');
+    const healthCard = document.getElementById('health-stat-card');
+    healthVal.textContent = `${health}%`;
+    
+    // Repair Widget Logic
+    const repairWidget = document.getElementById('repair-memory-widget');
+    if (health < 80) {
+        healthCard.querySelector('.stat-icon').classList.replace('green', 'red');
+        if(repairWidget) {
+            repairWidget.style.display = 'block';
+            document.getElementById('repair-memory-btn').onclick = () => {
+                const { oldestTopic } = gamificationService.calculateMemoryHealth(history);
+                if(oldestTopic) {
+                    stateService.setNavigationContext({ topic: oldestTopic, level: 1, journeyId: 'repair', isBoss: false, totalLevels: 10 });
+                    window.location.hash = `#/game/${encodeURIComponent(oldestTopic)}`;
+                }
+            };
+        }
     } else {
-        streakCounter.style.display = 'none';
+        if(repairWidget) repairWidget.style.display = 'none';
     }
 }
 
@@ -85,46 +75,53 @@ function renderPrimaryAction() {
     const path = journeys.length > 0 ? journeys[0] : null;
 
     const card = document.getElementById('primary-action-card');
-    const icon = document.getElementById('primary-action-icon');
+    const badge = document.getElementById('hero-badge');
     const title = document.getElementById('primary-action-title');
     const description = document.getElementById('primary-action-description');
+    const cta = card.querySelector('.btn-text');
+    const icon = document.getElementById('primary-action-icon');
 
     if (path && path.currentLevel <= path.totalLevels) {
         card.href = `#/game/${encodeURIComponent(path.goal)}`;
+        badge.style.display = 'inline-block';
+        badge.textContent = `LEVEL ${path.currentLevel}`;
+        title.textContent = path.goal;
+        description.textContent = path.description || "Continue your path to mastery.";
+        cta.textContent = "Resume Journey";
         icon.innerHTML = `<svg><use href="assets/icons/feather-sprite.svg#play"/></svg>`;
-        title.textContent = 'Resume Journey';
-        description.textContent = `Jump back into "${path.goal}" at Level ${path.currentLevel}`;
     } else {
-        // Logic: If they have a saved interest, 'Start New' goes to topics list which is pre-filtered
         card.href = '#/topics';
-        icon.innerHTML = `<svg><use href="assets/icons/feather-sprite.svg#plus"/></svg>`;
+        badge.style.display = 'none';
         title.textContent = 'Start New Adventure';
-        description.textContent = 'Generate a custom learning path on any topic you can imagine.';
+        description.textContent = 'Select a topic and let AI generate a personalized curriculum.';
+        cta.textContent = 'Explore Topics';
+        icon.innerHTML = `<svg><use href="assets/icons/feather-sprite.svg#map"/></svg>`;
     }
 }
 
 function renderRecentHistory() {
-    const history = historyService.getRecentHistory(3);
+    const history = historyService.getRecentHistory(4);
     const container = document.getElementById('recent-history-container');
-    if (history.length === 0 || !container) {
-        if(container) container.style.display = 'none';
+    if (!container) return;
+    
+    if (history.length === 0) {
+        container.innerHTML = '<div class="empty-state-small">No recent missions. Start one above!</div>';
         return;
     }
     
     const cleanTopic = (topic) => topic.replace(/ - Level \d+$/, '').trim();
 
-    container.innerHTML = '<h3>Recent Missions</h3>' + history.map(item => `
-        <div class="card dashboard-card-small">
-            <div class="history-mini-info">
-                <p class="history-mini-title">${cleanTopic(item.topic)}</p>
-                <span class="history-mini-score">${item.score !== undefined ? item.score + '/' + item.totalQuestions : 'Audio'}</span>
+    container.innerHTML = history.map(item => `
+        <div class="history-item-row">
+            <div class="hist-info">
+                <h4>${cleanTopic(item.topic)}</h4>
+                <span class="hist-meta">${new Date(item.date).toLocaleDateString()} • ${item.score !== undefined ? item.score + '/' + item.totalQuestions : 'Audio'}</span>
             </div>
-            <button class="btn-small retry-btn" data-topic="${cleanTopic(item.topic)}">
+            <button class="btn-icon-tiny retry-btn" data-topic="${cleanTopic(item.topic)}">
                 <svg class="icon"><use href="assets/icons/feather-sprite.svg#rotate-ccw"/></svg>
             </button>
         </div>
     `).join('');
-    container.style.display = 'block';
 
     historyClickHandler = (e) => {
         const btn = e.target.closest('.retry-btn');
@@ -137,74 +134,27 @@ function renderRecentHistory() {
     container.addEventListener('click', historyClickHandler);
 }
 
-// --- NEW: Neural Integrity (Memory Health) ---
-function renderMemoryHealth() {
-    const history = historyService.getHistory();
-    if (history.length === 0) return; // No history, no decay
-
-    const { health, status, oldestTopic } = gamificationService.calculateMemoryHealth(history);
-    
-    const widget = document.getElementById('memory-health-widget');
-    const percentEl = document.getElementById('health-percentage');
-    const barFill = document.getElementById('health-bar-fill');
-    const statusText = document.getElementById('health-status-text');
-    const repairBtn = document.getElementById('repair-memory-btn');
-    
-    widget.style.display = 'block';
-    percentEl.textContent = `${health}%`;
-    barFill.style.width = `${health}%`;
-    
-    // Status Colors
-    if (status === 'Critical') {
-        barFill.style.backgroundColor = 'var(--color-error)';
-        widget.style.borderLeftColor = 'var(--color-error)';
-        statusText.textContent = `Critical Decay: ${oldestTopic}`;
-    } else if (status === 'Decaying') {
-        barFill.style.backgroundColor = 'var(--color-primary)'; // Or orange if defined
-        widget.style.borderLeftColor = 'var(--color-primary)';
-        statusText.textContent = `Fading: ${oldestTopic}`;
-    } else {
-        barFill.style.backgroundColor = 'var(--color-success)';
-        widget.style.borderLeftColor = 'var(--color-success)';
-        statusText.textContent = "Neural pathways stable.";
-    }
-    
-    // Show Repair button if health is low
-    if (health < 90 && oldestTopic) {
-        repairBtn.style.display = 'flex';
-        repairBtn.onclick = () => {
-            stateService.setNavigationContext({ topic: oldestTopic, level: 1, journeyId: 'repair', isBoss: false, totalLevels: 10 });
-            window.location.hash = `#/game/${encodeURIComponent(oldestTopic)}`;
-        };
-    } else {
-        repairBtn.style.display = 'none';
-    }
-}
-
-
-// --- Daily Challenge Logic ---
 async function initDailyChallenge() {
-    const container = document.getElementById('daily-challenge-card');
+    const card = document.getElementById('daily-challenge-card');
     const statusText = document.getElementById('daily-challenge-status');
     challengeBtn = document.getElementById('start-daily-challenge-btn');
     
     if (gamificationService.isDailyChallengeCompleted()) {
-        container.classList.add('completed');
-        statusText.textContent = "Challenge Completed! Come back tomorrow.";
+        card.classList.add('completed');
+        statusText.textContent = "You've completed today's challenge. Great work!";
         challengeBtn.disabled = true;
-        challengeBtn.textContent = "Done";
-        container.style.display = 'block';
+        challengeBtn.textContent = "Challenge Complete";
         return;
     }
-
-    container.style.display = 'block';
     
     challengeBtn.onclick = async () => {
         challengeBtn.disabled = true;
-        challengeBtn.textContent = "Loading...";
+        challengeBtn.innerHTML = '<div class="spinner" style="width:16px;height:16px;"></div> Loading...';
         
         try {
             const challenge = await apiService.fetchDailyChallenge();
+            // Reuse the simple modal logic from before, or enhance it.
+            // For simplicity, we keep the alert/modal flow but make it cleaner.
             
             const optionsHtml = challenge.options.map((opt, i) => 
                 `<button class="btn option-btn" data-idx="${i}" style="width:100%; margin-bottom:8px; text-align:left;">${opt}</button>`
@@ -212,8 +162,8 @@ async function initDailyChallenge() {
             
             const modalHtml = `
                 <div class="challenge-modal">
-                    <h3 style="color:var(--color-primary); margin-bottom:1rem;">${challenge.topic} Trivia</h3>
-                    <p style="font-size:1.2rem; margin-bottom:1.5rem;">${challenge.question}</p>
+                    <h3 style="color:var(--color-primary); margin-bottom:1rem;">${challenge.topic}</h3>
+                    <p style="font-size:1.1rem; margin-bottom:1.5rem;">${challenge.question}</p>
                     <div id="challenge-options">${optionsHtml}</div>
                 </div>
             `;
@@ -241,56 +191,38 @@ async function initDailyChallenge() {
                 if (isCorrect) {
                     showToast("Correct! +200 XP", "success");
                     gamificationService.completeDailyChallenge();
-                    container.classList.add('completed');
+                    card.classList.add('completed');
                     statusText.textContent = "Challenge Completed!";
                     challengeBtn.textContent = "Done";
                 } else {
-                    showToast(`Wrong! It was: ${challenge.options[challenge.correctAnswerIndex]}`, "error");
+                    showToast(`Wrong! Answer: ${challenge.options[challenge.correctAnswerIndex]}`, "error");
+                    challengeBtn.textContent = "Try Again Later";
                 }
                 
                 modalContainer.style.display = 'none';
                 challengeBtn.disabled = gamificationService.isDailyChallengeCompleted();
-                if(!gamificationService.isDailyChallengeCompleted()) challengeBtn.textContent = "Play";
             });
             
             document.getElementById('cancel-challenge').onclick = () => {
                 modalContainer.style.display = 'none';
                 challengeBtn.disabled = false;
-                challengeBtn.textContent = "Play";
+                challengeBtn.textContent = "Play Now (+200 XP)";
             };
 
         } catch (e) {
             showToast("Failed to load challenge.", "error");
             challengeBtn.disabled = false;
-            challengeBtn.textContent = "Play";
+            challengeBtn.textContent = "Play Now (+200 XP)";
         }
     };
 }
 
-// --- Preloading ---
-async function preloadCriticalModules() {
-    const moduleName = 'topic-list';
-    try {
-        await Promise.all([
-            fetch(`./modules/${moduleName}/${moduleName}.html`).then(res => res.text()),
-            fetch(`./modules/${moduleName}/${moduleName}.css`).then(res => res.text()),
-            import(`../../modules/${moduleName}/${moduleName}.js`)
-        ]);
-        console.log('Preloaded topic-list module.');
-    } catch (e) {
-        // Ignore
-    }
-}
-
 export function init() {
-    renderStreak();
+    renderStats();
     renderPrimaryAction();
     renderRecentHistory();
-    renderMemoryHealth();
     initDailyChallenge();
     checkOnboarding();
-    
-    setTimeout(preloadCriticalModules, 1000);
 }
 
 export function destroy() {
