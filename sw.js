@@ -1,25 +1,22 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 34.0.0-DEPLOY-FIX
+ * @version 39.0.0-FIX-FINAL
  *
  * Forces a clean install of all assets to apply critical updates.
  */
 
-const CACHE_NAME = 'skill-apex-v34-DEPLOY-FIX';
+const CACHE_NAME = 'skill-apex-v39.0-FIX-FINAL';
 const OLD_CACHES = [
-    'skill-apex-v33-SEO-FIX',
-    'skill-apex-v32-CLEAN',
-    'skill-apex-v31-REAL-fix',
-    'skill-apex-v30-fix-final',
-    'skill-apex-v29-fix-final',
-    'skill-apex-v28-fix-deploy'
+    'skill-apex-v38-FIX-RESOLVE',
+    'skill-apex-v37-FIX-RESOLVE',
+    'skill-apex-v36-FIX-DEPENDENCIES'
 ];
 
 const APP_SHELL_URLS = [
     '/',
     'index.html',
-    'index.js?v=34.0',
+    'index.js?v=39.0',
     'constants.js',
     'manifest.json',
     'data/topics.json',
@@ -32,6 +29,7 @@ const APP_SHELL_URLS = [
     'assets/icons/achievements.svg',
     'assets/images/avatar-placeholder.png',
     'https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js',
+    'https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js',
     // Core Services
     'services/apiService.js',
     'services/configService.js',

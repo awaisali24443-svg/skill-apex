@@ -1,5 +1,5 @@
 
-// index.js - Safe Bootloader v34.0
+// index.js - Safe Bootloader v39.0
 // We use dynamic imports for EVERYTHING to ensure this script body always runs.
 
 const AppRefs = {
@@ -48,7 +48,7 @@ function showWelcomeScreen(constants) {
 // --- BOOT PROCESS ---
 
 async function bootstrap() {
-    console.log("System: Booting v34.0...");
+    console.log("System: Booting v39.0...");
     
     try {
         // Step 1: Load Constants (Safe Local)
@@ -159,118 +159,127 @@ async function transitionToApp(user) {
         // Initialize Business Logic
         historySvc.init();
         gamificationSvc.init();
-        learningPathSvc.init(); 
+        learningPathSvc.init();
         soundSvc.init(configSvc);
-        
-        // Render UI
-        const sidebarEl = getElement('sidebar');
-        if (sidebarEl) sidebarSvc.renderSidebar(sidebarEl);
+        voiceSvc.init();
 
-        // Voice (Lazy)
-        setTimeout(() => voiceSvc.init(), 2000);
-        
-        const micBtn = getElement('voice-mic-btn');
-        if (micBtn) {
-            micBtn.onclick = () => {
-                voiceSvc.toggleListening();
-                micBtn.classList.toggle('active');
-            };
-        }
+        // Render Sidebar
+        sidebarSvc.renderSidebar(getElement('sidebar'));
 
-        // Setup Router
-        setupRouter(AppRefs.constants.ROUTES);
+        // Router
+        setupRouter(ROUTES, stateSvc);
 
     } catch (e) {
-        console.error("App Init Error:", e);
-        window.showFatalError("Core Service Failure", "The application core failed to load. " + e.message);
-    } finally {
-        removeSplashScreen();
+        console.error("App Transition Error:", e);
+        window.showFatalError("Core Service Failure", "The application core failed to load.\n" + e.message);
     }
 }
 
-// --- ROUTER ---
-function setupRouter(routes) {
-    const handleHashChange = () => {
+function setupRouter(routes, stateSvc) {
+    const handleHashChange = async () => {
         const hash = window.location.hash.slice(1) || '/';
-        let route = routes.find(r => r.path === hash);
         
-        // Dynamic route matching
-        if (!route) {
-            const dynamicRoute = routes.find(r => r.path.includes(':'));
-            if (dynamicRoute) {
-                const base = dynamicRoute.path.split('/:')[0];
-                if (hash.startsWith(base)) {
-                    route = dynamicRoute;
+        // Simple Route Matching
+        let match = routes.find(r => r.path === hash);
+        let params = {};
+
+        // Dynamic Route Matching (e.g., /game/:topic)
+        if (!match) {
+            for (const r of routes) {
+                if (r.path.includes(':')) {
+                    const routeParts = r.path.split('/');
+                    const hashParts = hash.split('/');
+                    if (routeParts.length === hashParts.length) {
+                        let isMatch = true;
+                        let tempParams = {};
+                        for (let i = 0; i < routeParts.length; i++) {
+                            if (routeParts[i].startsWith(':')) {
+                                tempParams[routeParts[i].slice(1)] = decodeURIComponent(hashParts[i]);
+                            } else if (routeParts[i] !== hashParts[i]) {
+                                isMatch = false;
+                                break;
+                            }
+                        }
+                        if (isMatch) {
+                            match = r;
+                            params = tempParams;
+                            break;
+                        }
+                    }
                 }
             }
         }
 
-        if (!route) route = routes.find(r => r.path === '/');
-        loadModule(route);
+        if (match) {
+            // Unload previous module if needed
+            if (AppRefs.currentModule && AppRefs.currentModule.destroy) {
+                try { AppRefs.currentModule.destroy(); } catch(e){}
+            }
+
+            // Update State
+            match.params = params;
+            stateSvc.setCurrentRoute(match);
+
+            // Update UI Layout
+            const appContainer = getElement('app-container');
+            const sidebar = getElement('sidebar');
+            
+            if (match.fullBleed) {
+                appContainer.classList.add('full-bleed');
+                sidebar.classList.add('hidden');
+            } else {
+                appContainer.classList.remove('full-bleed');
+                sidebar.classList.remove('hidden');
+            }
+
+            // Update Active Link
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${match.path}`) link.classList.add('active');
+            });
+
+            try {
+                // Dynamic Import Module
+                const modulePath = `./modules/${match.module}/${match.module}.js`;
+                const htmlPath = `./modules/${match.module}/${match.module}.html`;
+                const cssPath = `./modules/${match.module}/${match.module}.css`;
+
+                // Load HTML
+                const response = await fetch(htmlPath);
+                if (!response.ok) throw new Error(`HTML Load Failed: ${htmlPath}`);
+                const html = await response.text();
+                getElement('app').innerHTML = html;
+
+                // Load CSS (once)
+                if (!document.querySelector(`link[href="${cssPath}"]`)) {
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = cssPath;
+                    document.head.appendChild(link);
+                }
+
+                // Load JS
+                const module = await import(modulePath);
+                AppRefs.currentModule = module;
+                if (module.init) await module.init();
+                
+                // Clear temp context after successful load
+                stateSvc.clearNavigationContext();
+                
+                removeSplashScreen();
+
+            } catch (e) {
+                console.error("Route Error:", e);
+                getElement('app').innerHTML = `<div class="error-state"><h2>Failed to load module</h2><p>${e.message}</p><button class="btn" onclick="window.location.reload()">Reload</button></div>`;
+            }
+        } else {
+            // 404 - Redirect Home
+            window.location.hash = '/';
+        }
     };
 
     window.addEventListener('hashchange', handleHashChange);
     handleHashChange(); // Initial load
-}
-
-async function loadModule(route) {
-    const appContainer = getElement('app');
-    if (!appContainer) return;
-
-    // Cleanup previous module
-    if (AppRefs.currentModule && AppRefs.currentModule.destroy) {
-        try { AppRefs.currentModule.destroy(); } catch (e) { console.warn("Module destroy error", e); }
-    }
-
-    try {
-        appContainer.innerHTML = '<div class="spinner" style="margin: 50px auto;"></div>';
-        
-        const basePath = `./modules/${route.module}/${route.module}`;
-        
-        // Parallel fetch of assets
-        const [html, css, jsModule] = await Promise.all([
-            fetch(`${basePath}.html`).then(r => { if(!r.ok) throw new Error("HTML 404"); return r.text(); }),
-            fetch(`${basePath}.css`).then(r => { if(!r.ok) throw new Error("CSS 404"); return r.text(); }),
-            import(`${basePath}.js`)
-        ]);
-
-        // Inject CSS
-        let styleTag = getElement('module-style');
-        if (!styleTag) {
-            styleTag = document.createElement('style');
-            styleTag.id = 'module-style';
-            document.head.appendChild(styleTag);
-        }
-        styleTag.textContent = css;
-
-        // Render HTML
-        appContainer.innerHTML = html;
-        
-        // Full bleed check
-        const containerEl = getElement('app-container');
-        if (containerEl) {
-            containerEl.scrollTop = 0;
-            if (route.fullBleed) containerEl.classList.add('full-bleed-container');
-            else containerEl.classList.remove('full-bleed-container');
-        }
-
-        // Init JS
-        AppRefs.currentModule = jsModule;
-        if (jsModule.init) await jsModule.init();
-
-        // Update Sidebar Active State
-        document.querySelectorAll('.sidebar-link').forEach(link => {
-            link.classList.remove('active');
-            const href = link.getAttribute('href');
-            if (href && href.slice(1) === route.path) link.classList.add('active');
-        });
-
-    } catch (e) {
-        console.error(`Failed to load module ${route.module}:`, e);
-        appContainer.innerHTML = `<div class="card" style="padding:2rem; text-align:center; color:#ef4444;">
-            <h3>Navigational Error</h3><p>Could not load destination: ${route.name}</p>
-        </div>`;
-    }
 }
 
 // Start
