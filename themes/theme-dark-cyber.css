@@ -1,3 +1,4 @@
+
 :root {
     /* --- Color Palette: Cyber Core --- */
 
@@ -12,6 +13,10 @@
     --color-card-background: rgba(22, 26, 46, 0.7);
     --color-surface-hover: #212642;
     --color-surface-active: #2c3257;
+    
+    /* Glassmorphism Vars */
+    --glass-bg: rgba(22, 26, 46, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
 
     /* Text Colors */
     --color-text: #e0e0e0;
@@ -38,4 +43,12 @@
 
     /* Brand Gradient */
     --brand-gradient: linear-gradient(45deg, var(--color-primary), var(--color-secondary), var(--color-accent));
+    
+    /* Shadows */
+    --shadow-card: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    --shadow-hover: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+    
+    /* Scrollbars */
+    --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+    --scrollbar-track: transparent;
 }
