@@ -1,3 +1,4 @@
+
 :root {
     /* --- Color Palette: Solar --- */
 
@@ -20,6 +21,10 @@
     /* Border & Accent Colors */
     --color-border: #ced4da;
 
+    /* Glassmorphism Vars - NEW */
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: #ced4da;
+
     /* Transparent Variants for Glows & Gradients */
     --color-primary-transparent: rgba(255, 152, 0, 0.1);
     --color-primary-transparent-heavy: rgba(255, 152, 0, 0.2);
@@ -38,4 +43,13 @@
     
     /* Brand Gradient */
     --brand-gradient: linear-gradient(45deg, var(--color-primary), var(--color-secondary), var(--color-accent));
+
+    /* Shadows - NEW */
+    --shadow-card: 0 4px 12px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.05);
+    --shadow-float: 0 10px 25px rgba(0,0,0,0.1);
+    --shadow-hover: 0 10px 30px rgba(255, 152, 0, 0.2);
+
+    /* Scrollbars - NEW */
+    --scrollbar-thumb: #adb5bd;
+    --scrollbar-track: transparent;
 }

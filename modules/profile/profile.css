@@ -46,7 +46,7 @@
     border-radius: 50%;
     padding: 4px;
     background: var(--color-surface);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-card);
     position: relative;
     transition: transform 0.3s var(--transition-bounce);
 }
@@ -169,7 +169,7 @@
 .achievement-card:hover::before {
     content: ''; position: absolute; inset: 0;
     border-radius: 20px; padding: 2px;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1), var(--color-primary));
+    background: linear-gradient(135deg, var(--color-border), var(--color-primary));
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor; pointer-events: none;
 }
