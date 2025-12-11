@@ -1,142 +1,48 @@
 
 <div class="page-container home-container">
-    <!-- Header Section: Greeting & Quick Stats -->
-    <header class="dashboard-header">
+    <!-- Simple Header -->
+    <header class="dashboard-header" style="text-align: center; margin-top: 2rem;">
         <div class="greeting-container">
-            <h1 class="fade-in">Dashboard</h1>
-            <p class="fade-in-delay">Welcome back. Ready to continue your learning?</p>
-        </div>
-        
-        <!-- Quick Stats Row (Dashboard Top) -->
-        <div class="stats-overview fade-in-delay-2">
-            <div class="stat-card glass-panel" id="streak-stat-card">
-                <div class="stat-icon-wrapper gradient-orange">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#zap"/></svg>
-                </div>
-                <div class="stat-content">
-                    <span class="stat-value" id="streak-value">0</span>
-                    <span class="stat-label">Day Streak</span>
-                </div>
-            </div>
-            
-            <div class="stat-card glass-panel">
-                <div class="stat-icon-wrapper gradient-blue">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#star"/></svg>
-                </div>
-                <div class="stat-content">
-                    <span class="stat-value" id="xp-value">0</span>
-                    <span class="stat-label">Total XP</span>
-                </div>
-            </div>
-
-            <div class="stat-card glass-panel" id="health-stat-card">
-                <div class="stat-icon-wrapper gradient-green">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#activity"/></svg>
-                </div>
-                <div class="stat-content">
-                    <span class="stat-value" id="health-value">100%</span>
-                    <span class="stat-label">Memory Health</span>
-                </div>
-            </div>
+            <h1 class="fade-in" style="font-size: 3rem; margin-bottom: 1rem;">Quiz System</h1>
+            <p class="fade-in-delay">Enter a topic below to start testing your knowledge immediately.</p>
         </div>
     </header>
 
-    <!-- Main Dashboard Grid -->
-    <div class="dashboard-grid">
+    <!-- Main Quiz Interface -->
+    <div class="dashboard-grid" style="display: flex; justify-content: center;">
         
-        <!-- Primary Column: Hero & Recents -->
-        <div class="grid-column primary-column">
-            <!-- Hero Card: Main Call to Action -->
-            <a id="primary-action-card" href="#" class="card hero-card">
-                <div class="hero-bg-effect"></div>
-                <div class="hero-content">
-                    <div class="hero-status-pill" id="hero-badge" style="display:none;">RESUME LEARNING</div>
-                    <h2 id="primary-action-title">Master a New Skill</h2>
-                    <p id="primary-action-description">Choose a topic and our AI will build a custom course just for you.</p>
-                    <div class="hero-cta-button">
-                        <span class="btn-text">Start Journey</span>
-                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
+        <div class="grid-column primary-column" style="width: 100%; max-width: 600px;">
+            <!-- Hero Card: Input -->
+            <div class="card hero-card quick-quiz-hero" style="padding: 3rem;">
+                <div class="hero-content" style="max-width: 100%; text-align: center;">
+                    <h2>Create Quiz</h2>
+                    
+                    <form id="quick-quiz-form" class="quick-quiz-form" style="margin-top: 2rem;">
+                        <div class="input-wrapper" style="display: flex; flex-direction: column; gap: 1rem;">
+                            <input type="text" id="quick-quiz-input" placeholder="Topic: e.g. 'Science', 'Coding'..." autocomplete="off" style="padding: 1rem; border-radius: 12px; border: 1px solid var(--color-border); background: var(--color-background); color: var(--color-text); font-size: 1.1rem;">
+                            
+                            <button type="submit" id="start-quiz-btn" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 1rem; font-size: 1.1rem;">
+                                <span>Start Quiz</span>
+                                <svg class="icon"><use href="assets/icons/feather-sprite.svg#play"/></svg>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div style="margin-top: 2rem; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <button class="btn btn-small preset-topic" data-topic="General Knowledge">General</button>
+                        <button class="btn btn-small preset-topic" data-topic="Science">Science</button>
+                        <button class="btn btn-small preset-topic" data-topic="Coding">Coding</button>
                     </div>
                 </div>
-                <div class="hero-visual-icon">
-                    <svg class="icon" id="primary-action-icon"><use href="assets/icons/feather-sprite.svg#map"/></svg>
-                </div>
-            </a>
+            </div>
 
-            <!-- Recent History List -->
-            <div class="section-container">
-                <h3 class="section-title">Recent Activity</h3>
+            <!-- Recent Results Simple List -->
+            <div class="section-container" style="margin-top: 2rem;">
+                <h3 class="section-title">Recent Sessions</h3>
                 <div id="recent-history-container" class="history-list-compact">
                     <!-- Injected via JS -->
-                    <div class="empty-state-compact">
-                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#archive"/></svg>
-                        <span>No recent activity found.</span>
-                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Side Column: Challenges & Tools -->
-        <div class="grid-column secondary-column">
-            
-            <!-- Daily Challenge Widget -->
-            <div id="daily-challenge-card" class="card widget-card challenge-widget">
-                <div class="widget-header">
-                    <div class="widget-icon gradient-purple">
-                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#target"/></svg>
-                    </div>
-                    <h3>Daily Challenge</h3>
-                </div>
-                <p class="widget-desc" id="daily-challenge-status">Complete your daily quiz to keep your streak alive.</p>
-                <button id="start-daily-challenge-btn" class="btn btn-primary full-width">
-                    <span>Execute (+200 XP)</span>
-                </button>
-            </div>
-
-            <!-- Memory Repair Widget (Conditional) -->
-            <div id="repair-memory-widget" class="card widget-card repair-widget" style="display: none;">
-                <div class="widget-header">
-                    <div class="widget-icon gradient-red">
-                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#alert-triangle"/></svg>
-                    </div>
-                    <h3>Memory Decay</h3>
-                </div>
-                <p class="widget-desc">Your retention score is dropping. Review old topics now.</p>
-                <button id="repair-memory-btn" class="btn btn-outline-danger full-width">Repair Memory</button>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-<!-- Onboarding Overlay (Preserved) -->
-<div id="onboarding-overlay" class="onboarding-overlay" style="display: none;">
-    <div class="onboarding-content">
-        <div class="onboarding-header">
-            <h1>Initialize Your Learning</h1>
-            <p>Select a core field to tailor your experience.</p>
-        </div>
-        <div class="interest-grid">
-            <button class="card interest-card cs" data-category="cs">
-                <div class="interest-icon"><svg class="icon"><use href="assets/icons/feather-sprite.svg#cpu"/></svg></div>
-                <h3>Computer Science</h3>
-            </button>
-            <button class="card interest-card history" data-category="history">
-                <div class="interest-icon"><svg class="icon"><use href="assets/icons/feather-sprite.svg#book-open"/></svg></div>
-                <h3>History</h3>
-            </button>
-            <button class="card interest-card science" data-category="science">
-                <div class="interest-icon"><svg class="icon"><use href="assets/icons/feather-sprite.svg#lightbulb"/></svg></div>
-                <h3>Science</h3>
-            </button>
-            <button class="card interest-card business" data-category="business">
-                <div class="interest-icon"><svg class="icon"><use href="assets/icons/feather-sprite.svg#target"/></svg></div>
-                <h3>Business</h3>
-            </button>
-            <button class="card interest-card custom" data-category="custom">
-                <div class="interest-icon"><svg class="icon"><use href="assets/icons/feather-sprite.svg#plus"/></svg></div>
-                <h3>Custom Topic</h3>
-            </button>
         </div>
     </div>
 </div>

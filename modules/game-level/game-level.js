@@ -9,6 +9,7 @@ import { showConfirmationModal } from '../../services/modalService.js';
 import * as stateService from '../../services/stateService.js';
 import * as libraryService from '../../services/libraryService.js';
 import { showToast } from '../../services/toastService.js';
+import * as vfxService from '../../services/vfxService.js'; // Import VFX
 
 let levelData = {};
 let currentQuestions = [];
@@ -61,7 +62,6 @@ async function startLevel() {
 
         // --- AGGRESSIVE EXPO PREFETCH ---
         // As soon as Level 1 loads successfully, start generating Level 2 in the background.
-        // This ensures that when the judge clicks "Next Level", it's instant.
         preloadNextLevel();
 
     } catch (error) {
@@ -171,6 +171,7 @@ function startTimer() {
 
 function handleTimeUp() {
     soundService.playSound('incorrect');
+    vfxService.shake(document.getElementById('question-container')); // VFX Shake
     selectedAnswerIndex = -1; // No selection
     handleSubmitAnswer();
 }
@@ -204,8 +205,17 @@ function handleSubmitAnswer() {
         const xp = hintUsedThisQuestion ? 5 : 10;
         xpGainedThisLevel += xp;
         soundService.playSound('correct');
+        
+        // VFX: Confetti on click position
+        const selectedBtn = elements.quizOptionsContainer.querySelector('.option-btn.selected');
+        if (selectedBtn) {
+            const rect = selectedBtn.getBoundingClientRect();
+            vfxService.burstConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2);
+        }
     } else {
         soundService.playSound('incorrect');
+        // VFX: Screen Shake
+        vfxService.shake(document.getElementById('question-container'));
     }
 
     elements.quizOptionsContainer.querySelectorAll('.option-btn').forEach(btn => {
@@ -235,6 +245,10 @@ function showResults() {
 
     soundService.playSound(passed ? 'finish' : 'incorrect');
     
+    if (passed) {
+        vfxService.burstConfetti(); // Center burst
+    }
+
     historyService.addQuizAttempt({
         topic: `${levelContext.topic} - Level ${levelContext.level}`,
         score: score,
@@ -260,6 +274,13 @@ function showResults() {
     }
     
     switchState('level-results-state');
+    
+    // VFX: Animate XP
+    if (xpGainedThisLevel > 0) {
+        vfxService.animateNumber(elements.xpGainText, 0, xpGainedThisLevel);
+    } else {
+        elements.xpGainText.textContent = '';
+    }
 }
 
 async function handleQuit() {

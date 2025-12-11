@@ -23,7 +23,7 @@
             }
         ]
     },
-    "Cybersecurity & Ethical Hacking": {
+    "Ethical Hacking": {
         "lesson": "### **MISSION BRIEFING: RECONNAISSANCE**\n\n**OBJECTIVE:** Gather intelligence on a target system before engaging.\n\n*   **IP Address:** The digital coordinates of a target.\n*   **Port Scanning:** Knocking on digital doors to see which ones are open (services running).\n*   **Nmap:** The industry-standard tool for network mapping.\n\n**STATUS:** Target Acquired. Begin scan.",
         "questions": [
             {
@@ -46,26 +46,187 @@
             }
         ]
     },
-    "Introduction to Astrophysics": {
-        "lesson": "### **MISSION BRIEFING: STELLAR MECHANICS**\n\n**OBJECTIVE:** Understand the life cycle of stars to navigate the cosmos.\n\n*   **Gravity vs. Fusion:** A star is a constant battle between gravity pulling in and nuclear fusion pushing out.\n*   **Light Year:** A measure of *distance*, not time. The distance light travels in one year.\n*   **Black Hole:** A region where gravity is so strong, not even light can escape.\n\n**STATUS:** Telescope aligned. Observation beginning.",
+    "Web Development 101": {
+        "lesson": "### **MISSION BRIEFING: THE DOM**\n\n**OBJECTIVE:** Manipulate the fabric of the web page.\n\n*   **HTML:** The skeleton of the page.\n*   **CSS:** The skin and clothing (style).\n*   **JavaScript:** The muscles (interaction).\n*   **The DOM:** The Document Object Model. It's the tree structure JS uses to change HTML.\n\n**STATUS:** Interface loaded. Awaiting style override.",
         "questions": [
             {
-                "question": "You are navigating to Proxima Centauri, 4.2 light years away. If you travel at the speed of light, how long does the trip take?",
-                "options": ["1 Year", "4.2 Years", "100 Years", "Instant"],
+                "question": "You need to change the text of a specific button. How do you select it in JS?",
+                "options": ["document.select('button')", "document.querySelector('#myButton')", "window.getButton()", "html.find('button')"],
                 "correctAnswerIndex": 1,
-                "explanation": "A light year is the distance light travels in a year. Traveling at light speed means it takes exactly that many years."
+                "explanation": "`querySelector` is the modern, versatile standard for selecting elements using CSS syntax."
             },
             {
-                "question": "A massive star collapses. Its gravity is infinite. What has it become?",
-                "options": ["Red Giant", "White Dwarf", "Neutron Star", "Black Hole"],
+                "question": "Which language handles the logic and interactivity of the site?",
+                "options": ["HTML", "CSS", "XML", "JavaScript"],
                 "correctAnswerIndex": 3,
-                "explanation": "If the mass is sufficient, the collapse continues past the neutron star stage into a singularity—a Black Hole."
+                "explanation": "JavaScript is the scripting language that enables interactive web pages."
             },
             {
-                "question": "What fuel is our Sun currently burning in its core?",
-                "options": ["Helium", "Hydrogen", "Carbon", "Iron"],
+                "question": "You want to make the background black. Which property do you change?",
+                "options": ["element.color", "element.style.backgroundColor", "element.background", "element.css.black"],
                 "correctAnswerIndex": 1,
-                "explanation": "Main sequence stars like the Sun fuse Hydrogen into Helium."
+                "explanation": "In the DOM API, CSS properties are accessed via the `style` object in camelCase."
+            }
+        ]
+    },
+    "Artificial Intelligence": {
+        "lesson": "### **MISSION BRIEFING: NEURAL NETWORKS**\n\n**OBJECTIVE:** Understand the brain of the machine.\n\n*   **Neurons:** Simple processing units that hold a number (activation).\n*   **Weights:** The strength of the connection between neurons.\n*   **Training:** Adjusting the weights so the network gives the right answer.\n\n**STATUS:** Model initializing. Data stream active.",
+        "questions": [
+            {
+                "question": "The AI is giving wrong answers. What process corrects this?",
+                "options": ["Compilation", "Backpropagation", "Rendering", "Data Mining"],
+                "correctAnswerIndex": 1,
+                "explanation": "Backpropagation is the algorithm used to calculate the error gradient and update the weights to minimize mistakes."
+            },
+            {
+                "question": "You have labeled data (images of cats and dogs). What type of learning is this?",
+                "options": ["Unsupervised Learning", "Reinforcement Learning", "Supervised Learning", "Magic"],
+                "correctAnswerIndex": 2,
+                "explanation": "Supervised learning involves training a model on a dataset where the correct answers (labels) are known."
+            },
+            {
+                "question": "What is 'Overfitting'?",
+                "options": ["The model is too slow", "The model memorized the training data but fails on new data", "The model is too simple", "The computer overheated"],
+                "correctAnswerIndex": 1,
+                "explanation": "Overfitting happens when a model learns the noise in the training data rather than the actual pattern."
+            }
+        ]
+    },
+    "World War II": {
+        "lesson": "### **MISSION BRIEFING: GLOBAL CONFLICT**\n\n**OBJECTIVE:** Analyze the strategic turning points of the 20th century's defining war.\n\n*   **Axis vs. Allies:** The two major coalitions.\n*   **Total War:** Mobilization of all societal resources.\n*   **The Turning Point:** 1942-1943 marked the shift in momentum.\n\n**STATUS:** Historical archives accessed.",
+        "questions": [
+            {
+                "question": "June 6, 1944. The Allies launch a massive amphibious invasion. What is this day known as?",
+                "options": ["V-E Day", "D-Day", "Pearl Harbor", "Blitzkrieg"],
+                "correctAnswerIndex": 1,
+                "explanation": "D-Day (Operation Overlord) was the Allied invasion of Normandy, France."
+            },
+            {
+                "question": "Which event brought the United States into the war?",
+                "options": ["Invasion of Poland", "Battle of Britain", "Attack on Pearl Harbor", "Fall of Paris"],
+                "correctAnswerIndex": 2,
+                "explanation": "The Japanese surprise attack on Pearl Harbor on Dec 7, 1941, led the US to declare war."
+            },
+            {
+                "question": "Who was the Prime Minister of the UK during most of the war?",
+                "options": ["Neville Chamberlain", "Winston Churchill", "Clement Attlee", "King George VI"],
+                "correctAnswerIndex": 1,
+                "explanation": "Winston Churchill led Britain to victory with his inspiring leadership."
+            }
+        ]
+    },
+    "Ancient Rome": {
+        "lesson": "### **MISSION BRIEFING: THE REPUBLIC**\n\n**OBJECTIVE:** Understand the foundations of Western governance.\n\n*   **Senate:** The council of elders and main governing body.\n*   **Consuls:** Two elected officials who ruled for one year.\n*   **Legions:** The professional heavy infantry that conquered the Mediterranean.\n\n**STATUS:** Entering the Forum.",
+        "questions": [
+            {
+                "question": "A general crosses the Rubicon river with his army, sparking a civil war. Who is he?",
+                "options": ["Augustus", "Nero", "Julius Caesar", "Hannibal"],
+                "correctAnswerIndex": 2,
+                "explanation": "Julius Caesar crossed the Rubicon in 49 BC, effectively declaring war on the Roman Senate."
+            },
+            {
+                "question": "What architectural marvel allowed Rome to transport water over long distances?",
+                "options": ["The Colosseum", "Aqueducts", "The Pantheon", "Via Appia"],
+                "correctAnswerIndex": 1,
+                "explanation": "Aqueducts used gravity to move water into cities for baths, fountains, and private households."
+            },
+            {
+                "question": "Which rival civilization did Rome fight in the Punic Wars?",
+                "options": ["Greece", "Egypt", "Carthage", "Gaul"],
+                "correctAnswerIndex": 2,
+                "explanation": "Rome fought three major wars against Carthage for dominance of the Mediterranean."
+            }
+        ]
+    },
+    "History of Pakistan": {
+        "lesson": "### **MISSION BRIEFING: INDEPENDENCE**\n\n**OBJECTIVE:** Trace the birth of a nation.\n\n*   **1947:** The year of independence from British Rule.\n*   **Two-Nation Theory:** The ideology that Muslims and Hindus are distinct nations.\n*   **Quaid-e-Azam:** The Great Leader, Muhammad Ali Jinnah.\n\n**STATUS:** Archives loaded.",
+        "questions": [
+            {
+                "question": "Who is considered the 'Father of the Nation' in Pakistan?",
+                "options": ["Allama Iqbal", "Liaquat Ali Khan", "Muhammad Ali Jinnah", "Sir Syed Ahmed Khan"],
+                "correctAnswerIndex": 2,
+                "explanation": "Muhammad Ali Jinnah led the movement for a separate Muslim homeland."
+            },
+            {
+                "question": "Which city was the first capital of Pakistan?",
+                "options": ["Islamabad", "Lahore", "Karachi", "Rawalpindi"],
+                "correctAnswerIndex": 2,
+                "explanation": "Karachi was selected as the first capital in 1947."
+            },
+            {
+                "question": "What is the national language of Pakistan?",
+                "options": ["Punjabi", "Urdu", "Sindhi", "English"],
+                "correctAnswerIndex": 1,
+                "explanation": "Urdu is the national language and a symbol of unity."
+            }
+        ]
+    },
+    "Quantum Physics": {
+        "lesson": "### **MISSION BRIEFING: THE QUANTUM REALM**\n\n**OBJECTIVE:** Discard classical logic. Things get weird here.\n\n*   **Superposition:** A particle can be in multiple states at once until observed.\n*   **Entanglement:** Spooky action at a distance. Two particles linked instantly.\n*   **Observer Effect:** Measuring a system changes the system.\n\n**STATUS:** Wavefunction collapsing.",
+        "questions": [
+            {
+                "question": "In the famous thought experiment, is Schrödinger's Cat dead or alive?",
+                "options": ["Dead", "Alive", "Both (until you look)", "Neither"],
+                "correctAnswerIndex": 2,
+                "explanation": "According to quantum mechanics, the cat exists in a superposition of states until an observation forces a collapse."
+            },
+            {
+                "question": "Light behaves as both a...",
+                "options": ["Liquid and Gas", "Particle and Wave", "Solid and Plasma", "Proton and Neutron"],
+                "correctAnswerIndex": 1,
+                "explanation": "Wave-particle duality is a fundamental concept where light exhibits properties of both waves and particles (photons)."
+            },
+            {
+                "question": "What is the smallest unit of light?",
+                "options": ["Electron", "Photon", "Quark", "Atom"],
+                "correctAnswerIndex": 1,
+                "explanation": "A photon is the elementary particle of light."
+            }
+        ]
+    },
+    "Human Biology": {
+        "lesson": "### **MISSION BRIEFING: CELLULAR LIFE**\n\n**OBJECTIVE:** Explore the building blocks of you.\n\n*   **The Cell:** The basic unit of life.\n*   **DNA:** The blueprint code inside the nucleus.\n*   **ATP:** The energy currency of the cell.\n\n**STATUS:** Microscope focused.",
+        "questions": [
+            {
+                "question": "What is often called the 'powerhouse' of the cell?",
+                "options": ["Nucleus", "Ribosome", "Mitochondria", "Membrane"],
+                "correctAnswerIndex": 2,
+                "explanation": "Mitochondria generate most of the chemical energy needed to power the cell's biochemical reactions."
+            },
+            {
+                "question": "Which cells carry oxygen throughout the body?",
+                "options": ["White Blood Cells", "Red Blood Cells", "Platelets", "Neurons"],
+                "correctAnswerIndex": 1,
+                "explanation": "Red blood cells contain hemoglobin, which binds to oxygen."
+            },
+            {
+                "question": "What is the body's largest organ?",
+                "options": ["Liver", "Heart", "Skin", "Brain"],
+                "correctAnswerIndex": 2,
+                "explanation": "The skin protects the body from external factors and regulates temperature."
+            }
+        ]
+    },
+    "Space Exploration": {
+        "lesson": "### **MISSION BRIEFING: THE FINAL FRONTIER**\n\n**OBJECTIVE:** Leave the cradle of Earth.\n\n*   **Orbit:** Falling towards the earth but missing it.\n*   **Rocketry:** Newton's 3rd Law (Action/Reaction).\n*   **The Moon:** Our nearest celestial neighbor.\n\n**STATUS:** T-Minus 10 seconds.",
+        "questions": [
+            {
+                "question": "Who was the first human in space?",
+                "options": ["Neil Armstrong", "Yuri Gagarin", "Buzz Aldrin", "John Glenn"],
+                "correctAnswerIndex": 1,
+                "explanation": "Soviet cosmonaut Yuri Gagarin orbited the Earth on April 12, 1961."
+            },
+            {
+                "question": "What was the name of the NASA program that landed humans on the Moon?",
+                "options": ["Gemini", "Mercury", "Apollo", "Artemis"],
+                "correctAnswerIndex": 2,
+                "explanation": "The Apollo program (specifically Apollo 11) succeeded in landing humans on the Moon in 1969."
+            },
+            {
+                "question": "Which planet is known as the Red Planet?",
+                "options": ["Venus", "Jupiter", "Mars", "Saturn"],
+                "correctAnswerIndex": 2,
+                "explanation": "Mars appears red due to iron oxide (rust) on its surface."
             }
         ]
     },
@@ -89,6 +250,75 @@
                 "options": ["Cold Calling", "Retargeting / Remarketing", "Broad Targeting", "Viral Marketing"],
                 "correctAnswerIndex": 1,
                 "explanation": "Retargeting shows ads specifically to users who have interacted with your brand before."
+            }
+        ]
+    },
+    "Financial Literacy": {
+        "lesson": "### **MISSION BRIEFING: WEALTH BUILDING**\n\n**OBJECTIVE:** Make your money work for you.\n\n*   **Asset vs. Liability:** Assets put money in your pocket; liabilities take it out.\n*   **Compound Interest:** Interest earning interest. The 8th wonder of the world.\n*   **Budgeting:** Tracking income vs expenses.\n\n**STATUS:** Ledger open.",
+        "questions": [
+            {
+                "question": "According to the 50/30/20 rule, what should 20% of your income go towards?",
+                "options": ["Needs", "Wants", "Savings & Debt Repayment", "Entertainment"],
+                "correctAnswerIndex": 2,
+                "explanation": "The rule suggests 50% needs, 30% wants, and 20% savings/debt."
+            },
+            {
+                "question": "Which of these is an Asset?",
+                "options": ["A car loan", "Credit card debt", "A rental property", "Subscription services"],
+                "correctAnswerIndex": 2,
+                "explanation": "A rental property generates income, making it an asset."
+            },
+            {
+                "question": "Why is it better to start investing early?",
+                "options": ["You have more money", "Compound interest has more time to grow", "Stocks are cheaper", "Taxes are lower"],
+                "correctAnswerIndex": 1,
+                "explanation": "Time is the most significant factor in compound interest."
+            }
+        ]
+    },
+    "Entrepreneurship": {
+        "lesson": "### **MISSION BRIEFING: THE STARTUP**\n\n**OBJECTIVE:** Build something people want.\n\n*   **MVP (Minimum Viable Product):** The simplest version of your product to test the market.\n*   **Pivot:** Changing strategy when the current one isn't working.\n*   **Burn Rate:** How fast you are spending cash.\n\n**STATUS:** Pitch deck ready.",
+        "questions": [
+            {
+                "question": "You have a great idea. What is the first step?",
+                "options": ["Rent a fancy office", "Validate the idea with customers", "Hire 50 people", "Buy expensive software"],
+                "correctAnswerIndex": 1,
+                "explanation": "Validation saves you from building something nobody wants."
+            },
+            {
+                "question": "What is an 'Angel Investor'?",
+                "options": ["A bank loan", "A wealthy individual who invests personal capital", "A government grant", "A crowdfunding site"],
+                "correctAnswerIndex": 1,
+                "explanation": "Angel investors provide early-stage capital, often in exchange for equity."
+            },
+            {
+                "question": "Your product isn't selling. You decide to change your target audience. This is called...",
+                "options": ["Giving up", "A Pivot", "Bankruptcy", "Scaling"],
+                "correctAnswerIndex": 1,
+                "explanation": "A pivot is a fundamental change in business strategy."
+            }
+        ]
+    },
+    "Cybersecurity & Ethical Hacking": {
+        "lesson": "### **MISSION BRIEFING: RECONNAISSANCE**\n\n**OBJECTIVE:** Gather intelligence on a target system before engaging.\n\n*   **IP Address:** The digital coordinates of a target.\n*   **Port Scanning:** Knocking on digital doors to see which ones are open (services running).\n*   **Nmap:** The industry-standard tool for network mapping.\n\n**STATUS:** Target Acquired. Begin scan.",
+        "questions": [
+            {
+                "question": "You need to discover which services (web, email) are running on a target server. Which tool do you deploy?",
+                "options": ["Wireshark", "Nmap", "Metasploit", "John the Ripper"],
+                "correctAnswerIndex": 1,
+                "explanation": "Nmap (Network Mapper) is the premier tool for network discovery and security auditing."
+            },
+            {
+                "question": "You see Port 80 is open on the target. What service is likely running there?",
+                "options": ["SSH (Secure Shell)", "FTP (File Transfer)", "HTTP (Web Server)", "DNS (Domain Name System)"],
+                "correctAnswerIndex": 2,
+                "explanation": "Port 80 is the standard port for unencrypted Web traffic (HTTP)."
+            },
+            {
+                "question": "You want to remain hidden while scanning. Which technique minimizes noise?",
+                "options": ["Ping Sweep", "Stealth Scan (SYN Scan)", "Aggressive Scan (-A)", "Denial of Service"],
+                "correctAnswerIndex": 1,
+                "explanation": "A SYN scan (half-open scan) does not complete the TCP handshake, making it harder for older logging systems to detect."
             }
         ]
     }

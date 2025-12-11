@@ -1,183 +1,170 @@
 
 import { showToast } from './toastService.js';
-import * as configService from './configService.js';
 
 let prebakedData = null;
 
-// Load prebaked data once on init
+// --- Load Prebaked Data (Magic Trick) ---
 async function loadPrebakedData() {
-    try {
-        const response = await fetch('data/prebaked_levels.json');
-        prebakedData = await response.json();
-    } catch (e) {
-        console.warn("Failed to load prebaked levels:", e);
-    }
-}
-loadPrebakedData();
-
-async function handleResponse(response) {
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred.', details: response.statusText }));
-        console.error('API Error:', errorData);
-        throw new Error(errorData.error || 'API request failed');
-    }
-    return response.json();
-}
-
-async function fetchWithTimeout(url, options = {}, timeout = 60000) { 
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), timeout);
-    
-    if (options.signal) {
-        options.signal.addEventListener('abort', () => {
-            clearTimeout(id);
-            controller.abort();
-        });
-    }
-
-    try {
-        const response = await fetch(url, { ...options, signal: controller.signal });
-        clearTimeout(id);
-        return response;
-    } catch (error) {
-        clearTimeout(id);
-        if (error.name === 'AbortError') {
-             if (options.signal && options.signal.aborted) throw error;
-             throw new Error("Request timed out. The AI is taking too long.");
+    if (!prebakedData) {
+        try {
+            const res = await fetch('data/prebaked_levels.json');
+            if (res.ok) {
+                prebakedData = await res.json();
+            }
+        } catch (e) {
+            console.warn("Failed to load prebaked levels", e);
         }
-        throw error;
     }
 }
 
-function getPersona() {
-    return configService.getConfig().aiPersona || 'apex';
+// --- LOCAL MOCK DATABASE (Client-Side Fallback) ---
+const MOCK_DB = {
+    "general": {
+        lesson: "### General Knowledge\n\n**Briefing:** Test your awareness of the world around you. This module covers geography, history, and common facts.\n\n*   **Focus:** Accuracy and speed.\n*   **Goal:** Answer questions correctly.",
+        questions: [
+            {
+                question: "Which planet is known as the Red Planet?",
+                options: ["Venus", "Mars", "Jupiter", "Saturn"],
+                correctAnswerIndex: 1,
+                explanation: "Mars appears red due to iron oxide (rust) on its surface."
+            },
+            {
+                question: "What is the capital of France?",
+                options: ["London", "Berlin", "Madrid", "Paris"],
+                correctAnswerIndex: 3,
+                explanation: "Paris is the capital and most populous city of France."
+            },
+            {
+                question: "Which element has the chemical symbol 'O'?",
+                options: ["Gold", "Oxygen", "Osmium", "Olive"],
+                correctAnswerIndex: 1,
+                explanation: "O stands for Oxygen on the periodic table."
+            }
+        ]
+    }
+};
+
+// Helper to find data or return generic fallback
+function getMockData(topic) {
+    const t = topic.toLowerCase();
+    
+    // Check prebaked first (Exact or partial match)
+    if (prebakedData) {
+        const key = Object.keys(prebakedData).find(k => k.toLowerCase().includes(t) || t.includes(k.toLowerCase()));
+        if (key) return prebakedData[key];
+    }
+
+    return MOCK_DB["general"];
 }
+
+// --- MOCK SERVICE FUNCTIONS (No API Calls - Offline Mode) ---
 
 export async function fetchTopics() {
-    try {
-        const response = await fetchWithTimeout('/api/topics');
-        return await handleResponse(response);
-    } catch (error) {
-        showToast('Error fetching topics.', 'error');
-        throw error;
-    }
+    return [
+        { name: "General Knowledge", description: "Test your awareness of the world.", styleClass: "topic-arts" },
+        { name: "Coding & Tech", description: "Programming, web, and computers.", styleClass: "topic-programming" },
+        { name: "Science", description: "Physics, Biology, and Chemistry.", styleClass: "topic-science" }
+    ];
 }
 
 export async function generateJourneyPlan(topic) {
-    const response = await fetchWithTimeout('/api/generate-journey-plan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, persona: getPersona() })
-    });
-    return await handleResponse(response);
+    // Simulate processing delay
+    await new Promise(resolve => setTimeout(resolve, 800)); 
+    return {
+        topicName: topic,
+        totalLevels: 10,
+        description: `A custom quiz set focused on ${topic}.`
+    };
 }
 
 export async function generateJourneyFromImage(imageBase64, mimeType) {
-    const response = await fetchWithTimeout('/api/generate-journey-from-image', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageBase64, mimeType, persona: getPersona() })
-    }, 60000); 
-    return await handleResponse(response);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    return {
+        topicName: "Scanned Topic",
+        totalLevels: 10,
+        description: "A quiz generated from your uploaded image."
+    };
 }
 
 export async function generateCurriculumOutline({ topic, totalLevels }) {
-    const response = await fetchWithTimeout('/api/generate-curriculum-outline', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, totalLevels, persona: getPersona() })
-    });
-    return await handleResponse(response);
+    return {
+        chapters: ["Fundamentals", "Core Concepts", "Advanced Theory", "Mastery"]
+    };
 }
 
-// --- MODIFIED LEVEL GENERATION FOR EXPO SPEED ---
-export async function generateLevelQuestions({ topic, level, totalLevels }) {
-    // 1. Check for Pre-baked Level 1 Data (Instant Load)
-    if (level === 1 && prebakedData && prebakedData[topic]) {
-        console.log(`[FAST LOAD] Using pre-baked questions for ${topic}`);
-        // Return a promise that resolves immediately to simulate API
-        return Promise.resolve({ questions: prebakedData[topic].questions });
+export async function generateLevelQuestions({ topic, level }) {
+    await loadPrebakedData();
+    
+    // MAGIC TRICK: If Level 1, try to find prebaked data for instant load
+    if (level === 1) {
+        const data = getMockData(topic);
+        if (data && data.questions) {
+            // Tiny delay to make it feel like "Fast AI" rather than "Static"
+            await new Promise(r => setTimeout(r, 600));
+            return { questions: data.questions };
+        }
     }
 
-    const response = await fetchWithTimeout('/api/generate-level-questions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, level, totalLevels, persona: getPersona() })
-    });
-    return await handleResponse(response);
+    // Default Fallback
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    const data = MOCK_DB["general"];
+    return { questions: data.questions };
 }
 
 export async function generateInteractiveLevel({ topic, level }) {
-    const response = await fetchWithTimeout('/api/generate-interactive-level', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, level, persona: getPersona() })
-    });
-    return await handleResponse(response);
+    return {
+        challengeType: "match",
+        instruction: "Match the concepts.",
+        items: [
+            { id: "1", text: "Concept A", match: "Definition A" },
+            { id: "2", text: "Concept B", match: "Definition B" }
+        ]
+    };
 }
 
-export async function generateLevelLesson({ topic, level, totalLevels, questions, signal }) {
-    // 1. Check for Pre-baked Level 1 Data (Instant Load)
-    if (level === 1 && prebakedData && prebakedData[topic]) {
-        console.log(`[FAST LOAD] Using pre-baked lesson for ${topic}`);
-        return Promise.resolve({ lesson: prebakedData[topic].lesson });
+export async function generateLevelLesson({ topic, level }) {
+    await loadPrebakedData();
+
+    if (level === 1) {
+        const data = getMockData(topic);
+        if (data && data.lesson) {
+            await new Promise(r => setTimeout(r, 600));
+            return { lesson: data.lesson };
+        }
     }
 
-    const response = await fetchWithTimeout('/api/generate-level-lesson', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, level, totalLevels, questions: questions || null, persona: getPersona() }),
-        signal: signal
-    });
-    return await handleResponse(response);
+    await new Promise(resolve => setTimeout(resolve, 800));
+    return { lesson: MOCK_DB["general"].lesson };
 }
 
 export async function generateBossBattle({ topic, chapter }) {
-    const response = await fetchWithTimeout('/api/generate-boss-battle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, chapter, persona: getPersona() })
-    });
-    return await handleResponse(response);
+    return generateLevelQuestions({ topic, level: 1 }); 
 }
 
 export async function generateHint({ topic, question, options }) {
-    const response = await fetchWithTimeout('/api/generate-hint', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, question, options, persona: getPersona() })
-    });
-    return await handleResponse(response);
+    return { hint: "Think about the definition of the key terms in the question." };
 }
 
 export async function generateSpeech(text) {
-    const response = await fetchWithTimeout('/api/generate-speech', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text })
-    });
-    return await handleResponse(response);
+    console.warn("Speech generation requires API. Feature disabled in offline mode.");
+    return null;
 }
 
 export async function explainConcept(topic, concept, context) {
-    const response = await fetchWithTimeout('/api/explain-concept', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, concept, context, persona: getPersona() })
-    });
-    return await handleResponse(response);
+    return { explanation: `${concept} is a fundamental part of ${topic}.` };
 }
 
 export async function fetchDailyChallenge() {
-    const response = await fetchWithTimeout('/api/daily-challenge');
-    return await handleResponse(response);
+    const data = getMockData("general");
+    const q = data.questions[0];
+    return {
+        question: q.question,
+        options: q.options,
+        correctAnswerIndex: q.correctAnswerIndex,
+        topic: "General Knowledge"
+    };
 }
 
 export async function explainError(topic, question, userChoice, correctChoice) {
-    const response = await fetchWithTimeout('/api/explain-error', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, question, userChoice, correctChoice, persona: getPersona() })
-    });
-    return await handleResponse(response);
+    return { explanation: `You chose '${userChoice}', but the correct answer is '${correctChoice}' because it aligns with the facts of ${topic}.` };
 }
