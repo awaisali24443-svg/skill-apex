@@ -3,8 +3,8 @@
     <!-- Header Section: Greeting & Quick Stats -->
     <header class="dashboard-header">
         <div class="greeting-container">
-            <h1 class="fade-in">Central Command</h1>
-            <p class="fade-in-delay">Welcome back, Agent. Your neural network is online.</p>
+            <h1 class="fade-in">Dashboard</h1>
+            <p class="fade-in-delay">Welcome back. Ready to continue your learning?</p>
         </div>
         
         <!-- Quick Stats Row (Dashboard Top) -->
@@ -35,7 +35,7 @@
                 </div>
                 <div class="stat-content">
                     <span class="stat-value" id="health-value">100%</span>
-                    <span class="stat-label">Memory Integrity</span>
+                    <span class="stat-label">Memory Health</span>
                 </div>
             </div>
         </div>
@@ -50,11 +50,11 @@
             <a id="primary-action-card" href="#" class="card hero-card">
                 <div class="hero-bg-effect"></div>
                 <div class="hero-content">
-                    <div class="hero-status-pill" id="hero-badge" style="display:none;">RESUME MISSION</div>
-                    <h2 id="primary-action-title">Initiate New Operation</h2>
-                    <p id="primary-action-description">Select a knowledge domain to generate a personalized curriculum.</p>
+                    <div class="hero-status-pill" id="hero-badge" style="display:none;">RESUME LEARNING</div>
+                    <h2 id="primary-action-title">Master a New Skill</h2>
+                    <p id="primary-action-description">Choose a topic and our AI will build a custom course just for you.</p>
                     <div class="hero-cta-button">
-                        <span class="btn-text">Engage</span>
+                        <span class="btn-text">Start Journey</span>
                         <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
                     </div>
                 </div>
@@ -70,7 +70,7 @@
                     <!-- Injected via JS -->
                     <div class="empty-state-compact">
                         <svg class="icon"><use href="assets/icons/feather-sprite.svg#archive"/></svg>
-                        <span>No recent missions found.</span>
+                        <span>No recent activity found.</span>
                     </div>
                 </div>
             </div>
@@ -85,9 +85,9 @@
                     <div class="widget-icon gradient-purple">
                         <svg class="icon"><use href="assets/icons/feather-sprite.svg#target"/></svg>
                     </div>
-                    <h3>Daily Protocol</h3>
+                    <h3>Daily Challenge</h3>
                 </div>
-                <p class="widget-desc" id="daily-challenge-status">Complete your daily micro-challenge to maintain your streak.</p>
+                <p class="widget-desc" id="daily-challenge-status">Complete your daily quiz to keep your streak alive.</p>
                 <button id="start-daily-challenge-btn" class="btn btn-primary full-width">
                     <span>Execute (+200 XP)</span>
                 </button>
@@ -99,10 +99,10 @@
                     <div class="widget-icon gradient-red">
                         <svg class="icon"><use href="assets/icons/feather-sprite.svg#alert-triangle"/></svg>
                     </div>
-                    <h3>Decay Detected</h3>
+                    <h3>Memory Decay</h3>
                 </div>
-                <p class="widget-desc">Knowledge retention dropping in some sectors.</p>
-                <button id="repair-memory-btn" class="btn btn-outline-danger full-width">Repair Pathways</button>
+                <p class="widget-desc">Your retention score is dropping. Review old topics now.</p>
+                <button id="repair-memory-btn" class="btn btn-outline-danger full-width">Repair Memory</button>
             </div>
 
         </div>
@@ -113,8 +113,8 @@
 <div id="onboarding-overlay" class="onboarding-overlay" style="display: none;">
     <div class="onboarding-content">
         <div class="onboarding-header">
-            <h1>Initialize Your Matrix</h1>
-            <p>Select a core field to calibrate your learning feed instantly.</p>
+            <h1>Initialize Your Learning</h1>
+            <p>Select a core field to tailor your experience.</p>
         </div>
         <div class="interest-grid">
             <button class="card interest-card cs" data-category="cs">
@@ -135,7 +135,7 @@
             </button>
             <button class="card interest-card custom" data-category="custom">
                 <div class="interest-icon"><svg class="icon"><use href="assets/icons/feather-sprite.svg#plus"/></svg></div>
-                <h3>Create Custom</h3>
+                <h3>Custom Topic</h3>
             </button>
         </div>
     </div>

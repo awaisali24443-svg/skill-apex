@@ -1,8 +1,8 @@
 
 <div class="page-container topic-list-container">
     <header class="page-header">
-        <h1>Welcome to Skill Apex</h1>
-        <p>Choose your path and forge new skills with AI-powered curriculum.</p>
+        <h1>Explore Learning Paths</h1>
+        <p>Start a new course or continue an existing journey.</p>
     </header>
 
     <!-- Active Filter Badge (Injected via JS) -->
@@ -20,11 +20,11 @@
              <svg><use href="assets/icons/feather-sprite.svg#cpu"/></svg>
         </div>
         <div class="creator-content">
-            <h2>Create Your Own Journey</h2>
-            <p>Enter any topic or scan an image (book, notes, diagram), and our AI will build a personalized learning path.</p>
+            <h2>Create Custom Journey</h2>
+            <p>Enter any topic or scan a textbook page. Our AI will generate a complete curriculum and quiz set for you instantly.</p>
             <form id="journey-creator-form" class="creator-form">
                 <div class="input-group">
-                    <input type="text" id="custom-topic-input" class="form-input" placeholder="e.g., 'The History of Jazz Music'" required>
+                    <input type="text" id="custom-topic-input" class="form-input" placeholder="e.g., 'Introduction to Astrophysics'" required>
                     <!-- NEW: Camera/Upload Button -->
                     <button type="button" id="camera-btn" class="btn btn-icon-only scan-btn" title="Scan Image">
                         <svg class="icon"><use href="assets/icons/feather-sprite.svg#target"/></svg>
@@ -34,7 +34,7 @@
                 </div>
                 <button type="submit" id="generate-btn" class="btn btn-primary">
                     <svg class="icon"><use href="assets/icons/feather-sprite.svg#zap"/></svg>
-                    <span>Generate</span>
+                    <span>Generate Course</span>
                 </button>
             </form>
         </div>
@@ -42,13 +42,13 @@
 
     <!-- My Journeys Section -->
     <div id="active-journeys-section" style="display: none;">
-        <h2>My Active Journeys</h2>
+        <h2>Active Journeys</h2>
         <div id="active-journeys-grid" class="topic-grid" style="margin-bottom: var(--space-xxl);">
             <!-- Active journeys rendered here -->
         </div>
     </div>
 
-    <h2>Explore Topics</h2>
+    <h2>Recommended Topics</h2>
     
     <!-- Skeleton Loader for Topics -->
     <div id="topics-skeleton" class="topic-grid">

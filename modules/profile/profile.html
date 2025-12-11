@@ -20,14 +20,14 @@
 
             <div class="profile-info">
                 <div class="name-row">
-                    <h2 id="user-name-display">Agent</h2>
+                    <h2 id="user-name-display">User Profile</h2>
                     <button class="btn-icon-tiny" id="edit-profile-btn">
                         <svg class="icon"><use href="assets/icons/feather-sprite.svg#edit-2"/></svg>
                     </button>
                 </div>
                 
                 <div class="edit-name-wrapper" id="edit-name-wrapper" style="display: none;">
-                    <input type="text" id="user-name-input" class="modern-input" placeholder="Codename">
+                    <input type="text" id="user-name-input" class="modern-input" placeholder="Your Name">
                     <button id="save-name-btn" class="btn-save">
                         <svg class="icon"><use href="assets/icons/feather-sprite.svg#check-circle"/></svg>
                     </button>
@@ -36,8 +36,8 @@
                 <span class="user-email" id="user-email-text">Loading...</span>
                 
                 <div class="level-badge-row">
-                    <div class="status-pill blue">Operative</div>
-                    <div class="status-pill purple">Beta Access</div>
+                    <div class="status-pill blue">Learner</div>
+                    <div class="status-pill purple">Beta User</div>
                 </div>
             </div>
         </div>
@@ -61,9 +61,9 @@
         <!-- Invite Widget -->
         <div class="card widget-card">
             <div class="widget-header">
-                <h3>Recruitment</h3>
+                <h3>Invite Friends</h3>
             </div>
-            <p class="widget-desc">Invite new agents to the network.</p>
+            <p class="widget-desc">Share Skill Apex with your network.</p>
             <div class="copy-input-group">
                 <input type="text" id="recruiter-id-input" readonly value="...">
                 <button id="copy-ref-btn">
@@ -78,7 +78,7 @@
     <main class="profile-main">
         <div class="section-heading">
             <h1>Achievements</h1>
-            <p>Milestones unlocked in the field.</p>
+            <p>Milestones unlocked during your learning journey.</p>
         </div>
 
         <div id="achievements-grid" class="achievements-grid">
