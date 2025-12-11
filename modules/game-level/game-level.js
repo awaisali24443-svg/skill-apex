@@ -11,14 +11,14 @@ import * as libraryService from '../../services/libraryService.js';
 import { showToast } from '../../services/toastService.js';
 
 let levelData = {}; // Stores lesson + questions
-let masterQuestionsList = []; // Stores all generated questions (e.g., 6 for standard)
-let currentAttemptSet = 0; // Tracks which set of questions we are on (0 or 1)
-let currentQuestions = []; // The actual subset being used for the current quiz
+let masterQuestionsList = []; // Stores all generated questions
+let currentAttemptSet = 0; 
+let currentQuestions = []; 
 
 // Interactive Challenge State
 let isInteractiveLevel = false;
-let interactiveData = null; // { type, instruction, items }
-let interactiveUserState = []; // Current sort order OR matched pairs
+let interactiveData = null; 
+let interactiveUserState = []; 
 
 let currentQuestionIndex = 0;
 let score = 0;
@@ -33,20 +33,19 @@ let hintUsedThisQuestion = false;
 let xpGainedThisLevel = 0;
 let outputAudioContext = null;
 let currentAudioSource = null;
-let retryGenerationPromise = null; // Store the pending retry generation
+let retryGenerationPromise = null; 
 
 // Boss Battle State
 let bossHp = 100;
 let damagePerHit = 10;
-let antiCheatHandler = null; // Stores the visibility change listener
-let focusStrikes = 0; // NEW: Track anti-cheat warnings
-let focusTimeout = null; // NEW: Grace period timer
+let antiCheatHandler = null; 
+let focusStrikes = 0; 
+let focusTimeout = null; 
 
 // Async Flow Control
-let lessonGenerationPromise = null;
-let lessonAbortController = null; // Controller to cancel lesson generation
+let lessonAbortController = null;
 let skippedLesson = false;
-let loadingTextInterval = null; // For dynamic loading messages
+let loadingTextInterval = null; 
 
 // Drag and Drop State
 let dragStartIndex = null;
@@ -58,14 +57,14 @@ let isTyping = false;
 const PASS_THRESHOLD = 0.8;
 const LEVELS_PER_CHAPTER = 50;
 const STANDARD_QUESTIONS_PER_ATTEMPT = 3;
-const BOSS_TIME_LIMIT = 39; // Extended from 20 to 39 seconds
+const BOSS_TIME_LIMIT = 39; 
 
 const LOADING_MESSAGES = [
-    "Analyzing Topic Structure...",
-    "Generating Scenario Logic...",
-    "Calibrating Difficulty...",
-    "Synthesizing Lesson Data...",
-    "Finalizing Content..."
+    "Scanning Topic Topology...",
+    "Generating Contextual Scenarios...",
+    "Calibrating Difficulty Matrix...",
+    "Drafting Mission Briefing...",
+    "Finalizing Level Assets..."
 ];
 
 function announce(message, polite = false) {
@@ -116,7 +115,7 @@ function startLoadingAnimation() {
     if (loadingTextInterval) clearInterval(loadingTextInterval);
     let index = 0;
     // Reset to initial text
-    if(elements.loadingText) elements.loadingText.textContent = "Connecting to Core...";
+    if(elements.loadingText) elements.loadingText.textContent = "Initializing Module...";
     
     // Faster interval (1000ms instead of 1500ms) to make it feel snappier
     loadingTextInterval = setInterval(() => {
@@ -152,9 +151,8 @@ async function startLevel(forceRefresh = false) {
     
     // Reset state
     retryGenerationPromise = null;
-    lessonGenerationPromise = null;
     if (lessonAbortController) {
-        lessonAbortController.abort(); // Cancel any previous pending request
+        lessonAbortController.abort(); 
     }
     lessonAbortController = null;
     skippedLesson = false;
@@ -163,7 +161,7 @@ async function startLevel(forceRefresh = false) {
     levelData = {};
     isInteractiveLevel = false;
     interactiveData = null;
-    removeAntiCheat(); // Clean up potential leftovers
+    removeAntiCheat(); 
 
     if (!topic || !level || !journeyId) {
         window.location.hash = '/topics';
@@ -199,7 +197,7 @@ async function startLevel(forceRefresh = false) {
                 }
                 return;
             } else if (!isInteractiveLevel && cachedLevel.questions) {
-                 // Standard Level Logic (Existing)
+                 // Standard Level Logic
                 if (isBoss || cachedLevel.lesson) {
                     levelData = cachedLevel;
                     masterQuestionsList = levelData.questions || [];
@@ -234,9 +232,7 @@ async function startLevel(forceRefresh = false) {
         
         } else if (isInteractiveLevel) {
             // --- INTERACTIVE LEVEL GENERATION ---
-            // Parallel Execution: Generate Challenge AND Lesson (optional)
             lessonAbortController = new AbortController();
-            
             const promises = [];
             
             // 1. Challenge Data
@@ -245,12 +241,12 @@ async function startLevel(forceRefresh = false) {
                     interactiveData = data;
                     levelData = { ...interactiveData };
                     levelCacheService.saveLevel(topic, level, levelData);
-                    // If interactive data is ready, we can enable "skip" to challenge
+                    // Enable "skip" to challenge once ready
                     if (elements.skipPopup) elements.skipPopup.style.display = 'block';
                 }));
             }
             
-            // 2. Lesson Data (No questions context needed for parallel)
+            // 2. Lesson Data
             promises.push(apiService.generateLevelLesson({ 
                 topic, level, totalLevels, questions: null, signal: lessonAbortController.signal 
             }).then(lData => {
@@ -271,7 +267,7 @@ async function startLevel(forceRefresh = false) {
             lessonAbortController = new AbortController();
             const promises = [];
 
-            // 1. Generate Questions
+            // 1. Generate Questions (The Test)
             if (!partialCacheHit) {
                 promises.push(apiService.generateLevelQuestions({ topic, level, totalLevels }).then(qData => {
                     if (!qData || !qData.questions) throw new Error("Failed to generate questions.");
@@ -280,15 +276,14 @@ async function startLevel(forceRefresh = false) {
                     levelCacheService.saveLevel(topic, level, levelData);
                     
                     // Enable "Skip to Quiz" immediately when questions are ready
+                    // This is the HOT SWAP feature.
                     if (elements.skipPopup) elements.skipPopup.style.display = 'block';
                 }));
             } else {
-                // If partial hit (questions exist), enable skip immediately
                 if (elements.skipPopup) elements.skipPopup.style.display = 'block';
             }
 
-            // 2. Generate Lesson (Parallel)
-            // We pass 'questions: null' to signal the API to generate based on topic/level only
+            // 2. Generate Lesson (The Teaching)
             promises.push(apiService.generateLevelLesson({ 
                 topic, level, totalLevels, questions: null, signal: lessonAbortController.signal 
             }).then(lData => {
@@ -298,15 +293,13 @@ async function startLevel(forceRefresh = false) {
                 if (err.name !== 'AbortError') console.warn("Lesson generation error:", err);
             }));
 
-            // Wait for everything to settle
-            // Note: The UI might update via the 'then' blocks above
+            // Wait for everything
             await Promise.allSettled(promises);
 
             if (!skippedLesson) {
                 if (levelData.lesson) {
                     renderLesson();
                 } else {
-                    // Fallback if lesson failed but questions worked
                     if (masterQuestionsList.length > 0) {
                         showToast("Lesson unavailable, starting quiz.", "info");
                         startQuiz();
@@ -355,7 +348,6 @@ function triggerRetryGeneration() {
     retryGenerationPromise = generator
         .then(data => {
             console.log("Fallback retry data prefetched successfully.");
-            // For non-interactive, standard levels need lesson context preservation
             if (!isBoss && !isInteractiveLevel) {
                 return { questions: data.questions, lesson: levelData.lesson };
             }
@@ -382,13 +374,10 @@ async function preloadNextLevel() {
             const chapter = Math.ceil(nextLevel / LEVELS_PER_CHAPTER);
             data = await apiService.generateBossBattle({ topic, chapter });
         } else if (nextLevel % 5 === 0) {
-             // Preload interactive level
              const iData = await apiService.generateInteractiveLevel({ topic, level: nextLevel });
-             // Parallel lesson gen for preload
              const lData = await apiService.generateLevelLesson({ topic, level: nextLevel, totalLevels, questions: null });
              data = { ...iData, ...lData }; 
         } else {
-            // Parallel preload
             const [qData, lData] = await Promise.all([
                 apiService.generateLevelQuestions({ topic, level: nextLevel, totalLevels }),
                 apiService.generateLevelLesson({ topic, level: nextLevel, totalLevels, questions: null })
@@ -409,12 +398,11 @@ async function preloadNextLevel() {
 function renderLessonTypewriter(htmlContent) {
     if (typewriterInterval) clearInterval(typewriterInterval);
     
-    // 1. Create a temporary container to parse HTML nodes
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = htmlContent;
     
     const container = elements.lessonBody;
-    container.innerHTML = ''; // Clear previous
+    container.innerHTML = ''; 
     container.classList.add('typewriter-cursor');
     
     container.innerHTML = htmlContent;
@@ -423,7 +411,6 @@ function renderLessonTypewriter(htmlContent) {
     let node;
     while(node = walker.nextNode()) allTextNodes.push(node);
     
-    // Hide all text
     const originalTexts = allTextNodes.map(n => n.textContent);
     allTextNodes.forEach(n => n.textContent = '');
     
@@ -431,15 +418,12 @@ function renderLessonTypewriter(htmlContent) {
     let nodeIndex = 0;
     let charIndex = 0;
     
-    // Add "Skip" capability
     elements.lessonBody.onclick = () => {
         if (isTyping) {
             clearInterval(typewriterInterval);
             isTyping = false;
             container.classList.remove('typewriter-cursor');
-            // Restore all text instantly
             allTextNodes.forEach((n, i) => n.textContent = originalTexts[i]);
-            // Init diagram
             if (window.mermaid) mermaid.init(undefined, document.querySelectorAll('.mermaid'));
         }
     };
@@ -459,59 +443,50 @@ function renderLessonTypewriter(htmlContent) {
         if (charIndex < fullText.length) {
             currentNode.textContent += fullText[charIndex];
             charIndex++;
-            // Scroll to bottom if needed
             container.scrollTop = container.scrollHeight;
         } else {
             nodeIndex++;
             charIndex = 0;
         }
-    }, 3); // UPDATED: Very fast typing speed (3ms) for demos
+    }, 3); // EXTREME SPEED (3ms) for demos
 }
 
 function renderLesson() {
     if (!levelData.lesson) return; 
 
-    elements.lessonTitle.textContent = `Level ${levelContext.level}: ${levelContext.topic}`;
+    // Expo Polish: "Mission Briefing" instead of "Lesson"
+    elements.lessonTitle.textContent = `Level ${levelContext.level}: Mission Briefing`;
     const rawHtml = markdownService.render(levelData.lesson);
     
     if(elements.readAloudBtn) elements.readAloudBtn.disabled = false;
     switchState('level-lesson-state');
     
-    // Start Typewriter
     renderLessonTypewriter(rawHtml);
 }
 
 // --- ANTI-CHEAT SYSTEM ---
 function activateAntiCheat() {
-    if (antiCheatHandler) return; // Already active
+    if (antiCheatHandler) return; 
 
     showToast("⚠️ FOCUS MODE ACTIVE: Leaving this tab may cause failure.", "error", 5000);
     
     antiCheatHandler = () => {
         if (document.hidden) {
-            // User switched tabs or minimized
-            // START 3-second GRACE PERIOD
             focusTimeout = setTimeout(() => {
-                // If this code runs, user has been gone for > 3 seconds
                 if (focusStrikes === 0) {
-                    // Strike 1: Warning (Apply Penalty)
                     focusStrikes++;
                     soundService.playSound('incorrect');
-                    
-                    // Time Penalty
                     timeLeft = Math.max(0, timeLeft - 5);
                     const seconds = String(timeLeft % 60).padStart(2, '0');
                     if (elements.timerText) {
                         elements.timerText.textContent = `00:${seconds}`;
-                        elements.timerText.style.color = '#ff0000'; // Flash red
-                        // Revert color after flash
+                        elements.timerText.style.color = '#ff0000'; 
                         setTimeout(() => {
                              if(elements.timerText) elements.timerText.style.color = '#ff4040';
                         }, 1000);
                     }
                     showToast("⚠️ FOCUS LOST > 3s: -5 Seconds Penalty!", "error", 4000);
 
-                    // Check if penalty killed them
                     if (timeLeft <= 0) {
                          clearInterval(timerInterval);
                          handleTimeUp();
@@ -519,37 +494,31 @@ function activateAntiCheat() {
                     }
 
                 } else {
-                    // Strike 2: Fail (Already penalized once)
                     soundService.playSound('incorrect');
-                    score = 0; // Immediate forfeit
+                    score = 0; 
                     clearInterval(timerInterval);
                     announce('Focus lost. Battle failed.');
-                    showResults(false, true); // true = flag as anti-cheat forfeit
+                    showResults(false, true); 
                 }
-            }, 3000); // 3 Seconds Tolerance
+            }, 3000); 
 
         } else {
-            // User returned
-            // If they returned quickly (<3s), cancel the pending strike
             if (focusTimeout) {
                 clearTimeout(focusTimeout);
                 focusTimeout = null;
-                // Feedback for safe return
                 showToast("⚠️ Focus restored. Stay on this tab!", "info", 2000);
             }
 
-            // Only show the "Final Warning" modal if a strike WAS actually applied
             if (focusStrikes === 1) {
                 if(!elements.resultsTitle.textContent) { 
                     showConfirmationModal({
                         title: '⚠️ BATTLEFIELD WARNING',
                         message: '<strong style="color:var(--color-error)">FOCUS LOST! (-5s Penalty)</strong><br><br>The Boss has noticed your distraction (away > 3s).<br>If you leave this tab <strong>one more time</strong>, you will instantly forfeit the battle.',
                         confirmText: 'I Understand',
-                        cancelText: 'Surrender', // Option to quit if they want
+                        cancelText: 'Surrender', 
                         danger: true
                     }).then(confirmed => {
                         if (!confirmed) {
-                            // If they click "Surrender" (Cancel), fail them
                             showResults(false, true);
                         }
                     });
@@ -581,14 +550,14 @@ function startQuiz() {
 
     currentQuestionIndex = 0;
     score = 0;
-    focusStrikes = 0; // Reset strikes on new attempt
+    focusStrikes = 0; 
     userAnswers = [];
     xpGainedThisLevel = 0;
     
     elements.bossHealthContainer.style.display = 'none';
 
     if (isInteractiveLevel) {
-        // --- INTERACTIVE MODE SETUP ---
+        // --- INTERACTIVE MODE ---
         elements.questionContainer.style.display = 'none';
         elements.interactiveContainer.style.display = 'block';
         elements.interactiveInstruction.textContent = interactiveData.instruction;
@@ -601,15 +570,15 @@ function startQuiz() {
         elements.submitAnswerBtn.textContent = 'Verify Solution';
         elements.submitAnswerBtn.disabled = false;
         
-        elements.hintBtn.disabled = true; // No hints for interactive yet
+        elements.hintBtn.disabled = true; 
         
         switchState('level-quiz-state');
         soundService.playSound('start');
-        startTimer(); // Standard timer for interactive
+        startTimer(); 
         return;
     }
 
-    // --- STANDARD MCQ MODE SETUP ---
+    // --- STANDARD MCQ MODE ---
     elements.interactiveContainer.style.display = 'none';
     elements.questionContainer.style.display = 'block';
 
@@ -619,8 +588,6 @@ function startQuiz() {
         damagePerHit = 100 / currentQuestions.length;
         elements.bossHealthContainer.style.display = 'flex';
         elements.bossHealthFill.style.width = '100%';
-        
-        // ACTIVATE BOSS PROTOCOLS
         activateAntiCheat();
     } else {
         const startIndex = currentAttemptSet * STANDARD_QUESTIONS_PER_ATTEMPT;
@@ -640,7 +607,7 @@ function startQuiz() {
 }
 
 // --- INTERACTIVE RENDERING ---
-let selectedMatchItem = null; // For Match logic
+let selectedMatchItem = null; 
 
 function renderInteractiveChallenge() {
     const container = document.getElementById('interactive-playground');
@@ -675,13 +642,12 @@ function renderInteractiveChallenge() {
         });
 
     } else if (interactiveData.challengeType === 'match') {
-        interactiveUserState = []; // Stores matches { leftId, rightId }
+        interactiveUserState = []; 
         selectedMatchItem = null;
         
         const leftCol = document.createElement('div'); leftCol.className = 'match-column';
         const rightCol = document.createElement('div'); rightCol.className = 'match-column';
         
-        // Shuffle both sides independently
         const leftItems = [...interactiveData.items].sort(() => Math.random() - 0.5);
         const rightItems = [...interactiveData.items].sort(() => Math.random() - 0.5);
         
@@ -698,9 +664,9 @@ function renderInteractiveChallenge() {
         rightItems.forEach(item => {
             const el = document.createElement('div');
             el.className = 'match-item';
-            el.dataset.id = item.id; // Correct ID match
+            el.dataset.id = item.id; 
             el.dataset.side = 'right';
-            el.textContent = item.match; // The definition/pair
+            el.textContent = item.match; 
             el.addEventListener('click', (e) => handleMatchClick(e, item.id, 'right'));
             rightCol.appendChild(el);
         });
@@ -713,7 +679,7 @@ function renderInteractiveChallenge() {
     }
 }
 
-// --- Drag & Drop Handlers (Sequence) ---
+// --- Drag & Drop Handlers ---
 function handleDragStart(e) {
     if (answered) {
         e.preventDefault();
@@ -726,7 +692,7 @@ function handleDragStart(e) {
 
 function handleDragOver(e) {
     if (answered) return;
-    e.preventDefault(); // Necessary to allow dropping
+    e.preventDefault(); 
     e.dataTransfer.dropEffect = 'move';
 }
 
@@ -748,28 +714,25 @@ function handleDrop(e) {
     if (answered) return;
     e.preventDefault();
     
-    // --- CRITICAL FIX: Remove dragging classes FIRST to ensure UI resets even if drop is invalid ---
     document.querySelectorAll('.sortable-item').forEach(el => {
         el.classList.remove('dragging', 'drag-over');
     });
 
     const dragEndItem = e.target.closest('.sortable-item');
-    if (!dragEndItem) return; // Dropped outside valid item
+    if (!dragEndItem) return; 
 
     const dragEndIndex = +dragEndItem.dataset.index;
 
     if (dragStartIndex !== null && dragStartIndex !== dragEndIndex) {
-        // Swap items in state
         const itemToMove = interactiveUserState[dragStartIndex];
         interactiveUserState.splice(dragStartIndex, 1);
         interactiveUserState.splice(dragEndIndex, 0, itemToMove);
         
         soundService.playSound('click');
-        renderInteractiveChallenge(); // Re-render list
+        renderInteractiveChallenge(); 
     }
     dragStartIndex = null;
 }
-
 
 // --- Tap/Click Handlers ---
 let selectedSequenceIndex = null;
@@ -779,21 +742,18 @@ function handleSequenceClick(index) {
     const items = document.querySelectorAll('.sortable-item');
     
     if (selectedSequenceIndex === null) {
-        // Select first
         selectedSequenceIndex = index;
         items[index].classList.add('selected');
     } else if (selectedSequenceIndex === index) {
-        // Deselect
         items[index].classList.remove('selected');
         selectedSequenceIndex = null;
     } else {
-        // Swap
         const temp = interactiveUserState[selectedSequenceIndex];
         interactiveUserState[selectedSequenceIndex] = interactiveUserState[index];
         interactiveUserState[index] = temp;
         
         selectedSequenceIndex = null;
-        renderInteractiveChallenge(); // Re-render
+        renderInteractiveChallenge(); 
         soundService.playSound('click');
     }
 }
@@ -804,7 +764,6 @@ function handleMatchClick(e, id, side) {
     
     if (el.classList.contains('matched')) return;
 
-    // Deselect if clicking same
     if (selectedMatchItem && selectedMatchItem.el === el) {
         el.classList.remove('selected');
         selectedMatchItem = null;
@@ -812,7 +771,6 @@ function handleMatchClick(e, id, side) {
     }
 
     if (selectedMatchItem) {
-        // If same side, switch selection
         if (selectedMatchItem.side === side) {
             selectedMatchItem.el.classList.remove('selected');
             el.classList.add('selected');
@@ -820,17 +778,14 @@ function handleMatchClick(e, id, side) {
             return;
         }
         
-        // Attempt Match
-        const isMatch = selectedMatchItem.id === id; // IDs must match for correct pair
+        const isMatch = selectedMatchItem.id === id; 
         
         if (isMatch) {
-            // Visual success
             el.classList.add('matched');
             selectedMatchItem.el.classList.add('matched');
-            interactiveUserState.push(id); // Record success
+            interactiveUserState.push(id); 
             soundService.playSound('correct');
         } else {
-            // Visual error shake
             el.classList.add('incorrect');
             selectedMatchItem.el.classList.add('incorrect');
             soundService.playSound('incorrect');
@@ -840,17 +795,14 @@ function handleMatchClick(e, id, side) {
             }, 500);
         }
         
-        // Reset selection
         selectedMatchItem.el.classList.remove('selected');
         selectedMatchItem = null;
         
-        // Check win condition immediately for matching
         if (interactiveUserState.length === interactiveData.items.length) {
             submitInteractive();
         }
 
     } else {
-        // Select first
         el.classList.add('selected');
         selectedMatchItem = { el, id, side };
     }
@@ -862,33 +814,30 @@ function submitInteractive() {
     let isCorrect = false;
 
     if (interactiveData.challengeType === 'sequence') {
-        // Check order against original interactiveData.items
         const correctOrder = interactiveData.items.map(i => i.id);
         const userOrder = interactiveUserState.map(i => i.id);
         isCorrect = JSON.stringify(correctOrder) === JSON.stringify(userOrder);
         
-        // Visual feedback
         const domItems = document.querySelectorAll('.sortable-item');
         domItems.forEach((el, i) => {
             if (userOrder[i] === correctOrder[i]) el.classList.add('correct');
             else el.classList.add('incorrect');
         });
     } else {
-        // Matching is implicitly correct if they cleared the board
         isCorrect = interactiveUserState.length === interactiveData.items.length;
     }
 
     if (isCorrect) {
-        score = 1; // Binary score for challenge
-        xpGainedThisLevel = 50; // Bonus for interactive
+        score = 1; 
+        xpGainedThisLevel = 50; 
         soundService.playSound('achievement');
         announce('Challenge Complete!');
-        showResults(true); // Pass true to indicate it's a challenge
+        showResults(true); 
     } else {
         score = 0;
         soundService.playSound('incorrect');
         announce('Challenge Failed.');
-        triggerRetryGeneration(); // Prefetch retry immediately on failure
+        triggerRetryGeneration(); 
         showResults(true);
     }
 }
@@ -928,13 +877,11 @@ function renderQuestion() {
 
 function startTimer() {
     clearInterval(timerInterval);
-    // Boss Timer is much shorter (20s -> 39s) vs Standard (60s)
     timeLeft = (levelContext.isBoss && !isInteractiveLevel) ? BOSS_TIME_LIMIT : 60;
     
     const displayTime = timeLeft < 10 ? `00:0${timeLeft}` : `00:${timeLeft}`;
     elements.timerText.textContent = displayTime;
     
-    // Add urgency color if boss
     if (levelContext.isBoss) elements.timerText.style.color = '#ff4040';
     else elements.timerText.style.color = 'var(--color-primary)';
 
@@ -1014,7 +961,6 @@ function handleSubmitAnswer() {
             setTimeout(() => document.body.classList.remove('damage-flash'), 500);
         }
 
-        // Prefetch backup retry if we don't have enough local questions
         triggerRetryGeneration();
     }
 
@@ -1049,7 +995,6 @@ function handleReviewAnswers() {
     window.location.hash = '#/review';
 }
 
-// Simple Canvas Confetti Implementation
 function fireConfetti() {
     const canvas = document.createElement('canvas');
     canvas.id = 'confetti-canvas';
@@ -1119,7 +1064,6 @@ function fireConfetti() {
 async function handleRetryClick(e) {
     const btn = e.target;
     
-    // OPTION 1: Instant Retry with local questions (Standard Quiz)
     const canInstantRetry = !levelContext.isBoss && !isInteractiveLevel && ((currentAttemptSet + 1) * STANDARD_QUESTIONS_PER_ATTEMPT < masterQuestionsList.length);
     
     if (canInstantRetry) {
@@ -1128,9 +1072,7 @@ async function handleRetryClick(e) {
         return;
     }
 
-    // OPTION 2: Use pre-fetched data (Background generation finished)
     if (retryGenerationPromise) {
-        // Show loading state on button to handle slow promise resolution
         btn.disabled = true;
         btn.innerHTML = `<div class="btn-spinner"></div> Loading...`;
         
@@ -1140,7 +1082,7 @@ async function handleRetryClick(e) {
                 levelData = data;
                 if (isInteractiveLevel) {
                     interactiveData = data;
-                    interactiveUserState = []; // Reset user state
+                    interactiveUserState = []; 
                 } else {
                     masterQuestionsList = levelData.questions || [];
                     currentAttemptSet = 0;
@@ -1155,7 +1097,6 @@ async function handleRetryClick(e) {
         }
     }
 
-    // OPTION 3: Hard Refresh (Fallback)
     if (elements.loadingText) elements.loadingText.textContent = isInteractiveLevel ? "Rebuilding Challenge..." : "Regenerating Level...";
     elements.skipPopup.style.display = 'none';
     switchState('level-loading-state');
@@ -1163,23 +1104,20 @@ async function handleRetryClick(e) {
 }
 
 function showResults(isInteractive = false, isAntiCheatForfeit = false) {
-    removeAntiCheat(); // Safety cleanup
+    removeAntiCheat(); 
     
     let passed = false;
     let totalQuestions = 1;
-    let scoreDisplay = score;
 
     if (isInteractive) {
-        passed = score === 1; // Binary pass/fail for now
+        passed = score === 1; 
         totalQuestions = 1;
     } else {
         totalQuestions = currentQuestions.length;
         const scorePercent = totalQuestions > 0 ? (score / totalQuestions) : 0;
         passed = scorePercent >= PASS_THRESHOLD;
-        scoreDisplay = score;
     }
     
-    // Anti-cheat override
     if (isAntiCheatForfeit) {
         passed = false;
     }
@@ -1190,13 +1128,12 @@ function showResults(isInteractive = false, isAntiCheatForfeit = false) {
         topic: `${levelContext.topic} - Level ${levelContext.level}`,
         score: score,
         totalQuestions: totalQuestions,
-        startTime: Date.now() - (60000), // Approx
+        startTime: Date.now() - (60000), 
         endTime: Date.now(),
         xpGained: isAntiCheatForfeit ? 0 : xpGainedThisLevel,
     });
 
     if (!isInteractive && !isAntiCheatForfeit) {
-        // Auto-Save Mistakes
         let mistakesSaved = 0;
         currentQuestions.forEach((q, index) => {
             if (userAnswers[index] !== q.correctAnswerIndex && userAnswers[index] !== undefined) {
@@ -1238,7 +1175,7 @@ function showResults(isInteractive = false, isAntiCheatForfeit = false) {
         const journey = learningPathService.getJourneyById(levelContext.journeyId);
         if (journey && journey.currentLevel === levelContext.level) learningPathService.completeLevel(levelContext.journeyId);
 
-        fireConfetti(); // CELEBRATION!
+        fireConfetti(); 
         preloadNextLevel();
 
     } else {
@@ -1258,14 +1195,12 @@ function showResults(isInteractive = false, isAntiCheatForfeit = false) {
              elements.resultsDetails.textContent = isInteractive ? 'Solution Incorrect.' : `You scored ${score} out of ${totalQuestions}. Review the lesson.`;
         }
        
-        // Retry logic
         const canInstantRetry = !levelContext.isBoss && !isInteractive && !isAntiCheatForfeit && ((currentAttemptSet + 1) * STANDARD_QUESTIONS_PER_ATTEMPT < masterQuestionsList.length);
         
         const retryText = canInstantRetry ? "Try Again (Instant)" : "Try Again";
         
         elements.resultsActions.innerHTML = `<a href="#/game/${encodeURIComponent(levelContext.topic)}" class="btn">Back to Map</a> <button id="retry-level-btn" class="btn btn-primary">${retryText}</button> ${reviewBtnHTML}`;
         
-        // CRITICAL FIX: Using onclick handler to prevent Event Listener accumulation in SPA
         const retryBtn = document.getElementById('retry-level-btn');
         if(retryBtn) {
             retryBtn.onclick = handleRetryClick;
@@ -1323,7 +1258,6 @@ async function handleAskAI() {
     elements.askAiAnswer.innerHTML = '<div class="spinner"></div> Analyzing...';
     
     try {
-        // Fallback context: Use lesson if available, otherwise just use the question text to give AI *something*
         const context = levelData.lesson || `Context: Quiz on ${levelContext.topic}`;
         const result = await apiService.explainConcept(levelContext.topic, concept, context);
         elements.askAiAnswer.textContent = result.explanation;
@@ -1444,7 +1378,7 @@ export function init() {
     elements.hintBtn.addEventListener('click', handleHintClick);
     
     // Skip Handler
-    elements.skipBtn.addEventListener('click', handleSkipToQuiz);
+    if(elements.skipBtn) elements.skipBtn.addEventListener('click', handleSkipToQuiz);
 
     // Initial load: Do NOT force refresh, use cache if available.
     startLevel(false);
@@ -1455,12 +1389,11 @@ export function destroy() {
     if (typewriterInterval) clearInterval(typewriterInterval);
     stopLoadingAnimation();
     stopAudio();
-    removeAntiCheat(); // Crucial cleanup
+    removeAntiCheat(); 
     if (outputAudioContext) {
         outputAudioContext.close().catch(e => console.error(e));
         outputAudioContext = null;
     }
-    // Cancel any ongoing generation on destroy
     if (lessonAbortController) {
         lessonAbortController.abort();
     }

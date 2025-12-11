@@ -18,17 +18,17 @@ let topicsCache = null;
 
 // --- DYNAMIC PERSONA SYSTEM ---
 const PERSONA_DEFINITIONS = {
-    apex: `Persona: An Elite Professional Tutor.
-           Tone: Engaging, direct, and practical.
-           Style: NEVER ask rote definitions like "What is X?". ALWAYS ask "Situation X is happening. What do you do?". Focus on application and critical thinking.`,
+    apex: `Persona: An Elite Training Simulator for Professionals.
+           Tone: High-stakes, immersive, direct, and encouraging.
+           Style: NEVER ask "What is X?". ALWAYS ask "Situation X is happening. What do you do?". Treat the user like an operator in the field.`,
     
     sage: `Persona: A Socratic Mentor using Real-World Case Studies.
            Tone: Thoughtful, deep, but practical.
            Style: Frame every question as a dilemma requiring wisdom. Use analogies from nature or history.`,
     
     commander: `Persona: Tactical Mission Control.
-           Tone: Urgent, precise, and high-stakes.
-           Style: "Situation Report: [Scenario]. Immediate Action Required: [Question]." Focus on rapid decision making under pressure.`,
+           Tone: Urgent, military-grade precision.
+           Style: "Situation Report: [Scenario]. Orders: [Question]." Focus on rapid decision making under pressure.`,
     
     eli5: `Persona: A Creative Workshop Director.
            Tone: Playful, imaginative, and hands-on.
@@ -38,7 +38,7 @@ const PERSONA_DEFINITIONS = {
 function getSystemInstruction(personaKey = 'apex') {
     const personaDesc = PERSONA_DEFINITIONS[personaKey] || PERSONA_DEFINITIONS.apex;
     
-    return `You are **ApexCore**, the AI engine for Skill Apex.
+    return `You are **ApexCore**, the master engine for Skill Apex.
     ${personaDesc}
 
     **CORE OPERATING RULES:**
@@ -314,8 +314,8 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
     // We force "Application" at all stages to impress users in the Expo.
     
     let scenarioDepth = "";
-    if (level <= 10) {
-        scenarioDepth = "SIMPLE SCENARIOS: 'You are attempting to X. What do you use?'. Focus on basic application.";
+    if (level <= 5) {
+        scenarioDepth = "SIMPLE SCENARIOS: 'You are attempting to X. What do you use?'. Focus on basic application and Scaffolding.";
     } else if (level <= 30) {
         scenarioDepth = "REAL WORLD PROBLEMS: 'A system failed with error Y. What is the cause?'. Focus on troubleshooting.";
     } else {
@@ -378,16 +378,25 @@ async function generateInteractiveLevel(topic, level, persona) {
 async function generateLevelLesson(topic, level, totalLevels, questionsContext, persona) {
     if (!ai) throw new Error("AI Service not initialized.");
     
-    // Optimized for speed reading (Expo Context)
-    const prompt = `Give a **Fast-Paced Executive Briefing** on "${topic}" (Level ${level}).
+    // SCAFFOLDING & EXPO OPTIMIZATION
+    let styleGuide = "";
+    if (level <= 5) {
+        styleGuide = `**MISSION BRIEFING (Foundational):**
+        1. Explain the core concept simply using a real-world analogy.
+        2. Explain *why* this matters.
+        3. Keep it encouraging.`;
+    } else {
+        styleGuide = `**EXECUTIVE BRIEFING:**
+        1. Bullet points only.
+        2. Focus on strategy and edge cases.
+        3. No fluff.`;
+    }
+
+    const prompt = `Write a short Educational Lesson for "${topic}" (Level ${level}).
     
-    STYLE:
-    - 3-4 Bullet Points ONLY.
-    - Key Takeaway.
-    - 1 Real-World Analogy.
-    - NO long paragraphs.
+    ${styleGuide}
     
-    The user is in a hurry. Make it punchy and clear.
+    CONSTRAINT: Keep it under 150 words. Punchy and clear.
     Return JSON.`;
 
     try {

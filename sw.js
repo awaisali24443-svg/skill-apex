@@ -1,12 +1,12 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 5.9.11 (Standard Pro Text Update)
+ * @version 5.10.0 (Split Mode & Expo Polish)
  *
  * This service worker implements a robust offline-first caching strategy.
  */
 
-const CACHE_NAME = 'skill-apex-v5.9.11';
+const CACHE_NAME = 'skill-apex-v5.10.0';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [
