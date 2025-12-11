@@ -110,7 +110,8 @@ export function renderSidebar(container) {
                 danger: true
             });
             if (confirmed) {
-                firebaseService.logout();
+                await firebaseService.logout();
+                window.location.reload(); // Force reload to clear state and return to auth screen cleanly
             }
         });
     }

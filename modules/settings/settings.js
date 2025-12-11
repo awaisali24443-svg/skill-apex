@@ -131,6 +131,7 @@ async function handleLogout() {
              Object.values(LOCAL_STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
         }
         await firebaseService.logout();
+        window.location.reload(); // Force refresh to ensure clean state
     }
 }
 
