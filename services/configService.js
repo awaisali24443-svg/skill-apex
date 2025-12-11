@@ -2,7 +2,7 @@
 import { LOCAL_STORAGE_KEYS } from '../constants.js';
 
 const defaultConfig = {
-    theme: 'dark-cyber', // Updated to match new default
+    theme: 'light-cyber', // Default to Light Mode for Expo/Daylight
     enableSound: true,
     animationIntensity: 'full', 
     aiPersona: 'apex' 
@@ -15,8 +15,6 @@ function loadConfig() {
         const storedConfig = localStorage.getItem(LOCAL_STORAGE_KEYS.CONFIG);
         if (storedConfig) {
             currentConfig = { ...defaultConfig, ...JSON.parse(storedConfig) };
-            // Ensure we override theme even if user had one saved, to enforce the design request
-            currentConfig.theme = 'dark-cyber'; 
         }
     } catch (e) {
         console.error("Failed to load config", e);

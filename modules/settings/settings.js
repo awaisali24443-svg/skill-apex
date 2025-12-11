@@ -25,6 +25,9 @@ function loadSettings() {
         }
     });
     
+    // Set Active Theme State
+    updateThemeUI(config.theme);
+
     const isGuest = firebaseService.isGuest();
     const provider = firebaseService.getUserProvider();
 
@@ -48,6 +51,40 @@ function loadSettings() {
             }
         }
     }
+}
+
+function updateThemeUI(currentTheme) {
+    const indicator = document.querySelector('.segmented-control-indicator');
+    const lightBtn = document.getElementById('theme-light-btn');
+    const darkBtn = document.getElementById('theme-dark-btn');
+    
+    if (!indicator || !lightBtn || !darkBtn) return;
+
+    // Default to light if unknown
+    const isDark = currentTheme === 'dark-cyber';
+    
+    if (isDark) {
+        darkBtn.setAttribute('aria-pressed', 'true');
+        lightBtn.setAttribute('aria-pressed', 'false');
+        // Move indicator to the right
+        indicator.style.left = '50%';
+        indicator.style.width = '50%';
+    } else {
+        lightBtn.setAttribute('aria-pressed', 'true');
+        darkBtn.setAttribute('aria-pressed', 'false');
+        // Move indicator to the left
+        indicator.style.left = '4px'; // 4px padding in css
+        indicator.style.width = 'calc(50% - 4px)';
+    }
+}
+
+function handleThemeChange(event) {
+    const btn = event.target.closest('.theme-btn');
+    if (!btn) return;
+    
+    const theme = btn.dataset.theme;
+    configService.setConfig({ theme: theme });
+    updateThemeUI(theme);
 }
 
 function handleSoundToggle() {
@@ -288,6 +325,10 @@ export function init() {
         logoutBtnText: document.getElementById('logout-btn-text'),
         guestWarning: document.getElementById('guest-warning'),
         
+        // Theme Buttons
+        themeLightBtn: document.getElementById('theme-light-btn'),
+        themeDarkBtn: document.getElementById('theme-dark-btn'),
+        
         // Upgrade Elements
         upgradeSection: document.getElementById('upgrade-account-section'),
         linkGoogleBtn: document.getElementById('link-google-btn'),
@@ -311,6 +352,9 @@ export function init() {
     };
 
     loadSettings();
+
+    if (elements.themeLightBtn) elements.themeLightBtn.addEventListener('click', handleThemeChange);
+    if (elements.themeDarkBtn) elements.themeDarkBtn.addEventListener('click', handleThemeChange);
 
     if (elements.soundToggle) elements.soundToggle.addEventListener('change', handleSoundToggle);
     if (elements.animationSlider) elements.animationSlider.addEventListener('input', handleAnimationChange);
@@ -342,6 +386,9 @@ export function init() {
 }
 
 export function destroy() {
+    if (elements.themeLightBtn) elements.themeLightBtn.removeEventListener('click', handleThemeChange);
+    if (elements.themeDarkBtn) elements.themeDarkBtn.removeEventListener('click', handleThemeChange);
+
     if (elements.soundToggle) elements.soundToggle.removeEventListener('change', handleSoundToggle);
     if (elements.animationSlider) elements.animationSlider.removeEventListener('input', handleAnimationChange);
     if (elements.clearDataBtn) elements.clearDataBtn.removeEventListener('click', handleClearData);
