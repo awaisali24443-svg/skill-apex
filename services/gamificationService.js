@@ -149,10 +149,10 @@ async function loadStats() {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.GAMIFICATION);
         const storedData = stored ? JSON.parse(stored) : {};
         
-        // Merge to ensure new fields are initialized
+        // Merge to ensure new fields are initialized correctly
         stats = { ...defaultStats, ...storedData };
         
-        // Ensure array initialization for new users or migration
+        // Safety check for arrays
         if (!Array.isArray(stats.uniqueTopicsPlayed)) stats.uniqueTopicsPlayed = [];
 
         checkDailyQuests();

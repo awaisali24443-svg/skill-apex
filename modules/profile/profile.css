@@ -185,7 +185,12 @@
     transform: scale(1.1);
 }
 
-.achievement-icon-wrapper svg { width: 80px; height: 80px; transition: transform 0.3s ease; }
+/* Important: Force size to override global .icon class */
+.achievement-icon-wrapper svg.icon { 
+    width: 80px !important; 
+    height: 80px !important; 
+    transition: transform 0.3s ease; 
+}
 
 .ach-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; color: var(--color-text); }
 .ach-desc { font-size: 0.9rem; color: var(--color-text-secondary); margin-bottom: 24px; line-height: 1.4; }

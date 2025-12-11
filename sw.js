@@ -1,12 +1,12 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 5.12.0 (Added VFX Service)
+ * @version 5.13.0 (Achievements Update)
  *
  * This service worker implements a robust offline-first caching strategy.
  */
 
-const CACHE_NAME = 'skill-apex-v5.12.0';
+const CACHE_NAME = 'skill-apex-v5.13.0';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [
@@ -54,7 +54,7 @@ const APP_SHELL_URLS = [
     'services/toastService.js',
     'services/voiceCommandService.js',
     'services/firebaseService.js',
-    'services/vfxService.js', // NEW
+    'services/vfxService.js',
     // App Modules
     'modules/auth/auth.html', 'modules/auth/auth.css', 'modules/auth/auth.js',
     'modules/home/home.html', 'modules/home/home.css', 'modules/home/home.js',
