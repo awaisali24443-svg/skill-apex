@@ -18,39 +18,34 @@ let topicsCache = null;
 
 // --- DYNAMIC PERSONA SYSTEM ---
 const PERSONA_DEFINITIONS = {
-    apex: `Persona: A fusion of a Senior Educator, Cognitive Psychologist, and Lead Game Designer.
-           Tone: Professional, encouraging, gamified, and precise.`,
+    apex: `Persona: An Elite Professional Tutor.
+           Tone: Engaging, direct, and practical.
+           Style: NEVER ask rote definitions like "What is X?". ALWAYS ask "Situation X is happening. What do you do?". Focus on application and critical thinking.`,
     
-    sage: `Persona: A Socratic Philosopher and Wise Mentor.
-           Tone: Thoughtful, deep, and inquisitive. 
-           Style: Often answer questions with guiding questions to provoke thought. Use metaphors from nature and logic.`,
+    sage: `Persona: A Socratic Mentor using Real-World Case Studies.
+           Tone: Thoughtful, deep, but practical.
+           Style: Frame every question as a dilemma requiring wisdom. Use analogies from nature or history.`,
     
-    commander: `Persona: A Futuristic Military Drill Instructor.
-           Tone: Intense, direct, strict, and high-energy.
-           Style: No fluff. Focus on discipline, 'mission objectives', and 'tactical knowledge'. Call the user 'Recruit' or 'Operative'.`,
+    commander: `Persona: Tactical Mission Control.
+           Tone: Urgent, precise, and high-stakes.
+           Style: "Situation Report: [Scenario]. Immediate Action Required: [Question]." Focus on rapid decision making under pressure.`,
     
-    eli5: `Persona: A Friendly Science Teacher for kids.
-           Tone: Gentle, enthusiastic, and very simple.
-           Style: Use many analogies (LEGOs, pizza, cars). Avoid jargon. Explain complex topics in the simplest terms possible.`
+    eli5: `Persona: A Creative Workshop Director.
+           Tone: Playful, imaginative, and hands-on.
+           Style: Use "Imagine you are building a lego castle..." style analogies to explain complex topics.`
 };
 
 function getSystemInstruction(personaKey = 'apex') {
     const personaDesc = PERSONA_DEFINITIONS[personaKey] || PERSONA_DEFINITIONS.apex;
     
-    return `You are **ApexCore**, the master AI engine for the Skill Apex learning platform.
+    return `You are **ApexCore**, the AI engine for Skill Apex.
     ${personaDesc}
 
     **CORE OPERATING RULES:**
-    1. **Instructional Design:** Apply Bloom's Taxonomy. Concepts must spiral from simple definitions to complex application.
-    2. **Gamification:** Treat knowledge acquisition as an RPG. Exams are "Boss Battles".
-    3. **Visual Learning:** Always support abstract concepts with Mermaid.js diagrams or analogies.
-    4. **Format:** Output strictly valid JSON when requested.
-    
-    **DIFFICULTY CLUSTERS:**
-    - **Levels 1-10 (Novice):** Focus on definitions, identification, and basic concepts.
-    - **Levels 11-30 (Pro):** Focus on scenarios, application, and "How-to".
-    - **Levels 31-45 (Expert):** Focus on analysis, edge cases, and troubleshooting.
-    - **Levels 46-50 (Mastery):** Multi-step reasoning, synthesis, and complex challenges.
+    1. **NO ROTE MEMORIZATION:** Do not ask definitions. Ask for *Application*.
+    2. **SCENARIO FIRST:** Start every question with a tiny context (e.g., "You are a Manager...", "The server is crashing...", "You are painting a sunset...").
+    3. **VISUAL LANGUAGE:** Use emoji and vivid verbs.
+    4. **FORMAT:** Output strictly valid JSON.
     `;
 }
 
@@ -232,8 +227,11 @@ const dailyChallengeSchema = {
 async function generateJourneyPlan(topic, persona) {
     if (!ai) throw new Error("AI Service not initialized.");
     const prompt = `Analyze the topic "${topic}".
-    Task: Determine the ideal number of levels to create a comprehensive learning journey.
-    Rules: Multiple of 10. Write a gamified one-sentence description.
+    Task: Design a comprehensive learning path.
+    Output: 
+    1. Topic Name (Formal).
+    2. Total Levels (Multiple of 10).
+    3. Description: A compelling, exciting 1-sentence hook about mastering this skill.
     Return JSON.`;
     
     try {
@@ -311,27 +309,34 @@ async function generateCurriculumOutline(topic, totalLevels, persona) {
 async function generateLevelQuestions(topic, level, totalLevels, persona) {
     if (!ai) throw new Error("AI Service not initialized.");
     
-    // ApexCore Difficulty Clusters
-    let complexityInstruction = "";
+    // --- UPDATED LOGIC: ALL LEVELS ARE SCENARIO-BASED ---
+    // We no longer use simple definitions for low levels. 
+    // We force "Application" at all stages to impress users in the Expo.
+    
+    let scenarioDepth = "";
     if (level <= 10) {
-        complexityInstruction = "**NOVICE MODE:** Focus on definitions and basics.";
+        scenarioDepth = "SIMPLE SCENARIOS: 'You are attempting to X. What do you use?'. Focus on basic application.";
     } else if (level <= 30) {
-        complexityInstruction = "**PRO MODE:** Focus on scenarios and application.";
-    } else if (level <= 45) {
-        complexityInstruction = "**EXPERT MODE:** Focus on complex analysis.";
+        scenarioDepth = "REAL WORLD PROBLEMS: 'A system failed with error Y. What is the cause?'. Focus on troubleshooting.";
     } else {
-        complexityInstruction = "**MASTERY MODE:** Multi-step reasoning.";
+        scenarioDepth = "COMPLEX CASE STUDIES: Multi-variable problems requiring synthesis of concepts.";
     }
 
-    const prompt = `Create a quiz for "${topic}". Level: ${level} / ${totalLevels}.
-    ${complexityInstruction}
-    TASK: Generate exactly 6 multiple-choice questions.
-    RULES: Distractors must be plausible. Provide explanations.
+    const prompt = `Create a **Scenario-Based** quiz for "${topic}". Level: ${level} / ${totalLevels}.
+    
+    ${scenarioDepth}
+    
+    CRITICAL RULES:
+    1. **NO 'What is X?' questions.**
+    2. Place the user in a role (e.g. 'You are a Manager', 'You are a Developer', 'You are an Artist').
+    3. Present a situation, then ask for the solution.
+    4. Generate exactly 3 high-quality questions.
+    
     Return JSON.`;
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash', // Switched to Flash for reliability
+            model: 'gemini-2.5-flash', 
             contents: prompt,
             config: {
                 systemInstruction: getSystemInstruction(persona),
@@ -373,9 +378,16 @@ async function generateInteractiveLevel(topic, level, persona) {
 async function generateLevelLesson(topic, level, totalLevels, questionsContext, persona) {
     if (!ai) throw new Error("AI Service not initialized.");
     
-    const prompt = `Teach a masterclass on "${topic}" (Level ${level}).
-    Write a high-impact, "Presentation Style" lesson.
-    Use Bullet Points, EMOJIS, and Mermaid.js diagrams.
+    // Optimized for speed reading (Expo Context)
+    const prompt = `Give a **Fast-Paced Executive Briefing** on "${topic}" (Level ${level}).
+    
+    STYLE:
+    - 3-4 Bullet Points ONLY.
+    - Key Takeaway.
+    - 1 Real-World Analogy.
+    - NO long paragraphs.
+    
+    The user is in a hurry. Make it punchy and clear.
     Return JSON.`;
 
     try {
@@ -398,13 +410,12 @@ async function generateLevelLesson(topic, level, totalLevels, questionsContext, 
 async function generateBossBattleContent(topic, chapter, persona) {
     if (!ai) throw new Error("AI Service not initialized.");
     
-    const prompt = `Create a "Boss Battle" exam for "${topic}" Chapter ${chapter}.
-    Generate 10 challenging multiple-choice questions.
-    Difficulty: Very Hard. Real World scenarios.
+    const prompt = `Create a **Boss Battle Exam** for "${topic}" Chapter ${chapter}.
+    Generate 10 CHALLENGING Scenario-based questions.
+    Context: 'The system is critical. You have one chance to fix it.'
     Return JSON.`;
 
     try {
-        // Changed to gemini-2.5-flash for reliability/speed on boss battles too
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: prompt,

@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import * as apiService from '../../services/apiService.js';
 import * as learningPathService from '../../services/learningPathService.js';
 import * as markdownService from '../../services/markdownService.js';
@@ -66,12 +61,11 @@ const STANDARD_QUESTIONS_PER_ATTEMPT = 3;
 const BOSS_TIME_LIMIT = 39; // Extended from 20 to 39 seconds
 
 const LOADING_MESSAGES = [
-    "Analyzing Neural Pathways...",
-    "Synthesizing Curriculum...",
-    "Calibrating Difficulty Vectors...",
+    "Analyzing Topic Structure...",
     "Generating Scenario Logic...",
-    "Compiling Knowledge Shards...",
-    "Optimizing Experience..."
+    "Calibrating Difficulty...",
+    "Synthesizing Lesson Data...",
+    "Finalizing Content..."
 ];
 
 function announce(message, polite = false) {
@@ -122,7 +116,7 @@ function startLoadingAnimation() {
     if (loadingTextInterval) clearInterval(loadingTextInterval);
     let index = 0;
     // Reset to initial text
-    if(elements.loadingText) elements.loadingText.textContent = "Establishing Link...";
+    if(elements.loadingText) elements.loadingText.textContent = "Connecting to Core...";
     
     // Faster interval (1000ms instead of 1500ms) to make it feel snappier
     loadingTextInterval = setInterval(() => {
@@ -423,41 +417,6 @@ function renderLessonTypewriter(htmlContent) {
     container.innerHTML = ''; // Clear previous
     container.classList.add('typewriter-cursor');
     
-    // Flatten DOM into a queue of "actions" (Append Node OR Append Text Char)
-    const actionQueue = [];
-    
-    function traverse(node) {
-        if (node.nodeType === Node.TEXT_NODE) {
-            const text = node.textContent;
-            for (let char of text) {
-                actionQueue.push({ type: 'char', content: char });
-            }
-        } else if (node.nodeType === Node.ELEMENT_NODE) {
-            // Push an "open tag" action - actually we'll clone the node without children
-            const clone = node.cloneNode(false); // shallow clone
-            actionQueue.push({ type: 'element', content: clone });
-            
-            // Recurse children
-            node.childNodes.forEach(child => traverse(child));
-            
-            // We need a way to know "where" to append subsequent chars.
-            // Simplified approach: We reconstruct the tree pointer as we go.
-        }
-    }
-    
-    // Better Strategy: Tokenize by visual blocks, not pure characters, for stability.
-    // Actually, simple approach:
-    // 1. Set full HTML but HIDDEN.
-    // 2. Reveal words/chars via CSS? No, too complex.
-    
-    // Robust Approach:
-    // Just dump the HTML fully but use the 'typewriter' class to hide everything
-    // and then JS to reveal nodes?
-    // No, standard text node slicing is best.
-    
-    // Let's use the markdownService directly rendered string and manipulate it.
-    // We will just stream textContent of leaf nodes.
-    
     container.innerHTML = htmlContent;
     const allTextNodes = [];
     const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
@@ -506,7 +465,7 @@ function renderLessonTypewriter(htmlContent) {
             nodeIndex++;
             charIndex = 0;
         }
-    }, 10); // Fast typing speed (10ms)
+    }, 3); // UPDATED: Very fast typing speed (3ms) for demos
 }
 
 function renderLesson() {
