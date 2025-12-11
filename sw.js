@@ -1,12 +1,12 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 5.10.0 (Split Mode & Expo Polish)
+ * @version 5.11.0 (Instant Load Strategy)
  *
  * This service worker implements a robust offline-first caching strategy.
  */
 
-const CACHE_NAME = 'skill-apex-v5.10.0';
+const CACHE_NAME = 'skill-apex-v5.11.0';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [
@@ -16,6 +16,7 @@ const APP_SHELL_URLS = [
     'constants.js',
     'manifest.json',
     'data/topics.json',
+    'data/prebaked_levels.json', // NEW: Cache the prebaked data!
     'global/global.css',
     'global/global.js',
     'themes/theme-dark-cyber.css',
@@ -131,6 +132,12 @@ self.addEventListener('fetch', (event) => {
             );
             return;
         }
+        return;
+    }
+    
+    // Explicitly cache prebaked data
+    if (url.pathname === '/data/prebaked_levels.json') {
+        event.respondWith(staleWhileRevalidate(CACHE_NAME, request));
         return;
     }
     

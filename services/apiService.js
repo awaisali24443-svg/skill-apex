@@ -2,6 +2,19 @@
 import { showToast } from './toastService.js';
 import * as configService from './configService.js';
 
+let prebakedData = null;
+
+// Load prebaked data once on init
+async function loadPrebakedData() {
+    try {
+        const response = await fetch('data/prebaked_levels.json');
+        prebakedData = await response.json();
+    } catch (e) {
+        console.warn("Failed to load prebaked levels:", e);
+    }
+}
+loadPrebakedData();
+
 async function handleResponse(response) {
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred.', details: response.statusText }));
@@ -11,7 +24,7 @@ async function handleResponse(response) {
     return response.json();
 }
 
-async function fetchWithTimeout(url, options = {}, timeout = 60000) { // Increased to 60s
+async function fetchWithTimeout(url, options = {}, timeout = 60000) { 
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
     
@@ -77,7 +90,15 @@ export async function generateCurriculumOutline({ topic, totalLevels }) {
     return await handleResponse(response);
 }
 
+// --- MODIFIED LEVEL GENERATION FOR EXPO SPEED ---
 export async function generateLevelQuestions({ topic, level, totalLevels }) {
+    // 1. Check for Pre-baked Level 1 Data (Instant Load)
+    if (level === 1 && prebakedData && prebakedData[topic]) {
+        console.log(`[FAST LOAD] Using pre-baked questions for ${topic}`);
+        // Return a promise that resolves immediately to simulate API
+        return Promise.resolve({ questions: prebakedData[topic].questions });
+    }
+
     const response = await fetchWithTimeout('/api/generate-level-questions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -96,6 +117,12 @@ export async function generateInteractiveLevel({ topic, level }) {
 }
 
 export async function generateLevelLesson({ topic, level, totalLevels, questions, signal }) {
+    // 1. Check for Pre-baked Level 1 Data (Instant Load)
+    if (level === 1 && prebakedData && prebakedData[topic]) {
+        console.log(`[FAST LOAD] Using pre-baked lesson for ${topic}`);
+        return Promise.resolve({ lesson: prebakedData[topic].lesson });
+    }
+
     const response = await fetchWithTimeout('/api/generate-level-lesson', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

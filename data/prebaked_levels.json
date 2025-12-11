@@ -1,0 +1,95 @@
+
+{
+    "Python for Beginners": {
+        "lesson": "### **MISSION BRIEFING: PYTHON SYNTAX**\n\n**OBJECTIVE:** Master the basic syntax of Python to issue commands to the system.\n\n*   **Variables:** Think of them as labeled boxes. `score = 10` puts the number 10 in a box named 'score'.\n*   **Print:** The command to talk back. `print('System Ready')` displays text.\n*   **Indentation:** Python uses whitespace to define blocks. No braces `{}` required. Indent to be inside a loop or function.\n\n**STATUS:** System waiting for input. Execute code immediately.",
+        "questions": [
+            {
+                "question": "You need to store the user's name 'Agent' in a variable. Which command is valid?",
+                "options": ["var name = 'Agent';", "name = 'Agent'", "String name = 'Agent';", "name := 'Agent'"],
+                "correctAnswerIndex": 1,
+                "explanation": "Python uses dynamic typing. You simply assign the value to the name using `=`."
+            },
+            {
+                "question": "The system needs to output a warning message to the console. Which function do you deploy?",
+                "options": ["echo('Warning')", "console.log('Warning')", "print('Warning')", "System.out.println('Warning')"],
+                "correctAnswerIndex": 2,
+                "explanation": "`print()` is the standard output function in Python."
+            },
+            {
+                "question": "You are writing a loop. How do you tell Python which code belongs inside the loop?",
+                "options": ["Wrap it in curly braces {}", "Indent the code with 4 spaces", "Put 'end' after the code", "Wrap it in parentheses ()"],
+                "correctAnswerIndex": 1,
+                "explanation": "Python relies on indentation (whitespace) to define scope blocks, unlike C-style languages that use braces."
+            }
+        ]
+    },
+    "Cybersecurity & Ethical Hacking": {
+        "lesson": "### **MISSION BRIEFING: RECONNAISSANCE**\n\n**OBJECTIVE:** Gather intelligence on a target system before engaging.\n\n*   **IP Address:** The digital coordinates of a target.\n*   **Port Scanning:** Knocking on digital doors to see which ones are open (services running).\n*   **Nmap:** The industry-standard tool for network mapping.\n\n**STATUS:** Target Acquired. Begin scan.",
+        "questions": [
+            {
+                "question": "You need to discover which services (web, email) are running on a target server. Which tool do you deploy?",
+                "options": ["Wireshark", "Nmap", "Metasploit", "John the Ripper"],
+                "correctAnswerIndex": 1,
+                "explanation": "Nmap (Network Mapper) is the premier tool for network discovery and security auditing."
+            },
+            {
+                "question": "You see Port 80 is open on the target. What service is likely running there?",
+                "options": ["SSH (Secure Shell)", "FTP (File Transfer)", "HTTP (Web Server)", "DNS (Domain Name System)"],
+                "correctAnswerIndex": 2,
+                "explanation": "Port 80 is the standard port for unencrypted Web traffic (HTTP)."
+            },
+            {
+                "question": "You want to remain hidden while scanning. Which technique minimizes noise?",
+                "options": ["Ping Sweep", "Stealth Scan (SYN Scan)", "Aggressive Scan (-A)", "Denial of Service"],
+                "correctAnswerIndex": 1,
+                "explanation": "A SYN scan (half-open scan) does not complete the TCP handshake, making it harder for older logging systems to detect."
+            }
+        ]
+    },
+    "Introduction to Astrophysics": {
+        "lesson": "### **MISSION BRIEFING: STELLAR MECHANICS**\n\n**OBJECTIVE:** Understand the life cycle of stars to navigate the cosmos.\n\n*   **Gravity vs. Fusion:** A star is a constant battle between gravity pulling in and nuclear fusion pushing out.\n*   **Light Year:** A measure of *distance*, not time. The distance light travels in one year.\n*   **Black Hole:** A region where gravity is so strong, not even light can escape.\n\n**STATUS:** Telescope aligned. Observation beginning.",
+        "questions": [
+            {
+                "question": "You are navigating to Proxima Centauri, 4.2 light years away. If you travel at the speed of light, how long does the trip take?",
+                "options": ["1 Year", "4.2 Years", "100 Years", "Instant"],
+                "correctAnswerIndex": 1,
+                "explanation": "A light year is the distance light travels in a year. Traveling at light speed means it takes exactly that many years."
+            },
+            {
+                "question": "A massive star collapses. Its gravity is infinite. What has it become?",
+                "options": ["Red Giant", "White Dwarf", "Neutron Star", "Black Hole"],
+                "correctAnswerIndex": 3,
+                "explanation": "If the mass is sufficient, the collapse continues past the neutron star stage into a singularity—a Black Hole."
+            },
+            {
+                "question": "What fuel is our Sun currently burning in its core?",
+                "options": ["Helium", "Hydrogen", "Carbon", "Iron"],
+                "correctAnswerIndex": 1,
+                "explanation": "Main sequence stars like the Sun fuse Hydrogen into Helium."
+            }
+        ]
+    },
+    "Digital Marketing": {
+        "lesson": "### **MISSION BRIEFING: USER ACQUISITION**\n\n**OBJECTIVE:** Capture user attention in a saturated market.\n\n*   **SEO (Search Engine Optimization):** optimizing content to rank higher on Google for free traffic.\n*   **PPC (Pay-Per-Click):** Buying traffic via ads (Google Ads, Facebook Ads).\n*   **CTR (Click-Through Rate):** The percentage of people who see your ad and actually click it.\n\n**STATUS:** Campaign launching. Monitor metrics.",
+        "questions": [
+            {
+                "question": "You have $0 budget but need long-term traffic. Which strategy do you prioritize?",
+                "options": ["PPC Ads", "SEO (Content Marketing)", "Influencer Sponsorships", "TV Commercials"],
+                "correctAnswerIndex": 1,
+                "explanation": "SEO is an organic strategy. It requires time and effort but no direct ad spend."
+            },
+            {
+                "question": "1000 people saw your ad, and 50 clicked it. What is your CTR?",
+                "options": ["0.5%", "5%", "50%", "500%"],
+                "correctAnswerIndex": 1,
+                "explanation": "(50 / 1000) * 100 = 5%."
+            },
+            {
+                "question": "You want to target users who *already* visited your site but didn't buy. What is this called?",
+                "options": ["Cold Calling", "Retargeting / Remarketing", "Broad Targeting", "Viral Marketing"],
+                "correctAnswerIndex": 1,
+                "explanation": "Retargeting shows ads specifically to users who have interacted with your brand before."
+            }
+        ]
+    }
+}
