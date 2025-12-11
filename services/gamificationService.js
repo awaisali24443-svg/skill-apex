@@ -8,9 +8,15 @@ const defaultStats = {
     xp: 0,
     currentStreak: 0,
     lastQuizDate: null,
-    totalQuizzesCompleted: 0, // Explicit tracking
+    totalQuizzesCompleted: 0,
     totalPerfectQuizzes: 0,
     questionsSaved: 0,
+    // New Metrics
+    fastAnswersCount: 0, // Answered in < 5s
+    nightOwlSessions: 0, // Completed between 10PM - 4AM
+    totalAuralMinutes: 0,
+    uniqueTopicsPlayed: [], // Array of strings
+    
     dailyQuests: { date: null, quests: [] },
     dailyChallenge: { date: null, completed: false }
 };
@@ -59,12 +65,60 @@ const ACHIEVEMENTS = {
         name: "Librarian", 
         description: "Save questions to your library.", 
         icon: "archive", 
-        metric: (s) => s.questionsSaved, // Needs to be updated manually
+        metric: (s) => s.questionsSaved,
         tiers: [
             { name: 'Bronze', target: 5, color: '#cd7f32' },
             { name: 'Silver', target: 20, color: '#c0c0c0' },
             { name: 'Gold', target: 100, color: '#ffd700' },
             { name: 'Diamond', target: 500, color: '#b9f2ff' }
+        ]
+    },
+    speed_demon: {
+        name: "Speed Demon",
+        description: "Answer questions in under 5 seconds.",
+        icon: "clock",
+        metric: (s) => s.fastAnswersCount || 0,
+        tiers: [
+            { name: 'Bronze', target: 10, color: '#cd7f32' },
+            { name: 'Silver', target: 50, color: '#c0c0c0' },
+            { name: 'Gold', target: 200, color: '#ffd700' },
+            { name: 'Diamond', target: 1000, color: '#b9f2ff' }
+        ]
+    },
+    night_owl: {
+        name: "Night Owl",
+        description: "Complete sessions late at night (10 PM - 4 AM).",
+        icon: "moon",
+        metric: (s) => s.nightOwlSessions || 0,
+        tiers: [
+            { name: 'Bronze', target: 3, color: '#cd7f32' },
+            { name: 'Silver', target: 10, color: '#c0c0c0' },
+            { name: 'Gold', target: 50, color: '#ffd700' },
+            { name: 'Diamond', target: 100, color: '#b9f2ff' }
+        ]
+    },
+    audiophile: {
+        name: "Audiophile",
+        description: "Minutes spent learning with AI Voice.",
+        icon: "headphones",
+        metric: (s) => s.totalAuralMinutes || 0,
+        tiers: [
+            { name: 'Bronze', target: 10, color: '#cd7f32' },
+            { name: 'Silver', target: 60, color: '#c0c0c0' },
+            { name: 'Gold', target: 300, color: '#ffd700' },
+            { name: 'Diamond', target: 1000, color: '#b9f2ff' }
+        ]
+    },
+    polymath: {
+        name: "Polymath",
+        description: "Explore unique topics.",
+        icon: "globe",
+        metric: (s) => s.uniqueTopicsPlayed ? s.uniqueTopicsPlayed.length : 0,
+        tiers: [
+            { name: 'Bronze', target: 3, color: '#cd7f32' },
+            { name: 'Silver', target: 5, color: '#c0c0c0' },
+            { name: 'Gold', target: 10, color: '#ffd700' },
+            { name: 'Diamond', target: 20, color: '#b9f2ff' }
         ]
     },
     veteran: {
@@ -87,6 +141,7 @@ const QUEST_TYPES = [
     { id: 'use_hint', text: 'Use a Hint', xp: 20, check: (action) => action.type === 'use_hint' },
     { id: 'save_question', text: 'Save a Question', xp: 30, check: (action) => action.type === 'save_question' },
     { id: 'study_session', text: 'Review Flashcards', xp: 40, check: (action) => action.type === 'study_session' },
+    { id: 'speedy', text: '3 Fast Answers (<5s)', xp: 60, check: (action) => action.type === 'fast_answers' && action.data.count >= 3 },
 ];
 
 async function loadStats() {
@@ -94,9 +149,12 @@ async function loadStats() {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.GAMIFICATION);
         const storedData = stored ? JSON.parse(stored) : {};
         
-        // Merge with default to ensure new fields (like totalQuizzesCompleted) exist
+        // Merge to ensure new fields are initialized
         stats = { ...defaultStats, ...storedData };
         
+        // Ensure array initialization for new users or migration
+        if (!Array.isArray(stats.uniqueTopicsPlayed)) stats.uniqueTopicsPlayed = [];
+
         checkDailyQuests();
 
         if (navigator.onLine && !isGuest()) {
@@ -182,10 +240,36 @@ export function checkQuestProgress(action) {
     if (action.type === 'complete_level') {
         stats.totalQuizzesCompleted = (stats.totalQuizzesCompleted || 0) + 1;
         if (action.data.scorePercent === 1) stats.totalPerfectQuizzes = (stats.totalPerfectQuizzes || 0) + 1;
+        
+        // Track Polymath (Unique Topics)
+        if (action.data.topic) {
+            const topicName = action.data.topic.split('-')[0].trim();
+            if (!stats.uniqueTopicsPlayed.includes(topicName)) {
+                stats.uniqueTopicsPlayed.push(topicName);
+            }
+        }
+
+        // Track Night Owl
+        const hour = new Date().getHours();
+        if (hour >= 22 || hour < 4) {
+            stats.nightOwlSessions = (stats.nightOwlSessions || 0) + 1;
+        }
+
         questUpdated = true;
     }
+    
     if (action.type === 'save_question') {
         stats.questionsSaved = (stats.questionsSaved || 0) + 1;
+        questUpdated = true;
+    }
+
+    if (action.type === 'fast_answers') {
+        stats.fastAnswersCount = (stats.fastAnswersCount || 0) + action.data.count;
+        questUpdated = true;
+    }
+
+    if (action.type === 'aural_session') {
+        stats.totalAuralMinutes = (stats.totalAuralMinutes || 0) + Math.ceil(action.data.duration / 60);
         questUpdated = true;
     }
 
@@ -249,7 +333,7 @@ function updateStreak(today) {
     }
 }
 
-export function updateStatsOnQuizCompletion(quizAttempt, history) {
+export function updateStatsOnQuizCompletion(quizAttempt) {
     const today = new Date();
     updateStreak(today);
     stats.lastQuizDate = today.toISOString();
@@ -263,7 +347,21 @@ export function updateStatsOnQuizCompletion(quizAttempt, history) {
     const scorePercent = quizAttempt.totalQuestions > 0 ? quizAttempt.score / quizAttempt.totalQuestions : 0;
     
     // Updates internal counters inside checkQuestProgress
-    checkQuestProgress({ type: 'complete_level', data: { scorePercent } });
+    checkQuestProgress({ 
+        type: 'complete_level', 
+        data: { 
+            scorePercent,
+            topic: quizAttempt.topic
+        } 
+    });
+    
+    // Pass fast answers to counter
+    if (quizAttempt.fastAnswers > 0) {
+        checkQuestProgress({
+            type: 'fast_answers',
+            data: { count: quizAttempt.fastAnswers }
+        });
+    }
 
     let xpForNextLevel = getXpForNextLevel(stats.level);
     let didLevelUp = false;
@@ -281,9 +379,6 @@ export function updateStatsOnQuizCompletion(quizAttempt, history) {
     saveStats();
 }
 
-/**
- * Returns full achievement data including current tier status.
- */
 export function getAchievementsProgress() {
     return Object.entries(ACHIEVEMENTS).map(([id, data]) => {
         const currentValue = data.metric(stats) || 0;
@@ -294,7 +389,6 @@ export function getAchievementsProgress() {
         let target = data.tiers[0].target;
         let isMaxed = false;
 
-        // Determine Tier
         for (let i = 0; i < data.tiers.length; i++) {
             const tier = data.tiers[i];
             if (currentValue >= tier.target) {
@@ -305,7 +399,7 @@ export function getAchievementsProgress() {
                 } else {
                     isMaxed = true;
                     nextTier = null;
-                    target = currentValue; // Cap it
+                    target = currentValue;
                 }
             } else {
                 nextTier = tier;
@@ -314,12 +408,10 @@ export function getAchievementsProgress() {
             }
         }
 
-        // Calculate Progress Percentage to Next Tier
         if (isMaxed) {
             progress = 100;
         } else {
             const prevTarget = currentTier ? currentTier.target : 0;
-            // Progress within the current band
             const bandTotal = target - prevTarget;
             const bandCurrent = currentValue - prevTarget;
             progress = Math.max(0, Math.min(100, (bandCurrent / bandTotal) * 100));
@@ -340,88 +432,4 @@ export function getAchievementsProgress() {
             isMaxed
         };
     });
-}
-
-export function getProfileStats(history) {
-    const totalQuizzes = history.length;
-    const totalQuestions = history.reduce((sum, item) => sum + item.totalQuestions, 0);
-    const totalCorrect = history.reduce((sum, item) => sum + item.score, 0);
-    const averageScore = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
-    
-    return { totalQuizzes, totalQuestions, averageScore };
-}
-
-// Memory Health helpers remain the same...
-function getTopicLastPlayedDates(history) {
-    const topicDates = {};
-    history.forEach(h => {
-        const cleanTopic = h.topic.split('-')[0].trim();
-        const date = new Date(h.date).getTime();
-        if (!topicDates[cleanTopic] || date > topicDates[cleanTopic]) {
-            topicDates[cleanTopic] = date;
-        }
-    });
-    return topicDates;
-}
-
-const GRACE_PERIOD_DAYS = 3; 
-const DECAY_RATE_PER_DAY = 2; 
-
-export function calculateMemoryHealth(history) {
-    const topicDates = getTopicLastPlayedDates(history);
-    const topics = Object.keys(topicDates);
-    
-    if (topics.length === 0) return { health: 100, status: 'Stable', oldestTopic: null };
-
-    let oldestDate = Date.now();
-    let oldestTopic = null;
-    let totalDecay = 0;
-    const now = Date.now();
-    const DAY_MS = 86400000;
-
-    topics.forEach(t => {
-        const daysSince = (now - topicDates[t]) / DAY_MS;
-        let decay = 0;
-        if (daysSince > GRACE_PERIOD_DAYS) {
-            decay = Math.min(100, (daysSince - GRACE_PERIOD_DAYS) * DECAY_RATE_PER_DAY);
-        }
-        totalDecay += decay;
-
-        if (topicDates[t] < oldestDate) {
-            oldestDate = topicDates[t];
-            oldestTopic = t;
-        }
-    });
-
-    const avgHealth = Math.max(0, 100 - (totalDecay / topics.length));
-    
-    let status = 'Stable';
-    if (avgHealth < 50) status = 'Critical';
-    else if (avgHealth < 80) status = 'Decaying';
-
-    return { health: Math.round(avgHealth), status, oldestTopic };
-}
-
-export function getDetailedTopicHealth(history) {
-    const topicDates = getTopicLastPlayedDates(history);
-    const now = Date.now();
-    const DAY_MS = 86400000;
-    
-    const results = {};
-    
-    Object.keys(topicDates).forEach(topic => {
-        const daysSince = (now - topicDates[topic]) / DAY_MS;
-        let decay = 0;
-        if (daysSince > GRACE_PERIOD_DAYS) {
-            decay = Math.min(100, (daysSince - GRACE_PERIOD_DAYS) * DECAY_RATE_PER_DAY);
-        }
-        const health = Math.max(0, 100 - decay);
-        let status = 'Stable';
-        if (health < 50) status = 'Critical';
-        else if (health < 80) status = 'Decaying';
-        
-        results[topic] = { health: Math.round(health), status, daysSince: Math.floor(daysSince) };
-    });
-    
-    return results;
 }

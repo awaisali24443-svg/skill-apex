@@ -29,30 +29,25 @@
       <stop offset="70%" stop-color="#00B0FF" />
       <stop offset="100%" stop-color="#01579B" />
     </linearGradient>
+    
+    <linearGradient id="grad-midnight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9575cd" />
+      <stop offset="50%" stop-color="#512da8" />
+      <stop offset="100%" stop-color="#311b92" />
+    </linearGradient>
 
     <!-- 3D FILTER: BEVEL & SPECULAR LIGHTING -->
     <filter id="metallic-bevel" x="-50%" y="-50%" width="200%" height="200%">
-      <!-- 1. Create blurred alpha for depth -->
       <feGaussianBlur in="SourceAlpha" stdDeviation="1" result="blur" />
-      
-      <!-- 2. Create offset for shadow/highlight direction -->
       <feOffset in="blur" dx="1" dy="2" result="offsetBlur" />
-      
-      <!-- 3. Specular Lighting for shine -->
       <feSpecularLighting in="blur" surfaceScale="5" specularConstant="1.2" specularExponent="25" lighting-color="#ffffff" result="specOut">
         <fePointLight x="-5000" y="-10000" z="20000" />
       </feSpecularLighting>
-      
-      <!-- 4. Composite specular onto source -->
       <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut" />
-      
-      <!-- 5. Merge Gradient Fill + Specular Highlight + Drop Shadow -->
       <feMerge>
-        <feMergeNode in="SourceGraphic" /> <!-- The gradient fill -->
-        <feMergeNode in="specOut" />       <!-- The shine -->
+        <feMergeNode in="SourceGraphic" />
+        <feMergeNode in="specOut" />
       </feMerge>
-      
-      <!-- 6. Drop Shadow -->
       <feDropShadow dx="2" dy="4" stdDeviation="2" flood-color="rgba(0,0,0,0.4)" />
     </filter>
   </defs>
@@ -85,5 +80,28 @@
   <!-- Star (Veteran) - Gold Style -->
   <symbol id="star" viewBox="0 0 24 24">
     <polygon fill="url(#grad-gold)" filter="url(#metallic-bevel)" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+  </symbol>
+  
+  <!-- Clock (Speed Demon) - Silver Style -->
+  <symbol id="clock" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="10" fill="url(#grad-silver)" filter="url(#metallic-bevel)"></circle>
+    <polyline points="12 6 12 12 16 14" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round"></polyline>
+  </symbol>
+
+  <!-- Moon (Night Owl) - Midnight Style -->
+  <symbol id="moon" viewBox="0 0 24 24">
+    <path fill="url(#grad-midnight)" filter="url(#metallic-bevel)" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+  </symbol>
+
+  <!-- Headphones (Audiophile) - Diamond Style -->
+  <symbol id="headphones" viewBox="0 0 24 24">
+    <path fill="url(#grad-diamond)" filter="url(#metallic-bevel)" d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+    <path fill="url(#grad-diamond)" filter="url(#metallic-bevel)" d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+  </symbol>
+
+  <!-- Globe (Polymath) - Gold Style -->
+  <symbol id="globe" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="10" fill="none" stroke="url(#grad-gold)" stroke-width="2" filter="url(#metallic-bevel)"></circle>
+    <path stroke="url(#grad-gold)" stroke-width="2" fill="none" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
   </symbol>
 </svg>

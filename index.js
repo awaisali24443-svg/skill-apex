@@ -11,6 +11,7 @@ import * as gamificationService from './services/gamificationService.js';
 import * as stateService from './services/stateService.js';
 import * as firebaseService from './services/firebaseService.js';
 import { init as initVoice, toggleListening, isSupported as isVoiceSupported } from './services/voiceCommandService.js';
+import * as backgroundService from './services/backgroundService.js'; // Import
 import * as authModule from './modules/auth/auth.js';
 
 const moduleCache = new Map();
@@ -261,6 +262,7 @@ function initializeAppContent(user) {
     gamificationService.init();
     stateService.initState();
     initVoice();
+    backgroundService.init(); // Initialize dynamic background
 
     // 2. Render App Shell
     const sidebarEl = document.getElementById('sidebar');
@@ -338,6 +340,7 @@ function showAuthScreen() {
     document.getElementById('app-wrapper').style.display = 'none'; // Hide App
     document.getElementById('auth-container').style.display = 'flex';
     authModule.init(); // Render Auth UI
+    backgroundService.init(); // Also init background for Auth screen
 }
 
 async function main() {

@@ -9,7 +9,7 @@ import { showConfirmationModal } from '../../services/modalService.js';
 import * as stateService from '../../services/stateService.js';
 import * as libraryService from '../../services/libraryService.js';
 import { showToast } from '../../services/toastService.js';
-import * as vfxService from '../../services/vfxService.js'; // Import VFX
+import * as vfxService from '../../services/vfxService.js';
 
 let levelData = {};
 let currentQuestions = [];
@@ -25,7 +25,10 @@ let userAnswers = [];
 let hintUsedThisQuestion = false;
 let xpGainedThisLevel = 0;
 
-// Typewriter
+// Speed Tracking
+let questionStartTime = 0;
+let fastAnswersCount = 0;
+
 let typewriterInterval = null;
 
 function switchState(targetStateId) {
@@ -33,18 +36,12 @@ function switchState(targetStateId) {
     document.getElementById(targetStateId)?.classList.add('active');
 }
 
-/**
- * Starts the level. Fetches Lesson and Questions in PARALLEL.
- * This enables the "Skip" feature because questions might arrive before the user finishes reading.
- */
 async function startLevel() {
     const { topic, level, totalLevels } = levelContext;
     
     switchState('level-loading-state');
     
     try {
-        // Parallel Generation: Request Lesson AND Questions at the same time.
-        // For Level 1, this will now hit the Pre-baked JSON and be instant.
         const [lessonData, questionsData] = await Promise.all([
             apiService.generateLevelLesson({ topic, level, totalLevels }),
             apiService.generateLevelQuestions({ topic, level, totalLevels })
@@ -56,12 +53,7 @@ async function startLevel() {
         };
         
         currentQuestions = levelData.questions;
-        
-        // Render Lesson (Default View)
         renderLesson();
-
-        // --- AGGRESSIVE EXPO PREFETCH ---
-        // As soon as Level 1 loads successfully, start generating Level 2 in the background.
         preloadNextLevel();
 
     } catch (error) {
@@ -73,12 +65,8 @@ async function startLevel() {
 async function preloadNextLevel() {
     const nextLevel = levelContext.level + 1;
     if (nextLevel > levelContext.totalLevels) return;
-    
-    // Don't prefetch if we already have it
     if (levelCacheService.getLevel(levelContext.topic, nextLevel)) return;
 
-    console.log(`[EXPO PREFETCH] Starting background generation for Level ${nextLevel}...`);
-    
     try {
         const [lData, qData] = await Promise.all([
             apiService.generateLevelLesson({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels }),
@@ -87,35 +75,30 @@ async function preloadNextLevel() {
         
         const nextLevelData = { lesson: lData.lesson, questions: qData.questions };
         levelCacheService.saveLevel(levelContext.topic, nextLevel, nextLevelData);
-        console.log(`[EXPO PREFETCH] Level ${nextLevel} ready in cache.`);
     } catch(e) {
         console.warn("[EXPO PREFETCH] Background gen failed (silent)", e);
     }
 }
 
-// --- TYPEWRITER ---
 function renderLessonTypewriter(htmlContent) {
     if (typewriterInterval) clearInterval(typewriterInterval);
-    
     const container = elements.lessonBody;
-    container.innerHTML = htmlContent; // Instant render for speed
+    container.innerHTML = htmlContent;
 }
 
 function renderLesson() {
     elements.lessonTitle.textContent = `Level ${levelContext.level}: Mission Briefing`;
-    
     const rawHtml = markdownService.render(levelData.lesson);
     switchState('level-lesson-state');
     renderLessonTypewriter(rawHtml);
 }
-
-// --- QUIZ LOGIC ---
 
 function startQuiz() {
     currentQuestionIndex = 0;
     score = 0;
     userAnswers = [];
     xpGainedThisLevel = 0;
+    fastAnswersCount = 0; // Reset
     
     renderQuestion();
     switchState('level-quiz-state');
@@ -150,6 +133,7 @@ function renderQuestion() {
     elements.hintBtn.disabled = false;
 
     startTimer();
+    questionStartTime = Date.now(); // Start clock for "Speed Demon"
 }
 
 function startTimer() {
@@ -171,8 +155,8 @@ function startTimer() {
 
 function handleTimeUp() {
     soundService.playSound('incorrect');
-    vfxService.shake(document.getElementById('question-container')); // VFX Shake
-    selectedAnswerIndex = -1; // No selection
+    vfxService.shake(document.getElementById('question-container'));
+    selectedAnswerIndex = -1;
     handleSubmitAnswer();
 }
 
@@ -199,6 +183,7 @@ function handleSubmitAnswer() {
 
     const question = currentQuestions[currentQuestionIndex];
     const isCorrect = question.correctAnswerIndex === selectedAnswerIndex;
+    const timeTaken = (Date.now() - questionStartTime) / 1000;
     
     if (isCorrect) {
         score++;
@@ -206,7 +191,12 @@ function handleSubmitAnswer() {
         xpGainedThisLevel += xp;
         soundService.playSound('correct');
         
-        // VFX: Confetti on click position
+        // Speed Demon Check
+        if (timeTaken < 5) {
+            fastAnswersCount++;
+            showToast("Speed Bonus! ⚡", "success", 1000);
+        }
+        
         const selectedBtn = elements.quizOptionsContainer.querySelector('.option-btn.selected');
         if (selectedBtn) {
             const rect = selectedBtn.getBoundingClientRect();
@@ -214,7 +204,6 @@ function handleSubmitAnswer() {
         }
     } else {
         soundService.playSound('incorrect');
-        // VFX: Screen Shake
         vfxService.shake(document.getElementById('question-container'));
     }
 
@@ -246,16 +235,17 @@ function showResults() {
     soundService.playSound(passed ? 'finish' : 'incorrect');
     
     if (passed) {
-        vfxService.burstConfetti(); // Center burst
+        vfxService.burstConfetti();
     }
 
     historyService.addQuizAttempt({
         topic: `${levelContext.topic} - Level ${levelContext.level}`,
         score: score,
         totalQuestions: total,
-        startTime: Date.now(),
+        startTime: Date.now(), // Rough approx
         endTime: Date.now(),
         xpGained: xpGainedThisLevel,
+        fastAnswers: fastAnswersCount // Pass fast answers count
     });
 
     if (passed) {
@@ -275,7 +265,6 @@ function showResults() {
     
     switchState('level-results-state');
     
-    // VFX: Animate XP
     if (xpGainedThisLevel > 0) {
         vfxService.animateNumber(elements.xpGainText, 0, xpGainedThisLevel);
     } else {

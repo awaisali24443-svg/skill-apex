@@ -6,17 +6,11 @@ import { db, doc, getDoc, setDoc, getUserId, isGuest } from './firebaseService.j
 
 let history = [];
 
-/**
- * Loads the quiz history from localStorage and Syncs with Firebase.
- * @private
- */
 async function loadHistory() {
     try {
-        // 1. Fast load from local
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.HISTORY);
         history = stored ? JSON.parse(stored) : [];
         
-        // 2. Background Sync with Firebase (Skip if Guest)
         if (navigator.onLine && !isGuest()) {
             const userId = getUserId();
             if (userId) {
@@ -38,10 +32,6 @@ async function loadHistory() {
     }
 }
 
-/**
- * Saves the current quiz history to localStorage and Firebase.
- * @private
- */
 function saveHistory() {
     saveHistoryLocal();
     saveHistoryRemote();
@@ -116,13 +106,16 @@ export function addQuizAttempt(quizState) {
         difficulty: quizState.difficulty || 'medium',
         date: new Date(quizState.endTime).toISOString(),
         xpGained: quizState.xpGained,
+        // Optional: Track fast answers for analysis
+        fastAnswers: quizState.fastAnswers || 0
     };
 
     history.unshift(newAttempt);
     if (history.length > 50) history.pop();
     saveHistory();
     
-    gamificationService.updateStatsOnQuizCompletion(newAttempt, getHistory());
+    // Pass the entire object so gamificationService can see fastAnswers
+    gamificationService.updateStatsOnQuizCompletion(newAttempt);
 }
 
 export function addAuralSession(sessionData) {
@@ -134,13 +127,19 @@ export function addAuralSession(sessionData) {
         topic: 'Aural Tutor Session',
         date: new Date().toISOString(),
         duration: sessionData.duration, // in seconds
-        transcript: sessionData.transcript, // Array of {sender, text}
+        transcript: sessionData.transcript,
         xpGained: sessionData.xpGained || 0
     };
 
     history.unshift(newSession);
     if (history.length > 50) history.pop();
     saveHistory();
+    
+    // Trigger Audiophile Achievement
+    gamificationService.checkQuestProgress({ 
+        type: 'aural_session', 
+        data: { duration: sessionData.duration } 
+    });
 }
 
 export function clearHistory() {

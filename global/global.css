@@ -34,9 +34,6 @@
     --space-xl: 2.5rem;
     --space-xxl: 4rem;
 
-    /* Background Patterns (SVG) - Subtler Opacity */
-    --bg-tech: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 10 h80 v80 h-80 z' fill='none' stroke='rgba(150,150,150,0.03)' stroke-width='1'/%3E%3C/svg%3E");
-    
     /* Global Colors (Defaults for loading, overridden by themes) */
     --color-background: #0c0e1a;
     --color-text: #e0e0e0;
@@ -61,11 +58,31 @@ body {
     width: 100%;
     position: relative;
     overflow: hidden;
-    background-image: var(--bg-tech);
-    background-attachment: fixed;
-    background-size: 60px 60px;
-    /* Prevent white flash during load */
     background-color: var(--color-background);
+}
+
+/* --- BACKGROUND CANVAS --- */
+#bg-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0; /* Behind content */
+    pointer-events: none; /* Let clicks pass through if needed, though we track mouse */
+}
+
+/* Global Gradient Overlay (Optional tint) */
+#global-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: radial-gradient(circle at 50% 50%, transparent 0%, var(--color-background) 100%);
+    opacity: 0.5;
+    pointer-events: none;
 }
 
 /* --- CUSTOM SCROLLBARS (Theme Aware) --- */
@@ -139,6 +156,8 @@ svg { max-width: 100%; display: block; }
 #app-wrapper { 
     display: flex; height: 100%; width: 100%; 
     opacity: 0;
+    position: relative;
+    z-index: 10; /* Above Canvas */
     animation: app-enter 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     animation-delay: 0.2s; /* Wait for splash to start fading */
 }
