@@ -111,7 +111,7 @@ export function renderSidebar(container) {
             });
             if (confirmed) {
                 await firebaseService.logout();
-                window.location.reload(); // Force reload to clear state and return to auth screen cleanly
+                window.location.reload(); // Critical Fix: Force reload to clear all SPA state
             }
         });
     }

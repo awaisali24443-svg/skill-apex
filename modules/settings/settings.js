@@ -342,26 +342,4 @@ export function init() {
 }
 
 export function destroy() {
-    if (elements.soundToggle) elements.soundToggle.removeEventListener('change', handleSoundToggle);
-    if (elements.animationSlider) elements.animationSlider.removeEventListener('input', handleAnimationChange);
-    if (elements.clearDataBtn) elements.clearDataBtn.removeEventListener('click', handleClearData);
-    if (elements.changeInterestBtn) elements.changeInterestBtn.removeEventListener('click', handleChangeInterest);
-    
-    if (elements.personaCards) {
-        elements.personaCards.forEach(card => card.removeEventListener('click', handlePersonaSelect));
-    }
-
-    if (elements.installBtn) elements.installBtn.removeEventListener('click', handleInstallClick);
-    if (elements.logoutBtn) elements.logoutBtn.removeEventListener('click', handleLogout);
-    
-    if (elements.linkGoogleBtn) elements.linkGoogleBtn.removeEventListener('click', handleLinkGoogle);
-    if (elements.linkEmailBtn) elements.linkEmailBtn.removeEventListener('click', openLinkEmailModal);
-    if (elements.cancelLinkBtn) elements.cancelLinkBtn.removeEventListener('click', closeLinkEmailModal);
-    if (elements.confirmLinkBtn) elements.confirmLinkBtn.removeEventListener('click', handleConfirmLinkEmail);
-    
-    if (elements.changePassBtn) elements.changePassBtn.removeEventListener('click', openUpdatePassModal);
-    if (elements.cancelUpdatePassBtn) elements.cancelUpdatePassBtn.removeEventListener('click', closeUpdatePassModal);
-    if (elements.confirmUpdatePassBtn) elements.confirmUpdatePassBtn.removeEventListener('click', handleUpdatePassword);
-    
-    elements = {};
-}
+    if (elements.soundToggle) elements
