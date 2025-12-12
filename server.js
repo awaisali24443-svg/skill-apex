@@ -98,12 +98,15 @@ function cleanAndParseJSON(text) {
 
 // --- GEMINI API SETUP ---
 let ai;
+// Check multiple common variable names for the key
+const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+
 try {
-    if (!process.env.API_KEY) {
-        console.warn("WARNING: API_KEY is not defined. AI features will fail.");
+    if (!apiKey) {
+        console.warn("❌ CRITICAL: No API Key found in environment variables (checked API_KEY, GEMINI_API_KEY, GOOGLE_API_KEY). AI features will fail.");
     } else {
-        ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-        console.log('GoogleGenAI initialized successfully.');
+        ai = new GoogleGenAI({ apiKey: apiKey });
+        console.log(`✅ GoogleGenAI initialized successfully. Key present (Length: ${apiKey.length}).`);
     }
 } catch (error) {
     console.error(`Failed to initialize GoogleGenAI: ${error.message}`);
