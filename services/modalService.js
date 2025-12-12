@@ -21,18 +21,20 @@ export function showConfirmationModal({ title, message, confirmText = 'Confirm',
 
         const confirmButtonClass = danger ? 'btn btn-danger' : 'btn btn-primary';
 
+        // Nest content INSIDE backdrop to match CSS flex centering and z-index stacking
         const modalHTML = `
-            <div class="modal-backdrop"></div>
-            <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-message">
-                <div class="modal-header">
-                    <h2 id="modal-title">${title}</h2>
-                </div>
-                <div class="modal-body">
-                    <div id="modal-message">${message}</div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn" id="modal-cancel-btn">${cancelText}</button>
-                    <button class="${confirmButtonClass}" id="modal-confirm-btn">${confirmText}</button>
+            <div class="modal-backdrop">
+                <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-message">
+                    <div class="modal-header">
+                        <h2 id="modal-title">${title}</h2>
+                    </div>
+                    <div class="modal-body">
+                        <div id="modal-message">${message}</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" id="modal-cancel-btn">${cancelText}</button>
+                        <button class="${confirmButtonClass}" id="modal-confirm-btn">${confirmText}</button>
+                    </div>
                 </div>
             </div>
         `;
@@ -57,7 +59,13 @@ export function showConfirmationModal({ title, message, confirmText = 'Confirm',
         
         confirmBtn.addEventListener('click', () => closeModal(true));
         cancelBtn.addEventListener('click', () => closeModal(false));
-        backdrop.addEventListener('click', () => closeModal(false));
+        
+        // Close only if clicking the backdrop itself, not the content bubbling up
+        backdrop.addEventListener('click', (e) => {
+            if (e.target === backdrop) {
+                closeModal(false);
+            }
+        });
 
         // --- Accessibility: Focus Trapping ---
         const focusableElements = modalContent.querySelectorAll('button');
@@ -65,7 +73,7 @@ export function showConfirmationModal({ title, message, confirmText = 'Confirm',
         const lastFocusableElement = focusableElements[focusableElements.length - 1];
 
         // Focus the first interactive element
-        firstFocusableElement.focus();
+        if (firstFocusableElement) firstFocusableElement.focus();
 
         function handleKeyDown(e) {
             if (e.key === 'Escape') {
