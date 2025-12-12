@@ -225,7 +225,7 @@ const dailyChallengeSchema = {
 // --- GEMINI SERVICE FUNCTIONS ---
 
 async function generateJourneyPlan(topic, persona) {
-    if (!ai) throw new Error("AI Service not initialized.");
+    if (!ai) throw new Error("AI Service not initialized. API_KEY missing.");
     const prompt = `Analyze the topic "${topic}".
     Task: Design a comprehensive learning path.
     Output: 
@@ -236,7 +236,7 @@ async function generateJourneyPlan(topic, persona) {
     
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
                 systemInstruction: getSystemInstruction(persona),
@@ -252,7 +252,7 @@ async function generateJourneyPlan(topic, persona) {
 }
 
 async function generateJourneyPlanFromImage(imageBase64, mimeType, persona) {
-    if (!ai) throw new Error("AI Service not initialized.");
+    if (!ai) throw new Error("AI Service not initialized. API_KEY missing.");
     
     const prompt = `Analyze this image. Identify the educational concept.
     1. Identify the core "Topic Name".
@@ -262,7 +262,7 @@ async function generateJourneyPlanFromImage(imageBase64, mimeType, persona) {
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash', // Flash is better for image analysis speed
+            model: 'gemini-3-pro-preview',
             contents: {
                 parts: [
                     { inlineData: { mimeType: mimeType, data: imageBase64 } },
@@ -283,7 +283,7 @@ async function generateJourneyPlanFromImage(imageBase64, mimeType, persona) {
 }
 
 async function generateCurriculumOutline(topic, totalLevels, persona) {
-    if (!ai) throw new Error("AI Service not initialized.");
+    if (!ai) throw new Error("AI Service not initialized. API_KEY missing.");
     const numChapters = Math.ceil(totalLevels / 50);
     const prompt = `Topic: "${topic}". Total Levels: ${totalLevels}.
     Task: Break this into exactly ${numChapters} chapter titles.
@@ -291,7 +291,7 @@ async function generateCurriculumOutline(topic, totalLevels, persona) {
     
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
                 systemInstruction: getSystemInstruction(persona),
@@ -307,7 +307,7 @@ async function generateCurriculumOutline(topic, totalLevels, persona) {
 }
 
 async function generateLevelQuestions(topic, level, totalLevels, persona) {
-    if (!ai) throw new Error("AI Service not initialized.");
+    if (!ai) throw new Error("AI Service not initialized. API_KEY missing.");
     
     // --- UPDATED LOGIC: ALL LEVELS ARE SCENARIO-BASED ---
     // We no longer use simple definitions for low levels. 
@@ -336,7 +336,7 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash', 
+            model: 'gemini-3-pro-preview', 
             contents: prompt,
             config: {
                 systemInstruction: getSystemInstruction(persona),
@@ -352,7 +352,7 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
 }
 
 async function generateInteractiveLevel(topic, level, persona) {
-    if (!ai) throw new Error("AI Service not initialized.");
+    if (!ai) throw new Error("AI Service not initialized. API_KEY missing.");
     
     const prompt = `Create an interactive challenge for "${topic}" Level ${level}.
     TASK: Sequence OR Match challenge.
@@ -360,7 +360,7 @@ async function generateInteractiveLevel(topic, level, persona) {
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
                 systemInstruction: getSystemInstruction(persona),
@@ -376,7 +376,7 @@ async function generateInteractiveLevel(topic, level, persona) {
 }
 
 async function generateLevelLesson(topic, level, totalLevels, questionsContext, persona) {
-    if (!ai) throw new Error("AI Service not initialized.");
+    if (!ai) throw new Error("AI Service not initialized. API_KEY missing.");
     
     // SCAFFOLDING & EXPO OPTIMIZATION
     let styleGuide = "";
@@ -401,7 +401,7 @@ async function generateLevelLesson(topic, level, totalLevels, questionsContext, 
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
                 systemInstruction: getSystemInstruction(persona),
@@ -417,7 +417,7 @@ async function generateLevelLesson(topic, level, totalLevels, questionsContext, 
 }
 
 async function generateBossBattleContent(topic, chapter, persona) {
-    if (!ai) throw new Error("AI Service not initialized.");
+    if (!ai) throw new Error("AI Service not initialized. API_KEY missing.");
     
     const prompt = `Create a **Boss Battle Exam** for "${topic}" Chapter ${chapter}.
     Generate 10 CHALLENGING Scenario-based questions.
@@ -426,7 +426,7 @@ async function generateBossBattleContent(topic, chapter, persona) {
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
                 systemInstruction: getSystemInstruction(persona),
@@ -442,7 +442,7 @@ async function generateBossBattleContent(topic, chapter, persona) {
 }
 
 async function generateHint(topic, question, options, persona) {
-    if (!ai) throw new Error("AI Service not initialized.");
+    if (!ai) throw new Error("AI Service not initialized. API_KEY missing.");
     
     const prompt = `Provide a hint for this quiz question about ${topic}: "${question}".
     Don't reveal the answer directly. Use Socratic method.
@@ -450,7 +450,7 @@ async function generateHint(topic, question, options, persona) {
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
                 systemInstruction: getSystemInstruction(persona),
@@ -466,7 +466,7 @@ async function generateHint(topic, question, options, persona) {
 }
 
 async function generateSpeech(text) {
-    if (!ai) throw new Error("AI Service not initialized.");
+    if (!ai) throw new Error("AI Service not initialized. API_KEY missing.");
     
     try {
         const response = await ai.models.generateContent({
@@ -492,14 +492,14 @@ async function generateSpeech(text) {
 }
 
 async function explainConcept(topic, concept, context, persona) {
-    if (!ai) throw new Error("AI Service not initialized.");
+    if (!ai) throw new Error("AI Service not initialized. API_KEY missing.");
     const prompt = `Explain "${concept}" in the context of ${topic}.
     Keep it concise and clear.
     Return JSON.`;
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
                 systemInstruction: getSystemInstruction(persona),
@@ -515,14 +515,14 @@ async function explainConcept(topic, concept, context, persona) {
 }
 
 async function generateDailyChallenge(persona) {
-    if (!ai) throw new Error("AI Service not initialized.");
+    if (!ai) throw new Error("AI Service not initialized. API_KEY missing.");
     
     const prompt = `Generate one single, interesting trivia question.
     Format: JSON with question, options (4), correctAnswerIndex, and topic.`;
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
                 systemInstruction: getSystemInstruction(persona),
@@ -538,13 +538,13 @@ async function generateDailyChallenge(persona) {
 }
 
 async function explainError(topic, question, userChoice, correctChoice, persona) {
-    if (!ai) throw new Error("AI Service not initialized.");
+    if (!ai) throw new Error("AI Service not initialized. API_KEY missing.");
     const prompt = `Explain why "${userChoice}" is wrong and "${correctChoice}" is right for the question: "${question}" (${topic}).
     Return JSON.`;
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
                 systemInstruction: getSystemInstruction(persona),
