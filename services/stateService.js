@@ -14,6 +14,7 @@ let state = {
 };
 
 const subscribers = new Set();
+const SESSION_STORAGE_KEY = 'kt_nav_context';
 
 /**
  * Merges the new partial state with the current state and notifies subscribers.
@@ -37,8 +38,20 @@ function setState(partialState, notify = true) {
  * This should be called once on application startup.
  */
 export function initState() {
+    // Attempt to recover navigation context from session storage
+    let recoveredContext = {};
+    try {
+        const stored = sessionStorage.getItem(SESSION_STORAGE_KEY);
+        if (stored) {
+            recoveredContext = JSON.parse(stored);
+        }
+    } catch(e) {
+        console.warn("Failed to recover session state", e);
+    }
+
     setState({
         config: configService.getConfig(),
+        navigationContext: recoveredContext
     }, false); // Don't notify on initial load
 }
 
@@ -85,6 +98,11 @@ export function setCurrentRoute(route) {
  * @param {object} context - The data to pass to the next module.
  */
 export function setNavigationContext(context) {
+    // Persist to session storage so we don't lose where we are if user refreshes
+    try {
+        sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(context));
+    } catch(e) { console.error("Session write failed", e); }
+
     setState({ navigationContext: context });
 }
 
@@ -93,7 +111,10 @@ export function setNavigationContext(context) {
  * Called by the router after a module has initialized.
  */
 export function clearNavigationContext() {
-    setState({ navigationContext: {} });
+    // NOTE: We do NOT clear session storage here automatically anymore.
+    // We want the context to persist for reloads.
+    // Modules that consume context should clear it explicitly if they are done with it, 
+    // or we assume it stays valid until overwritten.
 }
 
 // Listen for global settings changes to keep the centralized state in sync.

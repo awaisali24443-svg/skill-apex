@@ -1,12 +1,12 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 5.17.0 (Awais Ali Edition)
+ * @version 5.18.0 (Robustness Update)
  *
  * This service worker implements a robust offline-first caching strategy.
  */
 
-const CACHE_NAME = 'skill-apex-v5.17.0-awais-ali';
+const CACHE_NAME = 'skill-apex-v5.18.0-robust-update';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [
@@ -94,4 +94,45 @@ self.addEventListener('install', (event) => {
     );
 });
 
-self.addEventListener('activate',
+self.addEventListener('activate', (event) => {
+    event.waitUntil(
+        caches.keys().then((cacheNames) => {
+            return Promise.all(
+                cacheNames.map((cacheName) => {
+                    if (cacheName !== CACHE_NAME && cacheName !== FONT_CACHE_NAME) {
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        }).then(() => self.clients.claim())
+    );
+});
+
+self.addEventListener('fetch', (event) => {
+    const url = new URL(event.request.url);
+
+    // 1. Google Fonts - Stale While Revalidate
+    if (url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com') {
+        event.respondWith(staleWhileRevalidate(FONT_CACHE_NAME, event.request));
+        return;
+    }
+
+    // 2. App Shell & Assets - Stale While Revalidate
+    // (Ensures fast load, then updates in background)
+    if (APP_SHELL_URLS.some(u => event.request.url.includes(u))) {
+        event.respondWith(staleWhileRevalidate(CACHE_NAME, event.request));
+        return;
+    }
+
+    // 3. API Calls (Do not cache, or handle specifically)
+    if (url.pathname.startsWith('/api')) {
+        return;
+    }
+
+    // 4. Default: Network First, fall back to Cache
+    event.respondWith(
+        fetch(event.request).catch(() => {
+            return caches.match(event.request);
+        })
+    );
+});

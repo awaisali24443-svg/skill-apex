@@ -1,170 +1,256 @@
 
+import { GoogleGenAI } from "@google/genai";
 import { showToast } from './toastService.js';
 
-let prebakedData = null;
+// --- CONFIGURATION ---
+const API_KEY = process.env.API_KEY; 
+const MODEL_TEXT = 'gemini-2.5-flash';
+const MAX_RETRIES = 3;
+const RETRY_DELAY_BASE = 1000; // 1 second
 
-// --- Load Prebaked Data (Magic Trick) ---
-async function loadPrebakedData() {
-    if (!prebakedData) {
-        try {
-            const res = await fetch('data/prebaked_levels.json');
-            if (res.ok) {
-                prebakedData = await res.json();
+// --- INITIALIZATION ---
+let ai;
+let isOfflineMode = false;
+
+try {
+    if (API_KEY) {
+        ai = new GoogleGenAI({ apiKey: API_KEY });
+        console.log("✅ AI Client Initialized (Direct Connection)");
+    } else {
+        console.warn("⚠️ No API Key found. Initializing in Offline Simulation Mode.");
+        isOfflineMode = true;
+    }
+} catch (e) {
+    console.error("AI Client Init Failed:", e);
+    isOfflineMode = true;
+}
+
+// --- SYSTEM PROMPTS ---
+const BASE_SYSTEM_INSTRUCTION = `
+You are ApexCore, an advanced AI Tutor for a technical quiz application.
+TONE: Professional, concise, encouraging.
+FORMAT: strictly valid JSON.
+`;
+
+// --- HELPERS ---
+function cleanAndParseJSON(text) {
+    if (!text) return null;
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        let clean = text.replace(/```json/g, '').replace(/```/g, '');
+        const firstOpen = clean.search(/[\{\[]/);
+        let lastClose = -1;
+        for (let i = clean.length - 1; i >= 0; i--) {
+            if (clean[i] === '}' || clean[i] === ']') {
+                lastClose = i;
+                break;
             }
-        } catch (e) {
-            console.warn("Failed to load prebaked levels", e);
+        }
+        if (firstOpen !== -1 && lastClose !== -1) {
+            clean = clean.substring(firstOpen, lastClose + 1);
+        }
+        try { return JSON.parse(clean); } catch (e2) { console.warn("JSON Repair Failed", e2); return null; }
+    }
+}
+
+// --- ROBUST RETRY LOGIC ---
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function callAIWithRetry(fnCall) {
+    let attempt = 0;
+    while (attempt < MAX_RETRIES) {
+        try {
+            return await fnCall();
+        } catch (error) {
+            attempt++;
+            console.warn(`AI Call Failed (Attempt ${attempt}/${MAX_RETRIES}):`, error.message);
+            
+            // If it's a fatal client error (400, 401), do not retry
+            if (error.message.includes('400') || error.message.includes('401') || error.message.includes('API key')) {
+                break; 
+            }
+
+            if (attempt >= MAX_RETRIES) throw error;
+            
+            // Exponential Backoff: 1s, 2s, 4s
+            const waitTime = RETRY_DELAY_BASE * Math.pow(2, attempt - 1);
+            await delay(waitTime);
         }
     }
+    throw new Error("Max retries exceeded");
 }
 
-// --- LOCAL MOCK DATABASE (Client-Side Fallback) ---
+// --- MOCK DATA (Fallback for Offline/No-Key) ---
 const MOCK_DB = {
-    "general": {
-        lesson: "### General Knowledge\n\n**Briefing:** Test your awareness of the world around you. This module covers geography, history, and common facts.\n\n*   **Focus:** Accuracy and speed.\n*   **Goal:** Answer questions correctly.",
+    journey: (topic) => ({
+        topicName: topic || "Computer Science",
+        totalLevels: 10,
+        description: `(Offline Mode) A curated mastery path for ${topic}. Connect API Key for live AI generation.`
+    }),
+    curriculum: () => ({
+        chapters: ["Fundamentals", "Core Concepts", "Advanced Theory", "Practical Mastery"]
+    }),
+    questions: (topic) => ({
         questions: [
             {
-                question: "Which planet is known as the Red Planet?",
-                options: ["Venus", "Mars", "Jupiter", "Saturn"],
+                question: `In the context of ${topic}, which concept is fundamental?`,
+                options: ["Complexity", "Structure", "Randomness", "Entropy"],
                 correctAnswerIndex: 1,
-                explanation: "Mars appears red due to iron oxide (rust) on its surface."
+                explanation: "Structure provides the foundation for all advanced systems."
             },
             {
-                question: "What is the capital of France?",
-                options: ["London", "Berlin", "Madrid", "Paris"],
+                question: `What is the primary bottleneck when scaling ${topic}?`,
+                options: ["Hardware", "Network Latency", "Human Error", "Resource Management"],
                 correctAnswerIndex: 3,
-                explanation: "Paris is the capital and most populous city of France."
+                explanation: "Efficient resource management is key to scalability."
             },
             {
-                question: "Which element has the chemical symbol 'O'?",
-                options: ["Gold", "Oxygen", "Osmium", "Olive"],
+                question: `Which tool is standard industry practice for ${topic}?`,
+                options: ["Notepad", "IDE/Specialized Tool", "Spreadsheets", "Calculator"],
                 correctAnswerIndex: 1,
-                explanation: "O stands for Oxygen on the periodic table."
+                explanation: "Specialized tools increase productivity and reduce error rates."
             }
         ]
-    }
+    }),
+    lesson: (topic) => ({
+        lesson: `### System Briefing: ${topic}\n\n**Status:** Simulation Mode Active.\n\nWe are currently operating without a live neural link. \n\n*   **Objective:** Understand the core principles of ${topic}.\n*   **Directive:** Analyze the questions carefully.\n\nProceed to the assessment.`
+    }),
+    hint: { hint: "Focus on the definition of the key terms." },
+    explanation: { explanation: "This is the correct answer based on standard industry principles." }
 };
 
-// Helper to find data or return generic fallback
-function getMockData(topic) {
-    const t = topic.toLowerCase();
-    
-    // Check prebaked first (Exact or partial match)
-    if (prebakedData) {
-        const key = Object.keys(prebakedData).find(k => k.toLowerCase().includes(t) || t.includes(k.toLowerCase()));
-        if (key) return prebakedData[key];
-    }
-
-    return MOCK_DB["general"];
-}
-
-// --- MOCK SERVICE FUNCTIONS (No API Calls - Offline Mode) ---
+// --- API FUNCTIONS ---
 
 export async function fetchTopics() {
+    try {
+        const response = await fetch('data/topics.json');
+        if (response.ok) return await response.json();
+    } catch (e) {
+        // Fallback if local file fetch fails
+    }
     return [
-        { name: "General Knowledge", description: "Test your awareness of the world.", styleClass: "topic-arts" },
-        { name: "Coding & Tech", description: "Programming, web, and computers.", styleClass: "topic-programming" },
-        { name: "Science", description: "Physics, Biology, and Chemistry.", styleClass: "topic-science" }
+        { name: "General Knowledge", description: "Test your awareness.", styleClass: "topic-arts" },
+        { name: "Tech Fundamentals", description: "Basic computer science.", styleClass: "topic-programming" }
     ];
 }
 
 export async function generateJourneyPlan(topic) {
-    // Simulate processing delay
-    await new Promise(resolve => setTimeout(resolve, 800)); 
-    return {
-        topicName: topic,
-        totalLevels: 10,
-        description: `A custom quiz set focused on ${topic}.`
-    };
-}
+    if (isOfflineMode || !ai) return MOCK_DB.journey(topic);
 
-export async function generateJourneyFromImage(imageBase64, mimeType) {
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    return {
-        topicName: "Scanned Topic",
-        totalLevels: 10,
-        description: "A quiz generated from your uploaded image."
-    };
+    const prompt = `Analyze "${topic}". Create a learning path. Output JSON: { "topicName": string, "totalLevels": number (10-30), "description": "Short description" }`;
+    
+    try {
+        const response = await callAIWithRetry(() => ai.models.generateContent({
+            model: MODEL_TEXT,
+            contents: prompt,
+            config: { responseMimeType: 'application/json', systemInstruction: BASE_SYSTEM_INSTRUCTION }
+        }));
+        return cleanAndParseJSON(response.text) || MOCK_DB.journey(topic);
+    } catch (error) {
+        console.error("AI Journey Error (Fallback triggered):", error);
+        return MOCK_DB.journey(topic);
+    }
 }
 
 export async function generateCurriculumOutline({ topic, totalLevels }) {
-    return {
-        chapters: ["Fundamentals", "Core Concepts", "Advanced Theory", "Mastery"]
-    };
-}
+    if (isOfflineMode || !ai) return MOCK_DB.curriculum();
 
-export async function generateLevelQuestions({ topic, level }) {
-    await loadPrebakedData();
+    const prompt = `Topic: ${topic}. Levels: ${totalLevels}. Return 4 distinct chapter titles. JSON: { "chapters": [string, string, string, string] }`;
     
-    // MAGIC TRICK: If Level 1, try to find prebaked data for instant load
-    if (level === 1) {
-        const data = getMockData(topic);
-        if (data && data.questions) {
-            // Tiny delay to make it feel like "Fast AI" rather than "Static"
-            await new Promise(r => setTimeout(r, 600));
-            return { questions: data.questions };
-        }
-    }
-
-    // Default Fallback
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const data = MOCK_DB["general"];
-    return { questions: data.questions };
+    try {
+        const response = await callAIWithRetry(() => ai.models.generateContent({
+            model: MODEL_TEXT,
+            contents: prompt,
+            config: { responseMimeType: 'application/json', systemInstruction: BASE_SYSTEM_INSTRUCTION }
+        }));
+        return cleanAndParseJSON(response.text) || MOCK_DB.curriculum();
+    } catch (e) { return MOCK_DB.curriculum(); }
 }
 
-export async function generateInteractiveLevel({ topic, level }) {
-    return {
-        challengeType: "match",
-        instruction: "Match the concepts.",
-        items: [
-            { id: "1", text: "Concept A", match: "Definition A" },
-            { id: "2", text: "Concept B", match: "Definition B" }
-        ]
-    };
+export async function generateLevelQuestions({ topic, level, totalLevels }) {
+    if (isOfflineMode || !ai) return MOCK_DB.questions(topic);
+
+    const prompt = `Topic: ${topic}. Level ${level}/${totalLevels}. Generate 3 scenario-based multiple choice questions. JSON: { "questions": [{ "question": string, "options": [string, string, string, string], "correctAnswerIndex": number, "explanation": string }] }`;
+    
+    try {
+        const response = await callAIWithRetry(() => ai.models.generateContent({
+            model: MODEL_TEXT,
+            contents: prompt,
+            config: { responseMimeType: 'application/json', systemInstruction: BASE_SYSTEM_INSTRUCTION }
+        }));
+        const data = cleanAndParseJSON(response.text);
+        if (data && data.questions && data.questions.length > 0) return data;
+        return MOCK_DB.questions(topic);
+    } catch (e) { return MOCK_DB.questions(topic); }
 }
 
-export async function generateLevelLesson({ topic, level }) {
-    await loadPrebakedData();
+export async function generateLevelLesson({ topic, level, totalLevels }) {
+    if (isOfflineMode || !ai) return MOCK_DB.lesson(topic);
 
-    if (level === 1) {
-        const data = getMockData(topic);
-        if (data && data.lesson) {
-            await new Promise(r => setTimeout(r, 600));
-            return { lesson: data.lesson };
-        }
-    }
-
-    await new Promise(resolve => setTimeout(resolve, 800));
-    return { lesson: MOCK_DB["general"].lesson };
-}
-
-export async function generateBossBattle({ topic, chapter }) {
-    return generateLevelQuestions({ topic, level: 1 }); 
+    const prompt = `Topic: ${topic}. Level ${level}. Write a short (150 words) engaging lesson using an analogy. JSON: { "lesson": "markdown string" }`;
+    
+    try {
+        const response = await callAIWithRetry(() => ai.models.generateContent({
+            model: MODEL_TEXT,
+            contents: prompt,
+            config: { responseMimeType: 'application/json', systemInstruction: BASE_SYSTEM_INSTRUCTION }
+        }));
+        return cleanAndParseJSON(response.text) || MOCK_DB.lesson(topic);
+    } catch (e) { return MOCK_DB.lesson(topic); }
 }
 
 export async function generateHint({ topic, question, options }) {
-    return { hint: "Think about the definition of the key terms in the question." };
-}
+    if (isOfflineMode || !ai) return MOCK_DB.hint;
 
-export async function generateSpeech(text) {
-    console.warn("Speech generation requires API. Feature disabled in offline mode.");
-    return null;
-}
-
-export async function explainConcept(topic, concept, context) {
-    return { explanation: `${concept} is a fundamental part of ${topic}.` };
-}
-
-export async function fetchDailyChallenge() {
-    const data = getMockData("general");
-    const q = data.questions[0];
-    return {
-        question: q.question,
-        options: q.options,
-        correctAnswerIndex: q.correctAnswerIndex,
-        topic: "General Knowledge"
-    };
+    const prompt = `Question: "${question}". Options: ${JSON.stringify(options)}. Give a subtle hint without revealing the answer. JSON: { "hint": string }`;
+    
+    try {
+        const response = await callAIWithRetry(() => ai.models.generateContent({
+            model: MODEL_TEXT,
+            contents: prompt,
+            config: { responseMimeType: 'application/json' }
+        }));
+        return cleanAndParseJSON(response.text) || MOCK_DB.hint;
+    } catch (e) { return MOCK_DB.hint; }
 }
 
 export async function explainError(topic, question, userChoice, correctChoice) {
-    return { explanation: `You chose '${userChoice}', but the correct answer is '${correctChoice}' because it aligns with the facts of ${topic}.` };
+    if (isOfflineMode || !ai) return MOCK_DB.explanation;
+
+    const prompt = `Question: "${question}". User chose: "${userChoice}" (Wrong). Correct: "${correctChoice}". Explain why. JSON: { "explanation": string }`;
+    
+    try {
+        const response = await callAIWithRetry(() => ai.models.generateContent({
+            model: MODEL_TEXT,
+            contents: prompt,
+            config: { responseMimeType: 'application/json' }
+        }));
+        return cleanAndParseJSON(response.text) || MOCK_DB.explanation;
+    } catch (e) { return MOCK_DB.explanation; }
+}
+
+export async function generateJourneyFromImage(imageBase64, mimeType) {
+    if (isOfflineMode || !ai) throw new Error("Offline mode. Cannot analyze images.");
+
+    const prompt = "Analyze this image. Identify the educational topic. JSON: { \"topicName\": string, \"totalLevels\": 15, \"description\": string }";
+    
+    try {
+        const response = await callAIWithRetry(() => ai.models.generateContent({
+            model: MODEL_TEXT,
+            contents: {
+                parts: [
+                    { inlineData: { mimeType: mimeType, data: imageBase64 } },
+                    { text: prompt }
+                ]
+            },
+            config: { responseMimeType: 'application/json' }
+        }));
+        return cleanAndParseJSON(response.text) || { topicName: "Scanned Object", totalLevels: 10, description: "Analysis failed." };
+    } catch (e) { throw e; }
+}
+
+// Accessor to get the AI instance for other modules (like Live API)
+export function getAIClient() {
+    return ai;
 }

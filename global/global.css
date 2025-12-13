@@ -35,7 +35,6 @@
     --space-xxl: 4rem;
 
     /* --- GLOBAL DEFAULTS (Dark Cyber Fallback) --- */
-    /* These ensure the app is NEVER white/unprofessional, even before themes load */
     --color-primary: #00b8d4;
     --color-secondary: #9c27b0;
     --color-accent: #ff4081;
@@ -80,6 +79,22 @@ body {
     background-color: var(--color-background);
 }
 
+/* --- CRT SCANLINE OVERLAY (High-Tech Feel) --- */
+body::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+    z-index: 9999;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
 /* --- BACKGROUND CANVAS --- */
 #bg-canvas {
     position: fixed;
@@ -87,7 +102,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 0; /* Behind content */
+    z-index: 0; 
     pointer-events: none; 
 }
 
@@ -341,11 +356,29 @@ svg { max-width: 100%; display: block; }
     font-family: var(--font-family-body);
 }
 
+.btn:active {
+    transform: scale(0.96); /* Juicy click feel */
+}
+
 .btn-primary {
     background: var(--brand-gradient);
     color: #fff; border: none;
     box-shadow: 0 8px 20px var(--color-primary-transparent-heavy);
+    position: relative;
 }
+
+/* Primary Button Shine */
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+.btn-primary:hover::before {
+    left: 100%;
+}
+
 .btn-primary:hover {
     transform: translateY(-2px);
     box-shadow: 0 12px 28px var(--color-primary-transparent-heavy);

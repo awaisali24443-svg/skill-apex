@@ -26,9 +26,10 @@ let userAnswers = [];
 let hintUsedThisQuestion = false;
 let xpGainedThisLevel = 0;
 
-// Speed Tracking
+// Speed & Combo Tracking
 let questionStartTime = 0;
 let fastAnswersCount = 0;
+let currentCombo = 0;
 
 let typewriterInterval = null;
 
@@ -99,7 +100,9 @@ function startQuiz() {
     score = 0;
     userAnswers = [];
     xpGainedThisLevel = 0;
-    fastAnswersCount = 0; // Reset
+    fastAnswersCount = 0;
+    currentCombo = 0;
+    updateComboDisplay();
     
     renderQuestion();
     switchState('level-quiz-state');
@@ -142,11 +145,17 @@ function startTimer() {
     timeLeft = 60;
     
     elements.timerText.textContent = `00:${timeLeft}`;
+    elements.timerText.classList.remove('panic');
     
     timerInterval = setInterval(() => {
         timeLeft--;
         const seconds = String(timeLeft % 60).padStart(2, '0');
         elements.timerText.textContent = `00:${seconds}`;
+        
+        if (timeLeft <= 10) {
+            elements.timerText.classList.add('panic');
+        }
+        
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
             handleTimeUp();
@@ -158,6 +167,8 @@ function handleTimeUp() {
     soundService.playSound('incorrect');
     vfxService.shake(document.getElementById('question-container'));
     selectedAnswerIndex = -1;
+    currentCombo = 0;
+    updateComboDisplay();
     handleSubmitAnswer();
 }
 
@@ -171,6 +182,33 @@ function handleOptionClick(event) {
     button.classList.add('selected');
     selectedAnswerIndex = parseInt(button.dataset.index, 10);
     elements.submitAnswerBtn.disabled = false;
+}
+
+function updateComboDisplay() {
+    const comboEl = document.getElementById('combo-display');
+    const comboCountEl = document.getElementById('combo-count');
+    
+    if (currentCombo > 1) {
+        comboEl.classList.remove('hidden');
+        comboCountEl.textContent = `x${currentCombo}`;
+        // Trigger pulse animation
+        comboEl.classList.remove('pulse');
+        void comboEl.offsetWidth; // Force reflow
+        comboEl.classList.add('pulse');
+    } else {
+        comboEl.classList.add('hidden');
+    }
+}
+
+function showFloatingText(element, text) {
+    const floatEl = document.createElement('span');
+    floatEl.className = 'float-xp';
+    floatEl.textContent = text;
+    element.appendChild(floatEl);
+    
+    setTimeout(() => {
+        floatEl.remove();
+    }, 1000);
 }
 
 function handleSubmitAnswer() {
@@ -188,22 +226,37 @@ function handleSubmitAnswer() {
     
     if (isCorrect) {
         score++;
-        const xp = hintUsedThisQuestion ? 5 : 10;
-        xpGainedThisLevel += xp;
-        soundService.playSound('correct');
+        currentCombo++;
         
-        // Speed Demon Check
+        // Base XP
+        let xp = hintUsedThisQuestion ? 5 : 10;
+        
+        // Speed Bonus
         if (timeTaken < 5) {
             fastAnswersCount++;
-            showToast("Speed Bonus! ⚡", "success", 1000);
+            xp += 5; // Bonus XP
         }
+        
+        // Combo Bonus
+        if (currentCombo > 1) {
+            xp += (currentCombo * 2);
+        }
+        
+        xpGainedThisLevel += xp;
+        soundService.playSound('correct');
+        updateComboDisplay();
         
         const selectedBtn = elements.quizOptionsContainer.querySelector('.option-btn.selected');
         if (selectedBtn) {
             const rect = selectedBtn.getBoundingClientRect();
+            // Confetti on button
             vfxService.burstConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2);
+            // Floating Text
+            showFloatingText(selectedBtn, `+${xp} XP`);
         }
     } else {
+        currentCombo = 0;
+        updateComboDisplay();
         soundService.playSound('incorrect');
         vfxService.shake(document.getElementById('question-container'));
     }
@@ -232,7 +285,6 @@ function handleNextQuestion() {
 // --- WINNING FEATURE: DIGITAL CERTIFICATE ---
 function generateCertificateHTML(name, topic, level) {
     const date = new Date().toLocaleDateString();
-    // AWAIS ALI SIGNATURE ADDED HERE
     return `
         <div class="certificate-container">
             <div class="cert-border">
@@ -268,7 +320,7 @@ function showResults() {
     soundService.playSound(passed ? 'finish' : 'incorrect');
     
     if (passed) {
-        vfxService.burstConfetti();
+        vfxService.burstConfetti(); // Big Burst center screen
     }
 
     historyService.addQuizAttempt({
@@ -278,11 +330,10 @@ function showResults() {
         startTime: Date.now(), // Rough approx
         endTime: Date.now(),
         xpGained: xpGainedThisLevel,
-        fastAnswers: fastAnswersCount // Pass fast answers count
+        fastAnswers: fastAnswersCount
     });
 
     if (passed) {
-        // --- WINNING TOUCH: THE CERTIFICATE ---
         const userName = firebaseService.getUserName() || "Guest Agent";
         const certHTML = generateCertificateHTML(userName, levelContext.topic, levelContext.level);
         

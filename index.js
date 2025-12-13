@@ -11,8 +11,9 @@ import * as gamificationService from './services/gamificationService.js';
 import * as stateService from './services/stateService.js';
 import * as firebaseService from './services/firebaseService.js';
 import { init as initVoice, toggleListening, isSupported as isVoiceSupported } from './services/voiceCommandService.js';
-import * as backgroundService from './services/backgroundService.js'; // Import
+import * as backgroundService from './services/backgroundService.js';
 import * as authModule from './modules/auth/auth.js';
+import { showToast } from './services/toastService.js';
 
 const moduleCache = new Map();
 let currentModule = null;
@@ -96,7 +97,7 @@ async function loadModule(route) {
     const renderNewModule = async () => {
         try {
             stateService.setCurrentRoute(route);
-            updateGlobalUI(route); // Update global UI elements based on route
+            updateGlobalUI(route); 
 
             const moduleData = await fetchModule(route.module);
             currentModule = moduleData;
@@ -117,7 +118,8 @@ async function loadModule(route) {
                 await moduleData.js.init();
             }
             
-            stateService.clearNavigationContext();
+            // Note: We don't clear session state here anymore to support refreshes.
+            // stateService.clearNavigationContext();
 
             document.querySelectorAll('.sidebar-link').forEach(link => {
                 link.classList.remove('active');
@@ -252,6 +254,25 @@ async function preloadCriticalModules() {
     console.log('All critical modules preloaded.');
 }
 
+// --- ROBUST NETWORK MONITORING ---
+function updateNetworkStatus() {
+    const offlineIndicator = document.getElementById('offline-indicator');
+    if (!offlineIndicator) return;
+
+    if (navigator.onLine) {
+        offlineIndicator.style.display = 'none';
+        // Only show toast if we were previously offline (simple check via display style)
+        if (offlineIndicator.dataset.wasOffline === 'true') {
+            showToast('Connection restored. System Online.', 'success');
+            offlineIndicator.dataset.wasOffline = 'false';
+        }
+    } else {
+        offlineIndicator.style.display = 'flex';
+        offlineIndicator.dataset.wasOffline = 'true';
+        showToast('Connection lost. Switching to Offline Protocol.', 'info');
+    }
+}
+
 // --- AUTH STATE HANDLER ---
 function initializeAppContent(user) {
     const splashScreen = document.getElementById('splash-screen');
@@ -270,7 +291,6 @@ function initializeAppContent(user) {
     
     const voiceToggleBtn = document.getElementById('voice-mic-btn');
     if (voiceToggleBtn) {
-        // Initial visibility check
         if (!isVoiceSupported()) {
             voiceToggleBtn.style.display = 'none';
         }
@@ -286,7 +306,8 @@ function initializeAppContent(user) {
     window.addEventListener('settings-changed', (e) => applyAppSettings(e.detail));
     window.addEventListener('achievement-unlocked', () => soundService.playSound('achievement'));
     window.addEventListener('level-up', (e) => showLevelUpModal(e.detail.level));
-
+    
+    // Global Click Sound
     document.body.addEventListener('click', (event) => {
         if (event.target.closest('.btn, .sidebar-link, .topic-button, .option-btn, .flashcard, .topic-card')) {
             soundService.playSound('click');
@@ -359,6 +380,11 @@ async function main() {
                 navigator.serviceWorker.register('sw.js');
             });
         }
+        
+        // Network Listeners
+        window.addEventListener('online', updateNetworkStatus);
+        window.addEventListener('offline', updateNetworkStatus);
+        updateNetworkStatus(); // Initial check
 
         // --- WAIT FOR AUTH ---
         // The app flow splits here. We do NOT load data until we know WHO the user is.
@@ -377,5 +403,12 @@ async function main() {
         showFatalError(error);
     }
 }
+
+// Global Error Handler for robustness
+window.onerror = function(message, source, lineno, colno, error) {
+    console.error("Global Error Caught:", message, error);
+    // Don't show fatal error for minor JS glitches, but log them or toast if critical logic failed
+    return false; 
+};
 
 main();
