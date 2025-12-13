@@ -1,27 +1,13 @@
+
 <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
-        <linearGradient id="apex-gradient" x1="10" y1="90" x2="90" y2="10" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#00b8d4"/>
-            <stop offset="100%" stop-color="#ff4081"/>
+        <linearGradient id="apex-mini-grad" x1="0" y1="100" x2="100" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#0052CC"/>
+            <stop offset="100%" stop-color="#00E5FF"/>
         </linearGradient>
-        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="3" result="blur"/>
-            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-        </filter>
     </defs>
-    
-    <!-- Outer Triangle Frame -->
-    <path d="M50 15 L85 80 H15 L50 15Z" stroke="url(#apex-gradient)" stroke-width="6" stroke-linejoin="round" fill="none"/>
-    
-    <!-- Inner Circuitry -->
-    <path d="M50 28 L50 50 L35 65" stroke="url(#apex-gradient)" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
-    <path d="M50 50 L65 65" stroke="url(#apex-gradient)" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
-    <circle cx="50" cy="50" r="3" fill="#0c0e1a"/>
-    
-    <!-- The Apex Node -->
-    <circle cx="50" cy="15" r="5" fill="#fff" filter="url(#glow)"/>
-    
-    <!-- Data Points -->
-    <circle cx="15" cy="80" r="4" fill="#00b8d4"/>
-    <circle cx="85" cy="80" r="4" fill="#ff4081"/>
+    <!-- Simplified Velocity Apex for Small Sizes -->
+    <path d="M20 80 L45 25 L50 35 L35 80 Z" fill="#0052CC"/>
+    <path d="M80 80 L55 25 L50 35 L65 80 Z" fill="#00E5FF"/>
+    <circle cx="50" cy="15" r="8" fill="url(#apex-mini-grad)"/>
 </svg>
