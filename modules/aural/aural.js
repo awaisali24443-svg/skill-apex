@@ -10,21 +10,54 @@ const STATE = {
   IDLE: 'IDLE',
   CONNECTING: 'CONNECTING',
   LISTENING: 'LISTENING',
+  THINKING: 'THINKING',
   SPEAKING: 'SPEAKING',
   ERROR: 'ERROR',
 };
 
+const MODEL_LIVE = 'gemini-2.5-flash-native-audio-preview-09-2025';
+
 let currentState = STATE.IDLE;
 let session = null;
 let audioContext = null;
+let analyser = null; // For Visualizer
 let source = null;
 let scriptProcessor = null;
 let stream = null;
 let elements = {};
 let sessionStartTime = 0;
+let visualizerFrameId = null;
+let outputContext = null; // Context for model audio output
 
-// --- Live API Config ---
-const MODEL_LIVE = 'gemini-2.5-flash-native-audio-preview-09-2025';
+// --- Audio Visualizer ---
+function initVisualizer() {
+    if (visualizerFrameId) cancelAnimationFrame(visualizerFrameId);
+    
+    const updateVisuals = () => {
+        if (!analyser || !elements.orb) return;
+        
+        // Frequency Data (0-255)
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(dataArray);
+        
+        // Calculate average volume for reactivity
+        let sum = 0;
+        // Focus on lower frequencies for "bass" impact (first 50 bins)
+        for (let i = 0; i < 50; i++) {
+            sum += dataArray[i];
+        }
+        const average = sum / 50;
+        
+        // Map average (0-255) to scale (1.0 - 1.5)
+        const scale = 1 + (average / 255) * 0.6;
+        
+        elements.orb.style.transform = `scale(${scale})`;
+        
+        visualizerFrameId = requestAnimationFrame(updateVisuals);
+    };
+    
+    updateVisuals();
+}
 
 // --- Audio Helpers ---
 function createBlob(data) {
@@ -56,72 +89,110 @@ function decodeBase64(base64) {
   return bytes;
 }
 
-async function playAudioChunk(base64Audio, ctx) {
+async function playAudioChunk(base64Audio) {
     if (!base64Audio) return;
+    
+    // Init Output Context on first play if needed (User Gesture Requirement)
+    if (!outputContext) {
+        outputContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+        // Create analyser for visualizer on OUTPUT
+        analyser = outputContext.createAnalyser();
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.5;
+        initVisualizer();
+    }
+    
+    if (outputContext.state === 'suspended') {
+        await outputContext.resume();
+    }
+
     const bytes = decodeBase64(base64Audio);
     const dataInt16 = new Int16Array(bytes.buffer);
     const float32 = new Float32Array(dataInt16.length);
     for (let i = 0; i < dataInt16.length; i++) {
         float32[i] = dataInt16[i] / 32768.0;
     }
-    const buffer = ctx.createBuffer(1, float32.length, 24000);
+    
+    const buffer = outputContext.createBuffer(1, float32.length, 24000);
     buffer.getChannelData(0).set(float32);
-    const bufferSource = ctx.createBufferSource();
+    
+    const bufferSource = outputContext.createBufferSource();
     bufferSource.buffer = buffer;
-    bufferSource.connect(ctx.destination);
+    
+    // Connect Source -> Analyser -> Speakers
+    bufferSource.connect(analyser);
+    analyser.connect(outputContext.destination);
+    
     bufferSource.start(0);
 }
 
 function updateUI(newState, msg = '') {
     currentState = newState;
-    elements.orb.className = 'orb'; 
     
-    if (newState === STATE.LISTENING) {
-        elements.orb.classList.add('listening');
-        elements.status.textContent = "Listening...";
-        elements.micBtn.classList.add('active');
-    } else if (newState === STATE.SPEAKING) {
-        elements.orb.classList.add('speaking');
-        elements.status.textContent = "Speaking...";
-    } else if (newState === STATE.CONNECTING) {
-        elements.status.textContent = "Connecting...";
-    } else if (newState === STATE.ERROR) {
-        elements.status.textContent = "Error";
-        elements.error.textContent = msg;
-        elements.error.style.display = 'block';
-        elements.micBtn.classList.remove('active');
-    } else {
-        elements.status.textContent = "Tap to Start";
-        elements.micBtn.classList.remove('active');
+    // Class Reset
+    elements.orb.classList.remove('listening', 'thinking', 'speaking');
+    elements.micBtn.classList.remove('active');
+    elements.error.style.display = 'none';
+
+    switch (newState) {
+        case STATE.LISTENING:
+            elements.orb.classList.add('listening');
+            elements.status.textContent = "I'm Listening...";
+            elements.micBtn.classList.add('active');
+            break;
+        case STATE.THINKING:
+            elements.orb.classList.add('thinking');
+            elements.status.textContent = "Processing...";
+            break;
+        case STATE.SPEAKING:
+            elements.orb.classList.add('speaking');
+            elements.status.textContent = "Speaking...";
+            break;
+        case STATE.CONNECTING:
+            elements.status.textContent = "Establishing Uplink...";
+            break;
+        case STATE.ERROR:
+            elements.status.textContent = "Connection Failed";
+            elements.error.textContent = msg || "Unknown Error";
+            elements.error.style.display = 'block';
+            break;
+        default: // IDLE
+            elements.status.textContent = "Tap Mic to Start";
+            elements.orb.style.transform = 'scale(1)'; // Reset visualizer scale
+            break;
     }
 }
 
-async function startSession() {
-    const ai = getAIClient();
+function addTranscriptEntry(text, sender) {
+    if (!text) return;
+    elements.placeholder.style.display = 'none';
     
-    // Check if AI is initialized. If not, wait briefly then try again.
-    if (!ai) {
-        updateUI(STATE.CONNECTING);
-        // Brief retry in case config is flying in
-        await new Promise(r => setTimeout(r, 1000));
-        const retryAi = getAIClient();
-        if (!retryAi) {
-            updateUI(STATE.ERROR, "System Offline. API Key not ready.");
-            return;
-        }
+    const entry = document.createElement('div');
+    entry.className = `transcription-entry ${sender}`;
+    entry.textContent = text;
+    elements.log.appendChild(entry);
+    
+    // Smooth scroll to bottom
+    elements.log.scrollTo({ top: elements.log.scrollHeight, behavior: 'smooth' });
+}
+
+async function startSession() {
+    const client = getAIClient();
+    if (!client) {
+        updateUI(STATE.ERROR, "System Offline. Missing API Key.");
+        return;
     }
 
-    const client = getAIClient(); // Guaranteed to exist or we returned
     updateUI(STATE.CONNECTING);
-    elements.error.style.display = 'none';
     elements.log.innerHTML = '';
-    elements.placeholder.style.display = 'flex';
     sessionStartTime = Date.now();
 
     try {
+        // 1. Setup Input Audio (Microphone)
         audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
         stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         
+        // 2. Connect to Gemini Live
         const sessionPromise = client.live.connect({
             model: MODEL_LIVE,
             config: {
@@ -129,7 +200,8 @@ async function startSession() {
                 speechConfig: {
                     voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } }
                 },
-                systemInstruction: `You are ApexCore, an encouraging AI tutor. Keep responses short, spoken-style, and friendly. Context: ${historyService.getLastContext()}`
+                inputAudioTranscription: { model: "google-provided-model" }, // Enable user transcript
+                systemInstruction: `You are ApexCore. Be concise, encouraging, and helpful. Current Context: ${historyService.getLastContext()}`
             },
             callbacks: {
                 onopen: () => {
@@ -138,34 +210,42 @@ async function startSession() {
                     
                     source = audioContext.createMediaStreamSource(stream);
                     scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+                    
                     scriptProcessor.onaudioprocess = (e) => {
-                        const inputData = e.inputBuffer.getChannelData(0);
-                        const pcmBlob = createBlob(inputData);
-                        sessionPromise.then(sess => {
-                            sess.sendRealtimeInput({ media: pcmBlob });
-                        });
+                        if (currentState === STATE.LISTENING || currentState === STATE.SPEAKING) {
+                            const inputData = e.inputBuffer.getChannelData(0);
+                            const pcmBlob = createBlob(inputData);
+                            sessionPromise.then(sess => sess.sendRealtimeInput({ media: pcmBlob }));
+                        }
                     };
+                    
                     source.connect(scriptProcessor);
                     scriptProcessor.connect(audioContext.destination);
                 },
                 onmessage: (msg) => {
+                    // Audio Output
                     const audioData = msg.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
                     if (audioData) {
                         updateUI(STATE.SPEAKING);
-                        if (!window.outputCtx) window.outputCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
-                        playAudioChunk(audioData, window.outputCtx);
+                        playAudioChunk(audioData);
                     }
+                    
+                    // Turn Complete (Back to Listening)
                     if (msg.serverContent?.turnComplete) {
                         updateUI(STATE.LISTENING);
                     }
+                    
+                    // Transcription
+                    // Note: Current SDK might package transcription differently, this is best-effort based on docs
+                    const transcript = msg.serverContent?.modelTurn?.parts?.[0]?.text; // Sometimes text comes separately
+                    if (transcript) addTranscriptEntry(transcript, 'model');
                 },
                 onclose: () => {
-                    console.log("Session Closed");
                     stopSession();
                 },
                 onerror: (e) => {
                     console.error("Session Error", e);
-                    updateUI(STATE.ERROR, "Connection lost.");
+                    updateUI(STATE.ERROR, "Lost connection to neural core.");
                 }
             }
         });
@@ -174,26 +254,32 @@ async function startSession() {
 
     } catch (e) {
         console.error(e);
-        updateUI(STATE.ERROR, "Could not access microphone or connect.");
+        updateUI(STATE.ERROR, "Microphone access denied or network error.");
     }
 }
 
 function stopSession() {
-    if (session) session = null;
+    // Cleanup Audio
     if (source) { source.disconnect(); source = null; }
     if (scriptProcessor) { scriptProcessor.disconnect(); scriptProcessor = null; }
     if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
     if (audioContext) { audioContext.close(); audioContext = null; }
+    if (outputContext) { outputContext.close(); outputContext = null; }
+    if (visualizerFrameId) cancelAnimationFrame(visualizerFrameId);
     
+    session = null;
+    analyser = null;
+
+    // Log Session
     const duration = Math.round((Date.now() - sessionStartTime) / 1000);
     if (duration > 5) {
         historyService.addAuralSession({
-            transcript: [{ sender: 'system', text: 'Live Voice Session' }],
+            transcript: [{ sender: 'system', text: 'Voice Session Ended' }], // Placeholder until full transcript avail
             duration: duration,
-            xpGained: Math.min(50, Math.floor(duration / 2))
+            xpGained: Math.min(100, Math.floor(duration / 2))
         });
-        showToast("Session saved.", "success");
     }
+    
     updateUI(STATE.IDLE);
 }
 
@@ -216,18 +302,22 @@ export function init() {
         headerControls: document.getElementById('aural-header-controls'),
     };
 
+    // Header Back Button Injection
     const { navigationContext } = stateService.getState();
-    if (navigationContext.auralContext?.from) {
-        elements.headerControls.innerHTML = '';
-        const backBtn = document.createElement('a');
-        backBtn.href = `#/${navigationContext.auralContext.from}`;
-        backBtn.className = 'btn';
-        backBtn.innerHTML = `<svg class="icon" width="18" height="18" viewBox="0 0 24 24"><use href="assets/icons/feather-sprite.svg#arrow-left"/></svg><span>Back</span>`;
-        elements.headerControls.appendChild(backBtn);
-    }
+    elements.headerControls.innerHTML = ''; // Clear prev
+    const backBtn = document.createElement('a');
+    // Default to home if no context
+    const backPath = navigationContext.auralContext?.from ? `#/${navigationContext.auralContext.from}` : '#/';
+    backBtn.href = backPath;
+    backBtn.className = 'btn';
+    backBtn.innerHTML = `<svg class="icon" width="18" height="18" viewBox="0 0 24 24"><use href="assets/icons/feather-sprite.svg#arrow-left"/></svg><span>End Session</span>`;
+    backBtn.onclick = (e) => {
+        stopSession();
+    };
+    elements.headerControls.appendChild(backBtn);
 
-    elements.micBtn.removeEventListener('click', handleMicClick);
-    elements.micBtn.addEventListener('click', handleMicClick);
+    elements.micBtn.onclick = handleMicClick;
+    
     updateUI(STATE.IDLE);
 }
 

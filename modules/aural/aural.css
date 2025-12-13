@@ -4,7 +4,7 @@
     width: 100%;
     display: flex;
     flex-direction: column;
-    background-color: var(--color-background);
+    background: radial-gradient(circle at 50% 100%, #1a1f35 0%, var(--color-background) 100%);
     color: var(--color-text);
     overflow: hidden;
     position: relative;
@@ -12,195 +12,158 @@
 
 .aural-header-controls {
     position: absolute;
-    top: 1rem;
-    left: 1rem;
-    z-index: 10;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 20;
 }
 
+/* --- Transcript Log --- */
 .transcription-log {
     flex-grow: 1;
     overflow-y: auto;
-    padding: var(--space-lg);
-    padding-top: 5rem; /* Space for back button */
+    padding: 6rem var(--space-lg) 2rem; /* Top padding clears back button */
     display: flex;
-    flex-direction: column-reverse; /* Newest messages at the bottom */
-    mask-image: linear-gradient(to bottom, transparent 0%, black 10%);
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%);
+    flex-direction: column;
+    gap: 1rem;
+    scroll-behavior: smooth;
+    /* Mask to fade text at the top */
+    mask-image: linear-gradient(to bottom, transparent 0%, black 15%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%);
 }
 
 .aural-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    margin: auto;
     text-align: center;
     color: var(--color-text-secondary);
-    margin: auto;
-    padding-bottom: 2rem;
+    animation: fade-in 0.8s ease-out;
 }
 
 .placeholder-icon {
-    width: 64px;
-    height: 64px;
-    margin-bottom: var(--space-lg);
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem;
     background: var(--color-surface);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 1px solid var(--color-border);
-    box-shadow: 0 0 20px var(--color-surface-transparent);
+    box-shadow: 0 0 30px var(--color-surface-transparent);
 }
 .placeholder-icon svg {
-    width: 32px;
-    height: 32px;
-    color: var(--color-text-secondary);
-}
-.aural-placeholder h2 {
-    color: var(--color-text);
-    margin-bottom: var(--space-sm);
+    width: 40px; height: 40px; color: var(--color-primary); opacity: 0.8;
 }
 
-/* Transcription Entries */
+/* Chat Bubbles */
 .transcription-entry {
-    max-width: 85%;
-    width: fit-content;
-    padding: 1rem 1.25rem;
-    border-radius: 1.25rem;
-    margin-bottom: var(--space-md);
+    max-width: 80%;
+    padding: 12px 18px;
+    border-radius: 18px;
+    font-size: 1rem;
     line-height: 1.5;
-    font-size: 1.05rem;
-    animation: fade-slide-in 0.3s ease-out;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: relative;
+    animation: slide-up-fade 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+@keyframes slide-up-fade {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .transcription-entry.user {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-    color: #fff;
-    border-bottom-right-radius: 0.25rem;
     align-self: flex-end;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    background: var(--color-primary-transparent);
+    border: 1px solid var(--color-primary);
+    color: var(--color-text);
+    border-bottom-right-radius: 4px;
 }
 
 .transcription-entry.model {
-    background-color: var(--color-surface);
-    border-bottom-left-radius: 0.25rem;
     align-self: flex-start;
+    background: var(--color-surface);
     border: 1px solid var(--color-border);
-    color: var(--color-text);
+    color: var(--color-text-secondary);
+    border-bottom-left-radius: 4px;
 }
 
-.transcription-entry.live::after {
-    content: '';
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    background-color: currentColor;
-    border-radius: 50%;
-    margin-left: 8px;
-    animation: blink 1s infinite;
-}
-
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-}
-
-
-/* Footer Layout - Fixed Flexbox approach */
+/* --- Footer & Orb --- */
 .aural-footer {
     flex-shrink: 0;
-    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-end;
-    padding: 0 var(--space-md) 2rem var(--space-md);
-    background: linear-gradient(to top, var(--color-background) 20%, transparent 100%);
-    z-index: 5;
-    gap: 1.5rem; /* Space between elements */
+    padding-bottom: 2.5rem;
+    z-index: 10;
+    /* Glassmorphism for footer background */
+    background: rgba(12, 14, 26, 0.6);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255,255,255,0.05);
 }
 
-/* Orb Styling */
 .orb-container {
-    height: 140px;
-    width: 140px;
+    height: 160px;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    /* No margin needed, gap in parent handles it */
+    overflow: visible;
 }
 
 .orb {
-    --volume-scale: 1;
-    --freq-modifier: 0deg;
-    
     width: 100px;
     height: 100px;
     border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, var(--color-primary), var(--color-secondary));
+    /* Default State: Resting Blue */
+    background: radial-gradient(circle at 30% 30%, #4facfe, #00f2fe);
+    box-shadow: 0 0 60px rgba(0, 242, 254, 0.3), inset 0 0 20px rgba(255,255,255,0.5);
     position: relative;
-    z-index: 1;
-    
-    /* Visual Effects */
-    box-shadow: 
-        0 0 40px var(--color-primary-transparent-heavy), 
-        inset 0 0 20px rgba(255,255,255,0.2);
-    
-    /* Animation Hooks */
-    transform: scale(var(--volume-scale));
-    filter: hue-rotate(var(--freq-modifier));
-    transition: transform 0.08s linear, filter 0.1s linear;
-}
-
-/* Inner glow */
-.orb::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: radial-gradient(circle at 40% 40%, rgba(255,255,255,0.4) 0%, transparent 60%);
-    mix-blend-mode: overlay;
-}
-
-/* Outer Ripple */
-.orb::before {
-    content: '';
-    position: absolute;
-    inset: -4px;
-    border-radius: 50%;
-    border: 2px solid var(--color-primary);
-    opacity: 0;
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     transform: scale(1);
-    z-index: -1;
+    z-index: 2;
 }
 
+/* Orb States controlled by JS Visualizer */
+.orb.listening {
+    /* Green tint */
+    background: radial-gradient(circle at 30% 30%, #43e97b, #38f9d7);
+    box-shadow: 0 0 50px rgba(56, 249, 215, 0.4);
+}
+
+.orb.speaking {
+    /* Purple/Pink tint active */
+    background: radial-gradient(circle at 30% 30%, #fa709a, #fee140);
+    box-shadow: 0 0 80px rgba(250, 112, 154, 0.6);
+}
+
+.orb.thinking {
+    /* Amber pulse */
+    background: radial-gradient(circle at 30% 30%, #f6d365, #fda085);
+    animation: thinking-pulse 1.5s infinite alternate;
+}
+
+@keyframes thinking-pulse {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    100% { transform: scale(1.05); opacity: 1; }
+}
 
 /* Status Text */
 .aural-status {
     font-family: var(--font-family-mono);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--color-text-secondary);
-    background: var(--color-surface);
-    padding: 4px 12px;
-    border-radius: 12px;
-    border: 1px solid var(--color-border);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 1.5rem;
+    min-height: 1.2em; /* Prevent layout shift */
+    opacity: 0.8;
 }
 
-/* Controls Container */
-.aural-controls {
-    /* Removed absolute positioning */
-    position: relative; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* Mic Button - Premium Style */
+/* Mic Button */
 .btn-mic {
-    width: 80px;
-    height: 80px;
+    width: 72px;
+    height: 72px;
     border-radius: 50%;
     border: none;
     cursor: pointer;
@@ -208,92 +171,48 @@
     align-items: center;
     justify-content: center;
     color: white;
-    position: relative;
-    z-index: 2;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    
-    /* Glassmorphism + Gradient */
-    background: var(--brand-gradient);
-    box-shadow: 
-        0 10px 20px var(--color-primary-transparent-heavy),
-        inset 0 2px 0 rgba(255,255,255,0.3);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .btn-mic svg {
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-    width: 36px;
-    height: 36px;
+    width: 32px; height: 32px; transition: transform 0.2s;
 }
 
 .btn-mic:hover {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 
-        0 15px 30px var(--color-primary-transparent-heavy),
-        inset 0 2px 0 rgba(255,255,255,0.3);
-}
-
-.btn-mic:active {
-    transform: translateY(1px) scale(0.95);
-    box-shadow: 0 5px 10px var(--color-primary-transparent-heavy);
+    transform: scale(1.1);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    box-shadow: 0 10px 30px var(--color-primary-transparent);
 }
 
 .btn-mic.active {
-    background: linear-gradient(135deg, var(--color-error), #ff1744);
-    box-shadow: 0 10px 25px var(--color-error-bg);
-    animation: pulse-red 2s infinite;
+    background: var(--color-error);
+    border-color: var(--color-error);
+    color: white;
+    box-shadow: 0 0 0 6px rgba(244, 67, 54, 0.2);
 }
-
-@keyframes pulse-red {
-    0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.4); }
-    70% { box-shadow: 0 0 0 20px rgba(244, 67, 54, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); }
-}
-
-
-/* Orb States */
-.orb.listening {
-    animation: breathe 3s ease-in-out infinite;
-}
-
-.orb.thinking {
-    animation: spin-color 2s linear infinite;
-}
-.orb.thinking::before {
-    opacity: 1;
-    border-color: var(--color-accent);
-    border-top-color: transparent;
-    border-bottom-color: transparent;
-    animation: spin 1.5s linear infinite;
-}
-
-.orb.speaking {
-    /* Animation handled by JS visualizer, but fallback here */
-    box-shadow: 0 0 60px var(--color-secondary-transparent-heavy);
-}
-
-@keyframes breathe {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-@keyframes spin-color {
-    0% { filter: hue-rotate(0deg); }
-    100% { filter: hue-rotate(360deg); }
-}
+.btn-mic.active svg { transform: scale(0.9); }
 
 .aural-error {
-    position: absolute; 
-    bottom: 0; left: 0; right: 0;
-    padding: var(--space-md); 
-    background-color: rgba(244, 67, 54, 0.9);
-    backdrop-filter: blur(4px);
-    color: white; 
-    text-align: center;
-    font-family: var(--font-family-mono); 
-    animation: fade-slide-in 0.3s ease-out;
-    z-index: 20;
+    position: absolute;
+    top: 5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(220, 38, 38, 0.9);
+    backdrop-filter: blur(8px);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: white;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    animation: slide-down 0.3s ease-out;
+}
+
+@keyframes slide-down {
+    from { transform: translate(-50%, -20px); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
 }
