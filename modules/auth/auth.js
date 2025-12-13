@@ -5,40 +5,31 @@ import { LOCAL_STORAGE_KEYS } from '../../constants.js';
 
 let elements = {};
 let isLoginMode = true;
-let resetOobCode = null;
 
 function toggleMode() {
     isLoginMode = !isLoginMode;
-    
     elements.title.textContent = isLoginMode ? 'System Login' : 'New Registration';
     elements.subtitle.textContent = isLoginMode ? 'Identify yourself to access the neural network.' : 'Create a new profile to begin your journey.';
     elements.submitBtnText.textContent = isLoginMode ? 'Connect' : 'Register';
     elements.toggleText.textContent = isLoginMode ? 'New user?' : 'Already have an account?';
     elements.toggleBtn.textContent = isLoginMode ? 'Initialize New Account' : 'Login with Existing ID';
     elements.error.style.display = 'none';
-    
-    // Hide forgot button in register mode
     if (elements.forgotBtn) elements.forgotBtn.style.display = isLoginMode ? 'block' : 'none';
 }
 
 async function handleSubmit(e) {
     e.preventDefault();
-    
     const email = elements.emailInput.value.trim();
     const password = elements.passwordInput.value.trim();
-    
     if (!email || !password) return;
     
-    // UI Loading State
     elements.submitBtn.disabled = true;
     elements.submitBtnText.style.display = 'none';
     elements.submitBtnSpinner.style.display = 'block';
-    elements.error.style.display = 'none';
     
     try {
         if (isLoginMode) {
             await firebaseService.login(email, password);
-            // Auth state change listener in index.js will handle the redirect
         } else {
             await firebaseService.register(email, password);
             showToast('Account created successfully!', 'success');
@@ -49,112 +40,114 @@ async function handleSubmit(e) {
 }
 
 async function handleGoogleLogin() {
-    try {
-        await firebaseService.loginWithGoogle();
-        // Auth listener handles redirect
-    } catch (error) {
-        handleError(error);
-    }
+    try { await firebaseService.loginWithGoogle(); } catch (error) { handleError(error); }
 }
 
 function populateGuestData() {
-    // Inject sample data if the user has no existing data, 
-    // ensuring the guest experience looks professional and populated.
+    console.log("Populating Local IT Expo Data...");
 
+    // 1. GAMIFICATION STATS (Look impressive instantly)
     if (!localStorage.getItem(LOCAL_STORAGE_KEYS.GAMIFICATION)) {
         const sampleStats = {
-            level: 5,
-            xp: 2450,
-            currentStreak: 4,
+            level: 18,
+            xp: 18500,
+            currentStreak: 65,
             lastQuizDate: new Date().toISOString(),
-            totalQuizzesCompleted: 12,
-            totalPerfectQuizzes: 8,
-            questionsSaved: 3,
+            totalQuizzesCompleted: 92,
+            totalPerfectQuizzes: 35,
+            questionsSaved: 15,
             dailyQuests: { date: new Date().toDateString(), quests: [] },
             dailyChallenge: { date: new Date().toDateString(), completed: false }
         };
         localStorage.setItem(LOCAL_STORAGE_KEYS.GAMIFICATION, JSON.stringify(sampleStats));
     }
 
+    // 2. ACTIVE JOURNEYS (Highly recognizable, "Cool" IT topics)
     if (!localStorage.getItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS)) {
         const sampleJourneys = [
             {
-                id: "journey_sample_1",
-                goal: "Cybersecurity Ops",
-                description: "Mastering network defense, encryption protocols, and ethical hacking methodologies.",
-                currentLevel: 12,
+                id: "journey_expo_1",
+                goal: "Ethical Hacking & Security",
+                description: "Learn penetration testing, Kali Linux, and how to secure networks against cyber attacks.",
+                currentLevel: 15,
                 totalLevels: 50,
-                styleClass: "topic-space",
+                styleClass: "topic-space", // Purple/Dark look
+                createdAt: new Date(Date.now() - 86400000 * 2).toISOString()
+            },
+            {
+                id: "journey_expo_2",
+                goal: "Full-Stack Web Development",
+                description: "Master the MERN Stack (MongoDB, Express, React, Node) and build professional websites.",
+                currentLevel: 42,
+                totalLevels: 60,
+                styleClass: "topic-programming", // Blue/Tech look
+                createdAt: new Date(Date.now() - 86400000 * 10).toISOString()
+            },
+            {
+                id: "journey_expo_3",
+                goal: "Freelancing Mastery",
+                description: "How to rank on Upwork/Fiverr, communicate with clients, and build a digital career.",
+                currentLevel: 8,
+                totalLevels: 20,
+                styleClass: "topic-finance", // Gold/Money look
                 createdAt: new Date().toISOString()
             }
         ];
         localStorage.setItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS, JSON.stringify(sampleJourneys));
     }
 
+    // 3. EXTENSIVE HISTORY
     if (!localStorage.getItem(LOCAL_STORAGE_KEYS.HISTORY)) {
         const now = Date.now();
         const day = 86400000;
-        const sampleHistory = [
-            {
-                id: `quiz_sample_${now}`,
-                type: "quiz",
-                topic: "Cybersecurity Ops - Level 11",
-                score: 5,
+        const sampleHistory = [];
+        
+        for(let i=0; i<8; i++) {
+            const isPerfect = Math.random() > 0.6;
+            const score = isPerfect ? 5 : Math.floor(Math.random() * 4) + 1;
+            const topic = i % 2 === 0 ? "Ethical Hacking & Security" : "Full-Stack Web Development";
+            const level = (i % 2 === 0 ? 15 : 42) - Math.floor(i/2);
+            
+            sampleHistory.push({
+                id: `quiz_hist_${i}`,
+                type: 'quiz',
+                topic: `${topic} - Level ${level}`,
+                score: score,
                 totalQuestions: 5,
-                difficulty: "medium",
-                date: new Date(now - day * 0.1).toISOString(),
-                xpGained: 50
-            },
-            {
-                id: `aural_sample_${now}`,
-                type: "aural",
-                topic: "Aural Tutor Session",
-                date: new Date(now - day * 1.5).toISOString(),
-                duration: 185,
-                transcript: [],
-                xpGained: 45
-            },
-            {
-                id: `quiz_sample_${now-1}`,
-                type: "quiz",
-                topic: "Cybersecurity Ops - Level 10",
-                score: 4,
-                totalQuestions: 5,
-                difficulty: "medium",
-                date: new Date(now - day * 2).toISOString(),
-                xpGained: 40
-            },
-             {
-                id: `quiz_sample_${now-2}`,
-                type: "quiz",
-                topic: "Cybersecurity Ops - Level 9",
-                score: 5,
-                totalQuestions: 5,
-                difficulty: "medium",
-                date: new Date(now - day * 3).toISOString(),
-                xpGained: 50
-            }
-        ];
+                date: new Date(now - (day * i * 0.5)).toISOString(),
+                xpGained: score * 10
+            });
+        }
+        
         localStorage.setItem(LOCAL_STORAGE_KEYS.HISTORY, JSON.stringify(sampleHistory));
     }
 
+    // 4. SMART LIBRARY (Questions judges will understand and find smart)
     if (!localStorage.getItem(LOCAL_STORAGE_KEYS.LIBRARY)) {
         const sampleLibrary = [
             {
-                question: "What is the difference between symmetric and asymmetric encryption?",
-                options: ["Key length", "Symmetric uses one key, asymmetric uses two", "Speed only", "Complexity"],
+                id: "q_lib_1",
+                question: "In Web Development, what does 'React' use to improve performance?",
+                options: ["Direct DOM manipulation", "Virtual DOM", "SQL Database", "Flash Player"],
                 correctAnswerIndex: 1,
-                explanation: "Symmetric encryption uses a single shared secret key for both encryption and decryption, while asymmetric uses a public key for encryption and a private key for decryption.",
-                id: "q_sample_1",
-                srs: { interval: 1, repetitions: 0, easeFactor: 2.5, nextReviewDate: Date.now(), lastReviewed: null }
+                explanation: "React uses a Virtual DOM to minimize slow updates to the real browser DOM.",
+                srs: { interval: 0, repetitions: 0, easeFactor: 2.5, nextReviewDate: Date.now(), lastReviewed: null }
             },
             {
-                question: "Identify the core principle of Zero Trust Architecture.",
-                options: ["Trust but verify", "Never trust, always verify", "Trust internal networks", "Verify only external"],
+                id: "q_lib_2",
+                question: "Which tool is commonly used for 'Packet Sniffing' in Ethical Hacking?",
+                options: ["Photoshop", "Wireshark", "MS Word", "Notepad"],
                 correctAnswerIndex: 1,
-                explanation: "Zero Trust assumes no user or device is trustworthy by default, regardless of location relative to the network perimeter.",
-                id: "q_sample_2",
-                srs: { interval: 1, repetitions: 0, easeFactor: 2.5, nextReviewDate: Date.now(), lastReviewed: null }
+                explanation: "Wireshark is the industry standard for analyzing network traffic and packets.",
+                srs: { interval: 0, repetitions: 0, easeFactor: 2.5, nextReviewDate: Date.now(), lastReviewed: null }
+            },
+            {
+                id: "q_lib_3",
+                question: "What is the primary benefit of Freelancing?",
+                options: ["Fixed Salary", "Global Clients & Dollar Income", "Free Health Insurance", "9 to 5 Timing"],
+                correctAnswerIndex: 1,
+                explanation: "Freelancing allows access to international markets, often resulting in higher earnings in foreign currency.",
+                srs: { interval: 0, repetitions: 0, easeFactor: 2.5, nextReviewDate: Date.now(), lastReviewed: null }
             }
         ];
         localStorage.setItem(LOCAL_STORAGE_KEYS.LIBRARY, JSON.stringify(sampleLibrary));
@@ -163,180 +156,28 @@ function populateGuestData() {
 
 async function handleGuestLogin() {
     try {
-        populateGuestData(); // Inject data before login triggers app init
+        populateGuestData(); 
         await firebaseService.loginAsGuest();
-        // Auth listener handles redirect
     } catch (error) {
         handleError(error);
     }
 }
 
-// --- Reset Password Logic (Request Link) ---
-function openResetModal() {
-    elements.resetModal.style.display = 'block';
-    elements.resetEmailInput.value = elements.emailInput.value; // Pre-fill if available
-    elements.resetEmailInput.focus();
-    elements.resetFeedback.style.display = 'none';
-}
-
-function closeResetModal() {
-    elements.resetModal.style.display = 'none';
-}
-
-async function handleResetSubmit() {
-    const email = elements.resetEmailInput.value.trim();
-    if (!email) return;
-
-    const btn = elements.confirmResetBtn;
-    const originalText = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = "Sending...";
-    elements.resetFeedback.style.display = 'none';
-
-    try {
-        // This now uses custom settings to redirect back to the app
-        await firebaseService.resetPassword(email);
-        elements.resetFeedback.textContent = `Reset link sent to ${email}. Check your inbox.`;
-        elements.resetFeedback.style.color = 'var(--color-success)';
-        elements.resetFeedback.style.backgroundColor = 'var(--color-success-bg)';
-        elements.resetFeedback.style.display = 'block';
-        
-        setTimeout(() => {
-            closeResetModal();
-            btn.disabled = false;
-            btn.textContent = originalText;
-        }, 3000);
-    } catch (error) {
-        console.error("Reset Password Error:", error);
-        let msg = "Failed to send reset email.";
-        if (error.code === 'auth/user-not-found') msg = "No account found with this email.";
-        if (error.code === 'auth/invalid-email') msg = "Invalid email address.";
-        
-        elements.resetFeedback.textContent = msg;
-        elements.resetFeedback.style.color = 'var(--color-error)';
-        elements.resetFeedback.style.backgroundColor = 'var(--color-error-bg)';
-        elements.resetFeedback.style.display = 'block';
-        btn.disabled = false;
-        btn.textContent = originalText;
-    }
-}
-
-// --- Confirm New Password Logic (From Email Link) ---
-async function handleNewPasswordSubmit() {
-    if (!resetOobCode) return;
-    
-    const newPassword = elements.newPasswordInput.value.trim();
-    if (newPassword.length < 6) {
-        elements.newPasswordFeedback.textContent = "Password must be at least 6 characters.";
-        elements.newPasswordFeedback.style.color = 'var(--color-error)';
-        elements.newPasswordFeedback.style.backgroundColor = 'var(--color-error-bg)';
-        elements.newPasswordFeedback.style.display = 'block';
-        return;
-    }
-
-    const btn = elements.confirmNewPasswordBtn;
-    const originalText = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = "Updating...";
-    elements.newPasswordFeedback.style.display = 'none';
-
-    try {
-        await firebaseService.confirmReset(resetOobCode, newPassword);
-        
-        elements.newPasswordFeedback.textContent = "Password updated successfully! Logging you in...";
-        elements.newPasswordFeedback.style.color = 'var(--color-success)';
-        elements.newPasswordFeedback.style.backgroundColor = 'var(--color-success-bg)';
-        elements.newPasswordFeedback.style.display = 'block';
-        
-        showToast("Password updated! Please sign in.", "success");
-        
-        // Clear params to prevent re-triggering
-        window.history.replaceState({}, document.title, window.location.pathname);
-        resetOobCode = null;
-
-        setTimeout(() => {
-            elements.newPasswordModal.style.display = 'none';
-            // Auto-fill login email if possible? Hard to know email here without asking.
-            // Just focus login
-            elements.passwordInput.focus();
-        }, 2000);
-
-    } catch (error) {
-        console.error("Confirm Password Error:", error);
-        let msg = "Failed to reset password. Link may be expired.";
-        if (error.code === 'auth/expired-action-code') msg = "This link has expired. Please request a new one.";
-        if (error.code === 'auth/invalid-action-code') msg = "Invalid link. Please request a new one.";
-        
-        elements.newPasswordFeedback.textContent = msg;
-        elements.newPasswordFeedback.style.color = 'var(--color-error)';
-        elements.newPasswordFeedback.style.backgroundColor = 'var(--color-error-bg)';
-        elements.newPasswordFeedback.style.display = 'block';
-        btn.disabled = false;
-        btn.textContent = originalText;
-    }
-}
-
 function handleError(error) {
     console.error(error);
-    let msg = error.message;
-    if (msg.includes('invalid-email')) msg = 'Invalid email format.';
-    else if (msg.includes('user-not-found')) msg = 'No user found with this email.';
-    else if (msg.includes('wrong-password')) msg = 'Incorrect credentials.';
-    else if (msg.includes('email-already-in-use')) msg = 'Email already registered.';
-    else if (msg.includes('weak-password')) msg = 'Password must be at least 6 characters.';
-    else if (msg.includes('popup-closed-by-user')) msg = 'Sign-in cancelled.';
-    else if (msg.includes('too-many-requests')) msg = 'Too many attempts. Try again later.';
-    
-    elements.error.textContent = msg;
+    elements.error.textContent = error.message;
     elements.error.style.display = 'block';
-    
-    // Reset Button
     elements.submitBtn.disabled = false;
     elements.submitBtnText.style.display = 'block';
     elements.submitBtnSpinner.style.display = 'none';
 }
 
-function checkUrlForReset() {
-    // Check both standard query params and hash-based params (depending on router behavior)
-    const urlParams = new URLSearchParams(window.location.search);
-    let mode = urlParams.get('mode');
-    let oobCode = urlParams.get('oobCode');
-
-    // Fallback: Check hash if router moves params there
-    if (!mode || !oobCode) {
-        const hashParts = window.location.hash.split('?');
-        if (hashParts.length > 1) {
-            const hashParams = new URLSearchParams(hashParts[1]);
-            if (!mode) mode = hashParams.get('mode');
-            if (!oobCode) oobCode = hashParams.get('oobCode');
-        }
-    }
-
-    if (mode === 'resetPassword' && oobCode) {
-        resetOobCode = oobCode;
-        console.log("Password Reset Mode Detected.");
-        
-        // Clean URL visually to hide codes/keys immediately
-        window.history.replaceState({}, document.title, window.location.pathname);
-        
-        // Show Modal
-        if (elements.newPasswordModal) {
-            elements.newPasswordModal.style.display = 'block';
-            elements.newPasswordInput.focus();
-        }
-    }
-}
-
 export function init() {
     const container = document.getElementById('auth-container');
-    
-    // Fetch HTML manually since this module loads before the router can help
     fetch('./modules/auth/auth.html')
         .then(res => res.text())
         .then(html => {
             container.innerHTML = html;
-            
-            // Inject CSS dynamically (Only if not already present)
             if (!document.querySelector('link[href="./modules/auth/auth.css"]')) {
                 const link = document.createElement('link');
                 link.rel = 'stylesheet';
@@ -344,7 +185,6 @@ export function init() {
                 document.head.appendChild(link);
             }
             
-            // Bind Elements
             elements = {
                 form: document.getElementById('auth-form'),
                 emailInput: document.getElementById('auth-email'),
@@ -359,41 +199,13 @@ export function init() {
                 title: document.getElementById('auth-title'),
                 subtitle: document.getElementById('auth-subtitle'),
                 toggleText: document.getElementById('auth-toggle-text'),
-                error: document.getElementById('auth-error'),
-                
-                // Reset Modal Elements
-                resetModal: document.getElementById('reset-password-modal'),
-                resetEmailInput: document.getElementById('reset-email-input'),
-                cancelResetBtn: document.getElementById('cancel-reset-btn'),
-                confirmResetBtn: document.getElementById('confirm-reset-btn'),
-                resetFeedback: document.getElementById('reset-feedback'),
-
-                // New Password Modal Elements
-                newPasswordModal: document.getElementById('new-password-modal'),
-                newPasswordInput: document.getElementById('new-password-input'),
-                confirmNewPasswordBtn: document.getElementById('confirm-new-password-btn'),
-                newPasswordFeedback: document.getElementById('new-password-feedback')
+                error: document.getElementById('auth-error')
             };
             
             if(elements.form) elements.form.addEventListener('submit', handleSubmit);
             if(elements.toggleBtn) elements.toggleBtn.addEventListener('click', toggleMode);
             if(elements.googleBtn) elements.googleBtn.addEventListener('click', handleGoogleLogin);
             if(elements.guestBtn) elements.guestBtn.addEventListener('click', handleGuestLogin);
-            
-            if (elements.forgotBtn) elements.forgotBtn.addEventListener('click', openResetModal);
-            if (elements.cancelResetBtn) elements.cancelResetBtn.addEventListener('click', closeResetModal);
-            if (elements.confirmResetBtn) elements.confirmResetBtn.addEventListener('click', handleResetSubmit);
-            if (elements.confirmNewPasswordBtn) elements.confirmNewPasswordBtn.addEventListener('click', handleNewPasswordSubmit);
-            
-            // Close modal on backdrop click
-            if (elements.resetModal) {
-                elements.resetModal.addEventListener('click', (e) => {
-                    if (e.target === elements.resetModal) closeResetModal();
-                });
-            }
-
-            // Check if we arrived here via a reset email link
-            checkUrlForReset();
         });
 }
 

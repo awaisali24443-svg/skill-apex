@@ -137,6 +137,45 @@
 }
 .copy-input-group button:hover { background: rgba(0,0,0,0.05); color: var(--color-primary); }
 
+/* --- CAREER STATS STRIP --- */
+.career-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-lg);
+    margin-bottom: var(--space-xl);
+}
+
+.stat-block {
+    background: var(--color-surface);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--shadow-card);
+    transition: transform 0.2s;
+}
+.stat-block:hover { transform: translateY(-3px); }
+
+.stat-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+.stat-icon svg { width: 24px; height: 24px; color: white; }
+
+.icon-fire { background: linear-gradient(135deg, #FF9800, #F44336); box-shadow: 0 4px 10px rgba(244, 67, 54, 0.3); }
+.icon-star { background: linear-gradient(135deg, #FFD700, #FFC107); box-shadow: 0 4px 10px rgba(255, 193, 7, 0.3); }
+.icon-check { background: linear-gradient(135deg, #2196F3, #00BCD4); box-shadow: 0 4px 10px rgba(33, 150, 243, 0.3); }
+
+.stat-data { display: flex; flex-direction: column; }
+.stat-value { font-size: 1.5rem; font-weight: 800; color: var(--color-text); line-height: 1.1; }
+.stat-label { font-size: 0.85rem; color: var(--color-text-secondary); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+
 /* --- MAIN: ACHIEVEMENTS --- */
 .section-heading { margin-bottom: 32px; }
 .section-heading h1 { font-size: 2.2rem; margin-bottom: 8px; letter-spacing: -1px; }
@@ -208,4 +247,6 @@
 @media (max-width: 900px) {
     .sparked-layout { grid-template-columns: 1fr; }
     .profile-sidebar { position: relative; top: 0; }
+    .career-stats-row { grid-template-columns: 1fr; gap: var(--space-md); }
+    .stat-block { padding: 1rem; }
 }

@@ -94,6 +94,11 @@ export function renderSidebar(container) {
                 <span class="text">Log Out</span>
             </button>
         </ul>
+        
+        <!-- AUTHORSHIP CREDIT -->
+        <div class="sidebar-credit" style="padding: 10px 16px 0; margin-top: 10px; font-size: 0.65rem; color: var(--color-text-secondary); text-align: center; border-top: 1px solid rgba(255,255,255,0.05); opacity:0.8;">
+            <span class="text" style="display:block;">Architect: <span style="color:var(--color-primary); font-weight:700;">Awais Ali</span></span>
+        </div>
     `;
     
     container.innerHTML = html;

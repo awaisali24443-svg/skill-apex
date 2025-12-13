@@ -10,6 +10,7 @@ import * as stateService from '../../services/stateService.js';
 import * as libraryService from '../../services/libraryService.js';
 import { showToast } from '../../services/toastService.js';
 import * as vfxService from '../../services/vfxService.js';
+import * as firebaseService from '../../services/firebaseService.js';
 
 let levelData = {};
 let currentQuestions = [];
@@ -228,6 +229,38 @@ function handleNextQuestion() {
     }
 }
 
+// --- WINNING FEATURE: DIGITAL CERTIFICATE ---
+function generateCertificateHTML(name, topic, level) {
+    const date = new Date().toLocaleDateString();
+    // AWAIS ALI SIGNATURE ADDED HERE
+    return `
+        <div class="certificate-container">
+            <div class="cert-border">
+                <div class="cert-content">
+                    <div class="cert-header">CERTIFICATE OF COMPETENCY</div>
+                    <div class="cert-body">
+                        <p>This certifies that</p>
+                        <h2 class="cert-name">${name}</h2>
+                        <p>has successfully cleared</p>
+                        <h3 class="cert-topic">${topic}</h3>
+                        <p class="cert-level">Level ${level} Assessment</p>
+                    </div>
+                    <div class="cert-footer">
+                        <div class="cert-date">${date}</div>
+                        <div class="cert-sig">
+                            Awais Ali<br>
+                            <span style="font-size:0.6em; letter-spacing:1px; opacity:0.8;">SYSTEM ARCHITECT</span>
+                        </div>
+                    </div>
+                    <div class="cert-seal">
+                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#award"/></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 function showResults() {
     const total = currentQuestions.length;
     const passed = (score / total) >= 0.7;
@@ -249,9 +282,19 @@ function showResults() {
     });
 
     if (passed) {
+        // --- WINNING TOUCH: THE CERTIFICATE ---
+        const userName = firebaseService.getUserName() || "Guest Agent";
+        const certHTML = generateCertificateHTML(userName, levelContext.topic, levelContext.level);
+        
         elements.resultsTitle.textContent = 'Mission Complete';
-        elements.resultsDetails.textContent = `You scored ${score}/${total}. Security clearance updated.`;
-        elements.resultsActions.innerHTML = `<a href="#/game/${encodeURIComponent(levelContext.topic)}" class="btn btn-primary">Continue</a>`;
+        elements.resultsDetails.innerHTML = `
+            Score: ${score}/${total}.<br>
+            <div class="cert-wrapper">${certHTML}</div>
+        `;
+        
+        elements.resultsActions.innerHTML = `
+            <a href="#/game/${encodeURIComponent(levelContext.topic)}" class="btn btn-primary" style="width:100%">Continue Journey</a>
+        `;
         
         const journey = learningPathService.getJourneyById(levelContext.journeyId);
         if (journey) learningPathService.completeLevel(levelContext.journeyId);

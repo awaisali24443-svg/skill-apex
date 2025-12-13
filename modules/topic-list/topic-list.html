@@ -1,63 +1,65 @@
 
 <div class="page-container topic-list-container">
-    <header class="page-header">
-        <h1>Explore Learning Paths</h1>
-        <p>Start a new course or continue an existing journey.</p>
+    <header class="page-header journey-header">
+        <div class="header-content">
+            <h1>Mission Control</h1>
+            <p>Select your next objective or initialize a new learning protocol.</p>
+        </div>
+        <!-- Active Filter Badge -->
+        <div id="active-filter-container" class="active-filter-container" style="display: none;">
+            <span class="filter-badge">
+                <span id="filter-name"></span>
+                <button id="clear-filter-btn" class="btn-icon-small" aria-label="Clear Filter">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#x-circle"/></svg>
+                </button>
+            </span>
+        </div>
     </header>
 
-    <!-- Active Filter Badge (Injected via JS) -->
-    <div id="active-filter-container" class="active-filter-container" style="display: none;">
-        <span class="filter-badge">
-            <span id="filter-name"></span>
-            <button id="clear-filter-btn" class="btn-icon-small" aria-label="Clear Filter">
-                <svg class="icon"><use href="assets/icons/feather-sprite.svg#x-circle"/></svg>
-            </button>
-        </span>
-    </div>
-
-    <div class="card journey-creator-card">
-        <div class="creator-icon">
-             <svg><use href="assets/icons/feather-sprite.svg#cpu"/></svg>
-        </div>
-        <div class="creator-content">
-            <h2>Create Custom Journey</h2>
-            <p>Enter any topic or scan a textbook page. Our AI will generate a complete curriculum and quiz set for you instantly.</p>
-            <form id="journey-creator-form" class="creator-form">
-                <div class="input-group">
-                    <input type="text" id="custom-topic-input" class="form-input" placeholder="e.g., 'Introduction to Astrophysics'" required>
-                    <!-- NEW: Camera/Upload Button -->
-                    <button type="button" id="camera-btn" class="btn btn-icon-only scan-btn" title="Scan Image">
-                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#target"/></svg>
+    <!-- 1. AI Generator (Hero) -->
+    <section class="uplink-section">
+        <div class="card journey-creator-card">
+            <div class="uplink-visual">
+                <div class="pulse-ring"></div>
+                <svg class="icon uplink-icon"><use href="assets/icons/feather-sprite.svg#cpu"/></svg>
+            </div>
+            <div class="creator-content">
+                <h2>Initialize Custom Protocol</h2>
+                <p>Input a topic or scan data to generate a specialized training curriculum.</p>
+                <form id="journey-creator-form" class="creator-form">
+                    <div class="input-group">
+                        <input type="text" id="custom-topic-input" class="form-input" placeholder="e.g., 'Quantum Computing', 'Roman History'..." required>
+                        <button type="button" id="camera-btn" class="btn btn-icon-only scan-btn" title="Scan Image">
+                            <svg class="icon"><use href="assets/icons/feather-sprite.svg#target"/></svg>
+                        </button>
+                        <input type="file" id="image-upload-input" accept="image/*" style="display: none;">
+                    </div>
+                    <button type="submit" id="generate-btn" class="btn btn-primary generate-action">
+                        <span>Generate</span>
+                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
                     </button>
-                    <!-- Hidden File Input -->
-                    <input type="file" id="image-upload-input" accept="image/*" style="display: none;">
-                </div>
-                <button type="submit" id="generate-btn" class="btn btn-primary">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#zap"/></svg>
-                    <span>Generate Course</span>
-                </button>
-            </form>
+                </form>
+            </div>
         </div>
-    </div>
+    </section>
 
-    <!-- My Journeys Section -->
-    <div id="active-journeys-section" style="display: none;">
-        <h2>Active Journeys</h2>
-        <div id="active-journeys-grid" class="topic-grid" style="margin-bottom: var(--space-xxl);">
+    <!-- 2. Active Missions -->
+    <div id="active-journeys-section" class="missions-section" style="display: none;">
+        <h3 class="section-label"><svg class="icon"><use href="assets/icons/feather-sprite.svg#activity"/></svg> Active Missions</h3>
+        <div id="active-journeys-grid" class="topic-grid active-grid">
             <!-- Active journeys rendered here -->
         </div>
     </div>
 
-    <h2>Recommended Topics</h2>
+    <!-- 3. Available Topics -->
+    <h3 class="section-label"><svg class="icon"><use href="assets/icons/feather-sprite.svg#grid"/></svg> Available Protocols</h3>
     
-    <!-- Skeleton Loader for Topics -->
+    <!-- Skeleton Loader -->
     <div id="topics-skeleton" class="topic-grid">
-        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 90%; height: 16px;"></div><div class="skeleton" style="width: 40%; height: 16px;"></div></div>
-        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 90%; height: 16px;"></div><div class="skeleton" style="width: 40%; height: 16px;"></div></div>
-        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 90%; height: 16px;"></div><div class="skeleton" style="width: 40%; height: 16px;"></div></div>
-        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 90%; height: 16px;"></div><div class="skeleton" style="width: 40%; height: 16px;"></div></div>
-        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 90%; height: 16px;"></div><div class="skeleton" style="width: 40%; height: 16px;"></div></div>
-        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 90%; height: 16px;"></div><div class="skeleton" style="width: 40%; height: 16px;"></div></div>
+        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 90%; height: 16px;"></div></div>
+        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 90%; height: 16px;"></div></div>
+        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 90%; height: 16px;"></div></div>
+        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 90%; height: 16px;"></div></div>
     </div>
 
     <div id="topic-grid-container" class="topic-grid" style="display: none;">
@@ -67,18 +69,27 @@
 
 <template id="topic-card-template">
     <div class="card topic-card" tabindex="0" role="button">
+        <div class="topic-bg-glow"></div>
         <div class="topic-card-content">
             <h3 class="topic-name"></h3>
             <p class="topic-description"></p>
+            <div class="topic-footer">
+                <span class="topic-action">Initialize <svg class="icon"><use href="assets/icons/feather-sprite.svg#chevron-down" style="transform: rotate(-90deg);"/></svg></span>
+            </div>
         </div>
     </div>
 </template>
+
 <template id="active-journey-template">
     <div class="card topic-card active-journey-card" tabindex="0" role="button">
+        <div class="active-status-indicator"></div>
         <div class="topic-card-content">
-            <div class="journey-status-badge">Level <span class="journey-level"></span></div>
+            <div class="active-meta">
+                <span class="journey-level-badge">Level <span class="journey-level"></span></span>
+                <span class="resume-text">Resume</span>
+            </div>
             <h3 class="topic-name"></h3>
-            <div class="journey-progress-bar">
+            <div class="journey-progress-track">
                 <div class="journey-progress-fill"></div>
             </div>
         </div>

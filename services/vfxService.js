@@ -142,10 +142,15 @@ export function shake(element) {
  * @param {HTMLElement} element - The element displaying the number.
  * @param {number} endValue - The target number.
  * @param {number} duration - Animation duration in ms.
+ * @param {string} suffix - Optional suffix like " XP"
  */
-export function animateNumber(element, startValue, endValue, duration = 1000) {
+export function animateNumber(element, startValue, endValue, duration = 1000, suffix = '') {
     if (!element) return;
     
+    // Ensure we are working with numbers
+    startValue = parseInt(startValue) || 0;
+    endValue = parseInt(endValue) || 0;
+
     let startTimestamp = null;
     const step = (timestamp) => {
         if (!startTimestamp) startTimestamp = timestamp;
@@ -155,7 +160,9 @@ export function animateNumber(element, startValue, endValue, duration = 1000) {
         const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
         
         const current = Math.floor(ease * (endValue - startValue) + startValue);
-        element.textContent = `+${current} XP`;
+        
+        // Special case for big numbers
+        element.textContent = current.toLocaleString() + suffix;
         
         if (progress < 1) {
             window.requestAnimationFrame(step);

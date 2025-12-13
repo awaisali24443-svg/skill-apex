@@ -17,8 +17,8 @@ const CONNECTION_DISTANCE = 120;
 const MOUSE_INFLUENCE_SPEED = 0.05;
 
 // Theme colors (will be read from CSS vars)
-let colorNode = 'rgba(255,255,255,0.5)';
-let colorLine = 'rgba(255,255,255,0.05)';
+let colorNode = 'rgba(0,0,0,0.2)'; // Default to dark for light theme visibility
+let colorLine = 'rgba(0,0,0,0.05)';
 
 class Particle {
     constructor() {
@@ -70,10 +70,8 @@ class Particle {
 
 function initParticles() {
     particles = [];
-    // Adjust particle count based on area to prevent overcrowding on huge screens
-    // or emptiness on small ones.
     const area = width * height;
-    const densityFactor = 8000; // Roughly one particle per 8000px²
+    const densityFactor = 8000;
     const count = Math.min(Math.floor(area / densityFactor), 150); 
     
     for (let i = 0; i < count; i++) {
@@ -100,9 +98,8 @@ function animate() {
 
             if (distance < CONNECTION_DISTANCE) {
                 ctx.beginPath();
-                // Opacity based on distance (fade out as they get further)
                 let opacity = 1 - (distance / CONNECTION_DISTANCE);
-                ctx.strokeStyle = colorLine.replace('OPACITY', opacity * 0.4); // Inject dynamic opacity
+                ctx.strokeStyle = colorLine.replace('OPACITY', opacity * 0.4); 
                 ctx.lineWidth = 1;
                 ctx.moveTo(p.x, p.y);
                 ctx.lineTo(p2.x, p2.y);
@@ -115,34 +112,30 @@ function animate() {
 }
 
 function updateThemeColors() {
-    // Read current theme variables to ensure background matches light/dark mode
+    // Determine if we are in light or dark mode based on background color brightness
     const style = getComputedStyle(document.body);
+    const bg = style.backgroundColor;
     
-    // Convert generic CSS var to RGBA for canvas manipulation if needed, 
-    // or just store the base string.
-    // We assume the theme sets a primary text color we can use for nodes.
-    const textColor = style.getPropertyValue('--color-text-secondary').trim();
-    
-    // Parse hex or rgb to set up our RGBA strings
-    // Simplified: Just use the variable for nodes, and a low-opacity version for lines
-    // Hack: We'll construct a valid color string assuming standard CSS formats
-    
-    // For visual flair, let's use the Primary Color for nodes but very faint
-    const primary = style.getPropertyValue('--color-primary').trim();
-    
-    // Use a placeholder for opacity replacement
-    if (primary.startsWith('#')) {
-        // Hex to RGB
-        let c = primary.substring(1).split('');
-        if(c.length === 3) c = [c[0], c[0], c[1], c[1], c[2], c[2]];
-        c = '0x'+c.join('');
-        const r = (c>>16)&255, g = (c>>8)&255, b = c&255;
-        colorNode = `rgba(${r}, ${g}, ${b}, 0.6)`;
-        colorLine = `rgba(${r}, ${g}, ${b}, OPACITY)`;
+    // Simple brightness check (RGB average)
+    let isLight = true;
+    if (bg.startsWith('rgb')) {
+        const rgb = bg.match(/\d+/g);
+        if (rgb) {
+            const brightness = (parseInt(rgb[0]) + parseInt(rgb[1]) + parseInt(rgb[2])) / 3;
+            isLight = brightness > 128;
+        }
+    } else if (bg.startsWith('#')) {
+        // Hex check logic simplified, defaulting to light if unsure
+    }
+
+    if (isLight) {
+        // Light Mode: Dark Grey Nodes
+        colorNode = 'rgba(15, 23, 42, 0.4)'; // Slate 900
+        colorLine = 'rgba(15, 23, 42, OPACITY)';
     } else {
-        // Fallback or if already RGB
-        colorNode = 'rgba(150, 150, 150, 0.5)';
-        colorLine = 'rgba(150, 150, 150, OPACITY)';
+        // Dark Mode: White/Light Nodes
+        colorNode = 'rgba(255, 255, 255, 0.5)';
+        colorLine = 'rgba(255, 255, 255, OPACITY)';
     }
 }
 
@@ -161,7 +154,6 @@ export function init() {
     });
     resizeObserver.observe(document.body);
     
-    // Initial Size
     width = window.innerWidth;
     height = window.innerHeight;
     canvas.width = width;
@@ -171,7 +163,6 @@ export function init() {
     initParticles();
     animate();
 
-    // Event Listeners
     window.addEventListener('mousemove', (e) => {
         mouse.x = e.x;
         mouse.y = e.y;
@@ -182,9 +173,8 @@ export function init() {
         mouse.y = null;
     });
 
-    // Listen for theme changes
     window.addEventListener('settings-changed', () => {
-        setTimeout(updateThemeColors, 100); // Small delay to let CSS apply
+        setTimeout(updateThemeColors, 100); 
     });
 }
 

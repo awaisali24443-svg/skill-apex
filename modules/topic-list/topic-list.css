@@ -1,147 +1,229 @@
 
-.topic-list-container h2 {
-    margin-bottom: var(--space-lg);
-    font-size: 1.5rem;
-    color: var(--color-text);
-    font-weight: 700;
+/* --- MISSION CONTROL LAYOUT --- */
+.topic-list-container {
+    padding-bottom: 4rem;
 }
 
-/* Filter Badge */
-.active-filter-container {
+.journey-header {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: var(--space-xl);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--space-lg);
+}
+
+.header-content h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+.header-content p {
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+}
+
+.section-label {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--color-text-secondary);
     margin-bottom: var(--space-lg);
-    animation: fade-in 0.3s ease-out;
-}
-
-.filter-badge {
-    display: inline-flex;
+    margin-top: var(--space-xl);
+    display: flex;
     align-items: center;
-    gap: var(--space-sm);
-    background: var(--color-surface);
-    border: 1px solid var(--color-primary);
-    padding: 8px 16px;
-    border-radius: 50px;
-    color: var(--color-primary);
-    font-weight: 600;
-    box-shadow: 0 2px 5px var(--color-primary-transparent);
+    gap: 8px;
 }
 
-/* --- JOURNEY CREATOR CARD --- */
+/* --- 1. UPLINK CARD (Hero) --- */
+.uplink-section {
+    margin-bottom: var(--space-xl);
+}
+
 .journey-creator-card {
-    display: flex; gap: var(--space-xl); align-items: center;
-    padding: 3rem; margin-bottom: var(--space-xxl);
-    background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
-    color: white;
-    border: none;
-    position: relative;
+    display: flex;
+    gap: var(--space-xl);
+    align-items: center;
+    padding: 2.5rem;
+    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-surface-hover) 100%);
+    border: 1px solid var(--color-primary-transparent);
+    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.2);
     overflow: hidden;
 }
 
-.journey-creator-card::after {
-    content: ''; position: absolute; inset: 0;
-    background-image: var(--bg-business);
-    opacity: 0.1; pointer-events: none;
-}
-
-.creator-icon {
-    width: 80px; height: 80px; flex-shrink: 0;
-    background: rgba(255,255,255,0.2);
-    border-radius: 20px;
+/* Glowing Icon */
+.uplink-visual {
+    position: relative;
+    width: 80px; height: 80px;
     display: flex; align-items: center; justify-content: center;
-    color: #fff;
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255,255,255,0.3);
+    flex-shrink: 0;
+}
+.uplink-icon {
+    width: 40px; height: 40px;
+    color: var(--color-primary);
+    z-index: 2;
+}
+.pulse-ring {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    border: 2px solid var(--color-primary);
+    opacity: 0.5;
+    animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes ping {
+    75%, 100% { transform: scale(1.5); opacity: 0; }
 }
 
-.creator-content h2 { color: white; margin-top: 0; }
-.creator-content p { color: rgba(255,255,255,0.8); }
+.creator-content { flex-grow: 1; }
+.creator-content h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+.creator-content p { color: var(--color-text-secondary); margin-bottom: 1.5rem; }
 
-.input-group .form-input {
-    background: rgba(255,255,255,0.1);
-    border-color: rgba(255,255,255,0.3);
-    color: white;
+.creator-form {
+    display: flex; gap: var(--space-md); flex-wrap: wrap;
 }
-.input-group .form-input::placeholder { color: rgba(255,255,255,0.6); }
-.input-group .form-input:focus { background: rgba(255,255,255,0.2); border-color: white; }
 
-#generate-btn {
-    background: var(--color-gold);
-    color: #000;
-    border: none;
-    font-weight: 700;
+.input-group {
+    flex-grow: 1;
+    display: flex;
+    position: relative;
+    max-width: 600px;
 }
-#generate-btn:hover { filter: brightness(1.1); }
 
-/* --- TOPIC GRID --- */
+.form-input {
+    width: 100%;
+    padding: 12px 16px;
+    padding-right: 50px; /* Space for camera btn */
+    border-radius: 12px;
+    border: 1px solid var(--color-border);
+    background: var(--color-background);
+    color: var(--color-text);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+.form-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px var(--color-primary-transparent);
+}
+
+.scan-btn {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    width: 32px; height: 32px;
+    background: transparent; color: var(--color-text-secondary);
+    border-radius: 8px;
+    padding: 0; display: flex; align-items: center; justify-content: center;
+}
+.scan-btn:hover { background: var(--color-surface-hover); color: var(--color-primary); }
+
+.generate-action {
+    padding-left: 1.5rem; padding-right: 1.5rem;
+}
+
+/* --- 2. GRID LAYOUTS --- */
 .topic-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: var(--space-lg);
 }
 
+/* --- CARD STYLES --- */
 .topic-card {
-    cursor: pointer;
-    aspect-ratio: 16 / 9;
+    height: 100%;
+    min-height: 180px;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    padding: var(--space-lg);
+    justify-content: space-between;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     position: relative;
     overflow: hidden;
-    color: #fff;
-    border-radius: var(--border-radius);
-    transition: all 0.3s ease;
-    border: none;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    padding: var(--space-lg);
 }
 
 .topic-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+    transform: translateY(-6px);
+    border-color: var(--color-primary);
+    box-shadow: 0 15px 30px -5px rgba(0,0,0,0.2);
 }
 
-/* Gradient Overlay */
-.topic-card::before {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
-    z-index: 1;
+/* Background Gradients based on type */
+.topic-card.topic-programming { --card-accent: #2196f3; }
+.topic-card.topic-space { --card-accent: #9c27b0; }
+.topic-card.topic-biology { --card-accent: #4caf50; }
+.topic-card.topic-arts { --card-accent: #ff9800; }
+.topic-card.topic-finance { --card-accent: #ffc107; }
+.topic-card.topic-robotics { --card-accent: #607d8b; }
+
+.topic-bg-glow {
+    position: absolute; top: -50%; right: -50%;
+    width: 100%; height: 100%;
+    background: radial-gradient(circle, var(--card-accent, var(--color-primary)) 0%, transparent 70%);
+    opacity: 0.1; transition: opacity 0.3s;
+    filter: blur(40px);
+}
+.topic-card:hover .topic-bg-glow { opacity: 0.2; }
+
+.topic-card-content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; }
+
+.topic-name {
+    font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;
+    color: var(--color-text);
+}
+.topic-description {
+    font-size: 0.9rem; color: var(--color-text-secondary); line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    margin-bottom: auto;
 }
 
-/* --- RICH BACKGROUND IMAGES (Using CSS Gradients + SVGs) --- */
+.topic-footer {
+    margin-top: var(--space-lg);
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--space-sm);
+    display: flex; justify-content: flex-end;
+}
+.topic-action {
+    font-size: 0.8rem; font-weight: 700; color: var(--color-primary);
+    text-transform: uppercase; display: flex; align-items: center; gap: 4px;
+    opacity: 0; transform: translateX(-10px); transition: all 0.3s;
+}
+.topic-card:hover .topic-action { opacity: 1; transform: translateX(0); }
 
-/* Tech / Programming */
-.topic-card.topic-programming {
-    background: radial-gradient(circle at 10% 10%, #003366, #000000);
-    background-image: var(--bg-tech), radial-gradient(circle at 10% 10%, #0056b3, #001a33);
-    background-size: cover;
+/* --- ACTIVE JOURNEY SPECIFIC --- */
+.active-journey-card {
+    border-left: 4px solid var(--color-primary);
+    background: linear-gradient(to right, var(--color-surface), var(--color-surface-hover));
 }
 
-/* History / Arts */
-.topic-card.topic-arts, .topic-card.topic-philosophy {
-    background: radial-gradient(circle at 50% 50%, #8B4513, #3E2723);
-    background-image: var(--bg-history), radial-gradient(circle at 50% 50%, #A1887F, #3E2723);
-    background-size: cover;
+.active-meta {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;
+}
+.journey-level-badge {
+    background: var(--color-primary); color: white;
+    font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px;
+}
+.resume-text {
+    font-size: 0.7rem; color: var(--color-primary); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;
 }
 
-/* Science */
-.topic-card.topic-space, .topic-card.topic-biology, .topic-card.topic-medicine {
-    background: radial-gradient(circle at 90% 90%, #00695C, #004D40);
-    background-image: var(--bg-science), radial-gradient(circle at 90% 90%, #26A69A, #004D40);
-    background-size: cover;
+.journey-progress-track {
+    height: 6px; background: var(--color-border); border-radius: 4px; margin-top: 1rem; overflow: hidden;
+}
+.journey-progress-fill {
+    height: 100%; background: var(--color-primary); width: 0%;
 }
 
-/* Finance / Business */
-.topic-card.topic-finance, .topic-card.topic-robotics {
-    background: radial-gradient(circle at 0% 100%, #FFD700, #FF8F00);
-    background-image: var(--bg-business), radial-gradient(circle at 0% 100%, #FFECB3, #FF6F00);
-    background-size: cover;
+/* Filter Badge */
+.filter-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 12px; background: var(--color-surface-hover);
+    border: 1px solid var(--color-primary); border-radius: 20px;
+    color: var(--color-primary); font-size: 0.85rem; font-weight: 600;
 }
 
-.topic-card-content { position: relative; z-index: 2; }
-.topic-name { font-size: 1.5rem; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.6); margin-bottom: 4px; }
-.topic-description { font-size: 0.95rem; opacity: 0.9; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-
-@media (max-width: 600px) {
-    .journey-creator-card { flex-direction: column; text-align: center; padding: var(--space-lg); }
+@media (max-width: 768px) {
+    .journey-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .creator-form { flex-direction: column; }
+    .input-group { max-width: 100%; }
+    .generate-action { width: 100%; }
+    .journey-creator-card { flex-direction: column; text-align: center; }
+    .uplink-visual { margin-bottom: 1rem; }
 }

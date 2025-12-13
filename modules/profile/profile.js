@@ -2,6 +2,7 @@
 import * as gamificationService from '../../services/gamificationService.js';
 import * as firebaseService from '../../services/firebaseService.js';
 import { showToast } from '../../services/toastService.js';
+import * as vfxService from '../../services/vfxService.js';
 
 let elements = {};
 
@@ -33,6 +34,11 @@ function renderProfile() {
     setTimeout(() => {
         if(elements.progressCircle) elements.progressCircle.setAttribute('stroke-dasharray', `${percent}, 100`);
     }, 100);
+
+    // 4. Populate Stats Strip (Animated)
+    if(elements.statStreak) vfxService.animateNumber(elements.statStreak, 0, stats.currentStreak, 1000);
+    if(elements.statXp) vfxService.animateNumber(elements.statXp, 0, stats.xp, 1500);
+    if(elements.statQuizzes) vfxService.animateNumber(elements.statQuizzes, 0, stats.totalQuizzesCompleted, 1000);
 
     renderAchievements(stats);
 }
@@ -163,7 +169,12 @@ export function init() {
         recruiterInput: document.getElementById('recruiter-id-input'),
         progressPercent: document.getElementById('progress-percent'),
         progressCircle: document.getElementById('progress-circle-path'),
-        copyBtn: document.getElementById('copy-ref-btn')
+        copyBtn: document.getElementById('copy-ref-btn'),
+        
+        // New Stats
+        statStreak: document.getElementById('stat-streak'),
+        statXp: document.getElementById('stat-xp'),
+        statQuizzes: document.getElementById('stat-quizzes'),
     };
     
     renderProfile();

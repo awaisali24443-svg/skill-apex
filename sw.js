@@ -1,12 +1,12 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 5.16.0 (Expo Daylight Mode)
+ * @version 5.17.0 (Awais Ali Edition)
  *
  * This service worker implements a robust offline-first caching strategy.
  */
 
-const CACHE_NAME = 'skill-apex-v5.16.0';
+const CACHE_NAME = 'skill-apex-v5.17.0-awais-ali';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [
@@ -94,63 +94,4 @@ self.addEventListener('install', (event) => {
     );
 });
 
-self.addEventListener('activate', (event) => {
-    const allowedCaches = [CACHE_NAME, FONT_CACHE_NAME];
-    event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
-                    if (!allowedCaches.includes(cacheName)) {
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
-        }).then(() => self.clients.claim())
-    );
-});
-
-self.addEventListener('fetch', (event) => {
-    const { request } = event;
-    const url = new URL(request.url);
-
-    if (url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com') {
-        event.respondWith(staleWhileRevalidate(FONT_CACHE_NAME, request));
-        return;
-    }
-
-    if (url.origin === 'https://cdn.jsdelivr.net' || url.origin === 'https://aistudiocdn.com' || url.origin === 'https://www.gstatic.com') {
-        event.respondWith(staleWhileRevalidate(CACHE_NAME, request));
-        return;
-    }
-
-    if (url.pathname.startsWith('/api/')) {
-        if (request.method === 'GET' && url.pathname === '/api/topics') {
-            event.respondWith(staleWhileRevalidate(CACHE_NAME, request));
-            return;
-        }
-        if (request.method === 'POST') {
-            event.respondWith(
-                fetch(request).catch(() => new Response(JSON.stringify({ error: 'Offline' }), { status: 503 }))
-            );
-            return;
-        }
-        return;
-    }
-    
-    // Explicitly cache prebaked data
-    if (url.pathname === '/data/prebaked_levels.json') {
-        event.respondWith(staleWhileRevalidate(CACHE_NAME, request));
-        return;
-    }
-    
-    if (url.origin === self.location.origin) {
-        if (request.mode === 'navigate') {
-            event.respondWith(
-                fetch(request).catch(() => caches.match('/', { cacheName: CACHE_NAME }))
-            );
-            return;
-        }
-        event.respondWith(staleWhileRevalidate(CACHE_NAME, request));
-        return;
-    }
-});
+self.addEventListener('activate',

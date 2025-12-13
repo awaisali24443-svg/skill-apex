@@ -2,8 +2,8 @@
 import { LOCAL_STORAGE_KEYS } from '../constants.js';
 
 const defaultConfig = {
-    theme: 'light-cyber', // Default to Light Mode for Expo/Daylight
-    enableSound: true,
+    theme: 'light-cyber', // EXPO OVERRIDE: Light mode for outdoor visibility
+    enableSound: true,   // Sound adds "physicality" to the interface
     animationIntensity: 'full', 
     aiPersona: 'apex' 
 };

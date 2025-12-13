@@ -3,70 +3,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Skill Apex | AI Personalized Learning Platform</title>
-    <meta name="description" content="Master any subject with AI-generated curriculums, interactive quizzes, and spaced repetition. The future of personalized education.">
-    <meta name="keywords" content="AI learning, adaptive curriculum, cognitive enhancement, Skill Apex, edtech, generative AI, gamified mastery, skill tree">
-    <meta name="author" content="Skill Apex">
-    <meta name="robots" content="index, follow">
-    <meta name="googlebot" content="index, follow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Skill Apex | Neural Knowledge Interface</title>
+    <meta name="description" content="AI-Powered Technical Mastery System.">
     
-    <!-- GOOGLE VERIFICATION CODE -->
-    <meta name="google-site-verification" content="HZFtJy73lWSryYV-dmlv7eXUg7HCUWUMXsptxvIIGtg" />
+    <!-- Full Screen Mode for Kiosk/Expo -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" id="theme-color-meta" content="#F8F9FA">
     
-    <link rel="canonical" href="https://skill-apex.onrender.com" />
-    <!-- Default theme color for light mode -->
-    <meta name="theme-color" id="theme-color-meta" content="#F4F6F9">
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://skill-apex.onrender.com">
-    <meta property="og:title" content="Skill Apex | AI Personalized Learning">
-    <meta property="og:description" content="Master any subject instantly. Generate custom courses and track your progress with AI.">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Skill Apex | Neural Knowledge Interface">
+    <meta property="og:description" content="The future of rapid skill acquisition.">
     <meta property="og:image" content="assets/images/og-image.png">
 
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://skill-apex.onrender.com">
-    <meta property="twitter:title" content="Skill Apex | AI Personalized Learning">
-    <meta property="twitter:description" content="Master any subject instantly. Generate custom courses and track your progress with AI.">
-    <meta property="twitter:image" content="assets/images/og-image.png">
-    
     <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
     <link rel="manifest" href="manifest.json">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;800&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     
-    <!-- Mermaid.js for diagrams -->
+    <!-- Mermaid.js -->
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
 
-    <!-- Global Styles First -->
+    <!-- Global Styles -->
     <link rel="stylesheet" href="global/global.css">
-    <!-- Theme Styles Second (Override Global Defaults) - Defaulting to Light for Expo -->
+    
+    <!-- EXPO DEFAULT: Light Cyber (High Visibility for Day/Outdoor) -->
     <link id="theme-stylesheet" rel="stylesheet" href="themes/theme-light-cyber.css">
 
-    <!-- SEO: JSON-LD Structured Data -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Skill Apex",
-      "applicationCategory": "EducationalApplication",
-      "operatingSystem": "Web",
-      "url": "https://skill-apex.onrender.com",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "description": "An AI-powered learning journey application. Generate custom curriculums, take quizzes, and track your knowledge progression in a gamified environment.",
-      "featureList": "AI Course Generation, Gamified Quizzes, Skill Trees, Spaced Repetition, Voice Tutor",
-      "screenshot": "assets/images/og-image.png"
-    }
-    </script>
 <script type="importmap">
 {
   "imports": {
@@ -86,69 +52,47 @@
 </script>
 </head>
 <body>
-    <!-- Fallback content for Crawlers/No-JS -->
     <noscript>
-        <div style="padding: 20px; color: #333; background: #fff;">
-            <h1>Skill Apex - AI Powered Learning</h1>
-            <p>Skill Apex is a next-generation education platform that uses Artificial Intelligence to create personalized learning paths, quizzes, and flashcards.</p>
-            <p>Please enable JavaScript to use the full application.</p>
+        <div style="padding: 20px; color: #fff; background: #000;">
+            <h1>SYSTEM ERROR: NEURAL LINK SEVERED</h1>
+            <p>JavaScript Execution Required.</p>
         </div>
     </noscript>
 
     <!-- Background Canvas -->
     <canvas id="bg-canvas"></canvas>
-    
-    <!-- Fallback/Overlay Background Layer -->
     <div id="global-background"></div>
 
-    <!-- Auth Container (Overlay) -->
+    <!-- Auth Container -->
     <div id="auth-container"></div>
 
+    <!-- Intro Splash -->
     <div id="splash-screen">
         <img src="assets/icons/favicon.svg" alt="Skill Apex Logo" class="splash-logo">
-        <div class="spinner" role="status">
-            <span class="sr-only">Initializing Application...</span>
-        </div>
+        <h2 style="color:var(--color-primary); font-family: 'Exo 2'; letter-spacing: 2px; margin-top:10px;">INITIALIZING CORE...</h2>
+        <div class="spinner" role="status"></div>
     </div>
 
     <div id="welcome-screen" style="display: none;">
         <div class="welcome-content card">
             <img src="assets/icons/favicon.svg" alt="Skill Apex Logo" class="welcome-logo">
             <h1>Skill Apex</h1>
-            <p>Master any subject. Our AI generates personalized curriculums instantly.</p>
+            <p>Neural Training Interface for Modern Engineers.</p>
             <ul class="features-list">
-                <li>
-                    <div class="icon-badge">
-                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#cpu"/></svg>
-                    </div>
-                    <span>AI Course Generation</span>
-                </li>
-                <li>
-                    <div class="icon-badge">
-                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#git-branch"/></svg>
-                    </div>
-                    <span>Interactive Skill Trees</span>
-                </li>
-                <li>
-                    <div class="icon-badge">
-                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#star"/></svg>
-                    </div>
-                    <span>Gamified Progress</span>
-                </li>
+                <li><div class="icon-badge"><svg class="icon"><use href="assets/icons/feather-sprite.svg#cpu"/></svg></div><span>Adaptive Curriculum</span></li>
+                <li><div class="icon-badge"><svg class="icon"><use href="assets/icons/feather-sprite.svg#zap"/></svg></div><span>Rapid Mastery</span></li>
             </ul>
-            <button id="welcome-get-started-btn" class="btn btn-primary">Get Started</button>
+            <button id="welcome-get-started-btn" class="btn btn-primary">Initialize System</button>
         </div>
     </div>
 
-    <!-- Voice Listening Indicator -->
+    <!-- Voice Indicator -->
     <div id="voice-indicator" class="voice-indicator" style="display: none;">
-        <div class="voice-wave"></div>
         <div class="voice-wave"></div>
         <div class="voice-wave"></div>
         <span>Listening...</span>
     </div>
 
-    <!-- Floating Voice Mic Button -->
     <button id="voice-mic-btn" class="voice-fab" aria-label="Toggle Voice Control">
         <svg class="icon"><use href="assets/icons/feather-sprite.svg#mic"/></svg>
     </button>
@@ -163,22 +107,23 @@
     <div id="modal-container"></div>
     <div id="toast-container"></div>
     
-    <div id="offline-indicator" class="offline-indicator" style="display: none;" role="status" aria-live="assertive">
-        Connection Lost. Operating in Offline Mode.
+    <!-- SYSTEM STATUS BADGE (Top Right) -->
+    <div style="position: fixed; top: 1rem; right: 1rem; z-index: 9000; font-family: 'Roboto Mono'; font-size: 0.7rem; color: var(--color-primary); background: rgba(255,255,255,0.8); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--color-border); pointer-events: none; backdrop-filter: blur(4px);">
+        <span style="display:inline-block; width:6px; height:6px; background:var(--color-success); border-radius:50%; margin-right:4px; animation: blink 1s infinite;"></span>
+        SYSTEM ONLINE // SHABQADAR-NODE
+    </div>
+    
+    <div id="offline-indicator" class="offline-indicator" style="display: none;">
+        <svg class="icon" style="width:16px;height:16px;margin-right:8px;"><use href="assets/icons/feather-sprite.svg#shield"/></svg>
+        OFFLINE SIMULATION MODE
     </div>
 
     <script src="global/global.js"></script>
     <script type="module" src="index.js"></script>
     <script>
-        // Initialize Mermaid
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof mermaid !== 'undefined') {
-                mermaid.initialize({ 
-                    startOnLoad: false, 
-                    theme: 'base',
-                    securityLevel: 'loose',
-                    fontFamily: 'Inter'
-                });
+                mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose', fontFamily: 'Exo 2' });
             }
         });
     </script>
