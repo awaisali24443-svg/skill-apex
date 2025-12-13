@@ -32,6 +32,7 @@ let fastAnswersCount = 0;
 let currentCombo = 0;
 
 let typewriterInterval = null;
+let loadingTimeout = null;
 
 function switchState(targetStateId) {
     document.querySelectorAll('.game-level-state').forEach(s => s.classList.remove('active'));
@@ -41,13 +42,28 @@ function switchState(targetStateId) {
 async function startLevel() {
     const { topic, level, totalLevels } = levelContext;
     
+    // VALIDATION: Ensure we have a valid topic. If not (e.g. reload), go back to journeys.
+    if (!topic) {
+        showToast("Session restored. Redirecting to topics...", "info");
+        window.location.hash = '#/topics';
+        return;
+    }
+    
     switchState('level-loading-state');
+    
+    // SAFETY: If loading takes > 15s, assume error and allow user to escape
+    loadingTimeout = setTimeout(() => {
+        const loadingText = document.getElementById('loading-status-text');
+        if (loadingText) loadingText.textContent = "Taking longer than expected... Retrying connection.";
+    }, 8000);
     
     try {
         const [lessonData, questionsData] = await Promise.all([
             apiService.generateLevelLesson({ topic, level, totalLevels }),
             apiService.generateLevelQuestions({ topic, level, totalLevels })
         ]);
+
+        clearTimeout(loadingTimeout);
 
         levelData = {
             lesson: lessonData.lesson,
@@ -59,7 +75,9 @@ async function startLevel() {
         preloadNextLevel();
 
     } catch (error) {
-        showToast("Connection Error. Retrying...", "error");
+        clearTimeout(loadingTimeout);
+        console.error("Level Start Error:", error);
+        showToast("Connection Error. Returning to Map...", "error");
         setTimeout(() => window.history.back(), 2000);
     }
 }
@@ -402,6 +420,7 @@ export function init() {
         lessonBody: document.getElementById('lesson-body'),
         startQuizBtn: document.getElementById('start-quiz-btn'),
         skipBtn: document.getElementById('skip-to-quiz-btn'), 
+        cancelBtn: document.getElementById('cancel-generation-btn'),
         
         quizProgressText: document.getElementById('quiz-progress-text'),
         quizProgressBarFill: document.getElementById('quiz-progress-bar-fill'),
@@ -419,7 +438,12 @@ export function init() {
         xpGainText: document.getElementById('xp-gain-text')
     };
 
-    elements.skipBtn.addEventListener('click', startQuiz);
+    if(elements.skipBtn) elements.skipBtn.addEventListener('click', startQuiz);
+    if(elements.cancelBtn) elements.cancelBtn.addEventListener('click', () => {
+        clearTimeout(loadingTimeout);
+        window.history.back();
+    });
+    
     elements.startQuizBtn.addEventListener('click', startQuiz);
     elements.submitAnswerBtn.addEventListener('click', handleSubmitAnswer);
     elements.quizOptionsContainer.addEventListener('click', handleOptionClick);
@@ -431,5 +455,6 @@ export function init() {
 
 export function destroy() {
     clearInterval(timerInterval);
+    clearTimeout(loadingTimeout);
     if (typewriterInterval) clearInterval(typewriterInterval);
 }

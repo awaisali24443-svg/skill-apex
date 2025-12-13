@@ -4,7 +4,7 @@ import 'dotenv/config'; // Load env vars immediately
 import express from 'express';
 import path from 'path';
 import { fileURLToPath, URL } from 'url';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, Type } from '@google/genai';
 import rateLimit from 'express-rate-limit';
 import fs from 'fs/promises';
 import http from 'http';
@@ -144,7 +144,6 @@ try {
 async function generateJourneyPlan(topic, persona) {
     if (!ai) return FALLBACK_DATA.journey(topic);
     
-    // EXPO OPTIMIZATION: Use Flash for speed
     const prompt = `Analyze "${topic}". Output JSON: { topicName, totalLevels (10-50), description }`;
     try {
         const response = await ai.models.generateContent({
@@ -152,7 +151,16 @@ async function generateJourneyPlan(topic, persona) {
             contents: prompt,
             config: { 
                 responseMimeType: 'application/json',
-                systemInstruction: getSystemInstruction(persona)
+                systemInstruction: getSystemInstruction(persona),
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        topicName: { type: Type.STRING },
+                        totalLevels: { type: Type.INTEGER },
+                        description: { type: Type.STRING }
+                    },
+                    required: ["topicName", "totalLevels", "description"]
+                }
             }
         });
         return cleanAndParseJSON(response.text) || FALLBACK_DATA.journey(topic);
@@ -184,16 +192,41 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash', 
-            contents: `Topic: ${topic}. Level ${level}. Generate 3 scenario-based multiple choice questions. JSON format: { questions: [{ question, options[], correctAnswerIndex, explanation }] }`,
+            contents: `Topic: ${topic}. Level ${level}. Generate 3 scenario-based multiple choice questions.`,
             config: { 
                 responseMimeType: 'application/json',
-                systemInstruction: getSystemInstruction(persona)
+                systemInstruction: getSystemInstruction(persona),
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        questions: {
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    question: { type: Type.STRING },
+                                    options: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                    correctAnswerIndex: { type: Type.INTEGER },
+                                    explanation: { type: Type.STRING }
+                                },
+                                required: ["question", "options", "correctAnswerIndex", "explanation"]
+                            }
+                        }
+                    },
+                    required: ["questions"]
+                }
             }
         });
+        
         const data = cleanAndParseJSON(response.text);
+        
         // Robust check for data integrity
-        if (data && data.questions && Array.isArray(data.questions)) return data;
-        return FALLBACK_DATA.questions(topic);
+        if (data && data.questions && Array.isArray(data.questions)) {
+            return data;
+        } else {
+            console.warn("AI returned invalid structure:", response.text);
+            return FALLBACK_DATA.questions(topic);
+        }
     } catch (error) {
         console.error("AI Error (Questions):", error.message);
         return FALLBACK_DATA.questions(topic);
@@ -205,14 +238,22 @@ async function generateLevelLesson(topic, level, totalLevels, questions, persona
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
-            contents: `Write a short, exciting lesson for ${topic} level ${level}. Under 150 words. Use simple analogies. JSON: { lesson: string }`,
+            contents: `Write a short, exciting lesson for ${topic} level ${level}. Under 150 words. Use simple analogies.`,
             config: { 
                 responseMimeType: 'application/json',
-                systemInstruction: getSystemInstruction(persona)
+                systemInstruction: getSystemInstruction(persona),
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        lesson: { type: Type.STRING }
+                    },
+                    required: ["lesson"]
+                }
             }
         });
         return cleanAndParseJSON(response.text) || FALLBACK_DATA.lesson(topic);
     } catch (error) {
+        console.error("AI Error (Lesson):", error.message);
         return FALLBACK_DATA.lesson(topic);
     }
 }
