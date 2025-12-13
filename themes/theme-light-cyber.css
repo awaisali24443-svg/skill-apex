@@ -1,67 +1,58 @@
 
 :root {
-    /* --- Color Palette: Aerospace Lab (High Contrast Light) --- */
+    /* --- Color Palette: Aperture Science / Clinical Lab --- */
 
-    /* Core Tones - Sharp Electric Blue against White */
-    --color-primary: #0066FF; /* International Klein Blue - Very visible in sun */
-    --color-primary-rgb: 0, 102, 255;
+    /* Core Tones - Sharp Electric Blue */
+    --color-primary: #0052CC; /* Strong Blue for visibility on white */
+    --color-primary-rgb: 0, 82, 204;
     
-    /* Secondary - High contrast Cyan/Teal */
-    --color-secondary: #00ACC1; 
+    /* Secondary - Teal/Cyan */
+    --color-secondary: #008DA6; 
     
-    /* Backgrounds & Surfaces */
-    /* Not pure white to reduce eye strain, but very bright grey */
-    --color-background: #F0F2F5; 
+    /* Backgrounds */
+    --color-background: #FFFFFF; /* Pure White */
     
-    /* Cards are Pure White for contrast against the grey background */
-    --color-surface: #FFFFFF;
-    --color-surface-hover: #F8FAFC; /* Slight cool grey tint */
-    --color-surface-active: #E2E8F0; 
+    /* Surfaces */
+    --color-surface: #F4F6F8; /* Very subtle light grey for cards */
+    --color-surface-hover: #E8EBED; 
+    --color-surface-active: #DEE1E3; 
 
-    /* Glassmorphism Vars - Stronger opacity for daylight */
-    --glass-bg: rgba(255, 255, 255, 0.95); 
-    --glass-border: #CBD5E1; /* Slate 300 - Visible border definition */
+    /* Glassmorphism - Clear Glass */
+    --glass-bg: rgba(255, 255, 255, 0.9); 
+    --glass-border: #D1D5DB; /* Distinct borders */
     
-    /* Text - Dark Slate for Maximum Readability */
-    --color-text: #0F172A;       /* Slate 900 - Almost Black */
-    --color-text-secondary: #475569; /* Slate 600 - Dark Grey */
+    /* Text - Maximum Contrast */
+    --color-text: #09090B;       /* Nearly Black */
+    --color-text-secondary: #4B5563; /* Slate Grey */
     
-    /* Borders - Critical for "Tech" feel in light mode */
-    --color-border: #CBD5E1;     /* Slate 300 */
+    /* Borders */
+    --color-border: #E5E7EB;
 
     /* Accents */
-    --color-accent: #D97706; /* Amber 600 - Visible Orange */
-    --color-success: #059669; /* Emerald 600 - Darker green for contrast */
-    --color-error: #DC2626;   /* Red 600 */
+    --color-accent: #F59E0B; /* Amber */
+    --color-success: #10B981; 
+    --color-error: #EF4444;   
     
-    --color-success-bg: rgba(5, 150, 105, 0.1);
-    --color-error-bg: rgba(220, 38, 38, 0.1);
-    --color-success-border: rgba(5, 150, 105, 0.3);
-    --color-error-border: rgba(220, 38, 38, 0.3);
+    --color-success-bg: #D1FAE5;
+    --color-error-bg: #FEE2E2;
+    --color-success-border: #10B981;
+    --color-error-border: #EF4444;
     
     /* Transparencies */
-    --color-primary-transparent: rgba(0, 102, 255, 0.1);
-    --color-primary-transparent-heavy: rgba(0, 102, 255, 0.25);
-    --color-secondary-transparent: rgba(0, 172, 193, 0.1);
-    --color-surface-transparent: rgba(203, 213, 225, 0.4);
+    --color-primary-transparent: rgba(0, 82, 204, 0.1);
+    --color-primary-transparent-heavy: rgba(0, 82, 204, 0.2);
+    --color-secondary-transparent: rgba(0, 141, 166, 0.1);
+    --color-surface-transparent: rgba(0, 0, 0, 0.05);
 
     /* Gradients */
-    --brand-gradient: linear-gradient(135deg, #0066FF 0%, #00B4DB 100%);
+    --brand-gradient: linear-gradient(135deg, #0052CC 0%, #008DA6 100%);
     
-    /* Shadows - Strong and sharp for "Physicality" in bright light */
-    --shadow-card: 
-        0 1px 3px 0 rgba(0, 0, 0, 0.1), 
-        0 1px 2px -1px rgba(0, 0, 0, 0.1);
-        
-    --shadow-float: 
-        0 10px 15px -3px rgba(0, 0, 0, 0.1), 
-        0 4px 6px -4px rgba(0, 0, 0, 0.1);
-        
-    --shadow-hover: 
-        0 20px 25px -5px rgba(0, 0, 0, 0.1), 
-        0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    /* Shadows - Soft but distinct */
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-float: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
     /* Scrollbars */
-    --scrollbar-thumb: #94A3B8;
-    --scrollbar-track: #F1F5F9;
+    --scrollbar-thumb: #9CA3AF;
+    --scrollbar-track: #F3F4F6;
 }

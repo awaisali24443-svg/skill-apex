@@ -1,180 +1,141 @@
 
-/* --- Layout & Container --- */
+/* --- EXPO HOME STYLES --- */
 .home-container {
     max-width: 1200px;
     margin: 0 auto;
     width: 100%;
     animation: fade-slide-in 0.5s ease-out forwards;
+    padding-top: 2rem;
 }
 
-/* --- Header & Stats --- */
-.dashboard-header {
-    margin-bottom: var(--space-xl);
+/* Glitch Title Effect */
+.glitch-wrapper {
+    display: inline-block;
+    position: relative;
 }
-
-.greeting-container h1 {
-    font-size: 2rem;
+.glitch {
+    font-size: 3.5rem;
     font-weight: 800;
     color: var(--color-text);
-    margin-bottom: 0.25rem;
-    letter-spacing: -0.5px;
+    text-transform: uppercase;
+    position: relative;
+    letter-spacing: 4px;
 }
-.greeting-container p {
-    color: var(--color-text-secondary);
-    font-size: 1rem;
-    margin-bottom: var(--space-lg);
+.glitch::before, .glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--color-background);
+}
+.glitch::before {
+    left: 2px; text-shadow: -1px 0 #ff00c1;
+    clip: rect(44px, 450px, 56px, 0);
+    animation: glitch-anim 5s infinite linear alternate-reverse;
+}
+.glitch::after {
+    left: -2px; text-shadow: -1px 0 #00fff9;
+    clip: rect(44px, 450px, 56px, 0);
+    animation: glitch-anim2 5s infinite linear alternate-reverse;
 }
 
-/* Stats Overview */
-.stats-overview {
+@keyframes glitch-anim {
+    0% { clip: rect(30px, 9999px, 10px, 0); }
+    5% { clip: rect(80px, 9999px, 90px, 0); }
+    10% { clip: rect(10px, 9999px, 40px, 0); }
+    100% { clip: rect(50px, 9999px, 20px, 0); }
+}
+@keyframes glitch-anim2 {
+    0% { clip: rect(10px, 9999px, 80px, 0); }
+    5% { clip: rect(60px, 9999px, 20px, 0); }
+    10% { clip: rect(90px, 9999px, 10px, 0); }
+    100% { clip: rect(20px, 9999px, 60px, 0); }
+}
+
+/* Expo Grid */
+.expo-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-md);
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    padding: 1rem;
 }
 
-.stat-card {
-    display: flex;
-    align-items: center;
-    padding: 1.25rem;
+.expo-card {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: var(--border-radius-sm);
-    box-shadow: var(--shadow-card);
-    transition: transform 0.2s;
-}
-.stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-hover);
-}
-
-.stat-icon-wrapper {
-    width: 48px; height: 48px;
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    margin-right: 1rem;
-    flex-shrink: 0;
-}
-.stat-icon-wrapper svg { width: 24px; height: 24px; color: white; }
-
-/* Gradients for icons */
-.gradient-orange { background: linear-gradient(135deg, #ff9800, #ff5722); box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3); }
-.gradient-blue { background: linear-gradient(135deg, #2196f3, #00bcd4); box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3); }
-.gradient-green { background: linear-gradient(135deg, #4caf50, #8bc34a); box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3); }
-.gradient-purple { background: linear-gradient(135deg, #9c27b0, #673ab7); box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3); }
-.gradient-red { background: linear-gradient(135deg, #f44336, #e91e63); box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3); }
-
-.stat-content { display: flex; flex-direction: column; }
-.stat-value { font-size: 1.5rem; font-weight: 800; color: var(--color-text); line-height: 1.1; }
-.stat-label { font-size: 0.85rem; color: var(--color-text-secondary); margin-top: 2px; }
-
-/* --- Dashboard Grid --- */
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: var(--space-lg);
-}
-
-.grid-column {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-lg);
-}
-
-/* --- Hero Card (Quick Quiz Mode) --- */
-.hero-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
-    padding: 2.5rem;
+    border-radius: 20px;
+    height: 220px;
     position: relative;
     overflow: hidden;
-    text-decoration: none;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    box-shadow: var(--shadow-card);
-    min-height: 240px;
-}
-
-.hero-card:hover {
-    box-shadow: var(--shadow-hover);
-    border-color: var(--color-primary);
-}
-
-.hero-bg-effect {
-    position: absolute; right: -50px; top: -50px;
-    width: 300px; height: 300px;
-    background: var(--brand-gradient);
-    filter: blur(80px); opacity: 0.1;
-    border-radius: 50%; z-index: 0;
-    transition: opacity 0.3s;
-}
-.hero-card:hover .hero-bg-effect { opacity: 0.2; }
-
-.hero-content { position: relative; z-index: 1; max-width: 65%; flex-grow: 1; }
-
-.hero-status-pill {
-    display: inline-block;
-    background: var(--color-primary);
-    color: white;
-    font-size: 0.7rem; font-weight: 700;
-    padding: 6px 12px; border-radius: 20px;
-    margin-bottom: 1rem;
-    letter-spacing: 1px;
-    box-shadow: 0 4px 10px var(--color-primary-transparent-heavy);
-}
-
-.hero-card h2 {
-    font-size: 1.75rem; margin-bottom: 0.75rem; color: var(--color-text); font-weight: 800;
-}
-.hero-card p {
-    color: var(--color-text-secondary); line-height: 1.6; margin-bottom: 1.5rem;
-}
-
-/* --- Input Styling (Cleaned Up) --- */
-.modern-input-large {
-    padding: 1rem;
-    border-radius: 12px;
-    border: 1px solid var(--color-border);
-    background: var(--color-surface-hover); /* Better glass effect */
-    color: var(--color-text);
-    font-size: 1.1rem;
-    outline: none;
-    transition: all 0.3s ease;
-    width: 100%;
-}
-
-.modern-input-large:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px var(--color-primary-transparent);
-    background: var(--color-surface-active);
-}
-
-.modern-input-large::placeholder {
-    color: var(--color-text-secondary);
-    opacity: 0.7;
-}
-
-.btn-small.preset-topic {
-    background: var(--color-surface-hover);
-    border: 1px solid var(--color-border);
-    color: var(--color-text-secondary);
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 0.9rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-card);
 }
-.btn-small.preset-topic:hover {
-    background: var(--color-primary-transparent);
+
+.expo-card:hover {
+    transform: translateY(-10px) scale(1.02);
     border-color: var(--color-primary);
+    box-shadow: var(--shadow-float);
+}
+
+.expo-icon-bg {
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 140px;
+    height: 140px;
+    opacity: 0.05; /* Subtle in light mode */
+    transform: rotate(15deg);
+    transition: all 0.5s ease;
+    color: var(--color-text);
+}
+.expo-icon-bg svg { width: 100%; height: 100%; }
+
+.expo-card:hover .expo-icon-bg {
+    opacity: 0.1;
+    transform: rotate(0deg) scale(1.1);
     color: var(--color-primary);
 }
 
+.expo-content h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: var(--color-text);
+    text-shadow: none;
+}
+
+.expo-content p {
+    font-family: var(--font-family-mono);
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.expo-action {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    color: var(--color-primary);
+    font-size: 1rem;
+    letter-spacing: 1px;
+}
+
+.modern-input-small {
+    background: transparent;
+    border: 1px solid var(--color-border);
+    padding: 8px 16px;
+    border-radius: 20px;
+    color: var(--color-text);
+    text-align: center;
+    width: 250px;
+}
+
 @media (max-width: 768px) {
-    .dashboard-grid { grid-template-columns: 1fr; }
-    .hero-card { flex-direction: column; text-align: center; }
-    .hero-content { max-width: 100%; }
-    .stats-overview { grid-template-columns: 1fr; }
+    .glitch { font-size: 2rem; }
+    .expo-grid { grid-template-columns: 1fr; }
 }

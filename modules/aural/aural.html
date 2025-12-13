@@ -1,28 +1,27 @@
 
 <div class="aural-container">
-    <div id="aural-header-controls" class="aural-header-controls">
-        <!-- Back button will be injected here if needed -->
-    </div>
+    <div id="aural-header-controls" class="aural-header-controls"></div>
+    
+    <!-- Canvas Visualizer Layer -->
+    <canvas id="aural-visualizer" class="aural-visualizer"></canvas>
+
+    <!-- Content Overlay -->
     <div id="transcription-log" class="transcription-log">
         <div id="aural-placeholder" class="aural-placeholder">
-             <div class="placeholder-icon">
-                <svg><use href="assets/icons/feather-sprite.svg#mic"/></svg>
-            </div>
-            <h2>AI Aural Tutor</h2>
-            <p>Tap the microphone to start a conversation.</p>
+            <h1 class="aural-title">AI VOICE INTERFACE</h1>
+            <p class="aural-subtitle">System Online. Speak to Interact.</p>
         </div>
     </div>
     
     <div class="aural-footer">
-        <div class="orb-container">
-            <div id="orb" class="orb"></div>
-        </div>
-        <p id="aural-status" class="aural-status">Tap to Start</p>
-        <div class="aural-controls">
-            <button id="aural-mic-btn" class="btn-mic" aria-label="Start conversation">
-                <svg class="icon" width="32" height="32" viewBox="0 0 24 24"><use href="assets/icons/feather-sprite.svg#mic"/></svg>
-            </button>
-        </div>
+        <p id="aural-status" class="aural-status">INITIALIZING...</p>
+        <button id="aural-mic-btn" class="btn-mic-large" aria-label="Toggle Microphone">
+            <div class="mic-icon-wrapper">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#mic"/></svg>
+            </div>
+            <div class="mic-ring"></div>
+            <div class="mic-ring delay"></div>
+        </button>
     </div>
     
     <div id="aural-error" class="aural-error" style="display: none;"></div>

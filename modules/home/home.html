@@ -1,49 +1,63 @@
 
 <div class="page-container home-container">
-    <!-- Simple Header -->
-    <header class="dashboard-header" style="text-align: center; margin-top: 2rem;">
-        <div class="greeting-container">
-            <h1 class="fade-in" style="font-size: 3rem; margin-bottom: 1rem;">Quiz System</h1>
-            <p class="fade-in-delay">Enter a topic below to start testing your knowledge immediately.</p>
+    <!-- Hero Section -->
+    <header class="dashboard-header" style="text-align: center; margin-top: 1rem; margin-bottom: 2rem;">
+        <div class="glitch-wrapper">
+            <h1 class="glitch" data-text="NEURAL INTERFACE READY">NEURAL INTERFACE READY</h1>
         </div>
+        <p class="fade-in-delay" style="color: var(--color-primary); letter-spacing: 2px; font-weight: bold;">SELECT PROTOCOL //</p>
     </header>
 
-    <!-- Main Quiz Interface -->
-    <div class="dashboard-grid" style="display: flex; justify-content: center;">
+    <!-- EXPO MODE: Instant Action Grid -->
+    <div class="expo-grid">
         
-        <div class="grid-column primary-column" style="width: 100%; max-width: 600px;">
-            <!-- Hero Card: Input -->
-            <div class="card hero-card quick-quiz-hero" style="padding: 3rem;">
-                <div class="hero-content" style="max-width: 100%; text-align: center;">
-                    <h2>Create Quiz</h2>
-                    
-                    <form id="quick-quiz-form" class="quick-quiz-form" style="margin-top: 2rem;">
-                        <div class="input-wrapper" style="display: flex; flex-direction: column; gap: 1rem;">
-                            <!-- Cleaned up inline styles -->
-                            <input type="text" id="quick-quiz-input" class="modern-input-large" placeholder="Topic: e.g. 'Science', 'Coding'..." autocomplete="off">
-                            
-                            <button type="submit" id="start-quiz-btn" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 1rem; font-size: 1.1rem;">
-                                <span>Start Quiz</span>
-                                <svg class="icon"><use href="assets/icons/feather-sprite.svg#play"/></svg>
-                            </button>
-                        </div>
-                    </form>
-                    
-                    <div style="margin-top: 2rem; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                        <button class="btn btn-small preset-topic" data-topic="General Knowledge">General</button>
-                        <button class="btn btn-small preset-topic" data-topic="Science">Science</button>
-                        <button class="btn btn-small preset-topic" data-topic="Coding">Coding</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recent Results Simple List -->
-            <div class="section-container" style="margin-top: 2rem;">
-                <h3 class="section-title">Recent Sessions</h3>
-                <div id="recent-history-container" class="history-list-compact">
-                    <!-- Injected via JS -->
-                </div>
+        <!-- Card 1: Cyber Security (Exciting) -->
+        <div class="card expo-card preset-topic" data-topic="Cybersecurity Breach">
+            <div class="expo-icon-bg"><svg class="icon"><use href="assets/icons/feather-sprite.svg#shield"/></svg></div>
+            <div class="expo-content">
+                <h2>DEFEND SERVER</h2>
+                <p>Status: <span style="color:var(--color-error)">CRITICAL</span></p>
+                <div class="expo-action">ENGAGE <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg></div>
             </div>
         </div>
+
+        <!-- Card 2: Space (Visual) -->
+        <div class="card expo-card preset-topic" data-topic="Mars Mission Landing">
+            <div class="expo-icon-bg"><svg class="icon"><use href="assets/icons/feather-sprite.svg#circle"/></svg></div>
+            <div class="expo-content">
+                <h2>MARS LANDING</h2>
+                <p>Status: <span style="color:var(--color-accent)">ORBITAL</span></p>
+                <div class="expo-action">INITIATE <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg></div>
+            </div>
+        </div>
+
+        <!-- Card 3: AI (Trendy) -->
+        <div class="card expo-card preset-topic" data-topic="Artificial Intelligence Logic">
+            <div class="expo-icon-bg"><svg class="icon"><use href="assets/icons/feather-sprite.svg#cpu"/></svg></div>
+            <div class="expo-content">
+                <h2>DEBUG A.I. CORE</h2>
+                <p>Status: <span style="color:var(--color-primary)">ONLINE</span></p>
+                <div class="expo-action">ACCESS <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg></div>
+            </div>
+        </div>
+
+        <!-- Card 4: Crypto (Money/Finance appeals to everyone) -->
+        <div class="card expo-card preset-topic" data-topic="Crypto Trading Strategy">
+            <div class="expo-icon-bg"><svg class="icon"><use href="assets/icons/feather-sprite.svg#star"/></svg></div>
+            <div class="expo-content">
+                <h2>MARKET CRASH</h2>
+                <p>Status: <span style="color:#ffd700">VOLATILE</span></p>
+                <div class="expo-action">TRADE <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Hidden Manual Input (Still there if a pro wants it) -->
+    <div style="margin-top: 3rem; text-align: center; opacity: 0.6;">
+        <p style="font-size: 0.8rem; margin-bottom: 0.5rem;">MANUAL OVERRIDE</p>
+        <form id="quick-quiz-form" style="display: inline-block;">
+            <input type="text" id="quick-quiz-input" class="modern-input-small" placeholder="Enter custom topic..." autocomplete="off">
+        </form>
     </div>
 </div>
