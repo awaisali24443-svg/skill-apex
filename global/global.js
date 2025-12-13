@@ -1,3 +1,4 @@
+
 /**
  * Initializes the interactive glow effect on all elements with the .card class.
  * The effect follows the user's mouse pointer, updating CSS custom properties
@@ -19,9 +20,29 @@ function initCardGlowEffect() {
   });
 }
 
+/**
+ * Initializes the Glitch Effect on click.
+ * Adds a temporary class to elements when clicked to trigger the chromatic aberration animation.
+ */
+function initClickGlitchEffect() {
+    document.addEventListener('click', (e) => {
+        const target = e.target.closest('.btn, .sidebar-link, .level-card, .topic-card');
+        if (target) {
+            target.classList.add('glitch-click-active');
+            setTimeout(() => {
+                target.classList.remove('glitch-click-active');
+            }, 300); // Match animation duration
+        }
+    });
+}
+
 // Run the initialization when the DOM is ready to ensure the body element exists.
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initCardGlowEffect);
+  document.addEventListener('DOMContentLoaded', () => {
+      initCardGlowEffect();
+      initClickGlitchEffect();
+  });
 } else {
   initCardGlowEffect();
+  initClickGlitchEffect();
 }

@@ -5,7 +5,7 @@
     
     <!-- State 1: Loading (Skeleton) -->
     <div id="level-loading-state" class="game-level-state active">
-        <div class="state-content card">
+        <div class="state-content card hud-corners">
              <div class="skeleton-header">
                 <div class="skeleton" style="width: 60%; height: 32px; margin-bottom: 20px;"></div>
              </div>
@@ -14,18 +14,20 @@
                 <div class="skeleton" style="width: 90%; height: 16px; margin-bottom: 10px;"></div>
                 <div class="skeleton" style="width: 95%; height: 16px; margin-bottom: 10px;"></div>
                 <div class="skeleton" style="width: 80%; height: 16px; margin-bottom: 20px;"></div>
-                <div class="skeleton" style="width: 40%; height: 40px;"></div>
              </div>
-             <div id="loading-text-container" style="margin-top: 20px;">
-                 <p id="loading-status-text">The AI is crafting your next challenge...</p>
+             <div id="loading-text-container" style="margin-top: 40px; display: flex; flex-direction: column; align-items: center;">
+                 <!-- UPDATED ORB LOADER -->
+                 <div class="orb-loader" style="margin-bottom: 20px;"></div>
+                 
+                 <p id="loading-status-text" style="text-align: center;">The AI is crafting your next challenge...</p>
                  
                  <!-- NEW: Instant Skip / Popup Action -->
-                 <div id="skip-lesson-popup" class="skip-lesson-popup" style="display: none; margin-top: 1rem;">
+                 <div id="skip-lesson-popup" class="skip-lesson-popup" style="display: none; margin-top: 1rem; width: 100%;">
                      <button id="skip-to-quiz-btn" class="btn btn-primary" style="width: 100%;">
                          <svg class="icon"><use href="assets/icons/feather-sprite.svg#zap"/></svg>
                          <span>Questions Ready! Start Quiz</span>
                      </button>
-                     <p class="small-text" style="font-size: 0.8rem; color: var(--color-text-secondary); margin-top: 5px;">Briefing generating in background...</p>
+                     <p class="small-text" style="font-size: 0.8rem; color: var(--color-text-secondary); margin-top: 5px; text-align: center;">Briefing generating in background...</p>
                  </div>
 
                  <button id="cancel-generation-btn" class="btn" style="margin-top: 10px;">Cancel</button>
@@ -35,7 +37,7 @@
 
     <!-- State 2: Lesson -->
     <div id="level-lesson-state" class="game-level-state">
-        <div class="state-content card">
+        <div class="state-content card hud-corners">
             <header class="lesson-header">
                 <h1 id="lesson-title"></h1>
             </header>
@@ -103,7 +105,7 @@
             </div>
             
             <!-- Standard MCQ Container -->
-            <div id="question-container" class="card main-question-card">
+            <div id="question-container" class="card main-question-card hud-corners">
                 <h2 id="quiz-question-text">Loading question...</h2>
                 <div id="quiz-options-container" class="options-grid">
                     <!-- Options injected here -->
@@ -135,7 +137,7 @@
     
     <!-- State 4: Results -->
     <div id="level-results-state" class="game-level-state">
-        <div class="state-content card results-content">
+        <div class="state-content card results-content hud-corners">
             <div id="results-icon" class="results-icon"></div>
             <h1 id="results-title"></h1>
             <p id="xp-gain-text" class="xp-gain"></p>

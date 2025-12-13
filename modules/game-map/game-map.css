@@ -4,124 +4,92 @@
     flex-direction: column;
     height: 100%;
     position: relative;
+    /* BLUEPRINT BACKGROUND */
+    background-image: 
+        linear-gradient(var(--color-border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
+    background-size: 40px 40px;
 }
 
 .journey-loading-state {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
-    background-color: var(--color-background);
-}
-.journey-loading-state .spinner {
-    margin-bottom: var(--space-lg);
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 10; background-color: var(--color-background);
 }
 .journey-loading-state p {
-    color: var(--color-text-secondary);
-    font-family: var(--font-family-mono);
+    color: var(--color-text-secondary); font-family: var(--font-family-mono); margin-top: 1rem;
 }
 
 .journey-content {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+    display: flex; flex-direction: column; height: 100%;
 }
 
+.page-header { flex-shrink: 0; padding-bottom: 20px; background: linear-gradient(to bottom, var(--color-background) 80%, transparent); }
 
-.page-header {
-    flex-shrink: 0;
-}
-
-#game-map-topic-title {
-    margin-bottom: var(--space-md);
-}
+#game-map-topic-title { margin-bottom: var(--space-md); }
 
 .progress-container {
-    max-width: 400px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
+    max-width: 400px; margin: 0 auto; display: flex; align-items: center; gap: var(--space-md);
 }
 
 .progress-bar {
-    flex-grow: 1;
-    height: 8px;
-    background-color: var(--color-surface-hover);
-    border-radius: 4px;
-    overflow: hidden;
+    flex-grow: 1; height: 8px; background-color: var(--color-surface-hover);
+    border-radius: 4px; overflow: hidden; border: 1px solid var(--color-border);
 }
 
 #progress-bar-fill {
-    width: 0%;
-    height: 100%;
+    width: 0%; height: 100%;
     background: var(--brand-gradient, linear-gradient(45deg, var(--color-primary), var(--color-secondary)));
-    border-radius: 4px;
-    transition: width var(--transition-speed-med) ease-out;
-    will-change: width; /* Optimization */
+    border-radius: 4px; transition: width var(--transition-speed-med) ease-out; will-change: width;
 }
 
 #progress-percent-text {
-    font-family: var(--font-family-mono);
-    font-size: var(--fs-sm);
-    color: var(--color-text-secondary);
+    font-family: var(--font-family-mono); font-size: var(--fs-sm); color: var(--color-text-secondary);
 }
 
 .chapter-navigator {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-md);
-    margin-top: var(--space-lg);
+    display: flex; align-items: center; justify-content: center; gap: var(--space-md); margin-top: var(--space-lg);
 }
 #current-chapter-display {
-    margin: 0;
-    color: var(--color-text);
-    min-width: 180px; /* To prevent layout shift */
-    text-align: center;
-    font-size: var(--fs-h3);
+    margin: 0; color: var(--color-text); min-width: 180px; text-align: center; font-size: var(--fs-h3);
 }
-.chapter-navigator .btn {
-    padding: 0.6rem; /* Make buttons smaller */
-}
-.chapter-navigator .btn .icon {
-    width: 1.2rem;
-    height: 1.2rem;
-}
+.chapter-navigator .btn { padding: 0.6rem; }
+.chapter-navigator .btn .icon { width: 1.2rem; height: 1.2rem; }
 
-
+/* --- HEX GRID --- */
 .map-grid {
-    flex-grow: 1;
-    overflow-y: auto;
+    flex-grow: 1; overflow-y: auto;
     padding: var(--space-lg);
     margin: 0 calc(-1 * var(--page-padding));
-    display: grid;
-    gap: var(--space-lg);
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    display: grid; gap: var(--space-lg);
+    /* Tighter packing for hexes */
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
 }
 
-/* Skeleton Styles specific to map grid */
-.map-grid .skeleton {
-    background-color: var(--color-surface);
-    opacity: 0.5;
-}
+.map-grid .skeleton { background-color: var(--color-surface); opacity: 0.5; }
 
+/* HEXAGON NODE */
 .level-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    aspect-ratio: 1 / 1;
-    text-align: center;
-    cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    aspect-ratio: 1 / 1; text-align: center; cursor: pointer;
     transition: all var(--transition-speed-fast) ease;
     animation: node-appear 0.5s ease-out forwards;
-    opacity: 0;
-    padding: var(--space-sm);
-    will-change: transform, opacity; /* Optimization */
+    opacity: 0; padding: var(--space-sm);
+    will-change: transform, opacity;
+    
+    /* Hexagon Shape */
+    clip-path: polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%);
+    background: var(--color-surface);
+    position: relative;
+    /* Shadow simulation since clip-path cuts box-shadow */
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+}
+
+.level-card::before {
+    content: ''; position: absolute; inset: 2px;
+    clip-path: polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%);
+    background: var(--color-surface); z-index: -1;
+    border: 2px solid transparent; /* Placeholder for status border logic if achievable */
 }
 
 @keyframes node-appear {
@@ -130,87 +98,55 @@
 }
 
 .level-number {
-    font-size: 2rem;
-    font-weight: 700;
-    font-family: var(--font-family-heading);
-    color: var(--color-text);
-    line-height: 1.1;
+    font-size: 1.8rem; font-weight: 700; font-family: var(--font-family-heading);
+    color: var(--color-text); line-height: 1.1; z-index: 2;
 }
 
 .level-status {
-    font-size: 0.8rem;
-    color: var(--color-text-secondary);
-    margin: 0;
+    font-size: 0.7rem; color: var(--color-text-secondary); margin: 0; z-index: 2; font-family: var(--font-family-mono);
 }
 
 /* --- Node States --- */
 .level-card.locked {
-    cursor: not-allowed;
-    background-color: var(--color-surface);
-    opacity: 0.5;
+    cursor: not-allowed; background-color: var(--color-surface-hover); opacity: 0.6;
+    filter: grayscale(1);
 }
 
-.level-card.locked:hover {
-    transform: none;
-    box-shadow: none;
-    border-color: var(--color-border);
+.level-card.completed {
+    background-color: var(--color-success-bg);
 }
-
-.level-card.completed .level-status {
-    color: var(--color-text-secondary);
-}
-.level-card.completed:hover {
-    border-color: var(--color-primary);
-}
+.level-card.completed .level-number { color: var(--color-success); }
 
 .level-card.current {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 15px var(--color-primary-transparent-heavy);
+    background-color: var(--color-primary-transparent);
+    filter: drop-shadow(0 0 8px var(--color-primary));
 }
-.level-card.current .level-status {
-    color: var(--color-primary);
-    font-weight: 600;
-}
-.level-card.current:hover {
-    transform: translateY(-4px) scale(1.03);
-    box-shadow: 0 0 25px var(--color-primary-transparent-heavy);
-}
+.level-card.current .level-status { color: var(--color-primary); font-weight: 600; }
+.level-card.current:hover { transform: scale(1.1); }
 
 /* --- Boss Battle Card Styles --- */
 .level-card.boss {
-    --glow-color: var(--color-error);
-    border-color: var(--glow-color);
+    background-color: var(--color-error-bg);
+    filter: drop-shadow(0 0 5px var(--color-error));
 }
 .level-card.current.boss {
-    box-shadow: 0 0 15px var(--glow-color);
     animation: node-appear 0.5s ease-out forwards, boss-pulse 2s infinite;
 }
 
 @keyframes boss-pulse {
-    0% { box-shadow: 0 0 15px var(--glow-color); }
-    50% { box-shadow: 0 0 25px var(--glow-color); transform: scale(1.02); }
-    100% { box-shadow: 0 0 15px var(--glow-color); }
+    0% { filter: drop-shadow(0 0 5px var(--color-error)); }
+    50% { filter: drop-shadow(0 0 15px var(--color-error)); transform: scale(1.05); }
+    100% { filter: drop-shadow(0 0 5px var(--color-error)); }
 }
 
-.level-card.boss .level-number {
-    font-size: 2.5rem;
-    color: var(--glow-color);
-}
-.level-card.boss .level-number .icon {
-    width: 1.5em;
-    height: 1.5em;
-}
-
-.level-card.boss .level-status {
-    color: var(--glow-color);
-}
+.level-card.boss .level-number { color: var(--color-error); }
+.level-card.boss .level-number .icon { width: 1.5em; height: 1.5em; }
+.level-card.boss .level-status { color: var(--color-error); }
 
 .game-map-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-shrink: 0;
-    padding-top: var(--space-lg);
-    margin-top: var(--space-lg);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-shrink: 0; padding-top: var(--space-lg); margin-top: var(--space-lg);
     border-top: 1px solid var(--color-border);
+    background: var(--color-surface); /* Footer bg to cover scroll */
+    padding: 1rem; border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
