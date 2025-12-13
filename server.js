@@ -4,7 +4,7 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath, URL } from 'url';
 import 'dotenv/config';
-import { GoogleGenAI, Type, Modality } from '@google/genai';
+import { GoogleGenAI } from '@google/genai';
 import rateLimit from 'express-rate-limit';
 import fs from 'fs/promises';
 import http from 'http';
@@ -41,12 +41,12 @@ function getSystemInstruction(personaKey = 'apex') {
     RULES: No rote memorization. Scenario-based questions. JSON output only.`;
 }
 
-// --- FALLBACK DATA GENERATORS (The "At Any Cost" Safety Net) ---
+// --- FALLBACK DATA GENERATORS (Safety Net) ---
 const FALLBACK_DATA = {
     journey: (topic) => ({
         topicName: topic || "IT Mastery",
         totalLevels: 20,
-        description: `(Offline Simulation) A comprehensive training course on ${topic}. Covers fundamentals, advanced techniques, and practical application.`,
+        description: `(Offline Simulation) A comprehensive training course on ${topic}. Server could not reach AI.`,
         isFallback: true
     }),
     curriculum: (topic) => ({
@@ -88,9 +88,12 @@ function cleanAndParseJSON(text) {
     try {
         return JSON.parse(text);
     } catch (e) {
+        // Clean markdown code blocks
         let clean = text.replace(/```json/g, '').replace(/```/g, '');
+        // Find first { or [
         const firstOpen = clean.search(/[\{\[]/);
         let lastClose = -1;
+        // Find last } or ]
         for (let i = clean.length - 1; i >= 0; i--) {
             if (clean[i] === '}' || clean[i] === ']') {
                 lastClose = i;
@@ -106,20 +109,23 @@ function cleanAndParseJSON(text) {
 
 // --- GEMINI API SETUP ---
 let ai;
-const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+// ROBUSTNESS: Trim whitespace which often happens with copy-paste keys
+const rawKey = process.env.API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+const apiKey = rawKey ? rawKey.trim() : null;
 
 try {
     if (!apiKey) {
-        console.warn("⚠️ API Key missing. Server will run in OFFLINE FALLBACK MODE.");
+        console.warn("⚠️ API Key missing in Environment Variables. Server running in OFFLINE MODE.");
     } else {
+        console.log(`🔑 API Key detected (Length: ${apiKey.length}). Initializing AI...`);
         ai = new GoogleGenAI({ apiKey: apiKey });
-        console.log(`✅ GoogleGenAI initialized.`);
+        console.log(`✅ GoogleGenAI initialized successfully.`);
     }
 } catch (error) {
-    console.error(`Failed to initialize AI: ${error.message}`);
+    console.error(`❌ Failed to initialize AI: ${error.message}`);
 }
 
-// --- SERVICE FUNCTIONS WITH FALLBACK ---
+// --- SERVICE FUNCTIONS ---
 
 async function generateJourneyPlan(topic, persona) {
     if (!ai) return FALLBACK_DATA.journey(topic);
@@ -164,13 +170,16 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash', 
-            contents: `Topic: ${topic}. Level ${level}. Generate 3 scenario-based multiple choice questions. JSON format.`,
+            contents: `Topic: ${topic}. Level ${level}. Generate 3 scenario-based multiple choice questions. JSON format: { questions: [{ question, options[], correctAnswerIndex, explanation }] }`,
             config: { 
                 responseMimeType: 'application/json',
                 systemInstruction: getSystemInstruction(persona)
             }
         });
-        return cleanAndParseJSON(response.text) || FALLBACK_DATA.questions(topic);
+        const data = cleanAndParseJSON(response.text);
+        // Robust check for data integrity
+        if (data && data.questions && Array.isArray(data.questions)) return data;
+        return FALLBACK_DATA.questions(topic);
     } catch (error) {
         console.error("AI Error (Questions):", error.message);
         return FALLBACK_DATA.questions(topic);
@@ -202,7 +211,13 @@ const wss = new WebSocketServer({ server });
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname)));
 
-const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200 }); // Increased limit for expo
+// Robust Rate Limiting
+const apiLimiter = rateLimit({ 
+    windowMs: 15 * 60 * 1000, 
+    max: 300, // Higher limit for Expo usage
+    standardHeaders: true,
+    legacyHeaders: false,
+}); 
 app.use('/api', apiLimiter);
 
 app.get('/health', (req, res) => res.status(200).send('OK'));
@@ -214,7 +229,7 @@ const safeHandler = (fn) => async (req, res) => {
         res.json(result);
     } catch (e) {
         console.error("Route Error:", e);
-        // Even if the handler crashes, try to return fallback data based on endpoint
+        // Return fallback data instead of 500 error to keep app running
         if (req.path.includes('questions')) res.json(FALLBACK_DATA.questions(req.body.topic));
         else if (req.path.includes('lesson')) res.json(FALLBACK_DATA.lesson(req.body.topic));
         else if (req.path.includes('journey')) res.json(FALLBACK_DATA.journey(req.body.topic));
@@ -227,13 +242,16 @@ app.post('/api/generate-curriculum-outline', safeHandler((body) => generateCurri
 app.post('/api/generate-level-questions', safeHandler((body) => generateLevelQuestions(body.topic, body.level, body.totalLevels, body.persona)));
 app.post('/api/generate-level-lesson', safeHandler((body) => generateLevelLesson(body.topic, body.level, body.totalLevels, body.questions, body.persona)));
 
-// Simple endpoints that don't strictly need AI
-app.post('/api/generate-hint', (req, res) => res.json({ hint: "Review the core concepts mentioned in the briefing." }));
-app.post('/api/explain-error', (req, res) => res.json({ explanation: "The selected answer contradicts the standard best practices for this scenario." }));
+// Utility Endpoints
+app.post('/api/generate-hint', (req, res) => res.json({ hint: "Review the core concepts mentioned in the briefing. Look for keywords." }));
+app.post('/api/explain-error', (req, res) => res.json({ explanation: "The selected answer contradicts standard best practices. Re-read the question carefully." }));
 
 app.get('/api/topics', async (req, res) => {
     try {
-        if (!topicsCache) topicsCache = JSON.parse(await fs.readFile(path.join(__dirname, 'data', 'topics.json'), 'utf-8'));
+        if (!topicsCache) {
+            const data = await fs.readFile(path.join(__dirname, 'data', 'topics.json'), 'utf-8');
+            topicsCache = JSON.parse(data);
+        }
         res.json(topicsCache);
     } catch (error) { res.status(500).json({ error: 'Could not load topics data.' }); }
 });
@@ -241,13 +259,10 @@ app.get('/api/topics', async (req, res) => {
 // --- WEBSOCKETS ---
 wss.on('connection', (ws) => {
     console.log('WS Connected');
-    // If AI is missing, send a polite error immediately via WS
     if (!ai) {
-        ws.send(JSON.stringify({ type: 'error', message: 'AI Voice Unavailable (Offline Mode)' }));
-        // Don't close immediately, let client handle it
+        ws.send(JSON.stringify({ type: 'error', message: 'AI Voice Unavailable (Server Offline Mode)' }));
     }
-    
-    // ... existing WS logic would go here, wrapped in try/catch ...
+    ws.on('close', () => console.log('WS Disconnected'));
 });
 
 server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
