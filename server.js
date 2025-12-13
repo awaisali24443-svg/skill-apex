@@ -1,19 +1,37 @@
 
 // --- IMPORTS & SETUP ---
+import 'dotenv/config'; // Load env vars immediately
 import express from 'express';
 import path from 'path';
 import { fileURLToPath, URL } from 'url';
-import 'dotenv/config';
 import { GoogleGenAI } from '@google/genai';
 import rateLimit from 'express-rate-limit';
 import fs from 'fs/promises';
 import http from 'http';
 import { WebSocketServer } from 'ws';
 
-// --- CONSTANTS & CONFIG ---
-const PORT = process.env.PORT || 3000;
+// --- DEBUG & ENVIRONMENT CHECK ---
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Robust Key Extraction
+const rawKey = process.env.API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+const API_KEY = rawKey ? rawKey.trim() : null;
+
+console.log("--- SYSTEM STARTUP DIAGNOSTICS ---");
+console.log(`Node Version: ${process.version}`);
+console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+if (API_KEY) {
+    console.log(`✅ API Key Detected. Length: ${API_KEY.length} characters.`);
+    console.log(`🔑 Key Preview: ${API_KEY.substring(0, 4)}...${API_KEY.substring(API_KEY.length - 4)}`);
+} else {
+    console.error("❌ FATAL: API_KEY is missing in process.env!");
+    console.log("   Checked: API_KEY, GEMINI_API_KEY, GOOGLE_API_KEY");
+}
+console.log("----------------------------------");
+
+// --- CONSTANTS & CONFIG ---
+const PORT = process.env.PORT || 3000;
 let topicsCache = null;
 
 // --- DYNAMIC PERSONA SYSTEM (LOCALIZED) ---
@@ -109,17 +127,13 @@ function cleanAndParseJSON(text) {
 
 // --- GEMINI API SETUP ---
 let ai;
-// ROBUSTNESS: Trim whitespace which often happens with copy-paste keys
-const rawKey = process.env.API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-const apiKey = rawKey ? rawKey.trim() : null;
 
 try {
-    if (!apiKey) {
-        console.warn("⚠️ API Key missing in Environment Variables. Server running in OFFLINE MODE.");
+    if (API_KEY) {
+        ai = new GoogleGenAI({ apiKey: API_KEY });
+        console.log(`✅ GoogleGenAI initialized.`);
     } else {
-        console.log(`🔑 API Key detected (Length: ${apiKey.length}). Initializing AI...`);
-        ai = new GoogleGenAI({ apiKey: apiKey });
-        console.log(`✅ GoogleGenAI initialized successfully.`);
+        console.warn("⚠️ Server running in OFFLINE MODE (No AI).");
     }
 } catch (error) {
     console.error(`❌ Failed to initialize AI: ${error.message}`);
@@ -221,6 +235,17 @@ const apiLimiter = rateLimit({
 app.use('/api', apiLimiter);
 
 app.get('/health', (req, res) => res.status(200).send('OK'));
+
+// --- CLIENT CONFIG ENDPOINT (CRITICAL FOR LIVE API) ---
+// This allows the frontend to get the key securely for client-side-only features (Aural)
+app.get('/api/client-config', (req, res) => {
+    // In a real production app, check auth headers here.
+    // For this app, we provide the key so the client SDK works.
+    if (!API_KEY) {
+        return res.status(503).json({ error: 'Server offline (Key missing)' });
+    }
+    res.json({ apiKey: API_KEY });
+});
 
 // Helper for safe route handling
 const safeHandler = (fn) => async (req, res) => {

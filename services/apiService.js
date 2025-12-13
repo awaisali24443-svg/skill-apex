@@ -3,24 +3,30 @@ import { GoogleGenAI } from "@google/genai";
 import { showToast } from './toastService.js';
 
 // --- CONFIGURATION ---
-// Client-side code CANNOT see process.env.API_KEY in browser.
-// We must rely on the Server (server.js) to handle the keys.
 const MAX_RETRIES = 2;
 const RETRY_DELAY_BASE = 1000;
 
-// Only used for Client-Side Live API (Voice) if key is exposed or proxied
-// For this architecture, we keep the instance for Aural, but handle missing keys gracefully.
+// Client-side AI instance (for Live API mainly)
 let ai = null; 
-// Attempt to grab key if someone manually exposed it (not recommended but supported)
-const CLIENT_SIDE_KEY = null; 
+let isConfigLoaded = false;
 
-try {
-    if (CLIENT_SIDE_KEY) {
-        ai = new GoogleGenAI({ apiKey: CLIENT_SIDE_KEY });
+// --- INITIALIZATION ---
+// Fetch the key from the server so we can use Client-Side SDK features if needed
+(async function initClientAI() {
+    try {
+        const res = await fetch('/api/client-config');
+        if (res.ok) {
+            const data = await res.json();
+            if (data.apiKey) {
+                ai = new GoogleGenAI({ apiKey: data.apiKey });
+                isConfigLoaded = true;
+                console.log("Client AI Initialized from Server Config");
+            }
+        }
+    } catch (e) {
+        console.warn("Could not fetch client config (Offline Mode?)");
     }
-} catch (e) {
-    console.warn("Client AI init failed (Normal if using Server Proxy)");
-}
+})();
 
 // --- ROBUST FETCH WRAPPER ---
 async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
@@ -149,11 +155,8 @@ export async function explainError(topic, question, userChoice, correctChoice) {
     }
 }
 
-// Image gen still requires robust handling, usually sending image to server
-// For now, we mock it or fail gracefully if no server endpoint exists for images
 export async function generateJourneyFromImage(imageBase64, mimeType) {
-    // Current server.js doesn't support image upload parsing for AI yet
-    // Returning a mock to prevent crash and "functionality loss" (fake success)
+    // Mock for now, requires image upload endpoint on server
     return new Promise((resolve) => {
         setTimeout(() => {
             resolve({
