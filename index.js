@@ -118,9 +118,6 @@ async function loadModule(route) {
                 await moduleData.js.init();
             }
             
-            // Note: We don't clear session state here anymore to support refreshes.
-            // stateService.clearNavigationContext();
-
             document.querySelectorAll('.sidebar-link').forEach(link => {
                 link.classList.remove('active');
                 const linkPath = link.getAttribute('href')?.slice(1) || '';
@@ -240,18 +237,21 @@ function showLevelUpModal(level) {
 async function preloadCriticalModules() {
     const modulesToPreload = ['topic-list', 'game-map', 'game-level', 'quiz-review'];
     
-    for (const moduleName of modulesToPreload) {
-        try {
-            await Promise.all([
-                fetch(`./modules/${moduleName}/${moduleName}.html`).then(res => res.text()),
-                fetch(`./modules/${moduleName}/${moduleName}.css`).then(res => res.text()),
-                import(`./modules/${moduleName}/${moduleName}.js`)
-            ]);
-        } catch (e) {
-            // Ignore errors in background preload
+    // Defer preloading slightly to let main thread breathe
+    setTimeout(async () => {
+        for (const moduleName of modulesToPreload) {
+            try {
+                await Promise.all([
+                    fetch(`./modules/${moduleName}/${moduleName}.html`).then(res => res.text()),
+                    fetch(`./modules/${moduleName}/${moduleName}.css`).then(res => res.text()),
+                    import(`./modules/${moduleName}/${moduleName}.js`)
+                ]);
+            } catch (e) {
+                // Ignore errors in background preload
+            }
         }
-    }
-    console.log('All critical modules preloaded.');
+        console.log('Modules preloaded.');
+    }, 1000);
 }
 
 // --- ROBUST NETWORK MONITORING ---
@@ -261,7 +261,7 @@ function updateNetworkStatus() {
 
     if (navigator.onLine) {
         offlineIndicator.style.display = 'none';
-        // Only show toast if we were previously offline (simple check via display style)
+        // Only show toast if we were previously offline
         if (offlineIndicator.dataset.wasOffline === 'true') {
             showToast('Connection restored. System Online.', 'success');
             offlineIndicator.dataset.wasOffline = 'false';
@@ -273,39 +273,46 @@ function updateNetworkStatus() {
     }
 }
 
-// --- AUTH STATE HANDLER ---
+// --- APP INITIALIZATION ---
 function initializeAppContent(user) {
     const splashScreen = document.getElementById('splash-screen');
     
-    // 1. Initialize Services (Load Data from Firebase for THIS user)
-    learningPathService.init();
-    historyService.init();
-    gamificationService.init();
+    // 1. Critical UI Render (Immediate)
     stateService.initState();
-    initVoice();
-    backgroundService.init(); // Initialize dynamic background
-
-    // 2. Render App Shell
     const sidebarEl = document.getElementById('sidebar');
     renderSidebar(sidebarEl);
+    
+    // 2. Start Router (Immediate)
+    handleRouteChange();
+
+    // 3. Defer Heavy/Network Services
+    // We use requestIdleCallback or setTimeout to allow the UI to paint first
+    const deferInit = window.requestIdleCallback || ((cb) => setTimeout(cb, 100));
+    
+    deferInit(() => {
+        learningPathService.init();
+        historyService.init();
+        gamificationService.init();
+        initVoice();
+        backgroundService.init(); // Heavy canvas, defer it!
+    });
+
+    // 4. Setup Listeners
+    window.addEventListener('hashchange', handleRouteChange);
+    window.addEventListener('settings-changed', (e) => applyAppSettings(e.detail));
+    window.addEventListener('achievement-unlocked', () => soundService.playSound('achievement'));
+    window.addEventListener('level-up', (e) => showLevelUpModal(e.detail.level));
     
     const voiceToggleBtn = document.getElementById('voice-mic-btn');
     if (voiceToggleBtn) {
         if (!isVoiceSupported()) {
             voiceToggleBtn.style.display = 'none';
         }
-        
         voiceToggleBtn.addEventListener('click', () => {
             toggleListening();
             voiceToggleBtn.classList.toggle('active');
         });
     }
-
-    // 3. Setup Listeners
-    window.addEventListener('hashchange', handleRouteChange);
-    window.addEventListener('settings-changed', (e) => applyAppSettings(e.detail));
-    window.addEventListener('achievement-unlocked', () => soundService.playSound('achievement'));
-    window.addEventListener('level-up', (e) => showLevelUpModal(e.detail.level));
     
     // Global Click Sound
     document.body.addEventListener('click', (event) => {
@@ -321,9 +328,6 @@ function initializeAppContent(user) {
         }
     });
 
-    // 4. Start Router
-    handleRouteChange();
-
     // 5. Hide Splash / Auth Overlay
     authModule.destroy(); // Remove auth UI if it exists
     document.getElementById('app-wrapper').style.display = 'flex'; // Show App
@@ -338,19 +342,18 @@ function initializeAppContent(user) {
             if (!hasBeenWelcomed) {
                 showWelcomeScreen();
             }
-            setTimeout(preloadCriticalModules, 500);
+            preloadCriticalModules();
         };
         
         splashScreen.addEventListener('transitionend', onTransitionEnd, { once: true });
-        // Fallback if transition doesn't fire
-        setTimeout(onTransitionEnd, 700);
+        // Faster fallback to prevent hanging splash
+        setTimeout(onTransitionEnd, 400); 
     }
 }
 
 function showAuthScreen() {
     const splashScreen = document.getElementById('splash-screen');
     
-    // Animate splash out to reveal auth screen
     if (splashScreen && !splashScreen.classList.contains('hidden')) {
         splashScreen.classList.add('hidden');
         splashScreen.addEventListener('transitionend', () => {
@@ -358,10 +361,15 @@ function showAuthScreen() {
         }, { once: true });
     }
     
-    document.getElementById('app-wrapper').style.display = 'none'; // Hide App
+    document.getElementById('app-wrapper').style.display = 'none'; 
     document.getElementById('auth-container').style.display = 'flex';
-    authModule.init(); // Render Auth UI
-    backgroundService.init(); // Also init background for Auth screen
+    
+    authModule.init(); 
+    
+    // Defer background for Auth too
+    setTimeout(() => {
+        backgroundService.init(); 
+    }, 200);
 }
 
 async function main() {
@@ -384,10 +392,9 @@ async function main() {
         // Network Listeners
         window.addEventListener('online', updateNetworkStatus);
         window.addEventListener('offline', updateNetworkStatus);
-        updateNetworkStatus(); // Initial check
+        updateNetworkStatus(); 
 
         // --- WAIT FOR AUTH ---
-        // The app flow splits here. We do NOT load data until we know WHO the user is.
         firebaseService.onAuthChange((user) => {
             if (user) {
                 console.log('User authenticated:', user.email);
@@ -404,10 +411,8 @@ async function main() {
     }
 }
 
-// Global Error Handler for robustness
 window.onerror = function(message, source, lineno, colno, error) {
     console.error("Global Error Caught:", message, error);
-    // Don't show fatal error for minor JS glitches, but log them or toast if critical logic failed
     return false; 
 };
 

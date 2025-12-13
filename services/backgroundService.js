@@ -11,13 +11,14 @@ let animationId;
 let width, height;
 let mouse = { x: null, y: null, radius: 150 };
 
-// Configuration based on screen size
-const MAX_PARTICLES = window.innerWidth < 600 ? 40 : 100;
-const CONNECTION_DISTANCE = 120;
+// Optimized Configuration
+// Reduced count for faster rendering performance
+const MAX_PARTICLES = window.innerWidth < 600 ? 30 : 70; 
+const CONNECTION_DISTANCE = 110;
 const MOUSE_INFLUENCE_SPEED = 0.05;
 
 // Theme colors (will be read from CSS vars)
-let colorNode = 'rgba(0,0,0,0.2)'; // Default to dark for light theme visibility
+let colorNode = 'rgba(0,0,0,0.2)'; 
 let colorLine = 'rgba(0,0,0,0.05)';
 
 class Particle {
@@ -33,13 +34,15 @@ class Particle {
     }
 
     update() {
-        // 1. Mouse Interaction (Magnetic Pull)
+        // 1. Mouse Interaction (Magnetic Pull) - Optimized: Only check if mouse moved
         if (mouse.x != null) {
             let dx = mouse.x - this.x;
             let dy = mouse.y - this.y;
-            let distance = Math.sqrt(dx * dx + dy * dy);
+            // Avoid heavy SQRT every frame if possible, but needed for circle distance
+            let distanceSq = dx * dx + dy * dy;
             
-            if (distance < mouse.radius) {
+            if (distanceSq < mouse.radius * mouse.radius) {
+                let distance = Math.sqrt(distanceSq);
                 const forceDirectionX = dx / distance;
                 const forceDirectionY = dy / distance;
                 const force = (mouse.radius - distance) / mouse.radius;
@@ -71,8 +74,8 @@ class Particle {
 function initParticles() {
     particles = [];
     const area = width * height;
-    const densityFactor = 8000;
-    const count = Math.min(Math.floor(area / densityFactor), 150); 
+    const densityFactor = 10000; // Increased divider -> fewer particles
+    const count = Math.min(Math.floor(area / densityFactor), MAX_PARTICLES); 
     
     for (let i = 0; i < count; i++) {
         particles.push(new Particle());
@@ -84,19 +87,22 @@ function animate() {
     
     ctx.clearRect(0, 0, width, height);
     
-    for (let i = 0; i < particles.length; i++) {
+    const pLength = particles.length;
+    for (let i = 0; i < pLength; i++) {
         let p = particles[i];
         p.update();
         p.draw();
 
         // Draw Connections
-        for (let j = i; j < particles.length; j++) {
+        // Optimization: Only check half the matrix to avoid double drawing lines
+        for (let j = i + 1; j < pLength; j++) {
             let p2 = particles[j];
             let dx = p.x - p2.x;
             let dy = p.y - p2.y;
-            let distance = Math.sqrt(dx * dx + dy * dy);
+            let distanceSq = dx * dx + dy * dy;
 
-            if (distance < CONNECTION_DISTANCE) {
+            if (distanceSq < CONNECTION_DISTANCE * CONNECTION_DISTANCE) {
+                let distance = Math.sqrt(distanceSq);
                 ctx.beginPath();
                 let opacity = 1 - (distance / CONNECTION_DISTANCE);
                 ctx.strokeStyle = colorLine.replace('OPACITY', opacity * 0.4); 
@@ -112,11 +118,9 @@ function animate() {
 }
 
 function updateThemeColors() {
-    // Determine if we are in light or dark mode based on background color brightness
     const style = getComputedStyle(document.body);
     const bg = style.backgroundColor;
     
-    // Simple brightness check (RGB average)
     let isLight = true;
     if (bg.startsWith('rgb')) {
         const rgb = bg.match(/\d+/g);
@@ -124,16 +128,12 @@ function updateThemeColors() {
             const brightness = (parseInt(rgb[0]) + parseInt(rgb[1]) + parseInt(rgb[2])) / 3;
             isLight = brightness > 128;
         }
-    } else if (bg.startsWith('#')) {
-        // Hex check logic simplified, defaulting to light if unsure
     }
 
     if (isLight) {
-        // Light Mode: Dark Grey Nodes
-        colorNode = 'rgba(15, 23, 42, 0.4)'; // Slate 900
+        colorNode = 'rgba(15, 23, 42, 0.4)';
         colorLine = 'rgba(15, 23, 42, OPACITY)';
     } else {
-        // Dark Mode: White/Light Nodes
         colorNode = 'rgba(255, 255, 255, 0.5)';
         colorLine = 'rgba(255, 255, 255, OPACITY)';
     }
@@ -145,12 +145,17 @@ export function init() {
     
     ctx = canvas.getContext('2d');
     
+    // Debounced Resize
+    let resizeTimeout;
     const resizeObserver = new ResizeObserver(entries => {
-        width = window.innerWidth;
-        height = window.innerHeight;
-        canvas.width = width;
-        canvas.height = height;
-        initParticles();
+        if (resizeTimeout) clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            initParticles();
+        }, 200);
     });
     resizeObserver.observe(document.body);
     
