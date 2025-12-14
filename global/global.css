@@ -269,6 +269,13 @@ svg { max-width: 100%; display: block; }
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
+/* FIX: Ensure #app fills container to allow child absolute positioning */
+#app {
+    height: 100%;
+    width: 100%;
+    position: relative;
+}
+
 /* --- CARD SYSTEM (The big modernizer) --- */
 .card {
     background: var(--color-surface);
