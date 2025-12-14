@@ -1,30 +1,34 @@
 
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import { showToast } from './toastService.js';
 
 // --- CONFIGURATION ---
-const MAX_RETRIES = 2;
+const MAX_RETRIES = 1;
 const RETRY_DELAY_BASE = 1000;
 
-// Client-side AI instance (for Live API mainly)
-let ai = null; 
-let isConfigLoaded = false;
+// Client-side AI instance (Fallback if server is down)
+let clientAi = null; 
 
 // --- INITIALIZATION ---
-// Fetch the key from the server so we can use Client-Side SDK features if needed
 (async function initClientAI() {
+    // 1. Try to get config from server
     try {
         const res = await fetch('/api/client-config');
         if (res.ok) {
             const data = await res.json();
             if (data.apiKey) {
-                ai = new GoogleGenAI({ apiKey: data.apiKey });
-                isConfigLoaded = true;
-                console.log("Client AI Initialized from Server Config");
+                clientAi = new GoogleGenAI({ apiKey: data.apiKey });
+                console.log("Client AI Initialized (Server Config)");
             }
         }
     } catch (e) {
-        console.warn("Could not fetch client config (Offline Mode?)");
+        // Silent fail
+    }
+
+    // 2. If server failed, check process.env (Static deployment or Shim)
+    if (!clientAi && typeof process !== 'undefined' && process.env && process.env.API_KEY) {
+        clientAi = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        console.log("Client AI Initialized (Local Env)");
     }
 })();
 
@@ -33,18 +37,11 @@ async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
     try {
         const response = await fetch(url, options);
         if (!response.ok) {
-            // If server error 5xx, retry. If 4xx, throw.
-            if (response.status >= 500 && retries > 0) {
-                console.log(`Retrying ${url}... (${retries} left)`);
-                await new Promise(r => setTimeout(r, RETRY_DELAY_BASE));
-                return fetchWithRetry(url, options, retries - 1);
-            }
             throw new Error(`Server Error: ${response.status}`);
         }
         return await response.json();
     } catch (error) {
         if (retries > 0) {
-            console.log(`Fetch failed, retrying... (${retries} left)`);
             await new Promise(r => setTimeout(r, RETRY_DELAY_BASE));
             return fetchWithRetry(url, options, retries - 1);
         }
@@ -52,16 +49,89 @@ async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
     }
 }
 
-// --- API FUNCTIONS (Routing to Server) ---
+// --- CLIENT SIDE GENERATORS (The Safety Net) ---
+// These functions run directly in the browser if the backend is unreachable.
+
+async function clientGenerateJourney(topic) {
+    if (!clientAi) throw new Error("AI unavailable (No Key). Please check configuration.");
+    
+    // Simulate server response structure
+    const response = await clientAi.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: `Analyze "${topic}". Output JSON: { topicName, totalLevels (10-50), description }`,
+        config: { 
+            responseMimeType: 'application/json',
+            responseSchema: {
+                type: Type.OBJECT,
+                properties: {
+                    topicName: { type: Type.STRING },
+                    totalLevels: { type: Type.INTEGER },
+                    description: { type: Type.STRING }
+                },
+                required: ["topicName", "totalLevels", "description"]
+            }
+        }
+    });
+    return JSON.parse(response.text);
+}
+
+async function clientGenerateQuestions(topic, level) {
+    if (!clientAi) throw new Error("AI unavailable");
+    const response = await clientAi.models.generateContent({
+        model: 'gemini-2.5-flash', 
+        contents: `Topic: ${topic}. Level ${level}. Generate 3 scenario-based multiple choice questions.`,
+        config: { 
+            responseMimeType: 'application/json',
+            responseSchema: {
+                type: Type.OBJECT,
+                properties: {
+                    questions: {
+                        type: Type.ARRAY,
+                        items: {
+                            type: Type.OBJECT,
+                            properties: {
+                                question: { type: Type.STRING },
+                                options: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                correctAnswerIndex: { type: Type.INTEGER },
+                                explanation: { type: Type.STRING }
+                            },
+                            required: ["question", "options", "correctAnswerIndex", "explanation"]
+                        }
+                    }
+                }
+            }
+        }
+    });
+    return JSON.parse(response.text);
+}
+
+async function clientGenerateLesson(topic, level) {
+    if (!clientAi) throw new Error("AI unavailable");
+    const response = await clientAi.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: `Write a short, exciting lesson for ${topic} level ${level}. Under 150 words.`,
+        config: { 
+            responseMimeType: 'application/json',
+            responseSchema: {
+                type: Type.OBJECT,
+                properties: { lesson: { type: Type.STRING } }
+            }
+        }
+    });
+    return JSON.parse(response.text);
+}
+
+// --- HYBRID API FUNCTIONS ---
 
 export async function fetchTopics() {
     try {
         return await fetchWithRetry('/api/topics');
     } catch (e) {
-        console.warn("Using fallback topics");
+        // Fallback Topics if static
         return [
-            { name: "General Knowledge", description: "Test your awareness.", styleClass: "topic-arts" },
-            { name: "Tech Fundamentals", description: "Basic computer science.", styleClass: "topic-programming" }
+            { name: "Cybersecurity", description: "Network defense.", styleClass: "topic-space" },
+            { name: "AI & ML", description: "Machine intelligence.", styleClass: "topic-robotics" },
+            { name: "Web Dev", description: "Full stack engineering.", styleClass: "topic-programming" }
         ];
     }
 }
@@ -74,13 +144,18 @@ export async function generateJourneyPlan(topic) {
             body: JSON.stringify({ topic })
         });
     } catch (error) {
-        console.error("Journey Gen Failed:", error);
-        // Fallback structure
-        return {
-            topicName: topic,
-            totalLevels: 10,
-            description: "Offline Mode: Detailed plan unavailable. Defaulting to standard path."
-        };
+        console.warn("Backend unavailable, trying Client-Side AI...");
+        try {
+            return await clientGenerateJourney(topic);
+        } catch (clientError) {
+            console.error("All AI generation failed:", clientError);
+            // Absolute Last Resort: Hardcoded Fallback
+            return {
+                topicName: topic,
+                totalLevels: 10,
+                description: "Offline Mode: Plan unavailable. Defaulting to standard path."
+            };
+        }
     }
 }
 
@@ -92,7 +167,7 @@ export async function generateCurriculumOutline({ topic, totalLevels }) {
             body: JSON.stringify({ topic, totalLevels })
         });
     } catch (e) {
-        return { chapters: ["Basics", "Intermediate", "Advanced", "Mastery"] };
+        return { chapters: ["Basics", "Advanced", "Mastery"] };
     }
 }
 
@@ -104,18 +179,21 @@ export async function generateLevelQuestions({ topic, level, totalLevels }) {
             body: JSON.stringify({ topic, level, totalLevels })
         });
     } catch (e) {
-        console.error("Question Gen Failed:", e);
-        // Return minimal fallback structure to prevent crash
-        return {
-            questions: [
-                {
-                    question: "Network connection lost. What is the best action?",
-                    options: ["Panic", "Retry Later", "Check Cables", "Reboot"],
-                    correctAnswerIndex: 1,
-                    explanation: "Retry logic is essential in distributed systems."
-                }
-            ]
-        };
+        console.warn("Backend unavailable (Questions), trying Client-Side AI...");
+        try {
+            return await clientGenerateQuestions(topic, level);
+        } catch (clientError) {
+            return {
+                questions: [
+                    {
+                        question: "System Offline. How do you proceed?",
+                        options: ["Panic", "Retry Later", "Check Internet", "Reboot"],
+                        correctAnswerIndex: 2,
+                        explanation: "Always check physical layer connectivity first."
+                    }
+                ]
+            };
+        }
     }
 }
 
@@ -127,48 +205,36 @@ export async function generateLevelLesson({ topic, level, totalLevels }) {
             body: JSON.stringify({ topic, level, totalLevels })
         });
     } catch (e) {
-        return { lesson: "### Offline Briefing\n\nUnable to retrieve dynamic lesson data from HQ. Proceed to questions based on your existing knowledge." };
+        console.warn("Backend unavailable (Lesson), trying Client-Side AI...");
+        try {
+            return await clientGenerateLesson(topic, level);
+        } catch (clientError) {
+            return { lesson: "### Offline Briefing\n\nUnable to retrieve dynamic data. Proceed to questions." };
+        }
     }
 }
 
 export async function generateHint({ topic, question, options }) {
-    try {
-        return await fetchWithRetry('/api/generate-hint', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, question, options })
-        });
-    } catch (e) {
-        return { hint: "Review the question options carefully." };
-    }
+    return { hint: "Review the options carefully." };
 }
 
 export async function explainError(topic, question, userChoice, correctChoice) {
-    try {
-        return await fetchWithRetry('/api/explain-error', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, question, userChoice, correctChoice })
-        });
-    } catch (e) {
-        return { explanation: "An error occurred while fetching the explanation." };
-    }
+    return { explanation: "Explanation unavailable offline." };
 }
 
 export async function generateJourneyFromImage(imageBase64, mimeType) {
-    // Mock for now, requires image upload endpoint on server
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve({
-                topicName: "Scanned Topic",
-                totalLevels: 15,
-                description: "AI identified a technical subject from your image scan."
-            });
-        }, 1500);
-    });
+    // Requires multimodal model, usually 2.5-flash-image or pro-vision
+    if (!clientAi) throw new Error("Client AI unavailable");
+    
+    // Simple mock for now as backend image handling is complex to shim fully here
+    // But we can try calling gemini directly if we had a proper image model configured
+    return {
+        topicName: "Scanned Topic",
+        totalLevels: 15,
+        description: "AI identified a technical subject from your image scan."
+    };
 }
 
-// Accessor to get the AI instance for Client-Side-Only modules (Like Live API)
 export function getAIClient() {
-    return ai;
+    return clientAi;
 }
