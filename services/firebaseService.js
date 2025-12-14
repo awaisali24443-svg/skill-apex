@@ -21,7 +21,7 @@ import {
     updateProfile 
 } from "firebase/auth";
 
-// Configuration
+// Configuration provided by user
 const firebaseConfig = {
   apiKey: "AIzaSyDgdLWA8yVvKZB_QV2Aj8Eenx--O8-ftFY",
   authDomain: "knowledge-tester-web.firebaseapp.com",
@@ -32,45 +32,32 @@ const firebaseConfig = {
   measurementId: "G-17Z8MFNP7J"
 };
 
-let app, analytics, db, auth, googleProvider;
-let isSimulationMode = false;
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
+
 let currentUser = null;
 let authStateCallback = null;
 
-// --- INITIALIZATION WRAPPER ---
-try {
-    app = initializeApp(firebaseConfig);
-    analytics = getAnalytics(app);
-    db = getFirestore(app);
-    auth = getAuth(app);
-    googleProvider = new GoogleAuthProvider();
-    console.log("Firebase initialized successfully.");
-} catch (error) {
-    console.error("Firebase Initialization Failed:", error);
-    enableSimulationMode();
-}
-
 // --- SIMULATION MODE ---
+// Used when Firebase is down or config is invalid to allow the app to function locally.
 function enableSimulationMode() {
-    if (isSimulationMode) return;
-    isSimulationMode = true;
     console.log("⚠️ SIMULATION MODE ACTIVATED: Bypassing Backend");
-    
-    // Create a mock user immediately
     const mockUser = {
         uid: "guest_sim_" + Date.now(),
         isAnonymous: true,
         email: null,
-        displayName: "Guest User",
+        displayName: "Simulated Guest",
         photoURL: null,
         providerData: [],
         reload: () => Promise.resolve()
     };
     currentUser = mockUser;
-    
-    // If listener is already waiting, trigger it
     if (authStateCallback) {
-        setTimeout(() => authStateCallback(mockUser), 100);
+        authStateCallback(mockUser);
     }
 }
 
@@ -103,33 +90,31 @@ function isGuest() {
 function getUserProvider() {
     if (!currentUser) return null;
     if (currentUser.isAnonymous) return 'anonymous';
+    // Return the first provider ID (e.g., 'password', 'google.com')
     return currentUser.providerData.length > 0 ? currentUser.providerData[0].providerId : 'unknown';
 }
 
 // --- Auth Functions ---
 
 function login(email, password) {
-    if (isSimulationMode) return Promise.resolve(currentUser);
     return signInWithEmailAndPassword(auth, email, password);
 }
 
 function register(email, password) {
-    if (isSimulationMode) return Promise.resolve(currentUser);
     return createUserWithEmailAndPassword(auth, email, password);
 }
 
 function loginWithGoogle() {
-    if (isSimulationMode) return Promise.resolve(currentUser);
     return signInWithPopup(auth, googleProvider);
 }
 
 function loginAsGuest() {
-    if (isSimulationMode) return Promise.resolve(currentUser);
     return signInAnonymously(auth);
 }
 
 function logout() {
-    if (isSimulationMode || (currentUser && currentUser.uid.startsWith("guest_sim_"))) {
+    // If simulated, just nullify
+    if (currentUser && currentUser.uid.startsWith("guest_sim_")) {
         currentUser = null;
         if(authStateCallback) authStateCallback(null);
         return Promise.resolve();
@@ -137,42 +122,99 @@ function logout() {
     return firebaseSignOut(auth);
 }
 
+function resetPassword(email) {
+    const url = window.location.origin + window.location.pathname;
+    const actionCodeSettings = {
+        url: `${url}?mode=resetPassword`,
+        handleCodeInApp: true,
+    };
+    return sendPasswordResetEmail(auth, email, actionCodeSettings);
+}
+
+function confirmReset(code, newPassword) {
+    return confirmPasswordReset(auth, code, newPassword);
+}
+
 function onAuthChange(callback) {
     authStateCallback = callback;
-    
-    if (isSimulationMode) {
-        // Immediately return mock user if in sim mode
-        setTimeout(() => callback(currentUser), 50);
-        return () => {};
-    }
-
     // Standard Firebase listener
     return onAuthStateChanged(auth, (user) => {
-        if (!user && isSimulationMode) return;
+        if (!user && currentUser && currentUser.uid.startsWith("guest_sim_")) {
+            // Do not overwrite simulated user with null from firebase init
+            return;
+        }
         currentUser = user;
         callback(user);
     });
 }
 
-// --- Data Functions (Safe Wrappers) ---
+// --- Account Management ---
+
+function updateUserProfile(profileData) {
+    if (!currentUser) return Promise.reject(new Error("No user logged in"));
+    
+    // Simulation fallback
+    if (currentUser.uid.startsWith("guest_sim_")) {
+        if (profileData.displayName) currentUser.displayName = profileData.displayName;
+        if (profileData.photoURL) currentUser.photoURL = profileData.photoURL;
+        window.dispatchEvent(new CustomEvent('profile-updated'));
+        return Promise.resolve();
+    }
+
+    return updateProfile(currentUser, profileData).then(async () => {
+        await currentUser.reload();
+        window.dispatchEvent(new CustomEvent('profile-updated'));
+    });
+}
+
+function linkGoogle() {
+    if (!currentUser) return Promise.reject("No user");
+    return linkWithPopup(currentUser, googleProvider);
+}
+
+function linkEmail(email, password) {
+    if (!currentUser) return Promise.reject("No user");
+    const credential = EmailAuthProvider.credential(email, password);
+    return linkWithCredential(currentUser, credential);
+}
+
+function reauthenticate(password) {
+    if (!currentUser) return Promise.reject(new Error("No user"));
+    const cred = EmailAuthProvider.credential(currentUser.email, password);
+    return reauthenticateWithCredential(currentUser, cred);
+}
+
+function changePassword(newPassword) {
+    if (!currentUser) return Promise.reject(new Error("No user"));
+    return updatePassword(currentUser, newPassword);
+}
+
+// --- Leaderboard ---
 
 async function updateLeaderboardScore(stats) {
-    if (isSimulationMode || !currentUser || isGuest()) return;
+    if (!currentUser || isGuest()) return; 
+    // Skip if simulated
+    if (currentUser.uid.startsWith("guest_sim_")) return;
+
     const userRef = doc(db, "leaderboard", currentUser.uid);
+    const name = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'ApexUser');
+    
     try {
         await setDoc(userRef, {
-            username: getUserName(),
+            username: name,
             xp: stats.xp,
             level: stats.level,
             lastUpdated: new Date().toISOString()
         }, { merge: true });
-    } catch(e) { console.warn("Leaderboard update failed", e); }
+    } catch(e) {
+        console.warn("Leaderboard update failed", e);
+    }
 }
 
 async function getLeaderboard(limitCount = 20) {
-    if (isSimulationMode) return [];
     const lbRef = collection(db, "leaderboard");
     const q = query(lbRef, orderBy("xp", "desc"), limit(limitCount));
+    
     try {
         const querySnapshot = await getDocs(q);
         const results = [];
@@ -181,22 +223,18 @@ async function getLeaderboard(limitCount = 20) {
         });
         return results;
     } catch(e) {
+        console.warn("Failed to fetch leaderboard", e);
         return [];
     }
 }
 
-// Export wrappers
 export { 
     db, doc, getDoc, setDoc, 
     getUserId, getUserEmail, getUserName, getUserPhoto, isGuest, getUserProvider,
     analytics, 
     login, register, loginWithGoogle, loginAsGuest, logout, 
-    // Mock other auth functions for safety
-    linkGoogle: () => Promise.reject("Not available in simulation"),
-    linkEmail: () => Promise.reject("Not available in simulation"),
-    reauthenticate: () => Promise.reject("Not available in simulation"),
-    changePassword: () => Promise.reject("Not available in simulation"),
-    updateUserProfile: () => Promise.resolve(),
+    resetPassword, confirmReset,
+    linkGoogle, linkEmail, reauthenticate, changePassword, updateUserProfile,
     onAuthChange,
     updateLeaderboardScore, getLeaderboard, enableSimulationMode
 };

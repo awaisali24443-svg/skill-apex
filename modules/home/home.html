@@ -1,51 +1,104 @@
 
-<div class="page-container home-container centered-layout">
+<div class="page-container home-container">
     <!-- Hero Section -->
-    <header class="quiz-hero">
-        <div class="hero-icon-glow">
-            <svg class="icon"><use href="assets/icons/feather-sprite.svg#cpu"/></svg>
+    <header class="dashboard-header">
+        <div class="header-text-content">
+            <p class="greeting-sub" id="greeting-sub">SYSTEM ONLINE</p>
+            <!-- ADDED GLITCH CLASSES -->
+            <h1 class="greeting-main glitch-text" id="greeting-main" data-text="Welcome, Agent.">Welcome, Agent.</h1>
         </div>
-        <h1 class="greeting-main glitch-text" id="greeting-main" data-text="Quiz Protocol">Quiz Protocol</h1>
-        <p class="greeting-sub">AI-GENERATED KNOWLEDGE ASSESSMENTS</p>
+        
+        <!-- Quick Stats Pill -->
+        <div class="quick-stat-pill">
+            <div class="stat-item">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#zap"/></svg>
+                <span id="home-streak-display">0</span>
+            </div>
+            <div class="divider"></div>
+            <div class="stat-item">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#star"/></svg>
+                <span id="home-xp-display">0</span>
+            </div>
+        </div>
     </header>
 
-    <!-- Main Interaction: Quiz Input -->
-    <div class="quiz-input-section">
-        <form id="quick-quiz-form" class="quiz-search-wrapper">
-            <div class="input-container">
-                <svg class="icon input-icon"><use href="assets/icons/feather-sprite.svg#search"/></svg>
-                <input type="text" id="quick-quiz-input" class="quiz-input" placeholder="Enter any topic (e.g., 'Python', 'History', 'Physics')..." autocomplete="off" autofocus>
-                <button type="submit" class="btn-icon-action" aria-label="Generate Quiz">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
-                </button>
-            </div>
-        </form>
-        <div class="suggestion-chips">
-            <button class="chip" data-topic="General Knowledge">General Knowledge</button>
-            <button class="chip" data-topic="JavaScript ES6">JavaScript</button>
-            <button class="chip" data-topic="World History">History</button>
-            <button class="chip" data-topic="Cybersecurity">Cybersecurity</button>
-        </div>
-    </div>
-
-    <!-- Quick Stats Pill (Minimalist) -->
-    <div class="stats-ticker">
-        <div class="stat-item">
-            <span class="stat-label">STREAK</span>
-            <span class="stat-val" id="home-streak-display">0</span>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-item">
-            <span class="stat-label">TOTAL XP</span>
-            <span class="stat-val" id="home-xp-display">0</span>
-        </div>
-    </div>
-
-    <!-- Recent / Continue (Hidden by default, shown if history exists) -->
+    <!-- Recent Activity / CTA -->
     <div id="continue-learning-section" class="continue-section" style="display:none;">
-        <p class="section-label">RESUME PREVIOUS SESSION</p>
+        <h3 class="section-label">Continue Mission</h3>
         <div id="continue-card" class="card continue-card">
             <!-- Injected via JS -->
         </div>
+    </div>
+
+    <!-- Quick Access Grid -->
+    <h3 class="section-label">Quick Protocols</h3>
+    <div class="expo-grid">
+        
+        <!-- Card 1: Python -->
+        <div class="card expo-card widget-style" data-topic="Python Mastery">
+            <div class="widget-icon icon-blue">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#cpu"/></svg>
+            </div>
+            <div class="widget-content">
+                <h2>Python</h2>
+                <p>Coding Basics.</p>
+            </div>
+            <div class="widget-arrow">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
+            </div>
+        </div>
+
+        <!-- Card 2: Web Dev -->
+        <div class="card expo-card widget-style" data-topic="Web Development">
+            <div class="widget-icon icon-orange">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#globe"/></svg>
+            </div>
+            <div class="widget-content">
+                <h2>Web Dev</h2>
+                <p>HTML, CSS, JS.</p>
+            </div>
+            <div class="widget-arrow">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
+            </div>
+        </div>
+
+        <!-- Card 3: Machine Learning -->
+        <div class="card expo-card widget-style" data-topic="Machine Learning">
+            <div class="widget-icon icon-red">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#activity"/></svg>
+            </div>
+            <div class="widget-content">
+                <h2>AI & ML</h2>
+                <p>Neural Networks.</p>
+            </div>
+            <div class="widget-arrow">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
+            </div>
+        </div>
+
+        <!-- Card 4: Prompt Engineering -->
+        <div class="card expo-card widget-style" data-topic="Prompt Engineering">
+            <div class="widget-icon icon-green">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#message-circle"/></svg>
+            </div>
+            <div class="widget-content">
+                <h2>Prompt Eng.</h2>
+                <p>Mastering LLMs.</p>
+            </div>
+            <div class="widget-arrow">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Hidden Manual Input -->
+    <div style="margin-top: 4rem; text-align: center; opacity: 0.5;">
+        <form id="quick-quiz-form" style="display: inline-block; width: 100%; max-width: 400px;">
+            <div class="input-with-icon">
+                <svg class="icon" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px;"><use href="assets/icons/feather-sprite.svg#search"/></svg>
+                <input type="text" id="quick-quiz-input" class="search-input" placeholder="Search or enter any topic..." autocomplete="off">
+            </div>
+        </form>
     </div>
 </div>
