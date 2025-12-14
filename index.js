@@ -237,15 +237,36 @@ function showAuthScreen() {
     setTimeout(() => backgroundService.init(), 200);
 }
 
+// Emergency Manual Reset in console: window.hardReset()
+window.hardReset = () => {
+    console.log("TRIGGERING HARD RESET");
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    if(navigator.serviceWorker) {
+        navigator.serviceWorker.getRegistrations().then(regs => {
+            for(let registration of regs) {
+                registration.unregister();
+            }
+            window.location.reload();
+        });
+    } else {
+        window.location.reload();
+    }
+};
+
 async function main() {
     try {
+        console.log("App Initializing...");
         configService.init();
         applyAppSettings(configService.getConfig());
         soundService.init(configService);
 
         // --- SERVICE WORKER ---
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').catch(e => console.warn("SW Fail:", e));
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('SW Registered'))
+                .catch(e => console.warn("SW Fail:", e));
         }
         
         window.addEventListener('online', updateNetworkStatus);
@@ -263,32 +284,30 @@ async function main() {
         }, 3500); // 3.5s timeout
 
         // --- FIREBASE AUTH ---
-        firebaseService.onAuthChange((user) => {
+        // Wrap in try-catch in case firebaseService throws immediately
+        try {
+            firebaseService.onAuthChange((user) => {
+                clearTimeout(failsafeTimeout);
+                if (user) {
+                    initializeAppContent(user);
+                } else {
+                    showAuthScreen();
+                }
+            });
+        } catch (fbError) {
+            console.error("Firebase Init Failed:", fbError);
             clearTimeout(failsafeTimeout);
-            if (user) {
-                initializeAppContent(user);
-            } else {
-                showAuthScreen();
-            }
-        });
+            firebaseService.enableSimulationMode();
+            initializeAppContent({ isAnonymous: true });
+        }
 
     } catch (error) {
-        console.error("Critical Error:", error);
+        console.error("Critical Error in Main:", error);
         showFatalError(error);
+        // Ensure reset button is visible if main fails
+        const btn = document.getElementById('emergency-reset-btn');
+        if(btn) btn.style.display = 'block';
     }
 }
-
-// Emergency Manual Reset in console: window.hardReset()
-window.hardReset = () => {
-    localStorage.clear();
-    if(navigator.serviceWorker) {
-        navigator.serviceWorker.getRegistrations().then(regs => {
-            regs.forEach(r => r.unregister());
-            window.location.reload();
-        });
-    } else {
-        window.location.reload();
-    }
-};
 
 main();

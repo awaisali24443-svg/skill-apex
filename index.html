@@ -42,17 +42,48 @@
     "firebase/firestore": "https://esm.sh/firebase@10.8.0/firestore",
     "firebase/auth": "https://esm.sh/firebase@10.8.0/auth",
     "dompurify": "https://esm.sh/dompurify@3.0.9",
-    "dotenv/": "https://esm.sh/dotenv@^17.2.3/",
-    "express": "https://esm.sh/express@^5.2.1",
+    "dotenv": "https://esm.sh/dotenv@16.4.5",
     "path": "https://esm.sh/path@^0.12.7",
+    "express": "https://esm.sh/express@^5.2.1",
+    "dotenv/": "https://esm.sh/dotenv@^17.2.3/",
+    "firebase/": "https://esm.sh/firebase@^12.6.0/",
     "url": "https://esm.sh/url@^0.11.4",
-    "express-rate-limit": "https://esm.sh/express-rate-limit@^8.2.1",
-    "fs/": "https://esm.sh/fs@^0.0.1-security/",
-    "http": "https://esm.sh/http@^0.0.1-security",
     "ws": "https://esm.sh/ws@^8.18.3",
-    "firebase/": "https://esm.sh/firebase@^12.6.0/"
+    "express-rate-limit": "https://esm.sh/express-rate-limit@^8.2.1",
+    "http": "https://esm.sh/http@^0.0.1-security",
+    "fs/": "https://esm.sh/fs@^0.0.1-security/"
   }
 }
+</script>
+<script>
+    // GLOBAL ERROR TRAP - If a module fails to load, this catches it.
+    window.addEventListener('error', function(e) {
+        // Ignore resizing errors
+        if(e.message && e.message.includes('ResizeObserver')) return;
+        
+        console.error("Global Error Caught:", e);
+        const splash = document.getElementById('splash-screen');
+        const errBtn = document.getElementById('emergency-reset-btn');
+        if(splash && splash.style.display !== 'none' && errBtn) {
+            document.querySelector('#splash-screen h2').textContent = "INITIALIZATION ERROR";
+            document.querySelector('#splash-screen .orb-loader').style.display = "none";
+            errBtn.style.display = 'block';
+            errBtn.textContent = "RESET & RELOAD";
+        }
+    });
+    
+    // SAFETY: Force unregister old service workers on load to prevent zombie caches
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for(let registration of registrations) {
+                // If it's not our current core worker, kill it
+                if(registration.active && !registration.active.scriptURL.includes('v5.23.0')) {
+                    console.log('Unregistering old SW:', registration);
+                    registration.unregister();
+                }
+            }
+        });
+    }
 </script>
 </head>
 <body>
@@ -76,7 +107,7 @@
         <h2 style="color:var(--color-primary); font-family: 'Exo 2'; letter-spacing: 2px; margin-top:10px;">SYSTEM INITIALIZING</h2>
         <div class="orb-loader" role="status"></div>
         
-        <!-- Emergency Reset Button (Appears if stuck) -->
+        <!-- Emergency Reset Button -->
         <button id="emergency-reset-btn" onclick="window.hardReset()" style="
             display: none; 
             margin-top: 2rem; 
@@ -88,16 +119,19 @@
             cursor: pointer;
             z-index: 99999;
             font-family: sans-serif;
+            font-weight: bold;
         ">
             ⚠️ APP STUCK? CLICK TO RESET
         </button>
         <script>
+            // Safety: Show reset button if app takes > 5 seconds
             setTimeout(() => {
                 const btn = document.getElementById('emergency-reset-btn');
-                if(btn && document.getElementById('splash-screen').style.display !== 'none') {
+                const splash = document.getElementById('splash-screen');
+                if(btn && splash && splash.style.display !== 'none' && splash.style.opacity !== '0') {
                     btn.style.display = 'block';
                 }
-            }, 6000); // Show button if splash still visible after 6s
+            }, 5000); 
         </script>
     </div>
 

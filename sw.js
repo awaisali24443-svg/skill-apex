@@ -1,150 +1,123 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 5.22.0 (Resilient Boot)
+ * @version 5.23.0 (Minimal Core)
  *
- * This service worker implements a robust offline-first caching strategy.
- * CRITICAL CHANGE: Removed binary assets (images) from APP_SHELL to prevent installation failure.
+ * STRATEGY CHANGE: "Core First".
+ * Only cache the absolute essentials to boot the app.
+ * All feature modules (game, profile, etc.) are cached at runtime (StaleWhileRevalidate).
+ * This prevents the entire app from failing to load if one non-critical file is missing.
  */
 
-const CACHE_NAME = 'skill-apex-v5.22.0-resilient';
-const FONT_CACHE_NAME = 'google-fonts-cache-v1';
+const CACHE_NAME = 'skill-apex-core-v5.23.0';
+const RUNTIME_CACHE = 'skill-apex-runtime-v5';
 
-const APP_SHELL_URLS = [
+// ONLY files strictly required to show the "Home" screen and Sidebar.
+const CORE_ASSETS = [
     '/',
     'index.html',
     'index.js',
     'constants.js',
-    'manifest.json',
-    'data/topics.json',
-    'data/prebaked_levels.json',
     'global/global.css',
     'global/global.js',
-    'themes/theme-dark-cyber.css',
-    'themes/theme-light-cyber.css',
-    'themes/theme-light-solar.css',
-    'themes/theme-dark.css',
-    'themes/theme-dark-arcane.css',
-    'themes/theme-dark-nebula.css',
+    'manifest.json',
     'assets/icons/favicon.svg',
     'assets/icons/feather-sprite.svg',
-    'assets/icons/achievements.svg',
-    // Removed PNGs to prevent installation failure if files are missing
-    // They will be cached dynamically upon first request.
-    'https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Inter:wght@400;600&family=Roboto+Mono:wght@400;500&display=swap',
-    'https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js',
-    // Core Services
-    'services/apiService.js',
+    // Core Services required for init
     'services/configService.js',
-    'services/errorService.js',
-    'services/gamificationService.js',
-    'services/historyService.js',
-    'services/learningPathService.js',
-    'services/levelCacheService.js',
-    'services/libraryService.js',
-    'services/markdownService.js',
-    'services/modalService.js',
-    'services/sidebarService.js',
-    'services/soundService.js',
     'services/stateService.js',
-    'services/themeService.js',
-    'services/toastService.js',
-    'services/voiceCommandService.js',
+    'services/sidebarService.js',
     'services/firebaseService.js',
-    'services/vfxService.js',
-    'services/backgroundService.js',
-    // App Modules
-    'modules/auth/auth.html', 'modules/auth/auth.css', 'modules/auth/auth.js',
-    'modules/home/home.html', 'modules/home/home.css', 'modules/home/home.js',
-    'modules/topic-list/topic-list.html', 'modules/topic-list/topic-list.css', 'modules/topic-list/topic-list.js',
-    'modules/library/library.html', 'modules/library/library.css', 'modules/library/library.js',
-    'modules/history/history.html', 'modules/history/history.css', 'modules/history/history.js',
-    'modules/study/study.html', 'modules/study/study.css', 'modules/study/study.js',
-    'modules/aural/aural.html', 'modules/aural/aural.css', 'modules/aural/aural.js',
-    'modules/settings/settings.html', 'modules/settings/settings.css', 'modules/settings/settings.js',
-    'modules/game-map/game-map.html', 'modules/game-map/game-map.css', 'modules/game-map/game-map.js',
-    'modules/game-level/game-level.html', 'modules/game-level/game-level.css', 'modules/game-level/game-level.js',
-    'modules/profile/profile.html', 'modules/profile/profile.css', 'modules/profile/profile.js',
-    'modules/quiz-review/quiz-review.html', 'modules/quiz-review/quiz-review.css', 'modules/quiz-review/quiz-review.js',
-    'modules/leaderboard/leaderboard.html', 'modules/leaderboard/leaderboard.css', 'modules/leaderboard/leaderboard.js',
+    'services/toastService.js',
+    'services/errorService.js',
+    // Home Module (Landing Page)
+    'modules/home/home.html',
+    'modules/home/home.css',
+    'modules/home/home.js'
 ];
 
-const staleWhileRevalidate = async (cacheName, request) => {
-    const cache = await caches.open(cacheName);
-    const cachedResponse = await cache.match(request);
-    const fetchPromise = fetch(request).then((networkResponse) => {
-        if (networkResponse.ok) {
-           cache.put(request, networkResponse.clone());
-        }
-        return networkResponse;
-    }).catch(err => {
-        if (cachedResponse) return cachedResponse;
-        throw err;
-    });
-    return cachedResponse || fetchPromise;
-};
-
 self.addEventListener('install', (event) => {
-    self.skipWaiting(); // Force activate new SW immediately
+    // Force immediate activation
+    self.skipWaiting(); 
+    
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(APP_SHELL_URLS);
+            console.log('[SW] Pre-caching Core Assets');
+            return cache.addAll(CORE_ASSETS);
         })
     );
 });
 
 self.addEventListener('activate', (event) => {
+    // Claim clients immediately so the user doesn't need to refresh twice
     event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
-                    if (cacheName !== CACHE_NAME && cacheName !== FONT_CACHE_NAME) {
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
-        }).then(() => self.clients.claim())
+        Promise.all([
+            self.clients.claim(),
+            caches.keys().then((cacheNames) => {
+                return Promise.all(
+                    cacheNames.map((cacheName) => {
+                        // Clear old caches from previous versions
+                        if (cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE) {
+                            console.log('[SW] Clearing old cache:', cacheName);
+                            return caches.delete(cacheName);
+                        }
+                    })
+                );
+            })
+        ])
     );
 });
 
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
 
-    if (url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com') {
-        event.respondWith(staleWhileRevalidate(FONT_CACHE_NAME, event.request));
-        return;
-    }
-
-    if (APP_SHELL_URLS.some(u => event.request.url.includes(u))) {
-        event.respondWith(staleWhileRevalidate(CACHE_NAME, event.request));
-        return;
-    }
-
+    // 1. API Calls: Network Only (Never cache API responses in SW, let app handle it)
     if (url.pathname.startsWith('/api')) {
         return;
     }
 
-    event.respondWith(
-        fetch(event.request)
-            .then(response => {
-                if (!response || response.status !== 200 || response.type === 'opaque') {
-                    if (response.type !== 'basic' && response.type !== 'cors') return response;
-                }
-                if (event.request.method === 'GET') {
-                    const responseToCache = response.clone();
-                    caches.open(CACHE_NAME).then(cache => {
-                        cache.put(event.request, responseToCache);
-                    });
-                }
-                return response;
+    // 2. Google Fonts: Stale While Revalidate
+    if (url.origin.includes('fonts.googleapis.com') || url.origin.includes('fonts.gstatic.com')) {
+        event.respondWith(staleWhileRevalidate(RUNTIME_CACHE, event.request));
+        return;
+    }
+
+    // 3. Core Assets: Cache First, falling back to Network
+    if (CORE_ASSETS.some(asset => event.request.url.includes(asset))) {
+        event.respondWith(
+            caches.match(event.request).then((response) => {
+                return response || fetch(event.request);
             })
-            .catch(() => {
-                return caches.match(event.request).then(cachedResponse => {
-                    if (cachedResponse) return cachedResponse;
-                    if (event.request.headers.get('accept').includes('text/html')) {
-                        return caches.match('index.html');
-                    }
-                });
-            })
-    );
+        );
+        return;
+    }
+
+    // 4. Everything else (Modules, Images, Sounds): Stale While Revalidate
+    // This allows the app to load even if offline, provided the user has visited that section before.
+    event.respondWith(staleWhileRevalidate(RUNTIME_CACHE, event.request));
 });
+
+// Helper: Stale While Revalidate Strategy
+async function staleWhileRevalidate(cacheName, request) {
+    const cache = await caches.open(cacheName);
+    const cachedResponse = await cache.match(request);
+    
+    const fetchPromise = fetch(request)
+        .then((networkResponse) => {
+            // Only cache valid responses
+            if (networkResponse && networkResponse.status === 200 && networkResponse.type !== 'opaque') {
+                cache.put(request, networkResponse.clone());
+            }
+            return networkResponse;
+        })
+        .catch((err) => {
+            // Network failed
+            // If we have a cached response, we already returned it (or will return undefined if not)
+            // But if we are *awaiting* this promise (no cache), we need to handle it.
+            console.warn('[SW] Network fetch failed:', request.url);
+            // Fallback logic could go here (e.g., return offline.html)
+        });
+
+    // Return cached response immediately if available, otherwise wait for network
+    return cachedResponse || fetchPromise;
+}
