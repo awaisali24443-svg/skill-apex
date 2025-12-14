@@ -1,12 +1,12 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 5.20.0 (API Robustness & Dynamic Caching)
+ * @version 5.21.1 (Cache List Fix)
  *
  * This service worker implements a robust offline-first caching strategy.
  */
 
-const CACHE_NAME = 'skill-apex-v5.20.0-robust';
+const CACHE_NAME = 'skill-apex-v5.21.1-fixed';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [
@@ -55,7 +55,7 @@ const APP_SHELL_URLS = [
     'services/firebaseService.js',
     'services/vfxService.js',
     'services/backgroundService.js',
-    // App Modules
+    // App Modules - ONLY VALID PATHS
     'modules/auth/auth.html', 'modules/auth/auth.css', 'modules/auth/auth.js',
     'modules/home/home.html', 'modules/home/home.css', 'modules/home/home.js',
     'modules/topic-list/topic-list.html', 'modules/topic-list/topic-list.css', 'modules/topic-list/topic-list.js',
@@ -68,6 +68,7 @@ const APP_SHELL_URLS = [
     'modules/game-level/game-level.html', 'modules/game-level/game-level.css', 'modules/game-level/game-level.js',
     'modules/profile/profile.html', 'modules/profile/profile.css', 'modules/profile/profile.js',
     'modules/quiz-review/quiz-review.html', 'modules/quiz-review/quiz-review.css', 'modules/quiz-review/quiz-review.js',
+    'modules/leaderboard/leaderboard.html', 'modules/leaderboard/leaderboard.css', 'modules/leaderboard/leaderboard.js',
 ];
 
 const staleWhileRevalidate = async (cacheName, request) => {
@@ -110,52 +111,37 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
 
-    // 1. Google Fonts - Stale While Revalidate
     if (url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com') {
         event.respondWith(staleWhileRevalidate(FONT_CACHE_NAME, event.request));
         return;
     }
 
-    // 2. App Shell & Assets - Stale While Revalidate
     if (APP_SHELL_URLS.some(u => event.request.url.includes(u))) {
         event.respondWith(staleWhileRevalidate(CACHE_NAME, event.request));
         return;
     }
 
-    // 3. API Calls (Never Cache)
     if (url.pathname.startsWith('/api')) {
         return;
     }
 
-    // 4. Default: Network First -> Cache -> Fallback
-    // This handles external scripts (esm.sh) and dynamic files not in shell
     event.respondWith(
         fetch(event.request)
             .then(response => {
-                // Check if we received a valid response
                 if (!response || response.status !== 200 || response.type === 'opaque') {
-                    // Opaque responses (like some no-cors CDNs) can't be verified, 
-                    // but we cache them if we are sure (risky). 
-                    // For now, only cache Basic and CORS responses.
                     if (response.type !== 'basic' && response.type !== 'cors') return response;
                 }
-
-                // Dynamically cache successful GET requests (e.g. esm.sh imports)
                 if (event.request.method === 'GET') {
                     const responseToCache = response.clone();
                     caches.open(CACHE_NAME).then(cache => {
                         cache.put(event.request, responseToCache);
                     });
                 }
-
                 return response;
             })
             .catch(() => {
-                // Offline fallback
                 return caches.match(event.request).then(cachedResponse => {
                     if (cachedResponse) return cachedResponse;
-                    
-                    // If asking for a page, return index.html (SPA Fallback)
                     if (event.request.headers.get('accept').includes('text/html')) {
                         return caches.match('index.html');
                     }

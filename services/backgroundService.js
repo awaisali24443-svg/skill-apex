@@ -13,9 +13,8 @@ let mouse = { x: null, y: null, radius: 150 };
 // Optimized Configuration
 const MAX_PARTICLES = window.innerWidth < 600 ? 30 : 60; 
 const CONNECTION_DISTANCE = 120;
-const MOUSE_INFLUENCE_SPEED = 0.05;
 
-// Theme colors - DEFAULT TO VERY SUBTLE LIGHT MODE
+// Theme colors
 let colorNode = 'rgba(79, 70, 229, 0.15)'; 
 let colorLine = 'rgba(14, 165, 233, OPACITY)';
 
@@ -37,14 +36,11 @@ class Particle {
             let dy = mouse.y - this.y;
             let distanceSq = dx * dx + dy * dy;
             
-            // If mouse is close, gently push particles away or pull them (depending on effect desired)
-            // Here we implement a "Gravitational Pull" to make it feel like the user is gathering knowledge
             if (distanceSq < mouse.radius * mouse.radius) {
                 const distance = Math.sqrt(distanceSq);
                 const forceDirectionX = dx / distance;
                 const forceDirectionY = dy / distance;
                 
-                // Pull towards mouse
                 const force = (mouse.radius - distance) / mouse.radius;
                 const directionX = forceDirectionX * force * 0.5; 
                 const directionY = forceDirectionY * force * 0.5;
@@ -91,7 +87,6 @@ function animate() {
         p.update();
         p.draw();
 
-        // Connect particles to each other
         for (let j = i + 1; j < pLength; j++) {
             let p2 = particles[j];
             let dx = p.x - p2.x;
@@ -110,14 +105,14 @@ function animate() {
             }
         }
 
-        // Connect particles to MOUSE
+        // Connect to Mouse
         if (mouse.x != null) {
             let dx = mouse.x - p.x;
             let dy = mouse.y - p.y;
             let distanceSq = dx * dx + dy * dy;
-            if (distanceSq < 20000) { // Connection range to mouse
+            if (distanceSq < 20000) { 
                 ctx.beginPath();
-                let opacity = (1 - (Math.sqrt(distanceSq) / 150)) * 0.4; // Stronger connection
+                let opacity = (1 - (Math.sqrt(distanceSq) / 150)) * 0.4; 
                 ctx.strokeStyle = colorLine.replace('OPACITY', opacity); 
                 ctx.lineWidth = 1.5;
                 ctx.moveTo(p.x, p.y);
@@ -149,6 +144,15 @@ function updateThemeColors() {
     } else {
         colorNode = 'rgba(255, 255, 255, 0.3)';
         colorLine = 'rgba(255, 255, 255, OPACITY)';
+    }
+}
+
+// --- VISIBILITY HANDLER ---
+function handleVisibilityChange() {
+    if (document.hidden) {
+        if (animationId) cancelAnimationFrame(animationId);
+    } else {
+        animate();
     }
 }
 
@@ -193,9 +197,12 @@ export function init() {
     window.addEventListener('settings-changed', () => {
         setTimeout(updateThemeColors, 100); 
     });
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 }
 
 export function destroy() {
     if (animationId) cancelAnimationFrame(animationId);
     window.removeEventListener('mousemove', null);
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
 }

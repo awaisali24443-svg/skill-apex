@@ -9,7 +9,6 @@ import { showConfirmationModal } from '../../services/modalService.js';
 import * as stateService from '../../services/stateService.js';
 import { showToast } from '../../services/toastService.js';
 import * as vfxService from '../../services/vfxService.js';
-import * as firebaseService from '../../services/firebaseService.js';
 
 let levelData = {};
 let currentQuestions = [];
@@ -46,6 +45,9 @@ async function startLevel() {
         return;
     }
     
+    // Fallback if level isn't defined (e.g., Quick Quiz mode)
+    const effectiveLevel = level || 1;
+    
     switchState('level-loading-state');
     
     // Safety Timeout: If AI is slow (>8s), allow fallback
@@ -60,7 +62,7 @@ async function startLevel() {
     
     try {
         // 1. Check Cache
-        const cachedData = levelCacheService.getLevel(topic, level);
+        const cachedData = levelCacheService.getLevel(topic, effectiveLevel);
         if (cachedData) {
             console.log("Loaded level from cache");
             processLevelData(cachedData);
@@ -68,9 +70,8 @@ async function startLevel() {
         }
 
         // 2. Fetch Questions (Priority) & Briefing (Background)
-        // We prioritize questions for the quiz system
-        const qPromise = apiService.generateLevelQuestions({ topic, level, totalLevels });
-        const lPromise = apiService.generateLevelLesson({ topic, level, totalLevels });
+        const qPromise = apiService.generateLevelQuestions({ topic, level: effectiveLevel, totalLevels });
+        const lPromise = apiService.generateLevelLesson({ topic, level: effectiveLevel, totalLevels });
 
         const questionsResult = await qPromise;
         clearTimeout(loadingTimeout); // Got questions, we are good
@@ -82,18 +83,17 @@ async function startLevel() {
             // Try to get lesson, but don't block if it fails
             lPromise.then(lResult => {
                 newData.lesson = lResult?.lesson || "Briefing unavailable.";
-                levelCacheService.saveLevel(topic, level, newData);
-                // If we are still in loading screen, update data
+                levelCacheService.saveLevel(topic, effectiveLevel, newData);
                 levelData = newData;
             }).catch(() => {
                 newData.lesson = "Briefing unavailable.";
-                levelCacheService.saveLevel(topic, level, newData);
+                levelCacheService.saveLevel(topic, effectiveLevel, newData);
             });
 
             processLevelData(newData);
             
-            // Background prefetch next level
-            preloadNextLevel();
+            // Background prefetch next level if part of a journey
+            if (totalLevels) preloadNextLevel(effectiveLevel, totalLevels);
         } else {
             throw new Error("Invalid question format");
         }
@@ -107,7 +107,6 @@ async function startLevel() {
 
 function engageEmergencyProtocol(topic) {
     showToast("Using Offline Quiz Protocol", "info");
-    
     const emergencyData = {
         lesson: `### Offline Mode\n\nUnable to reach AI Core. Running local backup quiz for **${topic}**.`,
         questions: [
@@ -116,44 +115,29 @@ function engageEmergencyProtocol(topic) {
                 options: ["Randomness", "Structure & Consistency", "Chaos", "Inertia"],
                 correctAnswerIndex: 1,
                 explanation: "Consistency is key to mastering any subject."
-            },
-            {
-                question: "Which of these is most important for long-term retention?",
-                options: ["Cramming", "Active Recall", "Highlighting text", "Sleeping in class"],
-                correctAnswerIndex: 1,
-                explanation: "Active recall forces your brain to retrieve information."
             }
         ]
     };
-    
     processLevelData(emergencyData);
 }
 
 function processLevelData(data) {
     levelData = data;
-    
     if (!levelData.questions || levelData.questions.length === 0) {
         engageEmergencyProtocol(levelContext.topic || "General");
         return;
     }
-
     currentQuestions = levelData.questions;
-    
-    // AUTO-START QUIZ: For a "Quiz System", we skip the lesson by default
-    // unless the user *wants* to read it. 
-    // UX Decision: Show the "Start Quiz" button immediately in the loading/transition phase?
-    // No, let's just go straight to quiz but offer a "Briefing" button in the quiz header.
-    
     startQuiz(); 
 }
 
-async function preloadNextLevel() {
-    const nextLevel = levelContext.level + 1;
-    if (nextLevel > levelContext.totalLevels) return;
+async function preloadNextLevel(currentLvl, total) {
+    const nextLevel = currentLvl + 1;
+    if (nextLevel > total) return;
     if (levelCacheService.getLevel(levelContext.topic, nextLevel)) return;
 
     try {
-        apiService.generateLevelQuestions({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels })
+        apiService.generateLevelQuestions({ topic: levelContext.topic, level: nextLevel, totalLevels: total })
             .then(qData => {
                 levelCacheService.saveLevel(levelContext.topic, nextLevel, { questions: qData.questions, lesson: "Loading..." });
             });
@@ -192,7 +176,6 @@ function renderQuestion() {
     const progress = ((currentQuestionIndex + 1) / currentQuestions.length) * 100;
     elements.quizProgressBarFill.style.width = `${progress}%`;
     
-    // Render Markdown in Question
     elements.quizQuestionText.innerHTML = markdownService.render(question.question);
     
     elements.quizOptionsContainer.innerHTML = '';
@@ -200,7 +183,6 @@ function renderQuestion() {
     question.options.forEach((optionText, index) => {
         const button = document.createElement('button');
         button.className = 'btn option-btn';
-        // Add A/B/C/D labels for better UX
         const letter = String.fromCharCode(65 + index);
         button.innerHTML = `<span class="opt-letter">${letter}</span> <span class="opt-text">${optionText}</span>`;
         button.dataset.index = index;
@@ -218,7 +200,6 @@ function renderQuestion() {
 function startTimer() {
     if (timerInterval) clearInterval(timerInterval);
     timeLeft = 60;
-    
     elements.timerText.textContent = `${timeLeft}`;
     elements.timerText.classList.remove('panic');
     
@@ -254,9 +235,6 @@ function handleOptionClick(event) {
     button.classList.add('selected');
     selectedAnswerIndex = parseInt(button.dataset.index, 10);
     elements.submitAnswerBtn.disabled = false;
-    
-    // Auto-focus submit button for keyboard users
-    // elements.submitAnswerBtn.focus(); 
 }
 
 function updateComboDisplay() {
@@ -311,7 +289,6 @@ function handleSubmitAnswer() {
         vfxService.shake(document.getElementById('question-container'));
     }
 
-    // Reveal Colors
     elements.quizOptionsContainer.querySelectorAll('.option-btn').forEach(btn => {
         const index = parseInt(btn.dataset.index, 10);
         if (index === question.correctAnswerIndex) btn.classList.add('correct');
@@ -357,17 +334,24 @@ function showResults() {
     if (passed) {
         elements.resultsTitle.textContent = 'Quiz Complete';
         elements.resultsDetails.innerHTML = `Score: <strong>${score}/${total}</strong><br><span style="color:var(--color-success)">Passed</span>`;
-        elements.resultsActions.innerHTML = `
-            <button id="next-level-btn" class="btn btn-primary">Next Level</button>
-            <a href="#/review" class="btn">Review Answers</a>
-        `;
-        document.getElementById('next-level-btn').onclick = () => {
-            // Increment level and restart
-            levelContext.level++;
-            startLevel();
-        };
-        const journey = learningPathService.getJourneyById(levelContext.journeyId);
-        if (journey) learningPathService.completeLevel(levelContext.journeyId);
+        
+        let actionsHtml = `<a href="#/review" class="btn">Review Answers</a>`;
+        // Only show "Next Level" if part of a journey
+        if (levelContext.totalLevels) {
+            actionsHtml = `<button id="next-level-btn" class="btn btn-primary">Next Level</button>` + actionsHtml;
+        } else {
+            actionsHtml = `<a href="#/" class="btn btn-primary">New Quiz</a>` + actionsHtml;
+        }
+        
+        elements.resultsActions.innerHTML = actionsHtml;
+        
+        if (levelContext.totalLevels) {
+            document.getElementById('next-level-btn').onclick = () => {
+                levelContext.level++;
+                startLevel();
+            };
+            learningPathService.completeLevel(levelContext.journeyId);
+        }
     } else {
         elements.resultsTitle.textContent = 'Quiz Failed';
         elements.resultsDetails.innerHTML = `Score: <strong>${score}/${total}</strong><br><span style="color:var(--color-error)">Keep Practicing</span>`;
@@ -375,7 +359,7 @@ function showResults() {
             <button id="retry-btn" class="btn btn-primary">Retry Quiz</button>
             <a href="#/review" class="btn">Review Mistakes</a>
         `;
-        document.getElementById('retry-btn').onclick = () => startQuiz(); // Retry same questions
+        document.getElementById('retry-btn').onclick = () => startQuiz();
     }
     
     switchState('level-results-state');

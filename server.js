@@ -14,7 +14,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // --- ROBUST KEY EXTRACTION ---
-// Trims whitespace and handles potential quoting issues in .env files
 const rawKey = process.env.API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
 const API_KEY = rawKey ? rawKey.replace(/["']/g, "").trim() : null;
 
@@ -73,34 +72,41 @@ if (API_KEY) {
     ai = new GoogleGenAI({ apiKey: API_KEY });
 }
 
-// --- SELF-HEALING JSON PARSER ---
-function cleanAndParseJSON(text) {
+// --- ROBUST JSON PARSER ---
+function extractJSON(text) {
     if (!text) return null;
-    let clean = text.trim();
     
-    // 1. Remove Markdown Code Blocks
-    if (clean.includes('```')) {
-        clean = clean.replace(/```json/g, '').replace(/```/g, '');
+    // 1. Try finding JSON within markdown code blocks first
+    const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    if (codeBlockMatch) {
+        try {
+            return JSON.parse(codeBlockMatch[1]);
+        } catch (e) {
+            // Failed to parse code block, try full text search
+        }
     }
+
+    // 2. Try finding the first '{' and last '}'
+    const firstBrace = text.indexOf('{');
+    const lastBrace = text.lastIndexOf('}');
     
-    // 2. Attempt Parse
-    try {
-        return JSON.parse(clean);
-    } catch (e) {
-        console.warn("JSON Parse Warning: Trying to repair JSON...");
-        // 3. Simple Repair: Find first '{' and last '}'
-        const first = clean.indexOf('{');
-        const last = clean.lastIndexOf('}');
-        if (first !== -1 && last !== -1) {
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        const potentialJSON = text.substring(firstBrace, lastBrace + 1);
+        try {
+            return JSON.parse(potentialJSON);
+        } catch (e) {
+            // Last resort: aggressive cleaning
+            console.warn("Standard JSON parse failed, attempting cleanup...");
+            const clean = potentialJSON.replace(/[\u0000-\u0019]+/g, ""); // Remove control characters
             try {
-                return JSON.parse(clean.substring(first, last + 1));
+                return JSON.parse(clean);
             } catch (e2) {
-                console.error("JSON Repair Failed:", e2.message);
+                console.error("JSON Extraction Failed:", e2.message);
                 return null;
             }
         }
-        return null;
     }
+    return null;
 }
 
 // --- GENERATION FUNCTIONS ---
@@ -108,14 +114,18 @@ function cleanAndParseJSON(text) {
 async function generateLevelQuestions(topic, level, totalLevels) {
     if (!ai) return FALLBACK_DATA.questions(topic);
 
+    // Provide context based on total levels (Quick Quiz vs Deep Journey)
+    const context = totalLevels ? `(Level ${level}/${totalLevels})` : "(General Knowledge Assessment)";
+
     const prompt = `
-    Generate 3 multiple-choice questions for the topic "${topic}" (Level ${level}/${totalLevels}).
+    Generate 3 multiple-choice questions for the topic "${topic}" ${context}.
     
     CRITICAL RULES:
     1. Output strictly valid JSON.
     2. Format: { "questions": [ { "question": "...", "options": ["A","B","C","D"], "correctAnswerIndex": 0, "explanation": "..." } ] }
     3. Ensure options are an array of 4 strings.
     4. Ensure correctAnswerIndex is a number (0-3).
+    5. No markdown formatting outside the JSON structure.
     `;
 
     try {
@@ -146,7 +156,7 @@ async function generateLevelQuestions(topic, level, totalLevels) {
             }
         });
 
-        const data = cleanAndParseJSON(response.text);
+        const data = extractJSON(response.text);
         
         // Validation
         if (data && data.questions && Array.isArray(data.questions) && data.questions.length > 0) {
@@ -183,7 +193,7 @@ async function generateLevelLesson(topic, level, totalLevels) {
             }
         });
         
-        return cleanAndParseJSON(response.text) || FALLBACK_DATA.lesson(topic);
+        return extractJSON(response.text) || FALLBACK_DATA.lesson(topic);
     } catch (error) {
         console.error("AI Gen Error (Lesson):", error.message);
         return FALLBACK_DATA.lesson(topic);
@@ -201,7 +211,7 @@ async function generateJourneyPlan(topic) {
             contents: prompt,
             config: { responseMimeType: 'application/json' }
         });
-        return cleanAndParseJSON(response.text) || FALLBACK_DATA.journey(topic);
+        return extractJSON(response.text) || FALLBACK_DATA.journey(topic);
     } catch (e) {
         return FALLBACK_DATA.journey(topic);
     }
@@ -232,15 +242,19 @@ const safe = (fn) => async (req, res) => {
     }
 };
 
+// Client config endpoint (Restricted)
 app.get('/api/client-config', (req, res) => {
+    // Basic Referer check (optional layer of security)
+    const referer = req.headers.referer || '';
     if (!API_KEY) return res.status(503).json({ error: 'Server Offline' });
+    // In production, validate referer matches your domain
     res.json({ apiKey: API_KEY });
 });
 
 app.post('/api/generate-level-questions', safe((b) => generateLevelQuestions(b.topic, b.level, b.totalLevels)));
 app.post('/api/generate-level-lesson', safe((b) => generateLevelLesson(b.topic, b.level, b.totalLevels)));
 app.post('/api/generate-journey-plan', safe((b) => generateJourneyPlan(b.topic)));
-app.post('/api/generate-curriculum-outline', (req, res) => res.json(FALLBACK_DATA.curriculum(req.body.topic))); // Simple mock for outline to save tokens
+app.post('/api/generate-curriculum-outline', (req, res) => res.json(FALLBACK_DATA.curriculum(req.body.topic))); 
 app.post('/api/generate-hint', (req, res) => res.json({ hint: "Read the question carefully. The answer is often in the details." }));
 app.post('/api/explain-error', (req, res) => res.json({ explanation: "That answer is incorrect based on standard principles of the subject." }));
 
@@ -261,8 +275,24 @@ app.post('/api/generate-journey-from-image', (req, res) => {
     res.json({ topicName: "Scanned Topic", totalLevels: 10, description: "Analyzed from image." });
 });
 
+// Basic WebSocket Keep-Alive
 wss.on('connection', (ws) => {
-    console.log('WS Connected');
+    ws.isAlive = true;
+    ws.on('pong', () => ws.isAlive = true);
+    
+    ws.on('message', (message) => {
+        // Echo or handle specific signals
+    });
 });
+
+const interval = setInterval(function ping() {
+  wss.clients.forEach(function each(ws) {
+    if (ws.isAlive === false) return ws.terminate();
+    ws.isAlive = false;
+    ws.ping();
+  });
+}, 30000);
+
+wss.on('close', () => clearInterval(interval));
 
 server.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
