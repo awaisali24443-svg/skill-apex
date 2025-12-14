@@ -23,7 +23,7 @@ import {
 
 // Configuration provided by user
 const firebaseConfig = {
-  apiKey: "AIzaSyDgdLWA8yVvKZB_QV2Aj8Eenx--O8-ftFY",
+  apiKey: "AIzaSyBtG_AZjwA59BW6l2EKjl6TRhoLVnyM",
   authDomain: "knowledge-tester-web.firebaseapp.com",
   projectId: "knowledge-tester-web",
   storageBucket: "knowledge-tester-web.firebasestorage.app",

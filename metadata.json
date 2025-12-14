@@ -1,5 +1,5 @@
 {
-  "name": "Knowledge Tester",
+  "name": "Skill Apex",
   "description": "An AI-powered learning journey application using vanilla JavaScript and the Gemini API.",
   "requestFramePermissions": [
     "microphone"

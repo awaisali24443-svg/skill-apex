@@ -374,11 +374,6 @@ function showAuthScreen() {
 
 async function main() {
     try {
-        // Client-side heartbeat
-        setInterval(() => {
-            fetch('/health').catch(() => {}); 
-        }, 5 * 60 * 1000);
-
         configService.init();
         applyAppSettings(configService.getConfig());
         soundService.init(configService);
