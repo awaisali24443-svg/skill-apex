@@ -1,7 +1,7 @@
 
 {
   "name": "skill-apex-web",
-  "version": "3.8.3",
+  "version": "3.8.4",
   "description": "An AI-powered learning journey application using vanilla JavaScript and the Gemini API.",
   "main": "server.js",
   "type": "module",
@@ -13,7 +13,7 @@
   "author": "AI Engineer",
   "license": "UNLICENSED",
   "dependencies": {
-    "@google/genai": "^0.1.0",
+    "@google/genai": "*",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-rate-limit": "^7.3.1",
