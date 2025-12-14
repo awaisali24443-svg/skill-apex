@@ -42,7 +42,6 @@
     "firebase/firestore": "https://esm.sh/firebase@10.8.0/firestore",
     "firebase/auth": "https://esm.sh/firebase@10.8.0/auth",
     "dompurify": "https://esm.sh/dompurify@3.0.9",
-    "dotenv": "https://esm.sh/dotenv@16.4.5",
     "dotenv/": "https://esm.sh/dotenv@^17.2.3/",
     "express": "https://esm.sh/express@^5.2.1",
     "path": "https://esm.sh/path@^0.12.7",
@@ -56,10 +55,8 @@
 }
 </script>
 <script>
-    // --- EMERGENCY RESET LOGIC (Available globally immediately) ---
     window.hardReset = function() {
-        console.warn("TRIGGERING HARD RESET");
-        if(confirm("This will clear the app cache and reload to fix issues. Continue?")) {
+        if(confirm("Reset App? This will clear local data and reload.")) {
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.getRegistrations().then(function(registrations) {
                     for(let registration of registrations) { registration.unregister(); }
@@ -75,33 +72,16 @@
         }
     };
 
-    // --- TIMEOUT WATCHDOG ---
-    // If the app doesn't remove the splash screen in 6 seconds, show the reset button.
+    // Failsafe: If app hangs on splash screen for > 6 seconds, show reset button
     setTimeout(() => {
         const splash = document.getElementById('splash-screen');
         if (splash && getComputedStyle(splash).display !== 'none') {
             const btn = document.getElementById('emergency-reset-btn');
-            const status = document.getElementById('init-status-text');
             if(btn) btn.style.display = 'block';
-            if(status) {
-                status.innerText = "Taking longer than usual...";
-                status.style.color = "#ffcc00";
-            }
+            const status = document.getElementById('init-status-text');
+            if(status) status.innerText = "Connection slow. Tap Reset if stuck.";
         }
     }, 6000);
-
-    // --- GLOBAL ERROR TRAP ---
-    window.addEventListener('error', function(e) {
-        if(e.message && e.message.includes('ResizeObserver')) return; // Ignore harmless resize errors
-        console.error("Global Error:", e);
-        // If critical error occurs early, show reset options
-        const splash = document.getElementById('splash-screen');
-        if (splash && getComputedStyle(splash).display !== 'none') {
-             document.getElementById('emergency-reset-btn').style.display = 'block';
-             document.getElementById('init-status-text').innerText = "Initialization Error Detected";
-             document.getElementById('init-status-text').style.color = "#ff4444";
-        }
-    });
 </script>
 </head>
 <body>
@@ -124,7 +104,7 @@
         <img src="assets/icons/favicon.svg" alt="Skill Apex Logo" class="splash-logo">
         <h2 style="color:var(--color-primary); font-family: 'Exo 2'; letter-spacing: 2px; margin-top:10px;">SYSTEM INITIALIZING</h2>
         <div class="orb-loader" role="status"></div>
-        <p id="init-status-text" style="margin-top: 1rem; color: var(--color-text-secondary); font-size: 0.9rem; font-family: var(--font-family-mono);">Loading Modules...</p>
+        <p id="init-status-text" style="margin-top: 1rem; color: var(--color-text-secondary); font-size: 0.9rem; font-family: var(--font-family-mono);">Loading Neural Modules...</p>
         
         <!-- Emergency Reset Button -->
         <button id="emergency-reset-btn" onclick="window.hardReset()" style="
@@ -141,7 +121,7 @@
             font-weight: bold;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         ">
-            ⚠️ STUCK? CLICK TO RESET
+            ⚠️ STUCK? RESET APP
         </button>
     </div>
 
@@ -172,7 +152,7 @@
     </div>
 
     <script src="global/global.js"></script>
-    <script type="module" src="index.js"></script>
+    <script type="module" src="index.js" onerror="console.error('Index load failed'); document.getElementById('init-status-text').innerText='Critical Module Error.'; document.getElementById('emergency-reset-btn').style.display='block';"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof mermaid !== 'undefined') {

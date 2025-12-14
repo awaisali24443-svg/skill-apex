@@ -10,15 +10,16 @@ import * as themeService from './services/themeService.js';
 import * as gamificationService from './services/gamificationService.js';
 import * as stateService from './services/stateService.js';
 import * as firebaseService from './services/firebaseService.js';
-import { init as initVoice, toggleListening, isSupported as isVoiceSupported } from './services/voiceCommandService.js';
+import { init as initVoice, isSupported as isVoiceSupported } from './services/voiceCommandService.js';
 import * as backgroundService from './services/backgroundService.js';
 import * as authModule from './modules/auth/auth.js';
 import { showToast } from './services/toastService.js';
 
+let isAppInitialized = false; 
 const moduleCache = new Map();
 let currentModule = null;
-let isAppInitialized = false; // Prevent double init
 
+// --- MODULE LOADER ---
 async function fetchModule(moduleName) {
     if (moduleCache.has(moduleName)) {
         return moduleCache.get(moduleName);
@@ -34,7 +35,7 @@ async function fetchModule(moduleName) {
         return moduleData;
     } catch (error) {
         console.error(`Failed to load module: ${moduleName}`, error);
-        throw new Error(`Module ${moduleName} could not be loaded.`);
+        throw new Error(`Module ${moduleName} failed to load. Check network.`);
     }
 }
 
@@ -64,16 +65,9 @@ function updateGlobalUI(route) {
     if (fab) {
         const immersiveModules = ['aural', 'game-level'];
         const shouldHide = immersiveModules.includes(route.module) || !isVoiceSupported();
-        
-        if (shouldHide) {
-            fab.style.opacity = '0';
-            fab.style.pointerEvents = 'none';
-        } else {
-            fab.style.opacity = '1';
-            fab.style.pointerEvents = 'auto';
-        }
+        fab.style.opacity = shouldHide ? '0' : '1';
+        fab.style.pointerEvents = shouldHide ? 'none' : 'auto';
     }
-
     const container = document.getElementById('app-container');
     if (container) {
         container.classList.toggle('full-bleed-container', !!route.fullBleed);
@@ -84,71 +78,59 @@ async function loadModule(route) {
     const appContainer = document.getElementById('app');
     if (!appContainer) return;
 
+    // Cleanup previous module
     if (currentModule && currentModule.js.destroy) {
-        try {
-            currentModule.js.destroy();
-        } catch (e) {
-            console.error('Error destroying module:', e);
-        }
+        try { currentModule.js.destroy(); } catch (e) { console.warn(e); }
     }
 
-    const renderNewModule = async () => {
-        try {
-            stateService.setCurrentRoute(route);
-            updateGlobalUI(route); 
+    try {
+        stateService.setCurrentRoute(route);
+        updateGlobalUI(route); 
 
-            const moduleData = await fetchModule(route.module);
-            currentModule = moduleData;
+        const moduleData = await fetchModule(route.module);
+        currentModule = moduleData;
 
-            appContainer.innerHTML = '';
-            
-            let styleTag = document.getElementById('module-style');
-            if (!styleTag) {
-                styleTag = document.createElement('style');
-                styleTag.id = 'module-style';
-                document.head.appendChild(styleTag);
-            }
-            styleTag.textContent = moduleData.css;
-
-            appContainer.innerHTML = moduleData.html;
-
-            if (moduleData.js.init) {
-                await moduleData.js.init();
-            }
-            
-            document.querySelectorAll('.sidebar-link').forEach(link => {
-                link.classList.remove('active');
-                const linkPath = link.getAttribute('href')?.slice(1) || '';
-                if (route.path.startsWith(linkPath) && (linkPath !== '/' || route.path === '/')) {
-                    link.classList.add('active');
-                }
-            });
-            
-            document.getElementById('app-container').scrollTop = 0;
-
-        } catch (error) {
-            console.error("Failed to load module:", error);
-            appContainer.innerHTML = `<div class="card" style="padding:2rem;text-align:center;"><h2>Module Error</h2><p>${error.message}</p><a href="#" class="btn">Home</a></div>`;
+        // Apply CSS
+        let styleTag = document.getElementById('module-style');
+        if (!styleTag) {
+            styleTag = document.createElement('style');
+            styleTag.id = 'module-style';
+            document.head.appendChild(styleTag);
         }
-    };
+        styleTag.textContent = moduleData.css;
 
-    if (document.startViewTransition) {
-        document.startViewTransition(async () => await renderNewModule());
-    } else {
-        await renderNewModule();
+        // Apply HTML
+        appContainer.innerHTML = moduleData.html;
+
+        // Init JS
+        if (moduleData.js.init) await moduleData.js.init();
+        
+        // Update Sidebar
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            link.classList.remove('active');
+            const linkPath = link.getAttribute('href')?.slice(1) || '';
+            if (route.path.startsWith(linkPath) && (linkPath !== '/' || route.path === '/')) {
+                link.classList.add('active');
+            }
+        });
+        
+        document.getElementById('app-container').scrollTop = 0;
+
+    } catch (error) {
+        console.error("Module Load Error:", error);
+        appContainer.innerHTML = `<div class="card" style="padding:2rem;text-align:center;">
+            <h2>System Error</h2>
+            <p>${error.message}</p>
+            <button onclick="window.location.reload()" class="btn btn-primary">Reload System</button>
+        </div>`;
     }
 }
 
 function handleRouteChange() {
     const path = window.location.hash.slice(1) || '/';
     const route = matchRoute(path);
-
-    if (route) {
-        loadModule(route);
-    } else {
-        const homeRoute = ROUTES.find(r => r.path === '/');
-        if(homeRoute) loadModule(homeRoute);
-    }
+    if (route) loadModule(route);
+    else loadModule(ROUTES.find(r => r.path === '/'));
 }
 
 function applyAppSettings(config) {
@@ -157,79 +139,65 @@ function applyAppSettings(config) {
 }
 
 function showWelcomeScreen() {
+    // Only show if element exists (might be removed in future HTML versions)
     const welcomeScreen = document.getElementById('welcome-screen');
-    const startBtn = document.getElementById('welcome-get-started-btn');
-    if (!welcomeScreen || !startBtn) return;
-
-    welcomeScreen.style.display = 'flex';
-    setTimeout(() => {
-        welcomeScreen.classList.add('visible');
-    }, 10);
-    
-    startBtn.addEventListener('click', () => {
-        localStorage.setItem(LOCAL_STORAGE_KEYS.WELCOME_COMPLETED, 'true');
-        welcomeScreen.classList.remove('visible');
-        setTimeout(() => welcomeScreen.remove(), 500);
-    }, { once: true });
+    if (welcomeScreen) {
+        welcomeScreen.style.display = 'flex';
+        setTimeout(() => welcomeScreen.classList.add('visible'), 10);
+    }
 }
 
 function updateNetworkStatus() {
     const offlineIndicator = document.getElementById('offline-indicator');
     if (!offlineIndicator) return;
-
-    if (navigator.onLine) {
-        offlineIndicator.style.display = 'none';
-    } else {
-        offlineIndicator.style.display = 'flex';
-        showToast('Offline Mode Active', 'info');
-    }
+    offlineIndicator.style.display = navigator.onLine ? 'none' : 'flex';
 }
 
+// --- BOOTSTRAP ---
 function initializeAppContent(user) {
     if (isAppInitialized) return;
     isAppInitialized = true;
+    console.log("Initializing App Content...");
 
-    const splashScreen = document.getElementById('splash-screen');
-    
     stateService.initState();
-    const sidebarEl = document.getElementById('sidebar');
-    renderSidebar(sidebarEl);
-    
+    renderSidebar(document.getElementById('sidebar'));
     handleRouteChange();
 
-    // Defer heavy services
+    // Defer heavy non-critical services
     setTimeout(() => {
         learningPathService.init();
         historyService.init();
         gamificationService.init();
         initVoice();
-        backgroundService.init(); 
+        backgroundService.init();
     }, 50);
 
     window.addEventListener('hashchange', handleRouteChange);
     window.addEventListener('settings-changed', (e) => applyAppSettings(e.detail));
     
-    // Hide Auth & Splash
+    // Switch Views
     authModule.destroy();
     document.getElementById('app-wrapper').style.display = 'flex'; 
     document.getElementById('auth-container').style.display = 'none';
 
-    if (splashScreen) {
-        splashScreen.style.opacity = '0';
+    // Remove Splash
+    const splash = document.getElementById('splash-screen');
+    if (splash) {
+        splash.style.opacity = '0';
         setTimeout(() => {
-            splashScreen.style.display = 'none';
-            const hasBeenWelcomed = localStorage.getItem(LOCAL_STORAGE_KEYS.WELCOME_COMPLETED);
-            if (!hasBeenWelcomed) showWelcomeScreen();
+            splash.style.display = 'none';
+            if (!localStorage.getItem(LOCAL_STORAGE_KEYS.WELCOME_COMPLETED)) showWelcomeScreen();
         }, 500);
     }
 }
 
 function showAuthScreen() {
     if (isAppInitialized) return;
-    const splashScreen = document.getElementById('splash-screen');
-    if (splashScreen) {
-        splashScreen.style.opacity = '0';
-        setTimeout(() => splashScreen.style.display = 'none', 500);
+    console.log("Showing Auth Screen...");
+    const splash = document.getElementById('splash-screen');
+    if (splash) {
+        splash.style.opacity = '0';
+        setTimeout(() => splash.style.display = 'none', 500);
     }
     document.getElementById('app-wrapper').style.display = 'none'; 
     document.getElementById('auth-container').style.display = 'flex';
@@ -237,17 +205,13 @@ function showAuthScreen() {
     setTimeout(() => backgroundService.init(), 200);
 }
 
-// Emergency Manual Reset in console: window.hardReset()
+// Emergency Global Reset
 window.hardReset = () => {
-    console.log("TRIGGERING HARD RESET");
     localStorage.clear();
     sessionStorage.clear();
-    
     if(navigator.serviceWorker) {
         navigator.serviceWorker.getRegistrations().then(regs => {
-            for(let registration of regs) {
-                registration.unregister();
-            }
+            regs.forEach(r => r.unregister());
             window.location.reload();
         });
     } else {
@@ -257,54 +221,47 @@ window.hardReset = () => {
 
 async function main() {
     try {
-        console.log("App Initializing...");
+        console.log("--- SYSTEM INIT ---");
         configService.init();
         applyAppSettings(configService.getConfig());
         soundService.init(configService);
 
-        // --- SERVICE WORKER ---
+        // Service Worker
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('SW Registered'))
-                .catch(e => console.warn("SW Fail:", e));
+                .then(() => console.log("SW Registered"))
+                .catch(e => console.warn("SW Error:", e));
         }
         
         window.addEventListener('online', updateNetworkStatus);
         window.addEventListener('offline', updateNetworkStatus);
         updateNetworkStatus(); 
 
-        // --- TIMEOUT FAILSAFE ---
-        // If Firebase/Auth takes too long, force start as guest
+        // TIMEOUT: If Auth takes > 2.5s, assume offline/guest needed
         const failsafeTimeout = setTimeout(() => {
             if (!isAppInitialized && !document.getElementById('auth-container').innerHTML) {
-                console.warn("Auth timed out. Forcing simulation mode.");
+                console.warn("Auth Timeout. Enabling Guest Protocol.");
                 firebaseService.enableSimulationMode();
                 initializeAppContent({ isAnonymous: true });
             }
-        }, 3500); // 3.5s timeout
+        }, 2500); 
 
-        // --- FIREBASE AUTH ---
-        // Wrap in try-catch in case firebaseService throws immediately
         try {
             firebaseService.onAuthChange((user) => {
                 clearTimeout(failsafeTimeout);
-                if (user) {
-                    initializeAppContent(user);
-                } else {
-                    showAuthScreen();
-                }
+                if (user) initializeAppContent(user);
+                else showAuthScreen();
             });
         } catch (fbError) {
-            console.error("Firebase Init Failed:", fbError);
+            console.error("Auth Init Error:", fbError);
             clearTimeout(failsafeTimeout);
             firebaseService.enableSimulationMode();
             initializeAppContent({ isAnonymous: true });
         }
 
     } catch (error) {
-        console.error("Critical Error in Main:", error);
+        console.error("Critical Main Error:", error);
         showFatalError(error);
-        // Ensure reset button is visible if main fails
         const btn = document.getElementById('emergency-reset-btn');
         if(btn) btn.style.display = 'block';
     }
