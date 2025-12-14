@@ -12,11 +12,11 @@ let ai = null;
 
 // --- INITIALIZATION ---
 try {
-    if (API_KEY) {
+    if (API_KEY && API_KEY !== 'YOUR_GEMINI_API_KEY') {
         ai = new GoogleGenAI({ apiKey: API_KEY });
         console.log("✅ AI Client Initialized");
     } else {
-        console.warn("⚠️ API Key missing. App running in fallback mode.");
+        console.warn("⚠️ Gemini API Key missing or invalid. App running in fallback mode.");
     }
 } catch (e) {
     console.error("AI Init Error:", e);
