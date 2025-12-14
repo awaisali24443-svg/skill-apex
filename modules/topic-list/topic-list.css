@@ -5,9 +5,6 @@
 }
 
 .journey-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
     margin-bottom: var(--space-xl);
     border-bottom: 1px solid var(--color-border);
     padding-bottom: var(--space-lg);
@@ -16,6 +13,7 @@
 .header-content h1 {
     font-size: 2rem;
     margin-bottom: 0.5rem;
+    font-weight: 800;
 }
 .header-content p {
     color: var(--color-text-secondary);
@@ -23,207 +21,163 @@
 }
 
 .section-label {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 1.2px;
+    font-weight: 700;
     color: var(--color-text-secondary);
-    margin-bottom: var(--space-lg);
-    margin-top: var(--space-xl);
+    margin-bottom: 1rem;
+    margin-top: 3rem;
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-/* --- 1. UPLINK CARD (Hero) --- */
+/* --- 1. UPLINK CARD (Premium Feature) --- */
 .uplink-section {
     margin-bottom: var(--space-xl);
 }
 
 .journey-creator-card {
     display: flex;
-    gap: var(--space-xl);
-    align-items: center;
-    padding: 2.5rem;
-    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-surface-hover) 100%);
-    border: 1px solid var(--color-primary-transparent);
-    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.2);
+    flex-direction: column;
+    padding: 0;
+    /* Dark Theme Override for this card specifically to make it pop */
+    background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+    border: 1px solid #334155;
+    box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.3);
+    color: white;
     overflow: hidden;
+    position: relative;
 }
 
-/* Glowing Icon */
-.uplink-visual {
-    position: relative;
-    width: 80px; height: 80px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
+/* Background Abstract Art */
+.journey-creator-card::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0; width: 50%;
+    background: radial-gradient(circle at top right, rgba(79, 70, 229, 0.2), transparent 70%);
+    pointer-events: none;
 }
-.uplink-icon {
-    width: 40px; height: 40px;
-    color: var(--color-primary);
+
+.creator-content {
+    padding: 2.5rem;
+    position: relative;
     z-index: 2;
 }
-.pulse-ring {
-    position: absolute; inset: 0;
-    border-radius: 50%;
-    border: 2px solid var(--color-primary);
-    opacity: 0.5;
-    animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-}
-@keyframes ping {
-    75%, 100% { transform: scale(1.5); opacity: 0; }
-}
 
-.creator-content { flex-grow: 1; }
-.creator-content h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
-.creator-content p { color: var(--color-text-secondary); margin-bottom: 1.5rem; }
+.creator-content h2 { 
+    font-size: 1.5rem; margin-bottom: 0.5rem; color: white;
+}
+.creator-content p { 
+    color: #94A3B8; margin-bottom: 2rem; max-width: 500px;
+}
 
 .creator-form {
-    display: flex; gap: var(--space-md); flex-wrap: wrap;
+    display: flex; gap: 12px; flex-wrap: wrap;
+    align-items: center;
 }
 
 .input-group {
     flex-grow: 1;
     display: flex;
     position: relative;
-    max-width: 600px;
+    max-width: 500px;
 }
 
+/* Dark Input for Dark Card */
 .form-input {
     width: 100%;
-    padding: 12px 16px;
-    padding-right: 50px; /* Space for camera btn */
+    padding: 14px 16px;
+    padding-right: 50px;
     border-radius: 12px;
-    border: 1px solid var(--color-border);
-    background: var(--color-background);
-    color: var(--color-text);
+    border: 1px solid #334155;
+    background: rgba(30, 41, 59, 0.8);
+    color: white;
     font-size: 1rem;
     transition: all 0.3s ease;
 }
+.form-input::placeholder { color: #64748B; }
 .form-input:focus {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 4px var(--color-primary-transparent);
+    background: rgba(30, 41, 59, 1);
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.3);
 }
 
 .scan-btn {
     position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-    width: 32px; height: 32px;
-    background: transparent; color: var(--color-text-secondary);
+    width: 36px; height: 36px;
+    background: rgba(255,255,255,0.1); color: white;
     border-radius: 8px;
+    border: none;
     padding: 0; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: background 0.2s;
 }
-.scan-btn:hover { background: var(--color-surface-hover); color: var(--color-primary); }
+.scan-btn:hover { background: rgba(255,255,255,0.2); }
 
 .generate-action {
-    padding-left: 1.5rem; padding-right: 1.5rem;
+    padding: 14px 24px;
+    background: var(--brand-gradient);
+    border: none;
+    color: white;
+    font-weight: 600;
 }
 
-/* --- 2. GRID LAYOUTS --- */
+/* --- 2. TOPIC GRID --- */
 .topic-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: var(--space-lg);
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
 }
 
-/* --- CARD STYLES --- */
 .topic-card {
-    height: 100%;
-    min-height: 180px;
+    min-height: 200px;
+    padding: 24px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    position: relative;
-    overflow: hidden;
-    padding: var(--space-lg);
+    transition: all 0.3s ease;
+    border-radius: 20px;
 }
 
 .topic-card:hover {
     transform: translateY(-6px);
-    border-color: var(--color-primary);
-    box-shadow: 0 15px 30px -5px rgba(0,0,0,0.2);
+    box-shadow: var(--shadow-float);
+    border-color: var(--color-primary-transparent);
 }
-
-/* Background Gradients based on type */
-.topic-card.topic-programming { --card-accent: #2196f3; }
-.topic-card.topic-space { --card-accent: #9c27b0; }
-.topic-card.topic-biology { --card-accent: #4caf50; }
-.topic-card.topic-arts { --card-accent: #ff9800; }
-.topic-card.topic-finance { --card-accent: #ffc107; }
-.topic-card.topic-robotics { --card-accent: #607d8b; }
-
-.topic-bg-glow {
-    position: absolute; top: -50%; right: -50%;
-    width: 100%; height: 100%;
-    background: radial-gradient(circle, var(--card-accent, var(--color-primary)) 0%, transparent 70%);
-    opacity: 0.1; transition: opacity 0.3s;
-    filter: blur(40px);
-}
-.topic-card:hover .topic-bg-glow { opacity: 0.2; }
-
-.topic-card-content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; }
 
 .topic-name {
-    font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;
-    color: var(--color-text);
+    font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--color-text);
 }
 .topic-description {
     font-size: 0.9rem; color: var(--color-text-secondary); line-height: 1.5;
     display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-    margin-bottom: auto;
 }
 
-.topic-footer {
-    margin-top: var(--space-lg);
-    border-top: 1px solid var(--color-border);
-    padding-top: var(--space-sm);
-    display: flex; justify-content: flex-end;
-}
 .topic-action {
+    margin-top: 1rem;
     font-size: 0.8rem; font-weight: 700; color: var(--color-primary);
-    text-transform: uppercase; display: flex; align-items: center; gap: 4px;
-    opacity: 0; transform: translateX(-10px); transition: all 0.3s;
+    text-transform: uppercase; letter-spacing: 1px;
 }
-.topic-card:hover .topic-action { opacity: 1; transform: translateX(0); }
 
-/* --- ACTIVE JOURNEY SPECIFIC --- */
+/* Active Mission Card */
 .active-journey-card {
+    background: linear-gradient(135deg, var(--color-surface), #f8fafc);
     border-left: 4px solid var(--color-primary);
-    background: linear-gradient(to right, var(--color-surface), var(--color-surface-hover));
-}
-
-.active-meta {
-    display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;
 }
 .journey-level-badge {
-    background: var(--color-primary); color: white;
-    font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px;
+    background: var(--color-primary-transparent); color: var(--color-primary);
+    padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;
+    margin-bottom: 12px; display: inline-block;
 }
-.resume-text {
-    font-size: 0.7rem; color: var(--color-primary); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;
-}
-
 .journey-progress-track {
-    height: 6px; background: var(--color-border); border-radius: 4px; margin-top: 1rem; overflow: hidden;
+    height: 6px; background: var(--color-border); border-radius: 10px; margin-top: 16px; overflow: hidden;
 }
-.journey-progress-fill {
-    height: 100%; background: var(--color-primary); width: 0%;
-}
-
-/* Filter Badge */
-.filter-badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 6px 12px; background: var(--color-surface-hover);
-    border: 1px solid var(--color-primary); border-radius: 20px;
-    color: var(--color-primary); font-size: 0.85rem; font-weight: 600;
-}
+.journey-progress-fill { height: 100%; background: var(--brand-gradient); border-radius: 10px; }
 
 @media (max-width: 768px) {
-    .journey-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
-    .creator-form { flex-direction: column; }
+    .creator-form { flex-direction: column; align-items: stretch; }
     .input-group { max-width: 100%; }
-    .generate-action { width: 100%; }
-    .journey-creator-card { flex-direction: column; text-align: center; }
-    .uplink-visual { margin-bottom: 1rem; }
 }
