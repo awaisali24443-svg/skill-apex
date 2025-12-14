@@ -3,127 +3,199 @@
 import 'dotenv/config'; // Load env vars immediately
 import express from 'express';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, URL } from 'url';
 import { GoogleGenAI, Type } from '@google/genai';
 import rateLimit from 'express-rate-limit';
 import fs from 'fs/promises';
 import http from 'http';
 import { WebSocketServer } from 'ws';
 
+// --- DEBUG & ENVIRONMENT CHECK ---
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// --- ROBUST KEY EXTRACTION ---
-// Trims whitespace and handles potential quoting issues in .env files
+// Robust Key Extraction
 const rawKey = process.env.API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-const API_KEY = rawKey ? rawKey.replace(/["']/g, "").trim() : null;
+const API_KEY = rawKey ? rawKey.trim() : null;
 
 console.log("--- SYSTEM STARTUP DIAGNOSTICS ---");
 console.log(`Node Version: ${process.version}`);
+console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 if (API_KEY) {
-    console.log(`✅ API Key Detected. Length: ${API_KEY.length} chars.`);
+    console.log(`✅ API Key Detected. Length: ${API_KEY.length} characters.`);
+    console.log(`🔑 Key Preview: ${API_KEY.substring(0, 4)}...${API_KEY.substring(API_KEY.length - 4)}`);
 } else {
-    console.error("❌ FATAL: API_KEY is missing! Server will run in FALLBACK MODE.");
+    console.error("❌ FATAL: API_KEY is missing in process.env!");
+    console.log("   Checked: API_KEY, GEMINI_API_KEY, GOOGLE_API_KEY");
 }
 console.log("----------------------------------");
 
+// --- CONSTANTS & CONFIG ---
 const PORT = process.env.PORT || 3000;
 let topicsCache = null;
 
-// --- FALLBACK DATA (Offline/Error Mode) ---
+// --- DYNAMIC PERSONA SYSTEM (LOCALIZED) ---
+const PERSONA_DEFINITIONS = {
+    apex: `
+    You are ApexCore, an advanced AI Tutor designed for a Tech Expo in Pakistan.
+    
+    TONE: Professional, encouraging, but use LOCAL ANALOGIES to explain complex tech.
+    
+    GUIDELINES:
+    1. If explaining speed/latency, use examples like "Traffic in Peshawar" or "Cricket ball speed (Shoaib Akhtar)".
+    2. If explaining loops/structure, maybe reference "Brick Kiln (Bhatta)" or "Textile Loom".
+    3. Keep English simple and high-impact.
+    4. NO long paragraphs. Bullet points are best.
+    
+    Your goal is to impress judges by making high-tech concepts feel native and understandable.
+    `,
+    sage: `Persona: A Wise Professor. Tone: Thoughtful, deep.`,
+    commander: `Persona: Tactical Mission Control. Tone: Urgent, military.`,
+    eli5: `Persona: A Creative Workshop Director. Tone: Playful.`
+};
+
+function getSystemInstruction(personaKey = 'apex') {
+    return `${PERSONA_DEFINITIONS[personaKey] || PERSONA_DEFINITIONS.apex} 
+    RULES: No rote memorization. Scenario-based questions. JSON output only.`;
+}
+
+// --- FALLBACK DATA GENERATORS (Safety Net) ---
 const FALLBACK_DATA = {
+    journey: (topic) => ({
+        topicName: topic || "IT Mastery",
+        totalLevels: 20,
+        description: `(Offline Simulation) A comprehensive training course on ${topic}. Server could not reach AI.`,
+        isFallback: true
+    }),
+    curriculum: (topic) => ({
+        chapters: ["Fundamentals", "Tools & Technologies", "Real-world Application", "Expert Mastery"],
+        isFallback: true
+    }),
     questions: (topic) => ({
         questions: [
             {
-                question: `(Offline Mode) What is a key concept of ${topic}?`,
-                options: ["Confusion", "Consistency", "Chaos", "Complexity"],
+                question: `Scenario: You are working on a project related to ${topic} and the system crashes. What is the first logical step?`,
+                options: ["Panic", "Check the logs/debug", "Restart everything immediately", "Call the client"],
                 correctAnswerIndex: 1,
-                explanation: "Consistency is crucial for mastery."
+                explanation: "Debugging and log analysis is the professional first step in any IT crisis."
             },
             {
-                question: `Which tool helps with ${topic}?`,
-                options: ["Hammer", "Computer", "Wrench", "Drill"],
+                question: `In the context of ${topic}, which practice ensures long-term success?`,
+                options: ["Taking shortcuts", "Consistent Learning & Practice", "Copying code without understanding", "Using outdated tools"],
                 correctAnswerIndex: 1,
-                explanation: "Computers are the primary tool for this field."
+                explanation: "Technology evolves rapidly; consistency is the only way to stay relevant."
             },
             {
-                question: "Why learn this skill?",
-                options: ["For fun", "Career Growth", "No reason", "To sleep"],
-                correctAnswerIndex: 1,
-                explanation: "This skill is highly valued in the industry."
+                question: `A client asks for a feature in ${topic} that is technically impossible. What do you do?`,
+                options: ["Say yes and fake it", "Ignore them", "Explain the limitation and offer an alternative", "Quit the project"],
+                correctAnswerIndex: 2,
+                explanation: "Professionalism involves managing expectations and finding viable technical solutions."
             }
-        ]
+        ],
+        isFallback: true
     }),
     lesson: (topic) => ({
-        lesson: `### Offline Briefing: ${topic}\n\n**Status:** Server Connection Limited.\n\nWe are currently unable to reach the AI core. Engaging local backup protocols.\n\n*   Review the basics.\n*   Practice consistently.\n\nProceed to the challenge.`
-    }),
-    journey: (topic) => ({
-        topicName: topic,
-        totalLevels: 10,
-        description: "Generated via Offline Protocol."
-    }),
-    curriculum: (topic) => ({
-        chapters: ["Basics", "Intermediate", "Advanced", "Mastery"]
+        lesson: `### System Briefing: ${topic}\n\n**Status:** Offline Backup Protocol Active.\n\nSince the AI connection is currently offline, we are accessing the local reserve archives.\n\n*   **Core Concept:** Mastery of ${topic} requires understanding both the 'How' and the 'Why'.\n*   **Industry Standard:** This skill is highly valued in the global market.\n*   **Objective:** Prove your knowledge to proceed.\n\nProceed to the challenge.`,
+        isFallback: true
     })
 };
 
-// --- GEMINI SETUP ---
-let ai = null;
-if (API_KEY) {
-    ai = new GoogleGenAI({ apiKey: API_KEY });
-}
-
-// --- SELF-HEALING JSON PARSER ---
+// --- VALIDATION HELPERS ---
 function cleanAndParseJSON(text) {
     if (!text) return null;
-    let clean = text.trim();
-    
-    // 1. Remove Markdown Code Blocks
-    if (clean.includes('```')) {
-        clean = clean.replace(/```json/g, '').replace(/```/g, '');
-    }
-    
-    // 2. Attempt Parse
     try {
-        return JSON.parse(clean);
+        return JSON.parse(text);
     } catch (e) {
-        console.warn("JSON Parse Warning: Trying to repair JSON...");
-        // 3. Simple Repair: Find first '{' and last '}'
-        const first = clean.indexOf('{');
-        const last = clean.lastIndexOf('}');
-        if (first !== -1 && last !== -1) {
-            try {
-                return JSON.parse(clean.substring(first, last + 1));
-            } catch (e2) {
-                console.error("JSON Repair Failed:", e2.message);
-                return null;
+        // Clean markdown code blocks
+        let clean = text.replace(/```json/g, '').replace(/```/g, '');
+        // Find first { or [
+        const firstOpen = clean.search(/[\{\[]/);
+        let lastClose = -1;
+        // Find last } or ]
+        for (let i = clean.length - 1; i >= 0; i--) {
+            if (clean[i] === '}' || clean[i] === ']') {
+                lastClose = i;
+                break;
             }
         }
-        return null;
+        if (firstOpen !== -1 && lastClose !== -1) {
+            clean = clean.substring(firstOpen, lastClose + 1);
+        }
+        try { return JSON.parse(clean); } catch (e2) { return null; }
     }
 }
 
-// --- GENERATION FUNCTIONS ---
+// --- GEMINI API SETUP ---
+let ai;
 
-async function generateLevelQuestions(topic, level, totalLevels) {
-    if (!ai) return FALLBACK_DATA.questions(topic);
+try {
+    if (API_KEY) {
+        ai = new GoogleGenAI({ apiKey: API_KEY });
+        console.log(`✅ GoogleGenAI initialized.`);
+    } else {
+        console.warn("⚠️ Server running in OFFLINE MODE (No AI).");
+    }
+} catch (error) {
+    console.error(`❌ Failed to initialize AI: ${error.message}`);
+}
 
-    const prompt = `
-    Generate 3 multiple-choice questions for the topic "${topic}" (Level ${level}/${totalLevels}).
+// --- SERVICE FUNCTIONS ---
+
+async function generateJourneyPlan(topic, persona) {
+    if (!ai) return FALLBACK_DATA.journey(topic);
     
-    CRITICAL RULES:
-    1. Output strictly valid JSON.
-    2. Format: { "questions": [ { "question": "...", "options": ["A","B","C","D"], "correctAnswerIndex": 0, "explanation": "..." } ] }
-    3. Ensure options are an array of 4 strings.
-    4. Ensure correctAnswerIndex is a number (0-3).
-    `;
+    const prompt = `Analyze "${topic}". Output JSON: { topicName, totalLevels (10-50), description }`;
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash', 
+            contents: prompt,
+            config: { 
+                responseMimeType: 'application/json',
+                systemInstruction: getSystemInstruction(persona),
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        topicName: { type: Type.STRING },
+                        totalLevels: { type: Type.INTEGER },
+                        description: { type: Type.STRING }
+                    },
+                    required: ["topicName", "totalLevels", "description"]
+                }
+            }
+        });
+        return cleanAndParseJSON(response.text) || FALLBACK_DATA.journey(topic);
+    } catch (error) {
+        console.error("AI Error (Journey):", error.message);
+        return FALLBACK_DATA.journey(topic);
+    }
+}
 
+async function generateCurriculumOutline(topic, totalLevels, persona) {
+    if (!ai) return FALLBACK_DATA.curriculum(topic);
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: {
+            contents: `Topic: ${topic}. Break into 4 chapter titles. JSON: { chapters: [] }`,
+            config: { 
                 responseMimeType: 'application/json',
+                systemInstruction: getSystemInstruction(persona)
+            }
+        });
+        return cleanAndParseJSON(response.text) || FALLBACK_DATA.curriculum(topic);
+    } catch (error) {
+        return FALLBACK_DATA.curriculum(topic);
+    }
+}
+
+async function generateLevelQuestions(topic, level, totalLevels, persona) {
+    if (!ai) return FALLBACK_DATA.questions(topic);
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash', 
+            contents: `Topic: ${topic}. Level ${level}. Generate 3 scenario-based multiple choice questions.`,
+            config: { 
+                responseMimeType: 'application/json',
+                systemInstruction: getSystemInstruction(persona),
                 responseSchema: {
                     type: Type.OBJECT,
                     properties: {
@@ -145,104 +217,100 @@ async function generateLevelQuestions(topic, level, totalLevels) {
                 }
             }
         });
-
+        
         const data = cleanAndParseJSON(response.text);
         
-        // Validation
-        if (data && data.questions && Array.isArray(data.questions) && data.questions.length > 0) {
+        // Robust check for data integrity
+        if (data && data.questions && Array.isArray(data.questions)) {
             return data;
+        } else {
+            console.warn("AI returned invalid structure:", response.text);
+            return FALLBACK_DATA.questions(topic);
         }
-        throw new Error("Invalid structure returned from AI");
-
     } catch (error) {
-        console.error("AI Gen Error (Questions):", error.message);
+        console.error("AI Error (Questions):", error.message);
         return FALLBACK_DATA.questions(topic);
     }
 }
 
-async function generateLevelLesson(topic, level, totalLevels) {
+async function generateLevelLesson(topic, level, totalLevels, questions, persona) {
     if (!ai) return FALLBACK_DATA.lesson(topic);
-
-    const prompt = `
-    Write a short, engaging lesson/briefing for "${topic}" (Level ${level}/${totalLevels}).
-    Format: Markdown. Keep it under 150 words. Use bullet points.
-    Return JSON: { "lesson": "markdown string here" }
-    `;
-
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: {
+            contents: `Write a short, exciting lesson for ${topic} level ${level}. Under 150 words. Use simple analogies.`,
+            config: { 
                 responseMimeType: 'application/json',
+                systemInstruction: getSystemInstruction(persona),
                 responseSchema: {
                     type: Type.OBJECT,
-                    properties: { lesson: { type: Type.STRING } },
+                    properties: {
+                        lesson: { type: Type.STRING }
+                    },
                     required: ["lesson"]
                 }
             }
         });
-        
         return cleanAndParseJSON(response.text) || FALLBACK_DATA.lesson(topic);
     } catch (error) {
-        console.error("AI Gen Error (Lesson):", error.message);
+        console.error("AI Error (Lesson):", error.message);
         return FALLBACK_DATA.lesson(topic);
     }
 }
 
-async function generateJourneyPlan(topic) {
-    if (!ai) return FALLBACK_DATA.journey(topic);
-    
-    const prompt = `Analyze "${topic}". Output JSON: { "topicName": "${topic}", "totalLevels": 20, "description": "Short pitch." }`;
-    
-    try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: { responseMimeType: 'application/json' }
-        });
-        return cleanAndParseJSON(response.text) || FALLBACK_DATA.journey(topic);
-    } catch (e) {
-        return FALLBACK_DATA.journey(topic);
-    }
-}
-
-// --- EXPRESS APP ---
+// --- EXPRESS ROUTER ---
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname)));
 
-const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200 });
-app.use('/api', limiter);
+// Robust Rate Limiting
+const apiLimiter = rateLimit({ 
+    windowMs: 15 * 60 * 1000, 
+    max: 300, // Higher limit for Expo usage
+    standardHeaders: true,
+    legacyHeaders: false,
+}); 
+app.use('/api', apiLimiter);
 
-// Helper to wrap async routes
-const safe = (fn) => async (req, res) => {
+app.get('/health', (req, res) => res.status(200).send('OK'));
+
+// --- CLIENT CONFIG ENDPOINT (CRITICAL FOR LIVE API) ---
+// This allows the frontend to get the key securely for client-side-only features (Aural)
+app.get('/api/client-config', (req, res) => {
+    // In a real production app, check auth headers here.
+    // For this app, we provide the key so the client SDK works.
+    if (!API_KEY) {
+        return res.status(503).json({ error: 'Server offline (Key missing)' });
+    }
+    res.json({ apiKey: API_KEY });
+});
+
+// Helper for safe route handling
+const safeHandler = (fn) => async (req, res) => {
     try {
         const result = await fn(req.body);
         res.json(result);
     } catch (e) {
-        console.error("API Error:", e.message);
-        // Determine fallback based on URL
-        if(req.url.includes('questions')) res.json(FALLBACK_DATA.questions(req.body.topic || 'Unknown'));
-        else if(req.url.includes('lesson')) res.json(FALLBACK_DATA.lesson(req.body.topic || 'Unknown'));
-        else res.status(500).json({ error: "Internal Error" });
+        console.error("Route Error:", e);
+        // Return fallback data instead of 500 error to keep app running
+        if (req.path.includes('questions')) res.json(FALLBACK_DATA.questions(req.body.topic));
+        else if (req.path.includes('lesson')) res.json(FALLBACK_DATA.lesson(req.body.topic));
+        else if (req.path.includes('journey')) res.json(FALLBACK_DATA.journey(req.body.topic));
+        else res.status(500).json({ error: "Internal Server Error" });
     }
 };
 
-app.get('/api/client-config', (req, res) => {
-    if (!API_KEY) return res.status(503).json({ error: 'Server Offline' });
-    res.json({ apiKey: API_KEY });
-});
+app.post('/api/generate-journey-plan', safeHandler((body) => generateJourneyPlan(body.topic, body.persona)));
+app.post('/api/generate-curriculum-outline', safeHandler((body) => generateCurriculumOutline(body.topic, body.totalLevels, body.persona)));
+app.post('/api/generate-level-questions', safeHandler((body) => generateLevelQuestions(body.topic, body.level, body.totalLevels, body.persona)));
+app.post('/api/generate-level-lesson', safeHandler((body) => generateLevelLesson(body.topic, body.level, body.totalLevels, body.questions, body.persona)));
 
-app.post('/api/generate-level-questions', safe((b) => generateLevelQuestions(b.topic, b.level, b.totalLevels)));
-app.post('/api/generate-level-lesson', safe((b) => generateLevelLesson(b.topic, b.level, b.totalLevels)));
-app.post('/api/generate-journey-plan', safe((b) => generateJourneyPlan(b.topic)));
-app.post('/api/generate-curriculum-outline', (req, res) => res.json(FALLBACK_DATA.curriculum(req.body.topic))); // Simple mock for outline to save tokens
-app.post('/api/generate-hint', (req, res) => res.json({ hint: "Read the question carefully. The answer is often in the details." }));
-app.post('/api/explain-error', (req, res) => res.json({ explanation: "That answer is incorrect based on standard principles of the subject." }));
+// Utility Endpoints
+app.post('/api/generate-hint', (req, res) => res.json({ hint: "Review the core concepts mentioned in the briefing. Look for keywords." }));
+app.post('/api/explain-error', (req, res) => res.json({ explanation: "The selected answer contradicts standard best practices. Re-read the question carefully." }));
 
 app.get('/api/topics', async (req, res) => {
     try {
@@ -251,18 +319,16 @@ app.get('/api/topics', async (req, res) => {
             topicsCache = JSON.parse(data);
         }
         res.json(topicsCache);
-    } catch (e) {
-        res.json([]);
-    }
+    } catch (error) { res.status(500).json({ error: 'Could not load topics data.' }); }
 });
 
-// Mock Image Gen for now
-app.post('/api/generate-journey-from-image', (req, res) => {
-    res.json({ topicName: "Scanned Topic", totalLevels: 10, description: "Analyzed from image." });
-});
-
+// --- WEBSOCKETS ---
 wss.on('connection', (ws) => {
     console.log('WS Connected');
+    if (!ai) {
+        ws.send(JSON.stringify({ type: 'error', message: 'AI Voice Unavailable (Server Offline Mode)' }));
+    }
+    ws.on('close', () => console.log('WS Disconnected'));
 });
 
-server.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

@@ -6,62 +6,6 @@ import { LOCAL_STORAGE_KEYS } from '../../constants.js';
 let elements = {};
 let isLoginMode = true;
 
-// --- DEMO SCENARIOS (TRENDING IT TOPICS EDITION) ---
-const DEMO_SCENARIOS = [
-    {
-        topic: "Python Mastery",
-        level: 1,
-        totalLevels: 50,
-        style: "topic-programming",
-        desc: "The world's most popular language.",
-        lesson: "### **MISSION BRIEFING: PYTHON BASICS**\n\n**STATUS:** Interpreter Online.\n\n*   **Readability:** Python is designed to be read like English.\n*   **Variables:** Containers for storing data values. No type declaration needed.\n*   **Indentation:** Python uses whitespace to define blocks of code instead of curly braces `{}`.\n\nInitialize script.",
-        questions: [
-            { question: "How do you output text to the console in Python?", options: ["echo('Hello')", "console.log('Hello')", "print('Hello')", "System.out.println('Hello')"], correctAnswerIndex: 2, explanation: "`print()` is the standard function to display output in Python." },
-            { question: "Which symbol is used for comments in Python?", options: ["//", "#", "/*", "<!--"], correctAnswerIndex: 1, explanation: "The `#` symbol starts a comment line in Python." },
-            { question: "How do you define a block of code (like a loop body)?", options: ["Curly Braces {}", "Indentation (Whitespace)", "Parentheses ()", "End statements"], correctAnswerIndex: 1, explanation: "Python enforces indentation to define scope, keeping code clean and readable." }
-        ]
-    },
-    {
-        topic: "Web Development",
-        level: 5,
-        totalLevels: 60,
-        style: "topic-arts",
-        desc: "Building the modern web.",
-        lesson: "### **MISSION BRIEFING: THE DOM**\n\n**STATUS:** Browser Rendering.\n\n*   **HTML:** The skeleton/structure of the page.\n*   **CSS:** The skin/style of the page.\n*   **JavaScript:** The muscles/logic that make it interactive.\n*   **DOM:** The Document Object Model - how JS sees and changes HTML.\n\nStyle the interface.",
-        questions: [
-            { question: "Which HTML tag is used for the largest heading?", options: ["<head>", "<h6>", "<h1>", "<header>"], correctAnswerIndex: 2, explanation: "`<h1>` represents the highest section level heading." },
-            { question: "Which CSS property changes the text color?", options: ["font-color", "text-color", "color", "foreground"], correctAnswerIndex: 2, explanation: "The `color` property sets the foreground color of text content." },
-            { question: "What is the correct HTML element for inserting JavaScript?", options: ["<script>", "<js>", "<javascript>", "<code>"], correctAnswerIndex: 0, explanation: "The `<script>` tag is used to embed or reference executable client-side scripts." }
-        ]
-    },
-    {
-        topic: "Machine Learning",
-        level: 30,
-        totalLevels: 100,
-        style: "topic-space",
-        desc: "Teaching computers to learn.",
-        lesson: "### **MISSION BRIEFING: SUPERVISED LEARNING**\n\n**STATUS:** Training Model.\n\n*   **Labeled Data:** Input data that has the correct answer attached (e.g., photo of cat + label 'Cat').\n*   **Training vs Testing:** Use 80% of data to teach, 20% to test accuracy.\n*   **Overfitting:** When a model memorizes the training data but fails on new, unseen data.\n\nOptimize parameters.",
-        questions: [
-            { question: "What is 'Supervised Learning'?", options: ["Learning without data", "Training on labeled data with known answers", "Finding hidden patterns in unlabeled data", "Letting the AI explore randomly"], correctAnswerIndex: 1, explanation: "Supervised learning maps input to output based on example input-output pairs." },
-            { question: "If a model performs perfectly on training data but fails in the real world, it is:", options: ["Underfitting", "Overfitting", "Generalized", "Optimized"], correctAnswerIndex: 1, explanation: "Overfitting means the model learned the 'noise' of the training set rather than the general rule." },
-            { question: "What is a 'Feature' in ML?", options: ["A bug", "An individual measurable property of the data", "The output label", "The software version"], correctAnswerIndex: 1, explanation: "Features are the input variables (like pixels in an image or words in a text) used for prediction." }
-        ]
-    },
-    {
-        topic: "Prompt Engineering",
-        level: 50,
-        totalLevels: 50, // Boss Context
-        style: "topic-robotics",
-        desc: "Mastering Generative AI.",
-        lesson: "### **BOSS BATTLE: LLM CONTROL**\n\n**STATUS:** CONTEXT WINDOW ACTIVE.\n\n*   **Persona:** Giving the AI a role (e.g., 'Act as a Senior Engineer') improves output quality.\n*   **Chain of Thought:** Asking the AI to 'think step-by-step' drastically reduces logic errors.\n*   **Few-Shot:** Providing examples in the prompt to guide the style/format.\n\n**OBJECTIVE:** Extract precise data.",
-        questions: [
-            { question: "What is 'Hallucination' in the context of AI?", options: ["The AI gets a virus", "The AI generates confident but factually incorrect info", "The AI becomes sentient", "The AI refuses to answer"], correctAnswerIndex: 1, explanation: "Hallucinations occur when models invent plausible-sounding but false information." },
-            { question: "Which technique involves giving the AI examples of input and output?", options: ["Zero-Shot Prompting", "Few-Shot Prompting", "Blind Prompting", "Code Injection"], correctAnswerIndex: 1, explanation: "Few-Shot prompting provides a few demonstrations to steer the model's behavior." },
-            { question: "Asking the model to 'Let's think step by step' is known as:", options: ["Chain of Thought", "Brainstorming", "Recursion", "Jailbreaking"], correctAnswerIndex: 0, explanation: "Chain of Thought prompting encourages the model to break down complex reasoning tasks." }
-        ]
-    }
-];
-
 function toggleMode() {
     isLoginMode = !isLoginMode;
     elements.title.textContent = isLoginMode ? 'System Login' : 'New Registration';
@@ -100,123 +44,109 @@ async function handleGoogleLogin() {
 }
 
 function populateGuestData() {
-    console.log("Injecting Expo Demo Data (Trending Topics)...");
+    console.log("Populating Local IT Expo Data...");
 
-    // 1. PRE-BAKED LEVEL CACHE (Instant Load)
-    DEMO_SCENARIOS.forEach(scenario => {
-        const cacheKey = `kt-level-cache-${scenario.topic.toLowerCase()}-${scenario.level}`;
-        if (!localStorage.getItem(cacheKey)) {
-            const cacheEntry = {
-                timestamp: Date.now(),
-                data: {
-                    lesson: scenario.lesson,
-                    questions: scenario.questions
-                }
-            };
-            localStorage.setItem(cacheKey, JSON.stringify(cacheEntry));
-        }
-    });
-
-    // 2. ACTIVE JOURNEYS (Matches the new topics)
-    if (!localStorage.getItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS)) {
-        const sampleJourneys = DEMO_SCENARIOS.map(scenario => ({
-            id: `j_${scenario.topic.substring(0, 3)}_${Math.floor(Math.random()*1000)}`,
-            goal: scenario.topic,
-            description: scenario.desc,
-            currentLevel: scenario.level,
-            totalLevels: scenario.totalLevels,
-            styleClass: scenario.style, 
-            createdAt: new Date().toISOString()
-        }));
-        localStorage.setItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS, JSON.stringify(sampleJourneys));
-    }
-
-    // 3. GAMIFICATION STATS
+    // 1. GAMIFICATION STATS (Look impressive instantly)
     if (!localStorage.getItem(LOCAL_STORAGE_KEYS.GAMIFICATION)) {
         const sampleStats = {
-            level: 12,
-            xp: 12500,
-            currentStreak: 7, 
+            level: 18,
+            xp: 18500,
+            currentStreak: 65,
             lastQuizDate: new Date().toISOString(),
-            totalQuizzesCompleted: 25, 
-            totalPerfectQuizzes: 5, 
-            questionsSaved: 4, 
-            nightOwlSessions: 2, 
-            fastAnswersCount: 15, 
-            totalAuralMinutes: 45, 
-            uniqueTopicsPlayed: ["Python", "JavaScript", "AI"], 
-            
-            dailyQuests: { 
-                date: new Date().toDateString(), 
-                quests: [
-                    { id: 'complete_level', text: 'Complete 1 Level', xp: 50, completed: true }, 
-                    { id: 'perfect_score', text: 'Get 100% on a Quiz', xp: 100, completed: false },
-                    { id: 'use_hint', text: 'Use a Hint', xp: 20, completed: false }
-                ] 
-            },
+            totalQuizzesCompleted: 92,
+            totalPerfectQuizzes: 35,
+            questionsSaved: 15,
+            dailyQuests: { date: new Date().toDateString(), quests: [] },
             dailyChallenge: { date: new Date().toDateString(), completed: false }
         };
         localStorage.setItem(LOCAL_STORAGE_KEYS.GAMIFICATION, JSON.stringify(sampleStats));
     }
 
-    // 4. RICH HISTORY (Includes Audio Transcript)
+    // 2. ACTIVE JOURNEYS (Highly recognizable, "Cool" IT topics)
+    if (!localStorage.getItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS)) {
+        const sampleJourneys = [
+            {
+                id: "journey_expo_1",
+                goal: "Ethical Hacking & Security",
+                description: "Learn penetration testing, Kali Linux, and how to secure networks against cyber attacks.",
+                currentLevel: 15,
+                totalLevels: 50,
+                styleClass: "topic-space", // Purple/Dark look
+                createdAt: new Date(Date.now() - 86400000 * 2).toISOString()
+            },
+            {
+                id: "journey_expo_2",
+                goal: "Full-Stack Web Development",
+                description: "Master the MERN Stack (MongoDB, Express, React, Node) and build professional websites.",
+                currentLevel: 42,
+                totalLevels: 60,
+                styleClass: "topic-programming", // Blue/Tech look
+                createdAt: new Date(Date.now() - 86400000 * 10).toISOString()
+            },
+            {
+                id: "journey_expo_3",
+                goal: "Freelancing Mastery",
+                description: "How to rank on Upwork/Fiverr, communicate with clients, and build a digital career.",
+                currentLevel: 8,
+                totalLevels: 20,
+                styleClass: "topic-finance", // Gold/Money look
+                createdAt: new Date().toISOString()
+            }
+        ];
+        localStorage.setItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS, JSON.stringify(sampleJourneys));
+    }
+
+    // 3. EXTENSIVE HISTORY
     if (!localStorage.getItem(LOCAL_STORAGE_KEYS.HISTORY)) {
         const now = Date.now();
         const day = 86400000;
-        const sampleHistory = [
-            {
-                id: `quiz_h_1`,
+        const sampleHistory = [];
+        
+        for(let i=0; i<8; i++) {
+            const isPerfect = Math.random() > 0.6;
+            const score = isPerfect ? 5 : Math.floor(Math.random() * 4) + 1;
+            const topic = i % 2 === 0 ? "Ethical Hacking & Security" : "Full-Stack Web Development";
+            const level = (i % 2 === 0 ? 15 : 42) - Math.floor(i/2);
+            
+            sampleHistory.push({
+                id: `quiz_hist_${i}`,
                 type: 'quiz',
-                topic: `Machine Learning - Level 29`,
-                score: 3,
-                totalQuestions: 3,
-                date: new Date(now - (day * 0.1)).toISOString(),
-                xpGained: 50
-            },
-            {
-                id: `quiz_h_2`,
-                type: 'quiz',
-                topic: `Web Development - Level 4`,
-                score: 2,
-                totalQuestions: 3,
-                date: new Date(now - (day * 0.5)).toISOString(),
-                xpGained: 20
-            },
-            {
-                id: `aural_h_1`,
-                type: 'aural',
-                topic: 'React vs Angular',
-                date: new Date(now - (day * 2)).toISOString(),
-                duration: 120, 
-                xpGained: 100,
-                transcript: [
-                    { sender: 'user', text: 'What is the main difference between React and Angular?' },
-                    { sender: 'model', text: 'React is a library focused on the View layer, giving you freedom to choose other tools. Angular is a full-fledged framework with everything included (router, http client, etc.).' },
-                    { sender: 'user', text: 'Which one is easier to learn?' },
-                    { sender: 'model', text: 'React typically has a gentler learning curve because it is just JavaScript, whereas Angular requires learning TypeScript and its specific patterns.' }
-                ]
-            }
-        ];
+                topic: `${topic} - Level ${level}`,
+                score: score,
+                totalQuestions: 5,
+                date: new Date(now - (day * i * 0.5)).toISOString(),
+                xpGained: score * 10
+            });
+        }
+        
         localStorage.setItem(LOCAL_STORAGE_KEYS.HISTORY, JSON.stringify(sampleHistory));
     }
 
-    // 5. LIBRARY CONTENT
+    // 4. SMART LIBRARY (Questions judges will understand and find smart)
     if (!localStorage.getItem(LOCAL_STORAGE_KEYS.LIBRARY)) {
         const sampleLibrary = [
             {
                 id: "q_lib_1",
-                question: "What is the difference between a List and a Tuple in Python?",
-                options: ["No difference", "Lists are mutable, Tuples are immutable", "Tuples are faster", "Lists can store strings only"],
+                question: "In Web Development, what does 'React' use to improve performance?",
+                options: ["Direct DOM manipulation", "Virtual DOM", "SQL Database", "Flash Player"],
                 correctAnswerIndex: 1,
-                explanation: "Immutability means Tuples cannot be changed after creation, making them safer for fixed data.",
-                srs: { interval: 1, repetitions: 1, easeFactor: 2.5, nextReviewDate: Date.now() - 10000, lastReviewed: Date.now() - 86400000 }
+                explanation: "React uses a Virtual DOM to minimize slow updates to the real browser DOM.",
+                srs: { interval: 0, repetitions: 0, easeFactor: 2.5, nextReviewDate: Date.now(), lastReviewed: null }
             },
             {
                 id: "q_lib_2",
-                question: "What does 'Responsive Design' mean in Web Dev?",
-                options: ["Fast loading speed", "Works on mobile and desktop", "Reacts to voice commands", "Uses AI"],
+                question: "Which tool is commonly used for 'Packet Sniffing' in Ethical Hacking?",
+                options: ["Photoshop", "Wireshark", "MS Word", "Notepad"],
                 correctAnswerIndex: 1,
-                explanation: "Responsive design ensures web pages render well on a variety of devices and window or screen sizes.",
+                explanation: "Wireshark is the industry standard for analyzing network traffic and packets.",
+                srs: { interval: 0, repetitions: 0, easeFactor: 2.5, nextReviewDate: Date.now(), lastReviewed: null }
+            },
+            {
+                id: "q_lib_3",
+                question: "What is the primary benefit of Freelancing?",
+                options: ["Fixed Salary", "Global Clients & Dollar Income", "Free Health Insurance", "9 to 5 Timing"],
+                correctAnswerIndex: 1,
+                explanation: "Freelancing allows access to international markets, often resulting in higher earnings in foreign currency.",
                 srs: { interval: 0, repetitions: 0, easeFactor: 2.5, nextReviewDate: Date.now(), lastReviewed: null }
             }
         ];
@@ -229,15 +159,7 @@ async function handleGuestLogin() {
         populateGuestData(); 
         await firebaseService.loginAsGuest();
     } catch (error) {
-        console.warn("Firebase Auth failed (likely offline/bad config). Enabling Simulation Mode.", error);
-        // FORCE BYPASS: If Firebase fails, manually trigger the app entry as a simulated guest
-        // This ensures the website IS functional even if backend is broken.
-        
-        // Dispatch event that index.js listens for in onAuthChange logic, 
-        // OR manually manipulate DOM if needed (but index.js flow is safer)
-        
-        // Since we can't emit a real firebase user object, we use a custom method
-        firebaseService.enableSimulationMode();
+        handleError(error);
     }
 }
 

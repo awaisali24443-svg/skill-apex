@@ -1,12 +1,12 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 5.20.0 (API Robustness & Dynamic Caching)
+ * @version 5.19.0 (API Robustness Update)
  *
  * This service worker implements a robust offline-first caching strategy.
  */
 
-const CACHE_NAME = 'skill-apex-v5.20.0-robust';
+const CACHE_NAME = 'skill-apex-v5.19.0-robust';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [
@@ -35,6 +35,7 @@ const APP_SHELL_URLS = [
     'assets/images/avatar-placeholder.png',
     'https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Inter:wght@400;600&family=Roboto+Mono:wght@400;500&display=swap',
     'https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js',
+    'https://aistudiocdn.com/dompurify@^3.0.5',
     // Core Services
     'services/apiService.js',
     'services/configService.js',
@@ -117,49 +118,21 @@ self.addEventListener('fetch', (event) => {
     }
 
     // 2. App Shell & Assets - Stale While Revalidate
+    // (Ensures fast load, then updates in background)
     if (APP_SHELL_URLS.some(u => event.request.url.includes(u))) {
         event.respondWith(staleWhileRevalidate(CACHE_NAME, event.request));
         return;
     }
 
-    // 3. API Calls (Never Cache)
+    // 3. API Calls (Do not cache, or handle specifically)
     if (url.pathname.startsWith('/api')) {
         return;
     }
 
-    // 4. Default: Network First -> Cache -> Fallback
-    // This handles external scripts (esm.sh) and dynamic files not in shell
+    // 4. Default: Network First, fall back to Cache
     event.respondWith(
-        fetch(event.request)
-            .then(response => {
-                // Check if we received a valid response
-                if (!response || response.status !== 200 || response.type === 'opaque') {
-                    // Opaque responses (like some no-cors CDNs) can't be verified, 
-                    // but we cache them if we are sure (risky). 
-                    // For now, only cache Basic and CORS responses.
-                    if (response.type !== 'basic' && response.type !== 'cors') return response;
-                }
-
-                // Dynamically cache successful GET requests (e.g. esm.sh imports)
-                if (event.request.method === 'GET') {
-                    const responseToCache = response.clone();
-                    caches.open(CACHE_NAME).then(cache => {
-                        cache.put(event.request, responseToCache);
-                    });
-                }
-
-                return response;
-            })
-            .catch(() => {
-                // Offline fallback
-                return caches.match(event.request).then(cachedResponse => {
-                    if (cachedResponse) return cachedResponse;
-                    
-                    // If asking for a page, return index.html (SPA Fallback)
-                    if (event.request.headers.get('accept').includes('text/html')) {
-                        return caches.match('index.html');
-                    }
-                });
-            })
+        fetch(event.request).catch(() => {
+            return caches.match(event.request);
+        })
     );
 });

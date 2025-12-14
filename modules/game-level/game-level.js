@@ -42,7 +42,7 @@ function switchState(targetStateId) {
 async function startLevel() {
     const { topic, level, totalLevels } = levelContext;
     
-    // VALIDATION: Ensure we have a valid topic.
+    // VALIDATION: Ensure we have a valid topic. If not (e.g. reload), go back to journeys.
     if (!topic) {
         showToast("Session restored. Redirecting to topics...", "info");
         window.location.hash = '#/topics';
@@ -51,110 +51,35 @@ async function startLevel() {
     
     switchState('level-loading-state');
     
-    // SAFETY: If loading takes > 8s, offer retry or abort
+    // SAFETY: If loading takes > 15s, assume error and allow user to escape
     loadingTimeout = setTimeout(() => {
         const loadingText = document.getElementById('loading-status-text');
-        if (loadingText) {
-            loadingText.innerHTML = "Network sluggish... <br><button id='force-retry-btn' class='btn btn-small' style='margin-top:10px'>Engage Offline Mode</button>";
-            document.getElementById('force-retry-btn').onclick = () => {
-                clearTimeout(loadingTimeout);
-                engageEmergencyProtocol(topic);
-            };
-        }
+        if (loadingText) loadingText.textContent = "Taking longer than expected... Retrying connection.";
     }, 8000);
     
     try {
-        // Try to load from cache first
-        const cachedData = levelCacheService.getLevel(topic, level);
-        if (cachedData) {
-            console.log("Loaded level from cache");
-            processLevelData(cachedData);
-            return;
-        }
-
-        // Fetch fresh data
-        const results = await Promise.allSettled([
+        const [lessonData, questionsData] = await Promise.all([
             apiService.generateLevelLesson({ topic, level, totalLevels }),
             apiService.generateLevelQuestions({ topic, level, totalLevels })
         ]);
 
         clearTimeout(loadingTimeout);
 
-        const lessonResult = results[0];
-        const questionsResult = results[1];
-
-        const newData = {};
-
-        // Process Questions (Critical)
-        if (questionsResult.status === 'fulfilled' && questionsResult.value && Array.isArray(questionsResult.value.questions)) {
-            newData.questions = questionsResult.value.questions;
-        } else {
-            throw new Error("Failed to generate questions");
-        }
-
-        // Process Lesson (Optional - fallback if failed)
-        if (lessonResult.status === 'fulfilled' && lessonResult.value) {
-            newData.lesson = lessonResult.value.lesson;
-        } else {
-            newData.lesson = "Briefing unavailable. Proceed to mission.";
-        }
+        levelData = {
+            lesson: lessonData.lesson,
+            questions: questionsData.questions
+        };
         
-        // Cache the successful data
-        levelCacheService.saveLevel(topic, level, newData);
-        
-        processLevelData(newData);
-        
-        // Background prefetch next level
+        currentQuestions = levelData.questions;
+        renderLesson();
         preloadNextLevel();
 
     } catch (error) {
         clearTimeout(loadingTimeout);
         console.error("Level Start Error:", error);
-        engageEmergencyProtocol(topic);
+        showToast("Connection Error. Returning to Map...", "error");
+        setTimeout(() => window.history.back(), 2000);
     }
-}
-
-function engageEmergencyProtocol(topic) {
-    showToast("Engaging Emergency Backup Protocol", "info");
-    
-    const emergencyData = {
-        lesson: `### **OFFLINE MODE ACTIVE**\n\n**STATUS:** Connection Interrupted.\n\nWe have activated the local simulation deck for **${topic}**. \n\n*   **Goal:** Keep your streak alive.\n*   **Task:** Complete the backup challenge questions.\n\nProceed immediately.`,
-        questions: [
-            {
-                question: `In the context of ${topic}, consistency is key. Why?`,
-                options: ["It looks good", "It builds robust mental models", "It is faster", "It saves battery"],
-                correctAnswerIndex: 1,
-                explanation: "Regular practice reinforces neural pathways, leading to mastery."
-            },
-            {
-                question: "When facing a complex problem, what is the best first step?",
-                options: ["Panic", "Guess randomly", "Break it down into smaller parts", "Give up"],
-                correctAnswerIndex: 2,
-                explanation: "Decomposition is a fundamental problem-solving strategy in engineering and science."
-            },
-            {
-                question: "True mastery of a subject typically requires...",
-                options: ["Memorization", "Active Recall and Application", "Speed reading", "Buying expensive tools"],
-                correctAnswerIndex: 1,
-                explanation: "Active recall (testing yourself) is far more effective than passive review."
-            }
-        ]
-    };
-    
-    processLevelData(emergencyData);
-}
-
-function processLevelData(data) {
-    levelData = data;
-    
-    // Final Safety Check
-    if (!levelData.questions || levelData.questions.length === 0) {
-        engageEmergencyProtocol(levelContext.topic || "General");
-        return;
-    }
-
-    currentQuestions = levelData.questions;
-    renderLesson();
 }
 
 async function preloadNextLevel() {
@@ -163,13 +88,15 @@ async function preloadNextLevel() {
     if (levelCacheService.getLevel(levelContext.topic, nextLevel)) return;
 
     try {
-        // Fire and forget
-        apiService.generateLevelQuestions({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels })
-            .then(qData => {
-                levelCacheService.saveLevel(levelContext.topic, nextLevel, { questions: qData.questions, lesson: "Loading next briefing..." });
-            });
+        const [lData, qData] = await Promise.all([
+            apiService.generateLevelLesson({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels }),
+            apiService.generateLevelQuestions({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels })
+        ]);
+        
+        const nextLevelData = { lesson: lData.lesson, questions: qData.questions };
+        levelCacheService.saveLevel(levelContext.topic, nextLevel, nextLevelData);
     } catch(e) {
-        // Silent fail
+        console.warn("[EXPO PREFETCH] Background gen failed (silent)", e);
     }
 }
 
@@ -181,7 +108,7 @@ function renderLessonTypewriter(htmlContent) {
 
 function renderLesson() {
     elements.lessonTitle.textContent = `Level ${levelContext.level}: Mission Briefing`;
-    const rawHtml = markdownService.render(levelData.lesson || "Loading...");
+    const rawHtml = markdownService.render(levelData.lesson);
     switchState('level-lesson-state');
     renderLessonTypewriter(rawHtml);
 }
@@ -201,19 +128,9 @@ function startQuiz() {
 }
 
 function renderQuestion() {
-    // Ensure cleanup of previous question's timer
-    if (timerInterval) clearInterval(timerInterval);
-
     answered = false;
     selectedAnswerIndex = null;
     hintUsedThisQuestion = false;
-    
-    // Safety check for index bounds
-    if (!currentQuestions || currentQuestionIndex >= currentQuestions.length) {
-        showResults();
-        return;
-    }
-
     const question = currentQuestions[currentQuestionIndex];
     
     elements.quizProgressText.textContent = `Question ${currentQuestionIndex + 1} / ${currentQuestions.length}`;
@@ -238,11 +155,11 @@ function renderQuestion() {
     elements.hintBtn.disabled = false;
 
     startTimer();
-    questionStartTime = Date.now(); // Start clock
+    questionStartTime = Date.now(); // Start clock for "Speed Demon"
 }
 
 function startTimer() {
-    if (timerInterval) clearInterval(timerInterval);
+    clearInterval(timerInterval);
     timeLeft = 60;
     
     elements.timerText.textContent = `00:${timeLeft}`;
@@ -292,6 +209,7 @@ function updateComboDisplay() {
     if (currentCombo > 1) {
         comboEl.classList.remove('hidden');
         comboCountEl.textContent = `x${currentCombo}`;
+        // Trigger pulse animation
         comboEl.classList.remove('pulse');
         void comboEl.offsetWidth; // Force reflow
         comboEl.classList.add('pulse');
@@ -316,8 +234,7 @@ function handleSubmitAnswer() {
         handleNextQuestion();
         return;
     }
-    if (timerInterval) clearInterval(timerInterval);
-    
+    clearInterval(timerInterval);
     answered = true;
     userAnswers[currentQuestionIndex] = selectedAnswerIndex;
 
@@ -329,13 +246,16 @@ function handleSubmitAnswer() {
         score++;
         currentCombo++;
         
+        // Base XP
         let xp = hintUsedThisQuestion ? 5 : 10;
         
+        // Speed Bonus
         if (timeTaken < 5) {
             fastAnswersCount++;
-            xp += 5; 
+            xp += 5; // Bonus XP
         }
         
+        // Combo Bonus
         if (currentCombo > 1) {
             xp += (currentCombo * 2);
         }
@@ -347,7 +267,9 @@ function handleSubmitAnswer() {
         const selectedBtn = elements.quizOptionsContainer.querySelector('.option-btn.selected');
         if (selectedBtn) {
             const rect = selectedBtn.getBoundingClientRect();
+            // Confetti on button
             vfxService.burstConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2);
+            // Floating Text
             showFloatingText(selectedBtn, `+${xp} XP`);
         }
     } else {
@@ -378,6 +300,7 @@ function handleNextQuestion() {
     }
 }
 
+// --- WINNING FEATURE: DIGITAL CERTIFICATE ---
 function generateCertificateHTML(name, topic, level) {
     const date = new Date().toLocaleDateString();
     return `
@@ -395,8 +318,8 @@ function generateCertificateHTML(name, topic, level) {
                     <div class="cert-footer">
                         <div class="cert-date">${date}</div>
                         <div class="cert-sig">
-                            System Admin<br>
-                            <span style="font-size:0.6em; letter-spacing:1px; opacity:0.8;">SKILL APEX</span>
+                            Awais Ali<br>
+                            <span style="font-size:0.6em; letter-spacing:1px; opacity:0.8;">SYSTEM ARCHITECT</span>
                         </div>
                     </div>
                     <div class="cert-seal">
@@ -415,25 +338,17 @@ function showResults() {
     soundService.playSound(passed ? 'finish' : 'incorrect');
     
     if (passed) {
-        vfxService.burstConfetti(); 
+        vfxService.burstConfetti(); // Big Burst center screen
     }
 
     historyService.addQuizAttempt({
         topic: `${levelContext.topic} - Level ${levelContext.level}`,
         score: score,
         totalQuestions: total,
-        startTime: Date.now(),
+        startTime: Date.now(), // Rough approx
         endTime: Date.now(),
         xpGained: xpGainedThisLevel,
-        fastAnswers: fastAnswersCount,
-        questions: currentQuestions,
-        userAnswers: userAnswers
-    });
-    
-    stateService.setNavigationContext({
-        ...levelContext,
-        questions: currentQuestions,
-        userAnswers: userAnswers
+        fastAnswers: fastAnswersCount
     });
 
     if (passed) {
@@ -448,7 +363,6 @@ function showResults() {
         
         elements.resultsActions.innerHTML = `
             <a href="#/game/${encodeURIComponent(levelContext.topic)}" class="btn btn-primary" style="width:100%">Continue Journey</a>
-            <a href="#/review" class="btn">Review Answers</a>
         `;
         
         const journey = learningPathService.getJourneyById(levelContext.journeyId);
@@ -457,10 +371,7 @@ function showResults() {
     } else {
         elements.resultsTitle.textContent = 'Mission Failed';
         elements.resultsDetails.textContent = `Score: ${score}/${total}. Review the briefing and try again.`;
-        elements.resultsActions.innerHTML = `
-            <button id="retry-level-btn" class="btn btn-primary">Retry Mission</button>
-            <a href="#/review" class="btn">Review Mistakes</a>
-        `;
+        elements.resultsActions.innerHTML = `<button id="retry-level-btn" class="btn btn-primary">Retry Mission</button>`;
         document.getElementById('retry-level-btn').onclick = () => startLevel();
     }
     
@@ -543,16 +454,7 @@ export function init() {
 }
 
 export function destroy() {
-    if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-    }
-    if (typewriterInterval) {
-        clearInterval(typewriterInterval);
-        typewriterInterval = null;
-    }
-    if (loadingTimeout) {
-        clearTimeout(loadingTimeout);
-        loadingTimeout = null;
-    }
+    clearInterval(timerInterval);
+    clearTimeout(loadingTimeout);
+    if (typewriterInterval) clearInterval(typewriterInterval);
 }

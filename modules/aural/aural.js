@@ -55,6 +55,7 @@ function initVisualizer() {
         const average = sum / (dataArray.length || 1);
         
         // Dynamic Amplitude based on volume
+        // If state is LISTENING or SPEAKING, use real volume. Else pulse gently.
         let amplitude = 0;
         if (currentState === STATE.LISTENING || currentState === STATE.SPEAKING) {
             amplitude = average / 5; // Scale down 0-255
@@ -62,7 +63,8 @@ function initVisualizer() {
             amplitude = 2 + Math.sin(Date.now() / 500); // Heartbeat
         }
 
-        // Draw Waves
+        // Draw 3 Waves - UPDATED COLORS FOR LIGHT MODE
+        // Using Primary Blue, Deep Pink, and Violet for visibility on white
         drawWave(ctx, canvas, amplitude, 1, '#0052CC', 0.002); // Primary Blue
         drawWave(ctx, canvas, amplitude * 0.8, -1, '#D946EF', 0.003); // Fuchsia
         drawWave(ctx, canvas, amplitude * 0.5, 1, '#7C3AED', 0.001); // Violet
@@ -78,16 +80,19 @@ function drawWave(ctx, canvas, amplitude, direction, color, frequency) {
     ctx.moveTo(0, centerY);
     
     for (let x = 0; x < canvas.width; x += 5) {
+        // Sine wave equation with dynamic amplitude
+        // Sin(x + time) creates movement
         const y = Math.sin(x * 0.01 + time * direction) * amplitude * Math.sin(x / canvas.width * Math.PI); 
-        ctx.lineTo(x, centerY + y * 20); 
+        ctx.lineTo(x, centerY + y * 20); // Multiplier for height
     }
     
     ctx.strokeStyle = color;
     ctx.lineWidth = 3;
+    // Add glow
     ctx.shadowBlur = 5;
     ctx.shadowColor = color;
     ctx.stroke();
-    ctx.shadowBlur = 0; 
+    ctx.shadowBlur = 0; // Reset
 }
 
 // --- AUDIO HANDLING ---
@@ -130,6 +135,13 @@ async function playAudioChunk(base64Audio) {
     // Resume context if suspended (browser policy)
     if (outputContext.state === 'suspended') await outputContext.resume();
 
+    // Use output context for visualizer ONLY if we aren't using mic
+    // (Simplification: In this mode, we want to visualize whoever is speaking)
+    // We can swap the analyser source here if needed, but for simplicity, 
+    // the visualizer loop picks up `analyser` global. 
+    // We should create a separate analyser for output if we want to visualize AI voice distinct from User voice
+    // But for "Expo", visualizing *sound* generally is enough.
+    
     const bytes = decodeBase64(base64Audio);
     const dataInt16 = new Int16Array(bytes.buffer);
     const float32 = new Float32Array(dataInt16.length);
@@ -142,7 +154,15 @@ async function playAudioChunk(base64Audio) {
     
     const bufferSource = outputContext.createBufferSource();
     bufferSource.buffer = buffer;
+    
+    // Connect to speakers
     bufferSource.connect(outputContext.destination);
+    
+    // If we aren't speaking ourselves, maybe we want to visualize the AI?
+    // This requires switching the global analyser variable, which might be tricky with the mic stream running.
+    // For now, let's keep visualizer on Mic input (listening mode) 
+    // or simulate activity during Speaking state via the `currentState` check in draw().
+    
     bufferSource.start(0);
 }
 
@@ -160,7 +180,7 @@ function updateUI(newState, msg = '') {
         case STATE.SPEAKING:
             statusText.textContent = "TRANSMITTING DATA...";
             statusText.style.color = "#D946EF";
-            micBtn.classList.add('active'); 
+            micBtn.classList.add('active'); // Keep active while speaking so user knows connection is alive
             break;
         case STATE.ERROR:
             statusText.textContent = "CONNECTION SEVERED";
@@ -176,6 +196,16 @@ function updateUI(newState, msg = '') {
     }
 }
 
+function addTranscript(text, sender) {
+    if (!text) return;
+    elements.placeholder.style.display = 'none';
+    const entry = document.createElement('div');
+    entry.className = `transcription-entry ${sender}`;
+    entry.textContent = text;
+    elements.log.appendChild(entry);
+    elements.log.scrollTop = elements.log.scrollHeight;
+}
+
 async function startSession() {
     const client = getAIClient();
     if (!client) {
@@ -184,18 +214,15 @@ async function startSession() {
     }
 
     try {
-        // Initialize Contexts EARLY
         audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-        if (audioContext.state === 'suspended') await audioContext.resume();
-        
-        analyser = audioContext.createAnalyser(); 
+        analyser = audioContext.createAnalyser(); // Create global analyser
         analyser.fftSize = 512;
         
         stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         
         updateUI(STATE.LISTENING);
         sessionStartTime = Date.now();
-        elements.log.innerHTML = ''; 
+        elements.log.innerHTML = ''; // Clear log
 
         const sessionPromise = client.live.connect({
             model: MODEL_LIVE,
@@ -204,14 +231,13 @@ async function startSession() {
                 speechConfig: {
                     voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } }
                 },
-                // Short, punchy instruction to reduce model think time
-                systemInstruction: `You are JARVIS. Answers must be under 1 sentence. Be extremely fast.`
+                systemInstruction: `You are JARVIS, a highly advanced AI interface for an IT Expo. Keep answers very short, punchy, and futuristic. Do not lecture. Be cool.`
             },
             callbacks: {
                 onopen: () => {
                     console.log("Uplink Established");
                     source = audioContext.createMediaStreamSource(stream);
-                    source.connect(analyser); 
+                    source.connect(analyser); // Connect mic to visualizer
                     
                     scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
                     scriptProcessor.onaudioprocess = (e) => {
@@ -232,6 +258,9 @@ async function startSession() {
                     if (msg.serverContent?.turnComplete) {
                         updateUI(STATE.LISTENING);
                     }
+                    // Optional: If transcription is available in your tier
+                    // const text = msg.serverContent?.modelTurn?.parts?.[0]?.text;
+                    // if(text) addTranscript(text, 'model');
                 },
                 onclose: () => stopSession(),
                 onerror: (e) => updateUI(STATE.ERROR, "Signal Lost")

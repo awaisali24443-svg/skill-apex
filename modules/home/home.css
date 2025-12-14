@@ -1,183 +1,158 @@
 
-/* --- MODERN HOME STYLES --- */
+/* --- EXPO HOME STYLES --- */
 .home-container {
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 0 auto;
     width: 100%;
-    animation: fade-slide-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-    padding-top: 1rem;
-    padding-bottom: 4rem;
+    animation: fade-slide-in 0.5s ease-out forwards;
+    padding-top: 2rem;
 }
 
-/* Header */
-.dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 3rem;
+/* Glitch Title Effect - Refined for Light Mode */
+.glitch-wrapper {
+    display: inline-block;
     position: relative;
+    margin-bottom: 1rem;
 }
-
-.greeting-sub {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--color-text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin-bottom: 0.5rem;
-}
-
-.greeting-main {
-    font-size: 2.5rem;
+.glitch {
+    font-size: 3.5rem;
     font-weight: 800;
-    margin: 0;
-    line-height: 1.1;
+    color: var(--color-text);
+    text-transform: uppercase;
+    position: relative;
+    letter-spacing: -1px; /* Tighter modern kerning */
     background: var(--brand-gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    letter-spacing: -1px;
+}
+/* Subtler glitch effect for the modern look */
+.glitch::before {
+    content: attr(data-text);
+    position: absolute; left: 2px; text-shadow: -1px 0 #ff00c1;
+    top: 0; color: var(--color-text); background: transparent;
+    overflow: hidden; clip: rect(0, 900px, 0, 0); 
+    animation: glitch-anim 3s infinite linear alternate-reverse;
+    opacity: 0.5;
 }
 
-/* Quick Stat Pill */
-.quick-stat-pill {
-    display: flex;
-    align-items: center;
+@keyframes glitch-anim {
+    0% { clip: rect(30px, 9999px, 10px, 0); }
+    5% { clip: rect(80px, 9999px, 90px, 0); }
+    100% { clip: rect(0, 0, 0, 0); }
+}
+
+/* Expo Grid */
+.expo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    padding: 1rem 0;
+}
+
+.expo-card {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    padding: 8px 16px;
-    border-radius: 50px;
-    box-shadow: var(--shadow-card);
-    gap: 12px;
-}
-
-.stat-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-weight: 700;
-    color: var(--color-text);
-    font-size: 0.9rem;
-}
-.stat-item .icon { width: 16px; height: 16px; color: var(--color-primary); }
-.divider { width: 1px; height: 16px; background: var(--color-border); }
-
-/* Section Labels */
-.section-label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--color-text-secondary);
-    margin-bottom: 1rem;
-    margin-top: 2.5rem;
-}
-
-/* Continue Card */
-.continue-card {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.5rem;
+    border-radius: 20px;
+    height: 240px;
+    position: relative;
+    overflow: hidden;
     cursor: pointer;
-    background: linear-gradient(to right, var(--color-surface), var(--color-surface-hover));
-    border-left: 4px solid var(--color-primary);
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-card);
 }
-.continue-info h4 { margin: 0 0 4px 0; font-size: 1.1rem; }
-.continue-info p { margin: 0; font-size: 0.9rem; color: var(--color-text-secondary); }
-.continue-btn { 
-    width: 40px; height: 40px; border-radius: 50%; 
-    background: var(--color-surface); border: 1px solid var(--color-border);
-    display: flex; align-items: center; justify-content: center;
+
+.expo-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--shadow-hover);
+    border-color: transparent;
+}
+
+.expo-icon-bg {
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 140px;
+    height: 140px;
+    opacity: 0.05; 
+    transform: rotate(15deg);
+    transition: all 0.5s ease;
+    color: var(--color-text);
+}
+.expo-icon-bg svg { width: 100%; height: 100%; }
+
+.expo-card:hover .expo-icon-bg {
+    opacity: 0.15;
+    transform: rotate(0deg) scale(1.2);
     color: var(--color-primary);
 }
 
-/* Expo Grid (Widgets) */
-.expo-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-}
-
-.widget-style {
-    display: flex;
-    flex-direction: column;
-    padding: 1.5rem;
-    height: 180px;
+.expo-content {
     position: relative;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    border: 1px solid transparent;
-    background: var(--color-surface);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+    z-index: 2;
 }
 
-.widget-style:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.01);
-    border-color: var(--color-border);
+.expo-content h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: var(--color-text);
+    text-shadow: none;
+    letter-spacing: -0.5px;
 }
 
-/* Icon Styles */
-.widget-icon {
-    width: 48px; height: 48px;
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    margin-bottom: auto;
-    transition: transform 0.3s ease;
+.expo-content p {
+    font-family: var(--font-family-body);
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 1.5rem;
+    font-weight: 500;
 }
-.widget-style:hover .widget-icon { transform: scale(1.1); }
 
-.icon-red { background: #FEF2F2; color: #DC2626; }
-.icon-orange { background: #FFF7ED; color: #EA580C; }
-.icon-blue { background: #EFF6FF; color: #2563EB; }
-.icon-green { background: #F0FDF4; color: #16A34A; }
-
-.widget-content h2 {
-    font-size: 1.1rem;
+.expo-action {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     font-weight: 700;
-    margin-bottom: 2px;
-    color: var(--color-text);
-}
-
-.widget-content p {
-    font-size: 0.85rem;
-    color: var(--color-text-secondary);
-}
-
-.widget-arrow {
-    position: absolute;
-    top: 1.5rem; right: 1.5rem;
-    opacity: 0;
-    transform: translateX(-10px);
-    transition: all 0.3s ease;
-    color: var(--color-text-secondary);
-}
-.widget-style:hover .widget-arrow {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-/* Search Input */
-.search-input {
-    width: 100%;
-    padding: 16px 20px 16px 48px;
-    border-radius: 50px;
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
+    color: var(--color-primary);
     font-size: 1rem;
-    color: var(--color-text);
-    box-shadow: var(--shadow-card);
-    outline: none;
-    transition: all 0.3s ease;
-}
-.search-input:focus {
-    box-shadow: 0 0 0 4px var(--color-primary-transparent);
-    border-color: var(--color-primary);
+    letter-spacing: 0.5px;
+    transition: gap 0.2s ease;
 }
 
-@media (max-width: 600px) {
-    .dashboard-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
-    .greeting-main { font-size: 2rem; }
-    .quick-stat-pill { align-self: flex-start; }
+.expo-card:hover .expo-action {
+    gap: 15px; /* Slide arrow */
+}
+
+/* Specific Card Accents */
+.expo-card[data-topic*="Cybersecurity"] { border-bottom: 4px solid #EF4444; }
+.expo-card[data-topic*="Mars"] { border-bottom: 4px solid #F59E0B; }
+.expo-card[data-topic*="Intelligence"] { border-bottom: 4px solid #4F46E5; }
+.expo-card[data-topic*="Crypto"] { border-bottom: 4px solid #10B981; }
+
+.modern-input-small {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    padding: 10px 20px;
+    border-radius: 30px;
+    color: var(--color-text);
+    text-align: center;
+    width: 300px;
+    font-size: 1rem;
+    box-shadow: var(--shadow-card);
+    transition: all 0.3s ease;
+}
+.modern-input-small:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px var(--color-primary-transparent);
+    width: 320px;
+}
+
+@media (max-width: 768px) {
+    .glitch { font-size: 2rem; }
     .expo-grid { grid-template-columns: 1fr; }
-    .widget-style { height: auto; flex-direction: row; align-items: center; gap: 16px; padding: 1.2rem; }
-    .widget-icon { margin-bottom: 0; width: 40px; height: 40px; }
-    .widget-arrow { position: static; opacity: 1; transform: none; margin-left: auto; }
 }

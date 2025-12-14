@@ -1,52 +1,51 @@
 
 :root {
-    /* --- MODERN 2024 PALETTE (Clean, Vibrant, High-Tech) --- */
+    /* --- MODERN 2024 PALETTE --- */
 
-    /* Core Brand - Electric Indigo & Sky Blue */
-    --color-primary: #4F46E5;   /* Indigo 600 - The main action color */
-    --color-secondary: #0EA5E9; /* Sky 500 - Secondary accents */
-    --color-accent: #F59E0B;    /* Amber 500 - Highlights/Warnings */
+    /* Core Brand - Electric Violet & Blue */
+    --color-primary: #4F46E5;   /* Indigo 600 - Vibrant, smart */
+    --color-secondary: #0EA5E9; /* Sky 500 - Fresh, clean */
+    --color-accent: #F59E0B;    /* Amber - Energy */
 
-    /* Backgrounds - PURE & CLEAN */
-    --color-background: #F8FAFC; /* Slate 50 - Very subtle cool white */
-    --color-surface: #FFFFFF;    /* Pure White - No more grey cards */
-    --color-surface-hover: #F1F5F9; /* Slate 100 - Subtle interaction state */
-    --color-surface-active: #E2E8F0; /* Slate 200 */
+    /* Backgrounds - NO MORE DULL GREY */
+    --color-background: #F0F4F8; /* Very subtle cool tint */
+    --color-surface: #FFFFFF;    /* Pure White */
+    --color-surface-hover: #F8FAFC; /* Slate 50 */
+    --color-surface-active: #EFF6FF; /* Blue 50 */
     
-    /* Text - High Contrast & Sharp */
+    /* Text - Sharp & High Contrast */
     --color-text: #0F172A;       /* Slate 900 - Deep Navy/Black */
-    --color-text-secondary: #64748B; /* Slate 500 - Readable, soft grey */
+    --color-text-secondary: #475569; /* Slate 600 - Readable, not washed out */
 
-    /* Borders */
-    --color-border: #E2E8F0;     /* Slate 200 - Subtle definition */
+    /* UI Elements */
+    --color-border: #E2E8F0;     /* Slate 200 */
     
-    /* Modern Glassmorphism */
-    --glass-bg: rgba(255, 255, 255, 0.85);
-    --glass-border: rgba(255, 255, 255, 0.5);
+    /* Glassmorphism */
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.6);
 
-    /* --- THE "GLOW" SHADOW SYSTEM --- */
-    /* Instead of black shadows, we use colored/diffuse shadows for a premium feel */
+    /* --- THE "SMART" LOOK: COLORED SHADOWS --- */
+    /* This removes the "dirty" grey shadow look and adds a glow */
     --shadow-card: 
-        0 4px 6px -1px rgba(15, 23, 42, 0.05), 
-        0 10px 15px -3px rgba(15, 23, 42, 0.05),
+        0 4px 6px -1px rgba(79, 70, 229, 0.05), 
+        0 10px 15px -3px rgba(79, 70, 229, 0.1),
         0 0 0 1px rgba(226, 232, 240, 0.5); /* Subtle ring */
         
     --shadow-float: 
-        0 20px 25px -5px rgba(79, 70, 229, 0.15), 
-        0 10px 10px -5px rgba(79, 70, 229, 0.1);
+        0 20px 25px -5px rgba(79, 70, 229, 0.1), 
+        0 10px 10px -5px rgba(79, 70, 229, 0.04);
         
     --shadow-hover: 
-        0 20px 40px -10px rgba(14, 165, 233, 0.25);
+        0 20px 40px -10px rgba(14, 165, 233, 0.2);
 
     /* Gradients */
     --brand-gradient: linear-gradient(135deg, #4F46E5 0%, #0EA5E9 100%);
-    --bg-tech: radial-gradient(circle at 50% 0%, rgba(14, 165, 233, 0.05) 0%, transparent 70%);
+    --bg-tech: radial-gradient(circle at 50% 0%, rgba(14, 165, 233, 0.1) 0%, transparent 50%);
 
-    /* Utility Colors */
+    /* Colors for transparency */
     --color-primary-transparent: rgba(79, 70, 229, 0.1);
     --color-primary-transparent-heavy: rgba(79, 70, 229, 0.2);
     --color-secondary-transparent: rgba(14, 165, 233, 0.1);
-    --color-secondary-transparent-heavy: rgba(14, 165, 233, 0.2);
     
     /* Feedback */
     --color-success: #10B981;
