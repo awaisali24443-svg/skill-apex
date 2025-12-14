@@ -74,8 +74,31 @@
     <div id="splash-screen">
         <img src="assets/icons/favicon.svg" alt="Skill Apex Logo" class="splash-logo">
         <h2 style="color:var(--color-primary); font-family: 'Exo 2'; letter-spacing: 2px; margin-top:10px;">SYSTEM INITIALIZING</h2>
-        <!-- UPDATED ORB LOADER -->
         <div class="orb-loader" role="status"></div>
+        
+        <!-- Emergency Reset Button (Appears if stuck) -->
+        <button id="emergency-reset-btn" onclick="window.hardReset()" style="
+            display: none; 
+            margin-top: 2rem; 
+            padding: 10px 20px; 
+            background: #ef4444; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer;
+            z-index: 99999;
+            font-family: sans-serif;
+        ">
+            ⚠️ APP STUCK? CLICK TO RESET
+        </button>
+        <script>
+            setTimeout(() => {
+                const btn = document.getElementById('emergency-reset-btn');
+                if(btn && document.getElementById('splash-screen').style.display !== 'none') {
+                    btn.style.display = 'block';
+                }
+            }, 6000); // Show button if splash still visible after 6s
+        </script>
     </div>
 
     <!-- Voice Indicator -->

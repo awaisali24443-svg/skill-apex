@@ -1,12 +1,13 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 5.21.1 (Cache List Fix)
+ * @version 5.22.0 (Resilient Boot)
  *
  * This service worker implements a robust offline-first caching strategy.
+ * CRITICAL CHANGE: Removed binary assets (images) from APP_SHELL to prevent installation failure.
  */
 
-const CACHE_NAME = 'skill-apex-v5.21.1-fixed';
+const CACHE_NAME = 'skill-apex-v5.22.0-resilient';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [
@@ -28,11 +29,8 @@ const APP_SHELL_URLS = [
     'assets/icons/favicon.svg',
     'assets/icons/feather-sprite.svg',
     'assets/icons/achievements.svg',
-    'assets/images/apple-touch-icon.png',
-    'assets/images/og-image.png',
-    'assets/images/icon-192.png',
-    'assets/images/icon-512.png',
-    'assets/images/avatar-placeholder.png',
+    // Removed PNGs to prevent installation failure if files are missing
+    // They will be cached dynamically upon first request.
     'https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Inter:wght@400;600&family=Roboto+Mono:wght@400;500&display=swap',
     'https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js',
     // Core Services
@@ -55,7 +53,7 @@ const APP_SHELL_URLS = [
     'services/firebaseService.js',
     'services/vfxService.js',
     'services/backgroundService.js',
-    // App Modules - ONLY VALID PATHS
+    // App Modules
     'modules/auth/auth.html', 'modules/auth/auth.css', 'modules/auth/auth.js',
     'modules/home/home.html', 'modules/home/home.css', 'modules/home/home.js',
     'modules/topic-list/topic-list.html', 'modules/topic-list/topic-list.css', 'modules/topic-list/topic-list.js',
@@ -87,10 +85,11 @@ const staleWhileRevalidate = async (cacheName, request) => {
 };
 
 self.addEventListener('install', (event) => {
+    self.skipWaiting(); // Force activate new SW immediately
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             return cache.addAll(APP_SHELL_URLS);
-        }).then(() => self.skipWaiting())
+        })
     );
 });
 
