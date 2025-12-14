@@ -42,6 +42,25 @@ const googleProvider = new GoogleAuthProvider();
 let currentUser = null;
 let authStateCallback = null;
 
+// --- SIMULATION MODE ---
+// Used when Firebase is down or config is invalid to allow the app to function locally.
+function enableSimulationMode() {
+    console.log("⚠️ SIMULATION MODE ACTIVATED: Bypassing Backend");
+    const mockUser = {
+        uid: "guest_sim_" + Date.now(),
+        isAnonymous: true,
+        email: null,
+        displayName: "Simulated Guest",
+        photoURL: null,
+        providerData: [],
+        reload: () => Promise.resolve()
+    };
+    currentUser = mockUser;
+    if (authStateCallback) {
+        authStateCallback(mockUser);
+    }
+}
+
 /**
  * Gets the current authenticated user ID.
  */
@@ -94,16 +113,18 @@ function loginAsGuest() {
 }
 
 function logout() {
+    // If simulated, just nullify
+    if (currentUser && currentUser.uid.startsWith("guest_sim_")) {
+        currentUser = null;
+        if(authStateCallback) authStateCallback(null);
+        return Promise.resolve();
+    }
     return firebaseSignOut(auth);
 }
 
 function resetPassword(email) {
-    // Construct absolute URL for the app root, stripping any hash or query params
     const url = window.location.origin + window.location.pathname;
-    
     const actionCodeSettings = {
-        // Redirect back to this app to handle the reset
-        // We append the mode query param to be detected by auth.js
         url: `${url}?mode=resetPassword`,
         handleCodeInApp: true,
     };
@@ -118,6 +139,10 @@ function onAuthChange(callback) {
     authStateCallback = callback;
     // Standard Firebase listener
     return onAuthStateChanged(auth, (user) => {
+        if (!user && currentUser && currentUser.uid.startsWith("guest_sim_")) {
+            // Do not overwrite simulated user with null from firebase init
+            return;
+        }
         currentUser = user;
         callback(user);
     });
@@ -127,11 +152,17 @@ function onAuthChange(callback) {
 
 function updateUserProfile(profileData) {
     if (!currentUser) return Promise.reject(new Error("No user logged in"));
-    // profileData can contain { displayName: string, photoURL: string }
+    
+    // Simulation fallback
+    if (currentUser.uid.startsWith("guest_sim_")) {
+        if (profileData.displayName) currentUser.displayName = profileData.displayName;
+        if (profileData.photoURL) currentUser.photoURL = profileData.photoURL;
+        window.dispatchEvent(new CustomEvent('profile-updated'));
+        return Promise.resolve();
+    }
+
     return updateProfile(currentUser, profileData).then(async () => {
-        // Force refresh of current user object to ensure getters return new data
         await currentUser.reload();
-        // Notify other components (like sidebar) to update
         window.dispatchEvent(new CustomEvent('profile-updated'));
     });
 }
@@ -149,7 +180,6 @@ function linkEmail(email, password) {
 
 function reauthenticate(password) {
     if (!currentUser) return Promise.reject(new Error("No user"));
-    // Re-auth is required before changing sensitive info like passwords
     const cred = EmailAuthProvider.credential(currentUser.email, password);
     return reauthenticateWithCredential(currentUser, cred);
 }
@@ -162,10 +192,11 @@ function changePassword(newPassword) {
 // --- Leaderboard ---
 
 async function updateLeaderboardScore(stats) {
-    if (!currentUser || isGuest()) return; // Guests don't rank
-    
+    if (!currentUser || isGuest()) return; 
+    // Skip if simulated
+    if (currentUser.uid.startsWith("guest_sim_")) return;
+
     const userRef = doc(db, "leaderboard", currentUser.uid);
-    // Use display name or part of email
     const name = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'ApexUser');
     
     try {
@@ -205,5 +236,5 @@ export {
     resetPassword, confirmReset,
     linkGoogle, linkEmail, reauthenticate, changePassword, updateUserProfile,
     onAuthChange,
-    updateLeaderboardScore, getLeaderboard
+    updateLeaderboardScore, getLeaderboard, enableSimulationMode
 };
