@@ -40,21 +40,24 @@ const firebaseConfig = {
 let app, analytics, db, auth, googleProvider;
 let isFirebaseActive = false;
 
+// --- INITIALIZATION ---
+console.log("🔥 Initializing Firebase...");
 try {
-    // Check if config is valid (simple check on apiKey)
     if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_FIREBASE_API_KEY") {
         app = initializeApp(firebaseConfig);
         analytics = getAnalytics(app);
         db = getFirestore(app);
         auth = getAuth(app);
         googleProvider = new GoogleAuthProvider();
+        
         isFirebaseActive = true;
-        console.log("✅ Firebase Connected: Online Mode Active");
+        console.log("✅ Firebase Connected Successfully");
     } else {
-        console.warn("⚠️ Firebase Config Invalid. Using Local Storage fallback.");
+        console.warn("⚠️ Firebase Config is missing or using placeholder.");
+        isFirebaseActive = false;
     }
 } catch (e) {
-    console.error("Firebase Init Error:", e);
+    console.error("❌ CRITICAL: Firebase Initialization Failed", e);
     isFirebaseActive = false;
 }
 
@@ -165,8 +168,18 @@ function register(email, password) {
 }
 
 function loginWithGoogle() {
-    if (!isFirebaseActive) return Promise.reject({ message: "Google Login requires active Firebase connection." });
-    return signInWithPopup(auth, googleProvider);
+    if (!isFirebaseActive) {
+        console.error("Google Login Blocked: Firebase not active.");
+        return Promise.reject({ message: "Google Login unavailable (Firebase Disconnected). Check console for details." });
+    }
+    return signInWithPopup(auth, googleProvider).catch(error => {
+        // Handle common configuration error
+        if (error.code === 'auth/unauthorized-domain') {
+            console.error("⚠️ DOMAIN ERROR: You must add this domain to Firebase Console > Authentication > Settings > Authorized Domains");
+            throw new Error("Domain not authorized in Firebase. Check console.");
+        }
+        throw error;
+    });
 }
 
 function loginAsGuest() {
