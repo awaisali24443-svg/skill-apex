@@ -4,17 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Skill Apex | Neural Knowledge Interface</title>
-    <meta name="description" content="AI-Powered Technical Mastery System.">
+    <title>Skill Apex | Adaptive Learning Architecture</title>
+    <meta name="description" content="An AI-powered adaptive learning platform utilizing Gemini 2.5 for real-time curriculum generation.">
     
     <!-- Full Screen Mode for Kiosk/Expo -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" id="theme-color-meta" content="#F8F9FA">
+    <meta name="theme-color" id="theme-color-meta" content="#0F172A">
     
     <!-- Open Graph -->
-    <meta property="og:title" content="Skill Apex | Neural Knowledge Interface">
-    <meta property="og:description" content="The future of rapid skill acquisition.">
+    <meta property="og:title" content="Skill Apex | EdTech Platform">
+    <meta property="og:description" content="AI-driven curriculum generation.">
     <meta property="og:image" content="assets/images/og-image.png">
 
     <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
@@ -22,7 +22,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;800&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     
     <!-- Mermaid.js -->
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
@@ -30,8 +30,8 @@
     <!-- Global Styles -->
     <link rel="stylesheet" href="global/global.css">
     
-    <!-- EXPO DEFAULT: Light Cyber (High Visibility for Day/Outdoor) -->
-    <link id="theme-stylesheet" rel="stylesheet" href="themes/theme-light-cyber.css">
+    <!-- EXPO DEFAULT: Dark Cyber (High Contrast for Displays) -->
+    <link id="theme-stylesheet" rel="stylesheet" href="themes/theme-dark-cyber.css">
 
 <script type="importmap">
 {
@@ -57,9 +57,9 @@
 </head>
 <body>
     <noscript>
-        <div style="padding: 20px; color: #fff; background: #000;">
-            <h1>SYSTEM ERROR: NEURAL LINK SEVERED</h1>
-            <p>JavaScript Execution Required.</p>
+        <div style="padding: 20px; color: #fff; background: #000; font-family: monospace;">
+            <h1>SYSTEM HALTED</h1>
+            <p>JavaScript runtime required for neural interface.</p>
         </div>
     </noscript>
 
@@ -67,28 +67,15 @@
     <canvas id="bg-canvas"></canvas>
     <div id="global-background"></div>
 
-    <!-- Auth Container -->
+    <!-- Auth Container (Now acts as Landing Page) -->
     <div id="auth-container"></div>
 
     <!-- Intro Splash -->
     <div id="splash-screen">
         <img src="assets/icons/favicon.svg" alt="Skill Apex Logo" class="splash-logo">
-        <h2 style="color:var(--color-primary); font-family: 'Exo 2'; letter-spacing: 2px; margin-top:10px;">INITIALIZING CORE...</h2>
+        <h2 style="color:var(--color-primary); font-family: 'Exo 2'; letter-spacing: 2px; margin-top:10px;">SYSTEM INITIALIZING</h2>
         <!-- UPDATED ORB LOADER -->
         <div class="orb-loader" role="status"></div>
-    </div>
-
-    <div id="welcome-screen" style="display: none;">
-        <div class="welcome-content card hud-corners">
-            <img src="assets/icons/favicon.svg" alt="Skill Apex Logo" class="welcome-logo">
-            <h1>Skill Apex</h1>
-            <p>Neural Training Interface for Modern Engineers.</p>
-            <ul class="features-list">
-                <li><div class="icon-badge"><svg class="icon"><use href="assets/icons/feather-sprite.svg#cpu"/></svg></div><span>Adaptive Curriculum</span></li>
-                <li><div class="icon-badge"><svg class="icon"><use href="assets/icons/feather-sprite.svg#zap"/></svg></div><span>Rapid Mastery</span></li>
-            </ul>
-            <button id="welcome-get-started-btn" class="btn btn-primary">Initialize System</button>
-        </div>
     </div>
 
     <!-- Voice Indicator -->
@@ -114,7 +101,7 @@
     
     <div id="offline-indicator" class="offline-indicator" style="display: none;">
         <svg class="icon" style="width:16px;height:16px;margin-right:8px;"><use href="assets/icons/feather-sprite.svg#shield"/></svg>
-        OFFLINE SIMULATION MODE
+        OFFLINE SIMULATION PROTOCOL
     </div>
 
     <script src="global/global.js"></script>
@@ -122,7 +109,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof mermaid !== 'undefined') {
-                mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose', fontFamily: 'Exo 2' });
+                mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'loose', fontFamily: 'Exo 2' });
             }
         });
     </script>
