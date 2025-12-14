@@ -22,18 +22,18 @@ import {
 } from "firebase/auth";
 
 // ==================================================================================
-// 🚨 IMPORTANT: FIREBASE CONFIGURATION
-// You must replace the placeholders below with your actual Firebase Project keys.
-// Get these from: Firebase Console -> Project Settings -> General -> "Your apps"
+// 🚨 FIREBASE CONFIGURATION (LIVE)
+// Keys provided by user.
 // ==================================================================================
 const firebaseConfig = {
-  apiKey: "YOUR_FIREBASE_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.firebasestorage.app",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID"
+    apiKey: "AIzaSyDgdLWA8yVvKZB_QV2Aj8Eenx--O8-ftFY",
+    authDomain: "knowledge-tester-web.firebaseapp.com",
+    databaseURL: "https://knowledge-tester-web-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "knowledge-tester-web",
+    storageBucket: "knowledge-tester-web.firebasestorage.app",
+    messagingSenderId: "339283151228",
+    appId: "1:339283151228:web:1d4d5f2c7d4834ffe23cf9",
+    measurementId: "G-CPMFPCJ2G6"
 };
 // ==================================================================================
 
@@ -41,43 +41,96 @@ let app, analytics, db, auth, googleProvider;
 let isFirebaseActive = false;
 
 try {
-    // Basic check to see if user has replaced the placeholder
-    if (firebaseConfig.apiKey !== "YOUR_FIREBASE_API_KEY") {
+    // Check if config is valid (simple check on apiKey)
+    if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_FIREBASE_API_KEY") {
         app = initializeApp(firebaseConfig);
         analytics = getAnalytics(app);
         db = getFirestore(app);
         auth = getAuth(app);
         googleProvider = new GoogleAuthProvider();
         isFirebaseActive = true;
-        console.log("✅ Firebase Initialized");
+        console.log("✅ Firebase Connected: Online Mode Active");
     } else {
-        console.warn("⚠️ Firebase Config is missing or using placeholders. Cloud features (Leaderboard, Sync) will be disabled.");
-        throw new Error("Firebase config incomplete");
+        console.warn("⚠️ Firebase Config Invalid. Using Local Storage fallback.");
     }
 } catch (e) {
+    console.error("Firebase Init Error:", e);
     isFirebaseActive = false;
 }
 
 let currentUser = null;
 let authStateCallback = null;
 
-// --- Helper for Offline Mode ---
-// If Firebase isn't configured, we use this simple local mock for Auth to let the app run.
+// --- Helper for Offline Mode (LocalStorage Persistence) ---
+const OFFLINE_USER_KEY = 'kt_offline_user';
+
 const mockAuth = {
     user: null,
     listeners: [],
+    
+    init() {
+        const stored = localStorage.getItem(OFFLINE_USER_KEY);
+        if (stored) {
+            this.user = JSON.parse(stored);
+        }
+    },
+
     login(email) {
-        this.user = { uid: 'offline_user', email: email, displayName: email.split('@')[0], isAnonymous: false };
+        this.user = { 
+            uid: 'offline_user_' + Date.now(), 
+            email: email, 
+            displayName: email.split('@')[0], 
+            isAnonymous: false,
+            photoURL: null
+        };
+        this.persist();
         this.notify();
         return Promise.resolve(this.user);
     },
+
+    loginGuest() {
+        this.user = { 
+            uid: 'guest_' + Date.now(), 
+            isAnonymous: true, 
+            displayName: 'Guest Agent',
+            email: null,
+            photoURL: null
+        };
+        this.persist();
+        this.notify();
+        return Promise.resolve(this.user);
+    },
+
     logout() {
         this.user = null;
+        localStorage.removeItem(OFFLINE_USER_KEY);
         this.notify();
         return Promise.resolve();
     },
-    notify() { this.listeners.forEach(cb => cb(this.user)); }
+
+    updateProfile(data) {
+        if (this.user) {
+            this.user = { ...this.user, ...data };
+            this.persist();
+            this.notify();
+        }
+        return Promise.resolve();
+    },
+
+    persist() {
+        if (this.user) {
+            localStorage.setItem(OFFLINE_USER_KEY, JSON.stringify(this.user));
+        }
+    },
+
+    notify() { 
+        this.listeners.forEach(cb => cb(this.user)); 
+    }
 };
+
+// Initialize mock auth state if Firebase failed
+if (!isFirebaseActive) mockAuth.init();
+
 
 // --- Auth Getters ---
 function getUserId() { return currentUser ? currentUser.uid : null; }
@@ -95,6 +148,7 @@ function isGuest() { return currentUser ? currentUser.isAnonymous : false; }
 function getUserProvider() {
     if (!currentUser) return null;
     if (currentUser.isAnonymous) return 'anonymous';
+    if (!isFirebaseActive) return 'offline';
     return currentUser.providerData.length > 0 ? currentUser.providerData[0].providerId : 'unknown';
 }
 
@@ -111,16 +165,12 @@ function register(email, password) {
 }
 
 function loginWithGoogle() {
-    if (!isFirebaseActive) return Promise.reject("Firebase not configured");
+    if (!isFirebaseActive) return Promise.reject({ message: "Google Login requires active Firebase connection." });
     return signInWithPopup(auth, googleProvider);
 }
 
 function loginAsGuest() {
-    if (!isFirebaseActive) {
-        mockAuth.user = { uid: 'guest_' + Date.now(), isAnonymous: true, displayName: 'Guest Agent' };
-        mockAuth.notify();
-        return Promise.resolve(mockAuth.user);
-    }
+    if (!isFirebaseActive) return mockAuth.loginGuest();
     return signInAnonymously(auth);
 }
 
@@ -146,12 +196,14 @@ function confirmReset(code, newPassword) {
 
 function onAuthChange(callback) {
     authStateCallback = callback;
+    
     if (!isFirebaseActive) {
         mockAuth.listeners.push(callback);
-        // Fire once immediately
+        // Fire once immediately with current state (loaded from localStorage)
         callback(mockAuth.user);
         return () => {};
     }
+    
     return onAuthStateChanged(auth, (user) => {
         currentUser = user;
         callback(user);
@@ -161,7 +213,9 @@ function onAuthChange(callback) {
 // --- Account Management ---
 
 function updateUserProfile(profileData) {
-    if (!currentUser || !isFirebaseActive) return Promise.resolve();
+    if (!isFirebaseActive) return mockAuth.updateProfile(profileData);
+    if (!currentUser) return Promise.resolve();
+    
     return updateProfile(currentUser, profileData).then(async () => {
         await currentUser.reload();
         window.dispatchEvent(new CustomEvent('profile-updated'));
@@ -169,12 +223,12 @@ function updateUserProfile(profileData) {
 }
 
 function linkGoogle() {
-    if (!isFirebaseActive || !currentUser) return Promise.reject("Not available");
+    if (!isFirebaseActive || !currentUser) return Promise.reject({ message: "Feature unavailable in Offline Mode." });
     return linkWithPopup(currentUser, googleProvider);
 }
 
 function linkEmail(email, password) {
-    if (!isFirebaseActive || !currentUser) return Promise.reject("Not available");
+    if (!isFirebaseActive || !currentUser) return Promise.reject({ message: "Feature unavailable in Offline Mode." });
     const credential = EmailAuthProvider.credential(email, password);
     return linkWithCredential(currentUser, credential);
 }
@@ -192,7 +246,6 @@ function changePassword(newPassword) {
 
 // --- Database Wrappers (Firestore) ---
 
-// If Firebase is inactive, we return dummy objects/promises so the app doesn't crash.
 const mockDoc = { exists: () => false, data: () => ({}) };
 
 async function getDocWrapper(ref) {
@@ -253,15 +306,14 @@ async function getLeaderboard(limitCount = 20) {
     }
 }
 
-// Export the real Firebase SDK functions (or their safe wrappers)
 export { 
     db, 
-    doc as firestoreDoc, // Direct access if needed, but prefer wrappers below
+    doc as firestoreDoc, 
     getDocWrapper as getDoc, 
     setDocWrapper as setDoc, 
     docWrapper as doc,
     collectionWrapper as collection,
-    query, orderBy, limit, getDocs, // Standard exports
+    query, orderBy, limit, getDocs, 
     
     getUserId, getUserEmail, getUserName, getUserPhoto, isGuest, getUserProvider,
     login, register, loginWithGoogle, loginAsGuest, logout, 
