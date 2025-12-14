@@ -17,7 +17,12 @@ function setGreeting() {
     const name = firebaseService.getUserName() || "Agent";
     
     const titleEl = document.getElementById('greeting-main');
-    if (titleEl) titleEl.textContent = `${greeting}, ${name}.`;
+    if (titleEl) {
+        const text = `${greeting}, ${name}.`;
+        titleEl.textContent = text;
+        // IMPORTANT: Update data-text for the CSS Glitch effect to match
+        titleEl.setAttribute('data-text', text);
+    }
     
     // Update Stats Pill
     const stats = gamificationService.getStats();
