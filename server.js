@@ -66,40 +66,40 @@ function getStrictJsonInstruction() {
 // --- FALLBACK DATA GENERATORS (Safety Net) ---
 const FALLBACK_DATA = {
     journey: (topic) => ({
-        topicName: topic || "Robotics Mastery",
-        totalLevels: 50,
+        topicName: topic || "IT Fundamentals",
+        totalLevels: 20,
         description: `(Offline Simulation) A comprehensive training course on ${topic}. Server could not reach AI.`,
         isFallback: true
     }),
     curriculum: (topic) => ({
-        chapters: ["Sensors & Input", "Processing Logic", "Actuators & Motion", "Advanced AI Control"],
+        chapters: ["Fundamentals", "Core Concepts", "Advanced Usage", "Best Practices"],
         isFallback: true
     }),
     questions: (topic) => ({
         questions: [
             {
-                question: `In the context of ${topic}, what is the primary function of a PID controller?`,
-                options: ["To cool down motors", "To correct errors and maintain stability", "To generate random numbers", "To connect to Wi-Fi"],
+                question: `In the context of ${topic}, what is the first step in troubleshooting?`,
+                options: ["Reboot everything", "Identify the problem", "Call support", "Ignore it"],
                 correctAnswerIndex: 1,
-                explanation: "PID (Proportional-Integral-Derivative) controllers allow systems to automatically correct errors to reach a target state."
+                explanation: "Identifying the root cause is essential before applying fixes."
             },
             {
-                question: `A robot needs to detect the distance to a wall. Which sensor is best?`,
-                options: ["Microphone", "Ultrasonic Sensor", "Thermometer", "Gyroscope"],
+                question: `Which of these is a key principle of ${topic}?`,
+                options: ["Complexity", "Consistency", "Randomness", "Obscurity"],
                 correctAnswerIndex: 1,
-                explanation: "Ultrasonic sensors emit sound waves and measure the echo time to calculate distance."
+                explanation: "Consistency leads to reliable and maintainable systems."
             },
             {
-                question: `What does 'GPIO' stand for on a Raspberry Pi?`,
-                options: ["General Purpose Input/Output", "Graphic Processing Input Only", "Global Position In Orbit", "General Power In Out"],
-                correctAnswerIndex: 0,
-                explanation: "GPIO pins allow the computer to interact with the physical world (LEDs, Motors, Sensors)."
+                question: `Why is learning ${topic} important today?`,
+                options: ["It looks cool", "High industry demand", "It's easy", "No reason"],
+                correctAnswerIndex: 1,
+                explanation: "Skills in this area are highly sought after in the modern tech landscape."
             }
         ],
         isFallback: true
     }),
     lesson: (topic) => ({
-        lesson: `### System Briefing: ${topic}\n\n**Status:** Offline Backup Protocol Active.\n\nSince the AI connection is currently offline, we are accessing the local reserve archives.\n\n*   **Core Concept:** Mastery of ${topic} requires understanding the loop of Sense -> Think -> Act.\n*   **Industry Standard:** Automation is the future of manufacturing and logistics.\n*   **Objective:** Prove your knowledge to proceed.\n\nProceed to the challenge.`,
+        lesson: `### System Briefing: ${topic}\n\n**Status:** Offline Backup Protocol Active.\n\nSince the AI connection is currently offline, we are accessing the local reserve archives.\n\n*   **Core Concept:** Mastery of ${topic} requires consistent practice.\n*   **Industry Standard:** This skill is a cornerstone of modern IT.\n*   **Objective:** Prove your knowledge to proceed.\n\nProceed to the challenge.`,
         isFallback: true
     })
 };

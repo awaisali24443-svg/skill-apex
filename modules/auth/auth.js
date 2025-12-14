@@ -6,63 +6,63 @@ import { LOCAL_STORAGE_KEYS } from '../../constants.js';
 let elements = {};
 let isLoginMode = true;
 
-// --- DEMO SCENARIOS (ROBOTICS & IT EXPO EDITION) ---
-// 1. Python for Robotics: Level 1 (Entry)
-// 2. Computer Vision: Level 5 (Visuals)
-// 3. Autonomous Navigation: Level 30 (Advanced)
-// 4. Swarm Intelligence: Level 50 (Boss Battle)
+// --- DEMO SCENARIOS (TRENDING IT TOPICS EDITION) ---
+// 1. Python Mastery: Level 1 (Entry)
+// 2. Web Development: Level 5 (Visuals)
+// 3. Machine Learning: Level 30 (Advanced)
+// 4. Prompt Engineering: Level 50 (Boss Battle)
 
 const DEMO_SCENARIOS = [
     {
-        topic: "Python for Robotics",
+        topic: "Python Mastery",
         level: 1,
         totalLevels: 50,
         style: "topic-programming",
-        desc: "Master the language of hardware control.",
-        lesson: "### **MISSION BRIEFING: HARDWARE INTERFACE**\n\n**STATUS:** Connected to Raspberry Pi Controller.\n\n*   **GPIO Pins:** General Purpose Input/Output. The nervous system connecting code to motors.\n*   **PWM (Pulse Width Modulation):** Controlling motor speed by pulsing power on and off rapidly.\n*   **Libraries:** Using `RPi.GPIO` to simplify hardware commands.\n\nInitialize motor control sequence.",
+        desc: "The world's most popular language.",
+        lesson: "### **MISSION BRIEFING: PYTHON BASICS**\n\n**STATUS:** Interpreter Online.\n\n*   **Readability:** Python is designed to be read like English.\n*   **Variables:** Containers for storing data values. No type declaration needed.\n*   **Indentation:** Python uses whitespace to define blocks of code instead of curly braces `{}`.\n\nInitialize script.",
         questions: [
-            { question: "You need to slow down a DC motor using code. Which technique do you use?", options: ["Digital Write HIGH", "PWM (Pulse Width Modulation)", "Analog Read", "Voltage Divider"], correctAnswerIndex: 1, explanation: "PWM simulates lower voltage by toggling the signal fast, effectively controlling speed." },
-            { question: "Which Python library is standard for controlling Raspberry Pi pins?", options: ["pandas", "RPi.GPIO", "numpy", "requests"], correctAnswerIndex: 1, explanation: "RPi.GPIO provides the interface to control the physical pins on the board." },
-            { question: "A sensor returns a '1' or '0'. What type of signal is this?", options: ["Analog", "Digital", "Quantum", "Spectral"], correctAnswerIndex: 1, explanation: "Digital signals have only two states: High (1) or Low (0)." }
+            { question: "How do you output text to the console in Python?", options: ["echo('Hello')", "console.log('Hello')", "print('Hello')", "System.out.println('Hello')"], correctAnswerIndex: 2, explanation: "`print()` is the standard function to display output in Python." },
+            { question: "Which symbol is used for comments in Python?", options: ["//", "#", "/*", "<!--"], correctAnswerIndex: 1, explanation: "The `#` symbol starts a comment line in Python." },
+            { question: "How do you define a block of code (like a loop body)?", options: ["Curly Braces {}", "Indentation (Whitespace)", "Parentheses ()", "End statements"], correctAnswerIndex: 1, explanation: "Python enforces indentation to define scope, keeping code clean and readable." }
         ]
     },
     {
-        topic: "Computer Vision Systems",
+        topic: "Web Development",
         level: 5,
-        totalLevels: 80,
+        totalLevels: 60,
         style: "topic-arts",
-        desc: "Teach machines to see and interpret the world.",
-        lesson: "### **MISSION BRIEFING: OBJECT TRACKING**\n\n**STATUS:** Camera Feed Active. Processing Frames.\n\n*   **OpenCV:** The open-source library for real-time computer vision.\n*   **RGB vs Grayscale:** Converting images to B&W (Grayscale) drastically speeds up processing.\n*   **Edge Detection:** Finding boundaries of objects by looking for sharp changes in brightness.\n\nLocate target in video stream.",
+        desc: "Building the modern web.",
+        lesson: "### **MISSION BRIEFING: THE DOM**\n\n**STATUS:** Browser Rendering.\n\n*   **HTML:** The skeleton/structure of the page.\n*   **CSS:** The skin/style of the page.\n*   **JavaScript:** The muscles/logic that make it interactive.\n*   **DOM:** The Document Object Model - how JS sees and changes HTML.\n\nStyle the interface.",
         questions: [
-            { question: "Why do we often convert RGB images to Grayscale for processing?", options: ["It looks artistic", "To reduce computational load", "Cameras only see B&W", "To increase file size"], correctAnswerIndex: 1, explanation: "Grayscale images have 1 channel vs 3 (RGB), making math operations 3x faster." },
-            { question: "Which algorithm is commonly used for detecting edges in an image?", options: ["Canny Edge Detector", "Bubble Sort", "Dijkstra", "AES Encryption"], correctAnswerIndex: 0, explanation: "The Canny algorithm is a multi-stage algorithm to detect a wide range of edges in images." },
-            { question: "A self-driving car sees a Stop sign. This is an example of:", options: ["Image Generation", "Object Detection/Classification", "Data Compression", "Audio Synthesis"], correctAnswerIndex: 1, explanation: "The system is identifying and classifying a specific object within the visual field." }
+            { question: "Which HTML tag is used for the largest heading?", options: ["<head>", "<h6>", "<h1>", "<header>"], correctAnswerIndex: 2, explanation: "`<h1>` represents the highest section level heading." },
+            { question: "Which CSS property changes the text color?", options: ["font-color", "text-color", "color", "foreground"], correctAnswerIndex: 2, explanation: "The `color` property sets the foreground color of text content." },
+            { question: "What is the correct HTML element for inserting JavaScript?", options: ["<script>", "<js>", "<javascript>", "<code>"], correctAnswerIndex: 0, explanation: "The `<script>` tag is used to embed or reference executable client-side scripts." }
         ]
     },
     {
-        topic: "Autonomous Navigation",
+        topic: "Machine Learning",
         level: 30,
-        totalLevels: 120,
+        totalLevels: 100,
         style: "topic-space",
-        desc: "LIDAR, SLAM, and Pathfinding algorithms.",
-        lesson: "### **MISSION BRIEFING: S.L.A.M.**\n\n**STATUS:** Mapping Unknown Environment.\n\n*   **SLAM:** Simultaneous Localization and Mapping. Building a map while figuring out where you are in it.\n*   **LIDAR:** Light Detection and Ranging. Using lasers to measure distances precisely.\n*   **A* (A-Star):** The most popular algorithm for finding the shortest path between nodes.\n\nCalculate trajectory.",
+        desc: "Teaching computers to learn.",
+        lesson: "### **MISSION BRIEFING: SUPERVISED LEARNING**\n\n**STATUS:** Training Model.\n\n*   **Labeled Data:** Input data that has the correct answer attached (e.g., photo of cat + label 'Cat').\n*   **Training vs Testing:** Use 80% of data to teach, 20% to test accuracy.\n*   **Overfitting:** When a model memorizes the training data but fails on new, unseen data.\n\nOptimize parameters.",
         questions: [
-            { question: "What does 'SLAM' stand for in robotics?", options: ["Super Large Autonomous Machine", "Simultaneous Localization and Mapping", "Sensor Light And Motion", "System Logic And Memory"], correctAnswerIndex: 1, explanation: "SLAM is the computational problem of constructing a map of an unknown environment while keeping track of location." },
-            { question: "Which sensor spins to create a 360-degree point cloud of the room?", options: ["Gyroscope", "Ultrasonic", "LIDAR", "Thermometer"], correctAnswerIndex: 2, explanation: "LIDAR uses spinning laser arrays to create high-resolution 3D maps." },
-            { question: "The robot needs the shortest path through a maze. Which algorithm is best?", options: ["Random Walk", "A* (A-Star) Search", "Brute Force", "Bubble Sort"], correctAnswerIndex: 1, explanation: "A* is widely used for pathfinding because it efficiently finds the optimal path using heuristics." }
+            { question: "What is 'Supervised Learning'?", options: ["Learning without data", "Training on labeled data with known answers", "Finding hidden patterns in unlabeled data", "Letting the AI explore randomly"], correctAnswerIndex: 1, explanation: "Supervised learning maps input to output based on example input-output pairs." },
+            { question: "If a model performs perfectly on training data but fails in the real world, it is:", options: ["Underfitting", "Overfitting", "Generalized", "Optimized"], correctAnswerIndex: 1, explanation: "Overfitting means the model learned the 'noise' of the training set rather than the general rule." },
+            { question: "What is a 'Feature' in ML?", options: ["A bug", "An individual measurable property of the data", "The output label", "The software version"], correctAnswerIndex: 1, explanation: "Features are the input variables (like pixels in an image or words in a text) used for prediction." }
         ]
     },
     {
-        topic: "Swarm Drone Defense",
+        topic: "Prompt Engineering",
         level: 50,
         totalLevels: 50, // Boss Context
         style: "topic-robotics",
-        desc: "Coordinating multi-agent systems.",
-        lesson: "### **BOSS BATTLE: HIVE MIND CONTROL**\n\n**STATUS:** SYNCHRONIZING 500 DRONES.\n\n*   **Decentralized Control:** No single leader. Each drone follows local rules to create global behavior.\n*   **Collision Avoidance:** The highest priority rule for any swarm member.\n*   **Mesh Network:** Drones talk to neighbors, relaying messages across the swarm.\n\n**OBJECTIVE:** Form defensive shield formation.",
+        desc: "Mastering Generative AI.",
+        lesson: "### **BOSS BATTLE: LLM CONTROL**\n\n**STATUS:** CONTEXT WINDOW ACTIVE.\n\n*   **Persona:** Giving the AI a role (e.g., 'Act as a Senior Engineer') improves output quality.\n*   **Chain of Thought:** Asking the AI to 'think step-by-step' drastically reduces logic errors.\n*   **Few-Shot:** Providing examples in the prompt to guide the style/format.\n\n**OBJECTIVE:** Extract precise data.",
         questions: [
-            { question: "In a decentralized swarm, what happens if the 'leader' drone is destroyed?", options: ["The swarm crashes", "The swarm adapts and continues", "The mission resets", "They fly back home"], correctAnswerIndex: 1, explanation: "Decentralized systems have no single point of failure; the swarm reconfigures automatically." },
-            { question: "How do drones in a swarm typically communicate data?", options: ["Via a central server only", "Mesh Networking (Peer-to-Peer)", "Morse Code", "They don't communicate"], correctAnswerIndex: 1, explanation: "Mesh networks allow drones to relay data through each other, extending range without a central tower." },
-            { question: "What is the primary bio-mimicry inspiration for swarm robotics?", options: ["Solitary Tigers", "Flocks of Birds / Schools of Fish", "Sloths", "Human Cities"], correctAnswerIndex: 1, explanation: "Nature's flocks and schools demonstrate complex behavior from simple local rules (Boids algorithm)." }
+            { question: "What is 'Hallucination' in the context of AI?", options: ["The AI gets a virus", "The AI generates confident but factually incorrect info", "The AI becomes sentient", "The AI refuses to answer"], correctAnswerIndex: 1, explanation: "Hallucinations occur when models invent plausible-sounding but false information." },
+            { question: "Which technique involves giving the AI examples of input and output?", options: ["Zero-Shot Prompting", "Few-Shot Prompting", "Blind Prompting", "Code Injection"], correctAnswerIndex: 1, explanation: "Few-Shot prompting provides a few demonstrations to steer the model's behavior." },
+            { question: "Asking the model to 'Let's think step by step' is known as:", options: ["Chain of Thought", "Brainstorming", "Recursion", "Jailbreaking"], correctAnswerIndex: 0, explanation: "Chain of Thought prompting encourages the model to break down complex reasoning tasks." }
         ]
     }
 ];
@@ -105,7 +105,7 @@ async function handleGoogleLogin() {
 }
 
 function populateGuestData() {
-    console.log("Injecting Expo Demo Data (Robotics Edition)...");
+    console.log("Injecting Expo Demo Data (Trending Topics)...");
 
     // 1. PRE-BAKED LEVEL CACHE (Instant Load)
     DEMO_SCENARIOS.forEach(scenario => {
@@ -122,7 +122,7 @@ function populateGuestData() {
         }
     });
 
-    // 2. ACTIVE JOURNEYS (Matches the new Robotics topics)
+    // 2. ACTIVE JOURNEYS (Matches the new topics)
     if (!localStorage.getItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS)) {
         const sampleJourneys = DEMO_SCENARIOS.map(scenario => ({
             id: `j_${scenario.topic.substring(0, 3)}_${Math.floor(Math.random()*1000)}`,
@@ -139,17 +139,17 @@ function populateGuestData() {
     // 3. GAMIFICATION STATS
     if (!localStorage.getItem(LOCAL_STORAGE_KEYS.GAMIFICATION)) {
         const sampleStats = {
-            level: 18,
-            xp: 18500,
-            currentStreak: 14, 
+            level: 12,
+            xp: 12500,
+            currentStreak: 7, 
             lastQuizDate: new Date().toISOString(),
-            totalQuizzesCompleted: 45, 
-            totalPerfectQuizzes: 12, 
-            questionsSaved: 8, 
-            nightOwlSessions: 5, 
-            fastAnswersCount: 22, 
-            totalAuralMinutes: 120, 
-            uniqueTopicsPlayed: ["Robotics", "AI", "Computer Vision", "Sensors"], 
+            totalQuizzesCompleted: 25, 
+            totalPerfectQuizzes: 5, 
+            questionsSaved: 4, 
+            nightOwlSessions: 2, 
+            fastAnswersCount: 15, 
+            totalAuralMinutes: 45, 
+            uniqueTopicsPlayed: ["Python", "JavaScript", "AI"], 
             
             dailyQuests: { 
                 date: new Date().toDateString(), 
@@ -164,7 +164,7 @@ function populateGuestData() {
         localStorage.setItem(LOCAL_STORAGE_KEYS.GAMIFICATION, JSON.stringify(sampleStats));
     }
 
-    // 4. RICH HISTORY (Includes Robotics Audio Transcript)
+    // 4. RICH HISTORY (Includes Audio Transcript)
     if (!localStorage.getItem(LOCAL_STORAGE_KEYS.HISTORY)) {
         const now = Date.now();
         const day = 86400000;
@@ -172,7 +172,7 @@ function populateGuestData() {
             {
                 id: `quiz_h_1`,
                 type: 'quiz',
-                topic: `Autonomous Navigation - Level 29`,
+                topic: `Machine Learning - Level 29`,
                 score: 3,
                 totalQuestions: 3,
                 date: new Date(now - (day * 0.1)).toISOString(),
@@ -181,7 +181,7 @@ function populateGuestData() {
             {
                 id: `quiz_h_2`,
                 type: 'quiz',
-                topic: `Python for Robotics - Level 4`,
+                topic: `Web Development - Level 4`,
                 score: 2,
                 totalQuestions: 3,
                 date: new Date(now - (day * 0.5)).toISOString(),
@@ -190,38 +190,38 @@ function populateGuestData() {
             {
                 id: `aural_h_1`,
                 type: 'aural',
-                topic: 'Robotics Theory Session',
+                topic: 'React vs Angular',
                 date: new Date(now - (day * 2)).toISOString(),
-                duration: 145, 
-                xpGained: 120,
+                duration: 120, 
+                xpGained: 100,
                 transcript: [
-                    { sender: 'user', text: 'Explain Inverse Kinematics for a 6-axis arm.' },
-                    { sender: 'model', text: 'Inverse Kinematics calculates the joint angles required to position the end-effector at a specific point in 3D space.' },
-                    { sender: 'user', text: 'Why is it harder than Forward Kinematics?' },
-                    { sender: 'model', text: 'Because there can be multiple valid joint configurations (solutions) for the same end position, creating a complex math problem.' }
+                    { sender: 'user', text: 'What is the main difference between React and Angular?' },
+                    { sender: 'model', text: 'React is a library focused on the View layer, giving you freedom to choose other tools. Angular is a full-fledged framework with everything included (router, http client, etc.).' },
+                    { sender: 'user', text: 'Which one is easier to learn?' },
+                    { sender: 'model', text: 'React typically has a gentler learning curve because it is just JavaScript, whereas Angular requires learning TypeScript and its specific patterns.' }
                 ]
             }
         ];
         localStorage.setItem(LOCAL_STORAGE_KEYS.HISTORY, JSON.stringify(sampleHistory));
     }
 
-    // 5. LIBRARY CONTENT (Robotics focused)
+    // 5. LIBRARY CONTENT
     if (!localStorage.getItem(LOCAL_STORAGE_KEYS.LIBRARY)) {
         const sampleLibrary = [
             {
                 id: "q_lib_1",
-                question: "What is the role of a PID Controller in maintaining robot balance?",
-                options: ["Power Management", "Error Correction Loop", "Image Processing", "Data Storage"],
+                question: "What is the difference between a List and a Tuple in Python?",
+                options: ["No difference", "Lists are mutable, Tuples are immutable", "Tuples are faster", "Lists can store strings only"],
                 correctAnswerIndex: 1,
-                explanation: "PID (Proportional-Integral-Derivative) continuously calculates error values to apply accurate corrections to motors.",
+                explanation: "Immutability means Tuples cannot be changed after creation, making them safer for fixed data.",
                 srs: { interval: 1, repetitions: 1, easeFactor: 2.5, nextReviewDate: Date.now() - 10000, lastReviewed: Date.now() - 86400000 }
             },
             {
                 id: "q_lib_2",
-                question: "Which sensor uses the Doppler effect?",
-                options: ["Camera", "LIDAR", "Ultrasonic/Radar", "Gyroscope"],
-                correctAnswerIndex: 2,
-                explanation: "Radar and Ultrasonic sensors can measure speed and distance using frequency shifts (Doppler Effect).",
+                question: "What does 'Responsive Design' mean in Web Dev?",
+                options: ["Fast loading speed", "Works on mobile and desktop", "Reacts to voice commands", "Uses AI"],
+                correctAnswerIndex: 1,
+                explanation: "Responsive design ensures web pages render well on a variety of devices and window or screen sizes.",
                 srs: { interval: 0, repetitions: 0, easeFactor: 2.5, nextReviewDate: Date.now(), lastReviewed: null }
             }
         ];
