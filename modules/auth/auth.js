@@ -44,69 +44,72 @@ async function handleGoogleLogin() {
 }
 
 function populateGuestData() {
-    console.log("Populating Local IT Expo Data...");
+    console.log("Populating Extensive Mock Data...");
 
     // 1. GAMIFICATION STATS (Look impressive instantly)
     if (!localStorage.getItem(LOCAL_STORAGE_KEYS.GAMIFICATION)) {
         const sampleStats = {
-            level: 18,
-            xp: 18500,
-            currentStreak: 65,
+            level: 24,
+            xp: 24500,
+            currentStreak: 12,
             lastQuizDate: new Date().toISOString(),
-            totalQuizzesCompleted: 92,
-            totalPerfectQuizzes: 35,
-            questionsSaved: 15,
+            totalQuizzesCompleted: 145,
+            totalPerfectQuizzes: 42,
+            questionsSaved: 18,
+            nightOwlSessions: 8,
+            fastAnswersCount: 320,
             dailyQuests: { date: new Date().toDateString(), quests: [] },
             dailyChallenge: { date: new Date().toDateString(), completed: false }
         };
         localStorage.setItem(LOCAL_STORAGE_KEYS.GAMIFICATION, JSON.stringify(sampleStats));
     }
 
-    // 2. ACTIVE JOURNEYS (Highly recognizable, "Cool" IT topics)
+    // 2. ACTIVE JOURNEYS (Varied progress and topics)
     if (!localStorage.getItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS)) {
         const sampleJourneys = [
             {
-                id: "journey_expo_1",
-                goal: "Ethical Hacking & Security",
-                description: "Learn penetration testing, Kali Linux, and how to secure networks against cyber attacks.",
-                currentLevel: 15,
-                totalLevels: 50,
-                styleClass: "topic-space", // Purple/Dark look
+                id: "journey_mock_1",
+                goal: "Cybersecurity Ops",
+                description: "Advanced penetration testing and network defense strategies.",
+                currentLevel: 67,
+                totalLevels: 150,
+                styleClass: "topic-space", 
+                createdAt: new Date(Date.now() - 86400000 * 5).toISOString()
+            },
+            {
+                id: "journey_mock_2",
+                goal: "React & Next.js",
+                description: "Building scalable front-end applications with modern frameworks.",
+                currentLevel: 12,
+                totalLevels: 40,
+                styleClass: "topic-programming", 
                 createdAt: new Date(Date.now() - 86400000 * 2).toISOString()
             },
             {
-                id: "journey_expo_2",
-                goal: "Full-Stack Web Development",
-                description: "Master the MERN Stack (MongoDB, Express, React, Node) and build professional websites.",
-                currentLevel: 42,
-                totalLevels: 60,
-                styleClass: "topic-programming", // Blue/Tech look
-                createdAt: new Date(Date.now() - 86400000 * 10).toISOString()
-            },
-            {
-                id: "journey_expo_3",
-                goal: "Freelancing Mastery",
-                description: "How to rank on Upwork/Fiverr, communicate with clients, and build a digital career.",
-                currentLevel: 8,
-                totalLevels: 20,
-                styleClass: "topic-finance", // Gold/Money look
+                id: "journey_mock_3",
+                goal: "Astrophysics 101",
+                description: "Understanding stellar evolution and black holes.",
+                currentLevel: 5,
+                totalLevels: 500, // Show off the dynamic large number scaling
+                styleClass: "topic-medicine",
                 createdAt: new Date().toISOString()
             }
         ];
         localStorage.setItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS, JSON.stringify(sampleJourneys));
     }
 
-    // 3. EXTENSIVE HISTORY
+    // 3. EXTENSIVE HISTORY (Mix of wins, losses, and aural sessions)
     if (!localStorage.getItem(LOCAL_STORAGE_KEYS.HISTORY)) {
         const now = Date.now();
         const day = 86400000;
         const sampleHistory = [];
         
-        for(let i=0; i<8; i++) {
-            const isPerfect = Math.random() > 0.6;
+        // Add some quizzes
+        for(let i=0; i<10; i++) {
+            const isPerfect = Math.random() > 0.5;
             const score = isPerfect ? 5 : Math.floor(Math.random() * 4) + 1;
-            const topic = i % 2 === 0 ? "Ethical Hacking & Security" : "Full-Stack Web Development";
-            const level = (i % 2 === 0 ? 15 : 42) - Math.floor(i/2);
+            const topic = i % 2 === 0 ? "Cybersecurity Ops" : "React & Next.js";
+            const level = (i % 2 === 0 ? 67 : 12) - Math.floor(i/2);
             
             sampleHistory.push({
                 id: `quiz_hist_${i}`,
@@ -114,39 +117,61 @@ function populateGuestData() {
                 topic: `${topic} - Level ${level}`,
                 score: score,
                 totalQuestions: 5,
-                date: new Date(now - (day * i * 0.5)).toISOString(),
+                date: new Date(now - (day * i * 0.2)).toISOString(),
                 xpGained: score * 10
             });
         }
+
+        // Add an Aural Session
+        sampleHistory.push({
+            id: `aural_hist_mock`,
+            type: 'aural',
+            topic: 'Voice Interview Practice',
+            date: new Date(now - (day * 0.1)).toISOString(),
+            duration: 185, // seconds
+            xpGained: 50,
+            transcript: [
+                { sender: 'user', text: 'Tell me about the event loop in JavaScript.' },
+                { sender: 'model', text: 'The event loop is what allows Node.js to perform non-blocking I/O operations despite being single-threaded.' }
+            ]
+        });
         
         localStorage.setItem(LOCAL_STORAGE_KEYS.HISTORY, JSON.stringify(sampleHistory));
     }
 
-    // 4. SMART LIBRARY (Questions judges will understand and find smart)
+    // 4. SMART LIBRARY (Rich content)
     if (!localStorage.getItem(LOCAL_STORAGE_KEYS.LIBRARY)) {
         const sampleLibrary = [
             {
                 id: "q_lib_1",
-                question: "In Web Development, what does 'React' use to improve performance?",
-                options: ["Direct DOM manipulation", "Virtual DOM", "SQL Database", "Flash Player"],
+                question: "What is the primary function of the 'useEffect' hook in React?",
+                options: ["Manage State", "Handle Side Effects", "Create Context", "Optimize Rendering"],
                 correctAnswerIndex: 1,
-                explanation: "React uses a Virtual DOM to minimize slow updates to the real browser DOM.",
-                srs: { interval: 0, repetitions: 0, easeFactor: 2.5, nextReviewDate: Date.now(), lastReviewed: null }
+                explanation: "useEffect lets you perform side effects in function components, like data fetching or DOM manipulation.",
+                srs: { interval: 1, repetitions: 1, easeFactor: 2.5, nextReviewDate: Date.now() - 10000, lastReviewed: Date.now() - 86400000 }
             },
             {
                 id: "q_lib_2",
-                question: "Which tool is commonly used for 'Packet Sniffing' in Ethical Hacking?",
-                options: ["Photoshop", "Wireshark", "MS Word", "Notepad"],
-                correctAnswerIndex: 1,
-                explanation: "Wireshark is the industry standard for analyzing network traffic and packets.",
+                question: "In Python, which data type is mutable?",
+                options: ["Tuple", "String", "List", "Integer"],
+                correctAnswerIndex: 2,
+                explanation: "Lists in Python can be changed after creation (mutable), unlike tuples or strings.",
                 srs: { interval: 0, repetitions: 0, easeFactor: 2.5, nextReviewDate: Date.now(), lastReviewed: null }
             },
             {
                 id: "q_lib_3",
-                question: "What is the primary benefit of Freelancing?",
-                options: ["Fixed Salary", "Global Clients & Dollar Income", "Free Health Insurance", "9 to 5 Timing"],
+                question: "What does the HTTP status code 404 signify?",
+                options: ["Server Error", "Unauthorized", "Not Found", "Bad Gateway"],
+                correctAnswerIndex: 2,
+                explanation: "404 indicates that the server cannot find the requested resource.",
+                srs: { interval: 3, repetitions: 2, easeFactor: 2.6, nextReviewDate: Date.now() + 86400000, lastReviewed: Date.now() }
+            },
+            {
+                id: "q_lib_4",
+                question: "Which of these is a symmetric encryption algorithm?",
+                options: ["RSA", "AES", "ECC", "Diffie-Hellman"],
                 correctAnswerIndex: 1,
-                explanation: "Freelancing allows access to international markets, often resulting in higher earnings in foreign currency.",
+                explanation: "AES (Advanced Encryption Standard) uses the same key for encryption and decryption.",
                 srs: { interval: 0, repetitions: 0, easeFactor: 2.5, nextReviewDate: Date.now(), lastReviewed: null }
             }
         ];

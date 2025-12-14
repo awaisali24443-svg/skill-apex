@@ -148,8 +148,24 @@ try {
 async function generateJourneyPlan(topic, persona) {
     if (!ai) return FALLBACK_DATA.journey(topic);
     
-    // Simplified prompt for speed
-    const prompt = `Analyze "${topic}". Output JSON: { topicName, totalLevels (10-50), description }`;
+    // Dynamic Level Generation Prompt
+    const prompt = `
+    Analyze the subject: "${topic}". 
+    Estimate the number of levels required to master this topic from scratch to expert.
+    
+    Guidelines for 'totalLevels':
+    - Very Simple (e.g. "Tying a Knot"): 3 to 9 levels.
+    - Basic (e.g. "Making Tea"): 10 to 20 levels.
+    - Moderate (e.g. "High School Algebra"): 30 to 80 levels.
+    - Complex (e.g. "Full Stack Dev", "History of Rome"): 100 to 400 levels.
+    - Massive (e.g. "Quantum Physics", "Medical Degree"): 500 to 1500 levels.
+    
+    Output purely JSON: { 
+        topicName: string, 
+        totalLevels: integer, 
+        description: string (short, engaging marketing pitch) 
+    }`;
+
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash', 
@@ -197,7 +213,7 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
     if (!ai) return FALLBACK_DATA.questions(topic);
     
     // Ultra-optimized prompt for speed
-    const prompt = `Topic: ${topic}. Level ${level}. Generate 3 multiple choice questions. Scenario based.`;
+    const prompt = `Topic: ${topic}. Level ${level} of ${totalLevels}. Generate 3 multiple choice questions. Scenario based.`;
     
     try {
         const response = await ai.models.generateContent({
@@ -249,7 +265,7 @@ async function generateLevelLesson(topic, level, totalLevels, questions, persona
         // Here we USE the Persona because we want the "Local Analogies" and style
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
-            contents: `Write a short, exciting lesson for ${topic} level ${level}. Under 150 words. Use simple analogies.`,
+            contents: `Write a short, exciting lesson for ${topic} level ${level} of ${totalLevels}. Under 150 words. Use simple analogies.`,
             config: { 
                 responseMimeType: 'application/json',
                 systemInstruction: getSystemInstruction(persona),
