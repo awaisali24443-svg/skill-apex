@@ -23,7 +23,6 @@ import {
 
 // ==================================================================================
 // 🚨 FIREBASE CONFIGURATION (LIVE)
-// Keys provided by user.
 // ==================================================================================
 const firebaseConfig = {
     apiKey: "AIzaSyDgdLWA8yVvKZB_QV2Aj8Eenx--O8-ftFY",
@@ -92,6 +91,7 @@ const mockAuth = {
     },
 
     loginGuest() {
+        console.log("🚀 FORCE GUEST LOGIN (Mock)");
         this.user = { 
             uid: 'guest_' + Date.now(), 
             isAnonymous: true, 
@@ -131,27 +131,42 @@ const mockAuth = {
     }
 };
 
-// Initialize mock auth state if Firebase failed
-if (!isFirebaseActive) mockAuth.init();
+// Initialize mock auth state if Firebase failed OR just to have it ready
+mockAuth.init();
 
 
 // --- Auth Getters ---
-function getUserId() { return currentUser ? currentUser.uid : null; }
+function getUserId() { return currentUser ? currentUser.uid : (mockAuth.user ? mockAuth.user.uid : null); }
 function getUserEmail() { 
-    if (currentUser?.isAnonymous) return 'Guest Agent';
-    return currentUser ? currentUser.email : null; 
+    if (currentUser) {
+        if (currentUser.isAnonymous) return 'Guest Agent';
+        return currentUser.email;
+    }
+    if (mockAuth.user) return mockAuth.user.email || 'Guest Agent';
+    return null;
 }
 function getUserName() {
-    if (currentUser?.displayName) return currentUser.displayName;
-    if (currentUser?.email) return currentUser.email.split('@')[0];
+    if (currentUser) {
+        if (currentUser.displayName) return currentUser.displayName;
+        if (currentUser.email) return currentUser.email.split('@')[0];
+    }
+    if (mockAuth.user) return mockAuth.user.displayName;
     return 'Agent';
 }
-function getUserPhoto() { return currentUser ? currentUser.photoURL : null; }
-function isGuest() { return currentUser ? currentUser.isAnonymous : false; }
+function getUserPhoto() { 
+    if (currentUser) return currentUser.photoURL;
+    if (mockAuth.user) return mockAuth.user.photoURL;
+    return null; 
+}
+function isGuest() { 
+    if (currentUser) return currentUser.isAnonymous;
+    if (mockAuth.user) return mockAuth.user.isAnonymous;
+    return false; 
+}
 function getUserProvider() {
+    if (mockAuth.user) return 'offline';
     if (!currentUser) return null;
     if (currentUser.isAnonymous) return 'anonymous';
-    if (!isFirebaseActive) return 'offline';
     return currentUser.providerData.length > 0 ? currentUser.providerData[0].providerId : 'unknown';
 }
 
@@ -173,21 +188,28 @@ function loginWithGoogle() {
         return Promise.reject({ message: "Google Login unavailable (Firebase Disconnected). Check console for details." });
     }
     return signInWithPopup(auth, googleProvider).catch(error => {
-        // Handle common configuration error
         if (error.code === 'auth/unauthorized-domain') {
-            console.error("⚠️ DOMAIN ERROR: You must add this domain to Firebase Console > Authentication > Settings > Authorized Domains");
-            throw new Error("Domain not authorized in Firebase. Check console.");
+            console.error("⚠️ DOMAIN ERROR: You must add this domain to Firebase Console.");
+            throw new Error("Domain not authorized in Firebase. Use Guest Mode.");
         }
         throw error;
     });
 }
 
 function loginAsGuest() {
-    if (!isFirebaseActive) return mockAuth.loginGuest();
-    return signInAnonymously(auth);
+    // FORCE MOCK LOGIN IF FIREBASE FAILS OR JUST TO BE SAFE
+    // Use Firebase anonymous login ONLY if perfectly connected, otherwise fallback immediately
+    if (isFirebaseActive) {
+        return signInAnonymously(auth).catch((e) => {
+            console.warn("Firebase Anon Login failed, falling back to local mock", e);
+            return mockAuth.loginGuest();
+        });
+    }
+    return mockAuth.loginGuest();
 }
 
 function logout() {
+    if (mockAuth.user) return mockAuth.logout();
     if (!isFirebaseActive) return mockAuth.logout();
     return firebaseSignOut(auth);
 }
@@ -210,23 +232,36 @@ function confirmReset(code, newPassword) {
 function onAuthChange(callback) {
     authStateCallback = callback;
     
-    if (!isFirebaseActive) {
-        mockAuth.listeners.push(callback);
-        // Fire once immediately with current state (loaded from localStorage)
+    // Always listen to mock changes
+    mockAuth.listeners.push(callback);
+    
+    // If we have a mock user already, fire immediately
+    if (mockAuth.user) {
         callback(mockAuth.user);
-        return () => {};
     }
     
-    return onAuthStateChanged(auth, (user) => {
-        currentUser = user;
-        callback(user);
-    });
+    if (isFirebaseActive) {
+        return onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                // If firebase connects, use that user
+                callback(user);
+            } else if (!mockAuth.user) {
+                // Only fire null if neither firebase nor mock has user
+                callback(null);
+            }
+        });
+    } else {
+        // If firebase dead, just ensure we fired the mock state
+        if (!mockAuth.user) callback(null);
+        return () => {};
+    }
 }
 
 // --- Account Management ---
 
 function updateUserProfile(profileData) {
-    if (!isFirebaseActive) return mockAuth.updateProfile(profileData);
+    if (mockAuth.user) return mockAuth.updateProfile(profileData);
     if (!currentUser) return Promise.resolve();
     
     return updateProfile(currentUser, profileData).then(async () => {

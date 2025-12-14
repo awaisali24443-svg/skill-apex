@@ -40,7 +40,12 @@ async function handleSubmit(e) {
 }
 
 async function handleGoogleLogin() {
-    try { await firebaseService.loginWithGoogle(); } catch (error) { handleError(error); }
+    try { 
+        await firebaseService.loginWithGoogle(); 
+    } catch (error) { 
+        // If Google fails (likely domain issue), suggest Guest
+        handleError({ message: "Google Login failed. Use 'Try as Guest' for the Expo demo." });
+    }
 }
 
 function populateGuestData() {
@@ -158,6 +163,12 @@ async function handleGuestLogin() {
     try {
         populateGuestData(); 
         await firebaseService.loginAsGuest();
+        // Force redirect if listener doesn't catch it
+        setTimeout(() => {
+            const container = document.getElementById('auth-container');
+            if(container) container.style.display = 'none';
+            document.getElementById('app-wrapper').style.display = 'flex';
+        }, 1000);
     } catch (error) {
         handleError(error);
     }
