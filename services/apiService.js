@@ -4,14 +4,13 @@ import { showToast } from './toastService.js';
 
 // --- CONFIGURATION ---
 const MAX_RETRIES = 2;
-const RETRY_DELAY_BASE = 1000;
+const RETRY_DELAY_BASE = 1500;
 
 // Client-side AI instance (for Live API mainly)
 let ai = null; 
 let isConfigLoaded = false;
 
 // --- INITIALIZATION ---
-// Fetch the key from the server so we can use Client-Side SDK features if needed
 (async function initClientAI() {
     try {
         const res = await fetch('/api/client-config');
@@ -35,6 +34,7 @@ async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
         
         // Handle non-200 responses
         if (!response.ok) {
+            // 500s are worth retrying, 400s usually mean bad request
             if (response.status >= 500 && retries > 0) {
                 console.log(`Retrying ${url}... (${retries} left)`);
                 await new Promise(r => setTimeout(r, RETRY_DELAY_BASE));
@@ -43,19 +43,19 @@ async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
             throw new Error(`Server Error: ${response.status}`);
         }
 
-        // Check Content-Type to prevent crashing on 500 HTML pages
         const contentType = response.headers.get("content-type");
         if (contentType && contentType.indexOf("application/json") !== -1) {
             return await response.json();
         } else {
+            // If we get HTML (like a 404 page or Nginx error), don't crash, just log and throw
             const text = await response.text();
-            console.warn("Received non-JSON response:", text.substring(0, 100));
-            throw new Error("Invalid response format (Not JSON)");
+            console.warn("Received non-JSON response:", text.substring(0, 50));
+            throw new Error("Invalid response format (Expected JSON)");
         }
 
     } catch (error) {
         if (retries > 0) {
-            console.log(`Fetch failed, retrying... (${retries} left)`);
+            console.log(`Fetch failed (${error.message}), retrying...`);
             await new Promise(r => setTimeout(r, RETRY_DELAY_BASE));
             return fetchWithRetry(url, options, retries - 1);
         }
@@ -63,7 +63,7 @@ async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
     }
 }
 
-// --- API FUNCTIONS (Routing to Server) ---
+// --- API FUNCTIONS ---
 
 export async function fetchTopics() {
     try {
@@ -71,8 +71,8 @@ export async function fetchTopics() {
     } catch (e) {
         console.warn("Using fallback topics");
         return [
-            { name: "Python Mastery", description: "Learn Python from scratch.", styleClass: "topic-programming" },
-            { name: "Machine Learning", description: "Basics of AI and Neural Networks.", styleClass: "topic-robotics" }
+            { name: "Python Mastery", description: "Learn Python.", styleClass: "topic-programming" },
+            { name: "Web Development", description: "Build websites.", styleClass: "topic-arts" }
         ];
     }
 }
@@ -86,9 +86,8 @@ export async function generateJourneyPlan(topic) {
         });
     } catch (error) {
         console.error("Journey Gen Failed:", error);
-        // Robust Fallback
         return {
-            topicName: topic,
+            topicName: topic || "Skill",
             totalLevels: 20,
             description: `(Offline Simulation) Custom training path for ${topic}.`
         };
@@ -116,26 +115,14 @@ export async function generateLevelQuestions({ topic, level, totalLevels }) {
         });
     } catch (e) {
         console.error("Question Gen Failed:", e);
-        // THEMED FALLBACKS FOR OFFLINE MODE
+        // Fallback handled by Game Level, but returning structure here is safer
         return {
             questions: [
                 {
-                    question: `In the context of ${topic}, what is the most important fundamental principle?`,
-                    options: ["Speed", "Consistency/Logic", "Randomness", "Complexity"],
-                    correctAnswerIndex: 1,
-                    explanation: "Foundational logic is key to mastering this subject."
-                },
-                {
-                    question: `Which tool is commonly used when working with ${topic}?`,
-                    options: ["Hammer", "IDE / Code Editor", "Microscope", "Telescope"],
-                    correctAnswerIndex: 1,
-                    explanation: "Software development and IT tasks usually require an Integrated Development Environment."
-                },
-                {
-                    question: "What happens if you ignore error handling in your code?",
-                    options: ["Nothing", "The system crashes unexpectedly", "It runs faster", "It fixes itself"],
-                    correctAnswerIndex: 1,
-                    explanation: "Robust systems require handling edge cases to prevent crashes."
+                    question: `(Connection Error) What is the core of ${topic}?`,
+                    options: ["Consistency", "Speed", "Luck", "Magic"],
+                    correctAnswerIndex: 0,
+                    explanation: "Consistency is key."
                 }
             ]
         };
@@ -150,7 +137,7 @@ export async function generateLevelLesson({ topic, level, totalLevels }) {
             body: JSON.stringify({ topic, level, totalLevels })
         });
     } catch (e) {
-        return { lesson: `### **OFFLINE BRIEFING**\n\n**TOPIC:** ${topic}\n\nWe are unable to reach the central AI core. Engaging local backup archives.\n\n*   **Focus:** Review your basics.\n*   **Objective:** Complete the practice questions to maintain your streak.\n\nProceed to the challenge.` };
+        return { lesson: `### Connection Interrupted\n\nWe could not retrieve the lesson for **${topic}**. Please check your internet connection.` };
     }
 }
 
@@ -162,7 +149,7 @@ export async function generateHint({ topic, question, options }) {
             body: JSON.stringify({ topic, question, options })
         });
     } catch (e) {
-        return { hint: "Review the options. One of them is a standard industry best practice." };
+        return { hint: "Review the options carefully." };
     }
 }
 
@@ -174,24 +161,27 @@ export async function explainError(topic, question, userChoice, correctChoice) {
             body: JSON.stringify({ topic, question, userChoice, correctChoice })
         });
     } catch (e) {
-        return { explanation: "Offline Mode: The selected answer is incorrect based on standard principles." };
+        return { explanation: "Offline Mode: The selected answer is incorrect." };
     }
 }
 
 export async function generateJourneyFromImage(imageBase64, mimeType) {
-    // Mock for now, requires image upload endpoint on server
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve({
-                topicName: "Scanned IT Topic",
-                totalLevels: 15,
-                description: "AI identified a technical subject from your image scan."
-            });
-        }, 1500);
-    });
+    // This endpoint is mocked in server.js but we can call it
+    try {
+        return await fetchWithRetry('/api/generate-journey-from-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: imageBase64 })
+        });
+    } catch(e) {
+        return {
+            topicName: "Scanned Topic",
+            totalLevels: 10,
+            description: "Analyzed from image."
+        };
+    }
 }
 
-// Accessor to get the AI instance for Client-Side-Only modules (Like Live API)
 export function getAIClient() {
     return ai;
 }

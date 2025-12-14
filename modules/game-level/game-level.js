@@ -51,16 +51,28 @@ async function startLevel() {
     
     switchState('level-loading-state');
     
-    // SAFETY: If loading takes > 10s, offer retry or abort
+    // SAFETY: If loading takes > 8s, offer retry or abort
     loadingTimeout = setTimeout(() => {
         const loadingText = document.getElementById('loading-status-text');
         if (loadingText) {
-            loadingText.innerHTML = "Network sluggish... <br><button onclick='window.location.reload()' class='btn btn-small' style='margin-top:10px'>Retry Connection</button>";
+            loadingText.innerHTML = "Network sluggish... <br><button id='force-retry-btn' class='btn btn-small' style='margin-top:10px'>Engage Offline Mode</button>";
+            document.getElementById('force-retry-btn').onclick = () => {
+                clearTimeout(loadingTimeout);
+                engageEmergencyProtocol(topic);
+            };
         }
-    }, 10000);
+    }, 8000);
     
     try {
-        // Use Promise.allSettled to ensure if lesson fails but questions work (or vice versa), we can handle it
+        // Try to load from cache first
+        const cachedData = levelCacheService.getLevel(topic, level);
+        if (cachedData) {
+            console.log("Loaded level from cache");
+            processLevelData(cachedData);
+            return;
+        }
+
+        // Fetch fresh data
         const results = await Promise.allSettled([
             apiService.generateLevelLesson({ topic, level, totalLevels }),
             apiService.generateLevelQuestions({ topic, level, totalLevels })
@@ -71,22 +83,26 @@ async function startLevel() {
         const lessonResult = results[0];
         const questionsResult = results[1];
 
+        const newData = {};
+
         // Process Questions (Critical)
-        if (questionsResult.status === 'fulfilled' && questionsResult.value) {
-            levelData.questions = questionsResult.value.questions;
+        if (questionsResult.status === 'fulfilled' && questionsResult.value && Array.isArray(questionsResult.value.questions)) {
+            newData.questions = questionsResult.value.questions;
         } else {
             throw new Error("Failed to generate questions");
         }
 
         // Process Lesson (Optional - fallback if failed)
         if (lessonResult.status === 'fulfilled' && lessonResult.value) {
-            levelData.lesson = lessonResult.value.lesson;
+            newData.lesson = lessonResult.value.lesson;
         } else {
-            levelData.lesson = "Briefing unavailable. Proceed to mission.";
+            newData.lesson = "Briefing unavailable. Proceed to mission.";
         }
         
-        currentQuestions = levelData.questions;
-        renderLesson();
+        // Cache the successful data
+        levelCacheService.saveLevel(topic, level, newData);
+        
+        processLevelData(newData);
         
         // Background prefetch next level
         preloadNextLevel();
@@ -94,11 +110,51 @@ async function startLevel() {
     } catch (error) {
         clearTimeout(loadingTimeout);
         console.error("Level Start Error:", error);
-        showToast("Connection Error. Using offline protocols...", "error");
-        
-        // Final fallback if everything fails
-        setTimeout(() => window.history.back(), 2000);
+        engageEmergencyProtocol(topic);
     }
+}
+
+function engageEmergencyProtocol(topic) {
+    showToast("Engaging Emergency Backup Protocol", "info");
+    
+    const emergencyData = {
+        lesson: `### **OFFLINE MODE ACTIVE**\n\n**STATUS:** Connection Interrupted.\n\nWe have activated the local simulation deck for **${topic}**. \n\n*   **Goal:** Keep your streak alive.\n*   **Task:** Complete the backup challenge questions.\n\nProceed immediately.`,
+        questions: [
+            {
+                question: `In the context of ${topic}, consistency is key. Why?`,
+                options: ["It looks good", "It builds robust mental models", "It is faster", "It saves battery"],
+                correctAnswerIndex: 1,
+                explanation: "Regular practice reinforces neural pathways, leading to mastery."
+            },
+            {
+                question: "When facing a complex problem, what is the best first step?",
+                options: ["Panic", "Guess randomly", "Break it down into smaller parts", "Give up"],
+                correctAnswerIndex: 2,
+                explanation: "Decomposition is a fundamental problem-solving strategy in engineering and science."
+            },
+            {
+                question: "True mastery of a subject typically requires...",
+                options: ["Memorization", "Active Recall and Application", "Speed reading", "Buying expensive tools"],
+                correctAnswerIndex: 1,
+                explanation: "Active recall (testing yourself) is far more effective than passive review."
+            }
+        ]
+    };
+    
+    processLevelData(emergencyData);
+}
+
+function processLevelData(data) {
+    levelData = data;
+    
+    // Final Safety Check
+    if (!levelData.questions || levelData.questions.length === 0) {
+        engageEmergencyProtocol(levelContext.topic || "General");
+        return;
+    }
+
+    currentQuestions = levelData.questions;
+    renderLesson();
 }
 
 async function preloadNextLevel() {
@@ -125,7 +181,7 @@ function renderLessonTypewriter(htmlContent) {
 
 function renderLesson() {
     elements.lessonTitle.textContent = `Level ${levelContext.level}: Mission Briefing`;
-    const rawHtml = markdownService.render(levelData.lesson);
+    const rawHtml = markdownService.render(levelData.lesson || "Loading...");
     switchState('level-lesson-state');
     renderLessonTypewriter(rawHtml);
 }
@@ -151,6 +207,13 @@ function renderQuestion() {
     answered = false;
     selectedAnswerIndex = null;
     hintUsedThisQuestion = false;
+    
+    // Safety check for index bounds
+    if (!currentQuestions || currentQuestionIndex >= currentQuestions.length) {
+        showResults();
+        return;
+    }
+
     const question = currentQuestions[currentQuestionIndex];
     
     elements.quizProgressText.textContent = `Question ${currentQuestionIndex + 1} / ${currentQuestions.length}`;
@@ -355,8 +418,6 @@ function showResults() {
         vfxService.burstConfetti(); 
     }
 
-    // --- CRITICAL FIX: PASS QUESTIONS TO HISTORY SERVICE ---
-    // Previously, 'questions' and 'userAnswers' were missing, causing the attempt to be rejected.
     historyService.addQuizAttempt({
         topic: `${levelContext.topic} - Level ${levelContext.level}`,
         score: score,
@@ -365,11 +426,10 @@ function showResults() {
         endTime: Date.now(),
         xpGained: xpGainedThisLevel,
         fastAnswers: fastAnswersCount,
-        questions: currentQuestions, // <--- Added
-        userAnswers: userAnswers     // <--- Added (optional but good for future review features)
+        questions: currentQuestions,
+        userAnswers: userAnswers
     });
     
-    // Update Context for Review Module
     stateService.setNavigationContext({
         ...levelContext,
         questions: currentQuestions,
