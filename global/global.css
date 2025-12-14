@@ -227,7 +227,6 @@ svg { max-width: 100%; display: block; }
 /* --- CARD SYSTEM (The big modernizer) --- */
 .card {
     background: var(--color-surface);
-    /* Pure white background */
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-card);
@@ -245,7 +244,6 @@ svg { max-width: 100%; display: block; }
 
 /* --- HUD CORNERS (Simplified) --- */
 .hud-corners { position: relative; }
-/* Removed complicated corners for a cleaner SaaS look */
 
 /* --- BUTTONS (Pop!) --- */
 .btn {
@@ -278,6 +276,41 @@ svg { max-width: 100%; display: block; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 .fade-slide-in { animation: fadeSlideIn 0.5s ease-out forwards; }
 @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* --- WINNING ADDITIONS: RIPPLE & SHIMMER --- */
+
+/* 1. Global Ripple Effect */
+.ripple-effect {
+    position: absolute;
+    border-radius: 50%;
+    transform: scale(0);
+    animation: ripple 0.6s linear;
+    background-color: rgba(255, 255, 255, 0.4);
+    pointer-events: none;
+}
+@keyframes ripple {
+    to { transform: scale(4); opacity: 0; }
+}
+
+/* 2. Shimmer Animation for Hero Elements */
+.shimmer-active {
+    position: relative;
+    overflow: hidden;
+}
+.shimmer-active::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%; height: 100%;
+    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+    transform: skewX(-25deg);
+    animation: shimmer 4s infinite;
+    pointer-events: none;
+}
+@keyframes shimmer {
+    0%, 80% { left: -100%; }
+    100% { left: 200%; }
+}
 
 /* Responsive */
 @media (max-width: 768px) {
