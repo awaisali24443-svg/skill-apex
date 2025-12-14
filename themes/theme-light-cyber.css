@@ -1,60 +1,61 @@
 
 :root {
-    /* --- MODERN 2024 PALETTE --- */
+    /* --- MODERN EXPO PALETTE (Light Mode) --- */
 
-    /* Core Brand - Electric Violet & Blue */
-    --color-primary: #4F46E5;   /* Indigo 600 - Vibrant, smart */
-    --color-secondary: #0EA5E9; /* Sky 500 - Fresh, clean */
-    --color-accent: #F59E0B;    /* Amber - Energy */
+    /* Core Brand - Vibrant & Electric */
+    --color-primary: #4F46E5;   /* Indigo 600 - The core "Intelligence" color */
+    --color-secondary: #7C3AED; /* Violet 600 - The "Magic" / AI color */
+    --color-accent: #0EA5E9;    /* Sky 500 - The "Speed" / Data color */
 
-    /* Backgrounds - NO MORE DULL GREY */
-    --color-background: #F0F4F8; /* Very subtle cool tint */
-    --color-surface: #FFFFFF;    /* Pure White */
-    --color-surface-hover: #F8FAFC; /* Slate 50 */
-    --color-surface-active: #EFF6FF; /* Blue 50 */
+    /* Backgrounds - Tech Paper Look */
+    --color-background: #F8FAFC; /* Crisp White-Blue tint, not gray */
+    --color-surface: rgba(255, 255, 255, 0.85); /* Frosty Glass */
+    --color-surface-hover: #F1F5F9;
+    --color-surface-active: #E0E7FF; /* Very faint indigo tint */
     
-    /* Text - Sharp & High Contrast */
-    --color-text: #0F172A;       /* Slate 900 - Deep Navy/Black */
-    --color-text-secondary: #475569; /* Slate 600 - Readable, not washed out */
+    /* Text - High Contrast & Sharp */
+    --color-text: #0F172A;       /* Slate 900 - Almost Black */
+    --color-text-secondary: #475569; /* Slate 600 - Readable, professional */
 
     /* UI Elements */
     --color-border: #E2E8F0;     /* Slate 200 */
     
-    /* Glassmorphism */
-    --glass-bg: rgba(255, 255, 255, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.6);
+    /* Glassmorphism Configuration */
+    --glass-bg: rgba(255, 255, 255, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.8);
 
-    /* --- THE "SMART" LOOK: COLORED SHADOWS --- */
-    /* This removes the "dirty" grey shadow look and adds a glow */
+    /* --- PREMIUM SHADOWS (The "Pop" Factor) --- */
+    /* Soft, colored shadows that make elements float */
     --shadow-card: 
         0 4px 6px -1px rgba(79, 70, 229, 0.05), 
-        0 10px 15px -3px rgba(79, 70, 229, 0.1),
-        0 0 0 1px rgba(226, 232, 240, 0.5); /* Subtle ring */
+        0 10px 15px -3px rgba(79, 70, 229, 0.08),
+        0 0 0 1px rgba(255, 255, 255, 0.8); /* Inner white highlight */
         
     --shadow-float: 
-        0 20px 25px -5px rgba(79, 70, 229, 0.1), 
-        0 10px 10px -5px rgba(79, 70, 229, 0.04);
+        0 20px 30px -5px rgba(79, 70, 229, 0.15), 
+        0 10px 10px -5px rgba(79, 70, 229, 0.06);
         
     --shadow-hover: 
-        0 20px 40px -10px rgba(14, 165, 233, 0.2);
+        0 25px 50px -12px rgba(124, 58, 237, 0.25);
 
     /* Gradients */
-    --brand-gradient: linear-gradient(135deg, #4F46E5 0%, #0EA5E9 100%);
-    --bg-tech: radial-gradient(circle at 50% 0%, rgba(14, 165, 233, 0.1) 0%, transparent 50%);
+    --brand-gradient: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+    --bg-tech: radial-gradient(circle at 50% 0%, rgba(79, 70, 229, 0.08) 0%, transparent 60%);
 
-    /* Colors for transparency */
+    /* Colors for transparency/overlays */
     --color-primary-transparent: rgba(79, 70, 229, 0.1);
     --color-primary-transparent-heavy: rgba(79, 70, 229, 0.2);
-    --color-secondary-transparent: rgba(14, 165, 233, 0.1);
+    --color-secondary-transparent: rgba(124, 58, 237, 0.1);
+    --color-secondary-transparent-heavy: rgba(124, 58, 237, 0.2);
     
     /* Feedback */
-    --color-success: #10B981;
-    --color-error: #EF4444;
-    --color-success-bg: #ECFDF5;
-    --color-error-bg: #FEF2F2;
-    --color-success-border: #A7F3D0;
-    --color-error-border: #FECACA;
+    --color-success: #059669;
+    --color-error: #DC2626;
+    --color-success-bg: #D1FAE5;
+    --color-error-bg: #FEE2E2;
+    --color-success-border: #6EE7B7;
+    --color-error-border: #FCA5A5;
     
-    --scrollbar-thumb: #CBD5E1;
+    --scrollbar-thumb: #94A3B8;
     --scrollbar-track: transparent;
 }

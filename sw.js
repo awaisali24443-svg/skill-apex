@@ -1,12 +1,12 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 5.23.0 (Modal Positioning Fix)
+ * @version 6.0.0 (Visual Overhaul)
  *
  * This service worker implements a robust offline-first caching strategy.
  */
 
-const CACHE_NAME = 'skill-apex-v5.23.0-modal-fix';
+const CACHE_NAME = 'skill-apex-v6.0.0-visuals';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [
@@ -33,7 +33,7 @@ const APP_SHELL_URLS = [
     'assets/images/icon-192.png',
     'assets/images/icon-512.png',
     'assets/images/avatar-placeholder.png',
-    'https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Inter:wght@400;600&family=Roboto+Mono:wght@400;500&display=swap',
+    'https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;800&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap',
     'https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js',
     'https://aistudiocdn.com/dompurify@^3.0.5',
     // Core Services

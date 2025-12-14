@@ -16,23 +16,23 @@
 }
 .glitch {
     font-size: 3.5rem;
-    font-weight: 800;
+    font-weight: 900;
     color: var(--color-text);
     text-transform: uppercase;
     position: relative;
-    letter-spacing: -1px; /* Tighter modern kerning */
+    letter-spacing: -2px; 
     background: var(--brand-gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
-/* Subtler glitch effect for the modern look */
+/* Subtler glitch effect */
 .glitch::before {
     content: attr(data-text);
-    position: absolute; left: 2px; text-shadow: -1px 0 #ff00c1;
+    position: absolute; left: 2px; text-shadow: -1px 0 #7C3AED;
     top: 0; color: var(--color-text); background: transparent;
     overflow: hidden; clip: rect(0, 900px, 0, 0); 
-    animation: glitch-anim 3s infinite linear alternate-reverse;
-    opacity: 0.5;
+    animation: glitch-anim 4s infinite linear alternate-reverse;
+    opacity: 0.3;
 }
 
 @keyframes glitch-anim {
@@ -45,14 +45,14 @@
 .expo-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
+    gap: 24px;
     padding: 1rem 0;
 }
 
 .expo-card {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: 20px;
+    border-radius: 24px;
     height: 240px;
     position: relative;
     overflow: hidden;
@@ -61,8 +61,15 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    padding: 1.5rem;
+    padding: 2rem;
     box-shadow: var(--shadow-card);
+}
+
+/* Glass Shine Overlay */
+.expo-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 100%);
+    opacity: 0.5; pointer-events: none;
 }
 
 .expo-card:hover {
@@ -73,11 +80,11 @@
 
 .expo-icon-bg {
     position: absolute;
-    top: -20px;
-    right: -20px;
-    width: 140px;
-    height: 140px;
-    opacity: 0.05; 
+    top: -30px;
+    right: -30px;
+    width: 160px;
+    height: 160px;
+    opacity: 0.08; 
     transform: rotate(15deg);
     transition: all 0.5s ease;
     color: var(--color-text);
@@ -85,8 +92,8 @@
 .expo-icon-bg svg { width: 100%; height: 100%; }
 
 .expo-card:hover .expo-icon-bg {
-    opacity: 0.15;
-    transform: rotate(0deg) scale(1.2);
+    opacity: 0.2;
+    transform: rotate(0deg) scale(1.1);
     color: var(--color-primary);
 }
 
@@ -96,11 +103,10 @@
 }
 
 .expo-content h2 {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 800;
     margin-bottom: 0.5rem;
     color: var(--color-text);
-    text-shadow: none;
     letter-spacing: -0.5px;
 }
 
@@ -110,6 +116,9 @@
     color: var(--color-text-secondary);
     margin-bottom: 1.5rem;
     font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .expo-action {
@@ -127,20 +136,20 @@
     gap: 15px; /* Slide arrow */
 }
 
-/* Specific Card Accents */
-.expo-card[data-topic*="Cybersecurity"] { border-bottom: 4px solid #EF4444; }
-.expo-card[data-topic*="Mars"] { border-bottom: 4px solid #F59E0B; }
-.expo-card[data-topic*="Intelligence"] { border-bottom: 4px solid #4F46E5; }
-.expo-card[data-topic*="Crypto"] { border-bottom: 4px solid #10B981; }
+/* Specific Card Accents - Vibrant Borders */
+.expo-card[data-topic*="Cybersecurity"] { border-left: 6px solid #EF4444; }
+.expo-card[data-topic*="Mars"] { border-left: 6px solid #F59E0B; }
+.expo-card[data-topic*="Intelligence"] { border-left: 6px solid #4F46E5; }
+.expo-card[data-topic*="Crypto"] { border-left: 6px solid #10B981; }
 
 .modern-input-small {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    padding: 10px 20px;
-    border-radius: 30px;
+    padding: 12px 24px;
+    border-radius: 50px;
     color: var(--color-text);
     text-align: center;
-    width: 300px;
+    width: 320px;
     font-size: 1rem;
     box-shadow: var(--shadow-card);
     transition: all 0.3s ease;
@@ -149,10 +158,10 @@
     outline: none;
     border-color: var(--color-primary);
     box-shadow: 0 0 0 4px var(--color-primary-transparent);
-    width: 320px;
+    width: 340px;
 }
 
 @media (max-width: 768px) {
-    .glitch { font-size: 2rem; }
+    .glitch { font-size: 2.2rem; }
     .expo-grid { grid-template-columns: 1fr; }
 }
