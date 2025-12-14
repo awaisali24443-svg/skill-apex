@@ -1,58 +1,60 @@
 
 :root {
-    /* --- Color Palette: Aperture Science / Clinical Lab --- */
+    /* --- MODERN 2024 PALETTE --- */
 
-    /* Core Tones - Sharp Electric Blue */
-    --color-primary: #0052CC; /* Strong Blue for visibility on white */
-    --color-primary-rgb: 0, 82, 204;
-    
-    /* Secondary - Teal/Cyan */
-    --color-secondary: #008DA6; 
-    
-    /* Backgrounds */
-    --color-background: #FFFFFF; /* Pure White */
-    
-    /* Surfaces */
-    --color-surface: #F4F6F8; /* Very subtle light grey for cards */
-    --color-surface-hover: #E8EBED; 
-    --color-surface-active: #DEE1E3; 
+    /* Core Brand - Electric Violet & Blue */
+    --color-primary: #4F46E5;   /* Indigo 600 - Vibrant, smart */
+    --color-secondary: #0EA5E9; /* Sky 500 - Fresh, clean */
+    --color-accent: #F59E0B;    /* Amber - Energy */
 
-    /* Glassmorphism - Clear Glass */
-    --glass-bg: rgba(255, 255, 255, 0.9); 
-    --glass-border: #D1D5DB; /* Distinct borders */
+    /* Backgrounds - NO MORE DULL GREY */
+    --color-background: #F0F4F8; /* Very subtle cool tint */
+    --color-surface: #FFFFFF;    /* Pure White */
+    --color-surface-hover: #F8FAFC; /* Slate 50 */
+    --color-surface-active: #EFF6FF; /* Blue 50 */
     
-    /* Text - Maximum Contrast */
-    --color-text: #09090B;       /* Nearly Black */
-    --color-text-secondary: #4B5563; /* Slate Grey */
-    
-    /* Borders */
-    --color-border: #E5E7EB;
+    /* Text - Sharp & High Contrast */
+    --color-text: #0F172A;       /* Slate 900 - Deep Navy/Black */
+    --color-text-secondary: #475569; /* Slate 600 - Readable, not washed out */
 
-    /* Accents */
-    --color-accent: #F59E0B; /* Amber */
-    --color-success: #10B981; 
-    --color-error: #EF4444;   
+    /* UI Elements */
+    --color-border: #E2E8F0;     /* Slate 200 */
     
-    --color-success-bg: #D1FAE5;
-    --color-error-bg: #FEE2E2;
-    --color-success-border: #10B981;
-    --color-error-border: #EF4444;
-    
-    /* Transparencies */
-    --color-primary-transparent: rgba(0, 82, 204, 0.1);
-    --color-primary-transparent-heavy: rgba(0, 82, 204, 0.2);
-    --color-secondary-transparent: rgba(0, 141, 166, 0.1);
-    --color-surface-transparent: rgba(0, 0, 0, 0.05);
+    /* Glassmorphism */
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.6);
+
+    /* --- THE "SMART" LOOK: COLORED SHADOWS --- */
+    /* This removes the "dirty" grey shadow look and adds a glow */
+    --shadow-card: 
+        0 4px 6px -1px rgba(79, 70, 229, 0.05), 
+        0 10px 15px -3px rgba(79, 70, 229, 0.1),
+        0 0 0 1px rgba(226, 232, 240, 0.5); /* Subtle ring */
+        
+    --shadow-float: 
+        0 20px 25px -5px rgba(79, 70, 229, 0.1), 
+        0 10px 10px -5px rgba(79, 70, 229, 0.04);
+        
+    --shadow-hover: 
+        0 20px 40px -10px rgba(14, 165, 233, 0.2);
 
     /* Gradients */
-    --brand-gradient: linear-gradient(135deg, #0052CC 0%, #008DA6 100%);
-    
-    /* Shadows - Soft but distinct */
-    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-float: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --brand-gradient: linear-gradient(135deg, #4F46E5 0%, #0EA5E9 100%);
+    --bg-tech: radial-gradient(circle at 50% 0%, rgba(14, 165, 233, 0.1) 0%, transparent 50%);
 
-    /* Scrollbars */
-    --scrollbar-thumb: #9CA3AF;
-    --scrollbar-track: #F3F4F6;
+    /* Colors for transparency */
+    --color-primary-transparent: rgba(79, 70, 229, 0.1);
+    --color-primary-transparent-heavy: rgba(79, 70, 229, 0.2);
+    --color-secondary-transparent: rgba(14, 165, 233, 0.1);
+    
+    /* Feedback */
+    --color-success: #10B981;
+    --color-error: #EF4444;
+    --color-success-bg: #ECFDF5;
+    --color-error-bg: #FEF2F2;
+    --color-success-border: #A7F3D0;
+    --color-error-border: #FECACA;
+    
+    --scrollbar-thumb: #CBD5E1;
+    --scrollbar-track: transparent;
 }

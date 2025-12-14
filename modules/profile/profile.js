@@ -21,9 +21,9 @@ function renderProfile() {
         elements.avatarImg.src = photoURL;
     }
     
-    // 2. Recruitment Link
+    // 2. Recruitment Link - UPDATED DOMAIN
     const shortId = userId.substring(0, 6).toUpperCase();
-    elements.recruiterInput.value = `skillapex.com/join/${shortId}`;
+    elements.recruiterInput.value = `https://skill-apex.onrender.com/join/${shortId}`;
 
     // 3. Circle Progress
     const xpCurrent = stats.xp;

@@ -8,10 +8,11 @@
     padding-top: 2rem;
 }
 
-/* Glitch Title Effect */
+/* Glitch Title Effect - Refined for Light Mode */
 .glitch-wrapper {
     display: inline-block;
     position: relative;
+    margin-bottom: 1rem;
 }
 .glitch {
     font-size: 3.5rem;
@@ -19,36 +20,25 @@
     color: var(--color-text);
     text-transform: uppercase;
     position: relative;
-    letter-spacing: 4px;
+    letter-spacing: -1px; /* Tighter modern kerning */
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
-.glitch::before, .glitch::after {
-    content: attr(data-text);
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: var(--color-background);
-}
+/* Subtler glitch effect for the modern look */
 .glitch::before {
-    left: 2px; text-shadow: -1px 0 #ff00c1;
-    clip: rect(44px, 450px, 56px, 0);
-    animation: glitch-anim 5s infinite linear alternate-reverse;
-}
-.glitch::after {
-    left: -2px; text-shadow: -1px 0 #00fff9;
-    clip: rect(44px, 450px, 56px, 0);
-    animation: glitch-anim2 5s infinite linear alternate-reverse;
+    content: attr(data-text);
+    position: absolute; left: 2px; text-shadow: -1px 0 #ff00c1;
+    top: 0; color: var(--color-text); background: transparent;
+    overflow: hidden; clip: rect(0, 900px, 0, 0); 
+    animation: glitch-anim 3s infinite linear alternate-reverse;
+    opacity: 0.5;
 }
 
 @keyframes glitch-anim {
     0% { clip: rect(30px, 9999px, 10px, 0); }
     5% { clip: rect(80px, 9999px, 90px, 0); }
-    10% { clip: rect(10px, 9999px, 40px, 0); }
-    100% { clip: rect(50px, 9999px, 20px, 0); }
-}
-@keyframes glitch-anim2 {
-    0% { clip: rect(10px, 9999px, 80px, 0); }
-    5% { clip: rect(60px, 9999px, 20px, 0); }
-    10% { clip: rect(90px, 9999px, 10px, 0); }
-    100% { clip: rect(20px, 9999px, 60px, 0); }
+    100% { clip: rect(0, 0, 0, 0); }
 }
 
 /* Expo Grid */
@@ -56,18 +46,18 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 2rem;
-    padding: 1rem;
+    padding: 1rem 0;
 }
 
 .expo-card {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: 20px;
-    height: 220px;
+    height: 240px;
     position: relative;
     overflow: hidden;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -76,9 +66,9 @@
 }
 
 .expo-card:hover {
-    transform: translateY(-10px) scale(1.02);
-    border-color: var(--color-primary);
-    box-shadow: var(--shadow-float);
+    transform: translateY(-10px);
+    box-shadow: var(--shadow-hover);
+    border-color: transparent;
 }
 
 .expo-icon-bg {
@@ -87,7 +77,7 @@
     right: -20px;
     width: 140px;
     height: 140px;
-    opacity: 0.05; /* Subtle in light mode */
+    opacity: 0.05; 
     transform: rotate(15deg);
     transition: all 0.5s ease;
     color: var(--color-text);
@@ -95,9 +85,14 @@
 .expo-icon-bg svg { width: 100%; height: 100%; }
 
 .expo-card:hover .expo-icon-bg {
-    opacity: 0.1;
-    transform: rotate(0deg) scale(1.1);
+    opacity: 0.15;
+    transform: rotate(0deg) scale(1.2);
     color: var(--color-primary);
+}
+
+.expo-content {
+    position: relative;
+    z-index: 2;
 }
 
 .expo-content h2 {
@@ -106,13 +101,15 @@
     margin-bottom: 0.5rem;
     color: var(--color-text);
     text-shadow: none;
+    letter-spacing: -0.5px;
 }
 
 .expo-content p {
-    font-family: var(--font-family-mono);
-    font-size: 0.9rem;
+    font-family: var(--font-family-body);
+    font-size: 0.95rem;
     color: var(--color-text-secondary);
     margin-bottom: 1.5rem;
+    font-weight: 500;
 }
 
 .expo-action {
@@ -122,17 +119,37 @@
     font-weight: 700;
     color: var(--color-primary);
     font-size: 1rem;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
+    transition: gap 0.2s ease;
 }
 
+.expo-card:hover .expo-action {
+    gap: 15px; /* Slide arrow */
+}
+
+/* Specific Card Accents */
+.expo-card[data-topic*="Cybersecurity"] { border-bottom: 4px solid #EF4444; }
+.expo-card[data-topic*="Mars"] { border-bottom: 4px solid #F59E0B; }
+.expo-card[data-topic*="Intelligence"] { border-bottom: 4px solid #4F46E5; }
+.expo-card[data-topic*="Crypto"] { border-bottom: 4px solid #10B981; }
+
 .modern-input-small {
-    background: transparent;
+    background: var(--color-surface);
     border: 1px solid var(--color-border);
-    padding: 8px 16px;
-    border-radius: 20px;
+    padding: 10px 20px;
+    border-radius: 30px;
     color: var(--color-text);
     text-align: center;
-    width: 250px;
+    width: 300px;
+    font-size: 1rem;
+    box-shadow: var(--shadow-card);
+    transition: all 0.3s ease;
+}
+.modern-input-small:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px var(--color-primary-transparent);
+    width: 320px;
 }
 
 @media (max-width: 768px) {
