@@ -66,40 +66,40 @@ function getStrictJsonInstruction() {
 // --- FALLBACK DATA GENERATORS (Safety Net) ---
 const FALLBACK_DATA = {
     journey: (topic) => ({
-        topicName: topic || "IT Mastery",
-        totalLevels: 20,
+        topicName: topic || "Robotics Mastery",
+        totalLevels: 50,
         description: `(Offline Simulation) A comprehensive training course on ${topic}. Server could not reach AI.`,
         isFallback: true
     }),
     curriculum: (topic) => ({
-        chapters: ["Fundamentals", "Tools & Technologies", "Real-world Application", "Expert Mastery"],
+        chapters: ["Sensors & Input", "Processing Logic", "Actuators & Motion", "Advanced AI Control"],
         isFallback: true
     }),
     questions: (topic) => ({
         questions: [
             {
-                question: `Scenario: You are working on a project related to ${topic} and the system crashes. What is the first logical step?`,
-                options: ["Panic", "Check the logs/debug", "Restart everything immediately", "Call the client"],
+                question: `In the context of ${topic}, what is the primary function of a PID controller?`,
+                options: ["To cool down motors", "To correct errors and maintain stability", "To generate random numbers", "To connect to Wi-Fi"],
                 correctAnswerIndex: 1,
-                explanation: "Debugging and log analysis is the professional first step in any IT crisis."
+                explanation: "PID (Proportional-Integral-Derivative) controllers allow systems to automatically correct errors to reach a target state."
             },
             {
-                question: `In the context of ${topic}, which practice ensures long-term success?`,
-                options: ["Taking shortcuts", "Consistent Learning & Practice", "Copying code without understanding", "Using outdated tools"],
+                question: `A robot needs to detect the distance to a wall. Which sensor is best?`,
+                options: ["Microphone", "Ultrasonic Sensor", "Thermometer", "Gyroscope"],
                 correctAnswerIndex: 1,
-                explanation: "Technology evolves rapidly; consistency is the only way to stay relevant."
+                explanation: "Ultrasonic sensors emit sound waves and measure the echo time to calculate distance."
             },
             {
-                question: `A client asks for a feature in ${topic} that is technically impossible. What do you do?`,
-                options: ["Say yes and fake it", "Ignore them", "Explain the limitation and offer an alternative", "Quit the project"],
-                correctAnswerIndex: 2,
-                explanation: "Professionalism involves managing expectations and finding viable technical solutions."
+                question: `What does 'GPIO' stand for on a Raspberry Pi?`,
+                options: ["General Purpose Input/Output", "Graphic Processing Input Only", "Global Position In Orbit", "General Power In Out"],
+                correctAnswerIndex: 0,
+                explanation: "GPIO pins allow the computer to interact with the physical world (LEDs, Motors, Sensors)."
             }
         ],
         isFallback: true
     }),
     lesson: (topic) => ({
-        lesson: `### System Briefing: ${topic}\n\n**Status:** Offline Backup Protocol Active.\n\nSince the AI connection is currently offline, we are accessing the local reserve archives.\n\n*   **Core Concept:** Mastery of ${topic} requires understanding both the 'How' and the 'Why'.\n*   **Industry Standard:** This skill is highly valued in the global market.\n*   **Objective:** Prove your knowledge to proceed.\n\nProceed to the challenge.`,
+        lesson: `### System Briefing: ${topic}\n\n**Status:** Offline Backup Protocol Active.\n\nSince the AI connection is currently offline, we are accessing the local reserve archives.\n\n*   **Core Concept:** Mastery of ${topic} requires understanding the loop of Sense -> Think -> Act.\n*   **Industry Standard:** Automation is the future of manufacturing and logistics.\n*   **Objective:** Prove your knowledge to proceed.\n\nProceed to the challenge.`,
         isFallback: true
     })
 };
@@ -148,17 +148,19 @@ try {
 async function generateJourneyPlan(topic, persona) {
     if (!ai) return FALLBACK_DATA.journey(topic);
     
-    // Dynamic Level Generation Prompt
+    // Updated Prompt for Dynamic Level Calculation
     const prompt = `
-    Analyze the subject: "${topic}". 
-    Estimate the number of levels required to master this topic from scratch to expert.
+    Analyze the complexity of the subject: "${topic}". 
+    Calculate the precise number of levels required to master it.
     
-    Guidelines for 'totalLevels':
-    - Very Simple (e.g. "Tying a Knot"): 3 to 9 levels.
-    - Basic (e.g. "Making Tea"): 10 to 20 levels.
-    - Moderate (e.g. "High School Algebra"): 30 to 80 levels.
-    - Complex (e.g. "Full Stack Dev", "History of Rome"): 100 to 400 levels.
-    - Massive (e.g. "Quantum Physics", "Medical Degree"): 500 to 1500 levels.
+    SCALING RULES:
+    1. Micro Skills (e.g., "Tying a shoelace", "Boiling an egg") -> 3 to 9 Levels.
+    2. Basic Skills (e.g., "Changing a tire", "Making Tea") -> 10 to 25 Levels.
+    3. Moderate Skills (e.g., "High School Algebra", "Basic Excel") -> 30 to 80 Levels.
+    4. Professional Skills (e.g., "React Development", "Digital Marketing") -> 100 to 300 Levels.
+    5. Massive Fields (e.g., "Medical Degree", "Quantum Physics", "Civil Engineering") -> 500 to 1500 Levels.
+    
+    Return a specific number based on the depth of the topic.
     
     Output purely JSON: { 
         topicName: string, 
@@ -172,7 +174,6 @@ async function generateJourneyPlan(topic, persona) {
             contents: prompt,
             config: { 
                 responseMimeType: 'application/json',
-                // Use strict instruction for data
                 systemInstruction: getStrictJsonInstruction(),
                 responseSchema: {
                     type: Type.OBJECT,
@@ -212,7 +213,6 @@ async function generateCurriculumOutline(topic, totalLevels, persona) {
 async function generateLevelQuestions(topic, level, totalLevels, persona) {
     if (!ai) return FALLBACK_DATA.questions(topic);
     
-    // Ultra-optimized prompt for speed
     const prompt = `Topic: ${topic}. Level ${level} of ${totalLevels}. Generate 3 multiple choice questions. Scenario based.`;
     
     try {
@@ -221,7 +221,6 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
             contents: prompt,
             config: { 
                 responseMimeType: 'application/json',
-                // Crucial: Use strict instruction to avoid Persona fluff slowing it down
                 systemInstruction: getStrictJsonInstruction(),
                 responseSchema: {
                     type: Type.OBJECT,
@@ -262,7 +261,6 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
 async function generateLevelLesson(topic, level, totalLevels, questions, persona) {
     if (!ai) return FALLBACK_DATA.lesson(topic);
     try {
-        // Here we USE the Persona because we want the "Local Analogies" and style
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: `Write a short, exciting lesson for ${topic} level ${level} of ${totalLevels}. Under 150 words. Use simple analogies.`,
@@ -293,10 +291,9 @@ const wss = new WebSocketServer({ server });
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname)));
 
-// Robust Rate Limiting
 const apiLimiter = rateLimit({ 
     windowMs: 15 * 60 * 1000, 
-    max: 300, // Higher limit for Expo usage
+    max: 300, 
     standardHeaders: true,
     legacyHeaders: false,
 }); 
@@ -304,7 +301,6 @@ app.use('/api', apiLimiter);
 
 app.get('/health', (req, res) => res.status(200).send('OK'));
 
-// --- CLIENT CONFIG ENDPOINT (CRITICAL FOR LIVE API) ---
 app.get('/api/client-config', (req, res) => {
     if (!API_KEY) {
         return res.status(503).json({ error: 'Server offline (Key missing)' });
@@ -312,7 +308,6 @@ app.get('/api/client-config', (req, res) => {
     res.json({ apiKey: API_KEY });
 });
 
-// Helper for safe route handling
 const safeHandler = (fn) => async (req, res) => {
     try {
         const result = await fn(req.body);
@@ -331,7 +326,6 @@ app.post('/api/generate-curriculum-outline', safeHandler((body) => generateCurri
 app.post('/api/generate-level-questions', safeHandler((body) => generateLevelQuestions(body.topic, body.level, body.totalLevels, body.persona)));
 app.post('/api/generate-level-lesson', safeHandler((body) => generateLevelLesson(body.topic, body.level, body.totalLevels, body.questions, body.persona)));
 
-// Utility Endpoints
 app.post('/api/generate-hint', (req, res) => res.json({ hint: "Review the core concepts. Look for keywords in the question." }));
 app.post('/api/explain-error', (req, res) => res.json({ explanation: "The selected answer contradicts standard best practices. Re-read the question carefully." }));
 
@@ -345,7 +339,6 @@ app.get('/api/topics', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Could not load topics data.' }); }
 });
 
-// --- WEBSOCKETS ---
 wss.on('connection', (ws) => {
     console.log('WS Connected');
     if (!ai) {
