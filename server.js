@@ -38,16 +38,12 @@ let topicsCache = null;
 const PERSONA_DEFINITIONS = {
     apex: `
     You are ApexCore, an advanced AI Tutor designed for a Tech Expo in Pakistan.
-    
     TONE: Professional, encouraging, but use LOCAL ANALOGIES to explain complex tech.
-    
     GUIDELINES:
     1. If explaining speed/latency, use examples like "Traffic in Peshawar" or "Cricket ball speed (Shoaib Akhtar)".
     2. If explaining loops/structure, maybe reference "Brick Kiln (Bhatta)" or "Textile Loom".
     3. Keep English simple and high-impact.
     4. NO long paragraphs. Bullet points are best.
-    
-    Your goal is to impress judges by making high-tech concepts feel native and understandable.
     `,
     sage: `Persona: A Wise Professor. Tone: Thoughtful, deep.`,
     commander: `Persona: Tactical Mission Control. Tone: Urgent, military.`,
@@ -56,7 +52,15 @@ const PERSONA_DEFINITIONS = {
 
 function getSystemInstruction(personaKey = 'apex') {
     return `${PERSONA_DEFINITIONS[personaKey] || PERSONA_DEFINITIONS.apex} 
-    RULES: No rote memorization. Scenario-based questions. JSON output only.`;
+    RULES: Keep it short. Under 150 words.`;
+}
+
+// STRICT JSON INSTRUCTION - For data generation tasks to ensure speed and validity
+function getStrictJsonInstruction() {
+    return `You are a specialized Data Generator API. 
+    Output PURE JSON matching the requested schema. 
+    Do not include markdown formatting, preambles, or explanations.
+    Focus on accuracy and valid JSON syntax.`;
 }
 
 // --- FALLBACK DATA GENERATORS (Safety Net) ---
@@ -144,6 +148,7 @@ try {
 async function generateJourneyPlan(topic, persona) {
     if (!ai) return FALLBACK_DATA.journey(topic);
     
+    // Simplified prompt for speed
     const prompt = `Analyze "${topic}". Output JSON: { topicName, totalLevels (10-50), description }`;
     try {
         const response = await ai.models.generateContent({
@@ -151,7 +156,8 @@ async function generateJourneyPlan(topic, persona) {
             contents: prompt,
             config: { 
                 responseMimeType: 'application/json',
-                systemInstruction: getSystemInstruction(persona),
+                // Use strict instruction for data
+                systemInstruction: getStrictJsonInstruction(),
                 responseSchema: {
                     type: Type.OBJECT,
                     properties: {
@@ -178,7 +184,7 @@ async function generateCurriculumOutline(topic, totalLevels, persona) {
             contents: `Topic: ${topic}. Break into 4 chapter titles. JSON: { chapters: [] }`,
             config: { 
                 responseMimeType: 'application/json',
-                systemInstruction: getSystemInstruction(persona)
+                systemInstruction: getStrictJsonInstruction()
             }
         });
         return cleanAndParseJSON(response.text) || FALLBACK_DATA.curriculum(topic);
@@ -189,13 +195,18 @@ async function generateCurriculumOutline(topic, totalLevels, persona) {
 
 async function generateLevelQuestions(topic, level, totalLevels, persona) {
     if (!ai) return FALLBACK_DATA.questions(topic);
+    
+    // Ultra-optimized prompt for speed
+    const prompt = `Topic: ${topic}. Level ${level}. Generate 3 multiple choice questions. Scenario based.`;
+    
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash', 
-            contents: `Topic: ${topic}. Level ${level}. Generate 3 scenario-based multiple choice questions.`,
+            contents: prompt,
             config: { 
                 responseMimeType: 'application/json',
-                systemInstruction: getSystemInstruction(persona),
+                // Crucial: Use strict instruction to avoid Persona fluff slowing it down
+                systemInstruction: getStrictJsonInstruction(),
                 responseSchema: {
                     type: Type.OBJECT,
                     properties: {
@@ -220,7 +231,6 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
         
         const data = cleanAndParseJSON(response.text);
         
-        // Robust check for data integrity
         if (data && data.questions && Array.isArray(data.questions)) {
             return data;
         } else {
@@ -236,6 +246,7 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
 async function generateLevelLesson(topic, level, totalLevels, questions, persona) {
     if (!ai) return FALLBACK_DATA.lesson(topic);
     try {
+        // Here we USE the Persona because we want the "Local Analogies" and style
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: `Write a short, exciting lesson for ${topic} level ${level}. Under 150 words. Use simple analogies.`,
@@ -278,10 +289,7 @@ app.use('/api', apiLimiter);
 app.get('/health', (req, res) => res.status(200).send('OK'));
 
 // --- CLIENT CONFIG ENDPOINT (CRITICAL FOR LIVE API) ---
-// This allows the frontend to get the key securely for client-side-only features (Aural)
 app.get('/api/client-config', (req, res) => {
-    // In a real production app, check auth headers here.
-    // For this app, we provide the key so the client SDK works.
     if (!API_KEY) {
         return res.status(503).json({ error: 'Server offline (Key missing)' });
     }
@@ -295,7 +303,6 @@ const safeHandler = (fn) => async (req, res) => {
         res.json(result);
     } catch (e) {
         console.error("Route Error:", e);
-        // Return fallback data instead of 500 error to keep app running
         if (req.path.includes('questions')) res.json(FALLBACK_DATA.questions(req.body.topic));
         else if (req.path.includes('lesson')) res.json(FALLBACK_DATA.lesson(req.body.topic));
         else if (req.path.includes('journey')) res.json(FALLBACK_DATA.journey(req.body.topic));
@@ -309,7 +316,7 @@ app.post('/api/generate-level-questions', safeHandler((body) => generateLevelQue
 app.post('/api/generate-level-lesson', safeHandler((body) => generateLevelLesson(body.topic, body.level, body.totalLevels, body.questions, body.persona)));
 
 // Utility Endpoints
-app.post('/api/generate-hint', (req, res) => res.json({ hint: "Review the core concepts mentioned in the briefing. Look for keywords." }));
+app.post('/api/generate-hint', (req, res) => res.json({ hint: "Review the core concepts. Look for keywords in the question." }));
 app.post('/api/explain-error', (req, res) => res.json({ explanation: "The selected answer contradicts standard best practices. Re-read the question carefully." }));
 
 app.get('/api/topics', async (req, res) => {

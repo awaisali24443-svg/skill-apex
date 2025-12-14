@@ -5,142 +5,129 @@
     margin: 0 auto;
     width: 100%;
     animation: fade-slide-in 0.5s ease-out forwards;
-    padding-top: 2rem;
+    padding-top: 1rem;
 }
 
-/* Glitch Title Effect - Refined for Light Mode */
+/* Header */
+.dashboard-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
 .glitch-wrapper {
     display: inline-block;
     position: relative;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
+
 .glitch {
-    font-size: 3.5rem;
+    font-size: 3rem;
     font-weight: 800;
     color: var(--color-text);
     text-transform: uppercase;
-    position: relative;
-    letter-spacing: -1px; /* Tighter modern kerning */
+    letter-spacing: -1px;
     background: var(--brand-gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-}
-/* Subtler glitch effect for the modern look */
-.glitch::before {
-    content: attr(data-text);
-    position: absolute; left: 2px; text-shadow: -1px 0 #ff00c1;
-    top: 0; color: var(--color-text); background: transparent;
-    overflow: hidden; clip: rect(0, 900px, 0, 0); 
-    animation: glitch-anim 3s infinite linear alternate-reverse;
-    opacity: 0.5;
+    margin-bottom: 0.5rem;
 }
 
-@keyframes glitch-anim {
-    0% { clip: rect(30px, 9999px, 10px, 0); }
-    5% { clip: rect(80px, 9999px, 90px, 0); }
-    100% { clip: rect(0, 0, 0, 0); }
+.dashboard-header p {
+    font-size: 1.1rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
 }
 
 /* Expo Grid */
 .expo-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
+    gap: 24px;
     padding: 1rem 0;
 }
 
 .expo-card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: 20px;
-    height: 240px;
+    height: 220px;
     position: relative;
     overflow: hidden;
     cursor: pointer;
     transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    padding: 1.5rem;
-    box-shadow: var(--shadow-card);
+    justify-content: space-between;
+    padding: 1.8rem;
+    border: 1px solid var(--color-border);
+    /* Default clean white */
+    background: var(--color-surface); 
 }
 
 .expo-card:hover {
-    transform: translateY(-10px);
-    box-shadow: var(--shadow-hover);
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-float);
     border-color: transparent;
 }
 
+/* Dynamic Background Gradients for Cards */
+.expo-card[data-topic*="Cybersecurity"] { background: linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%); }
+.expo-card[data-topic*="Mars"] { background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%); }
+.expo-card[data-topic*="Intelligence"] { background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%); }
+.expo-card[data-topic*="Crypto"] { background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%); }
+
 .expo-icon-bg {
-    position: absolute;
-    top: -20px;
-    right: -20px;
-    width: 140px;
-    height: 140px;
-    opacity: 0.05; 
-    transform: rotate(15deg);
-    transition: all 0.5s ease;
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    background: white;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    margin-bottom: 1rem;
     color: var(--color-text);
+    transition: transform 0.3s ease;
 }
-.expo-icon-bg svg { width: 100%; height: 100%; }
+.expo-card:hover .expo-icon-bg { transform: scale(1.1) rotate(-5deg); }
 
-.expo-card:hover .expo-icon-bg {
-    opacity: 0.15;
-    transform: rotate(0deg) scale(1.2);
-    color: var(--color-primary);
-}
-
-.expo-content {
-    position: relative;
-    z-index: 2;
-}
+.expo-card[data-topic*="Cybersecurity"] .expo-icon-bg { color: #E11D48; }
+.expo-card[data-topic*="Mars"] .expo-icon-bg { color: #EA580C; }
+.expo-card[data-topic*="Intelligence"] .expo-icon-bg { color: #0284C7; }
+.expo-card[data-topic*="Crypto"] .expo-icon-bg { color: #16A34A; }
 
 .expo-content h2 {
-    font-size: 1.5rem;
-    font-weight: 800;
-    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 4px;
     color: var(--color-text);
-    text-shadow: none;
-    letter-spacing: -0.5px;
 }
 
 .expo-content p {
-    font-family: var(--font-family-body);
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: var(--color-text-secondary);
-    margin-bottom: 1.5rem;
     font-weight: 500;
 }
 
 .expo-action {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 700;
-    color: var(--color-primary);
-    font-size: 1rem;
-    letter-spacing: 0.5px;
-    transition: gap 0.2s ease;
+    margin-top: auto;
+    display: flex; align-items: center; gap: 8px;
+    font-weight: 700; font-size: 0.85rem;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--color-text);
+    opacity: 0.7;
+    transition: all 0.3s ease;
 }
 
-.expo-card:hover .expo-action {
-    gap: 15px; /* Slide arrow */
+.expo-card:hover .expo-action { opacity: 1; gap: 12px; }
+
+/* Input Field */
+.manual-input-container {
+    margin-top: 3rem; text-align: center;
 }
-
-/* Specific Card Accents */
-.expo-card[data-topic*="Cybersecurity"] { border-bottom: 4px solid #EF4444; }
-.expo-card[data-topic*="Mars"] { border-bottom: 4px solid #F59E0B; }
-.expo-card[data-topic*="Intelligence"] { border-bottom: 4px solid #4F46E5; }
-.expo-card[data-topic*="Crypto"] { border-bottom: 4px solid #10B981; }
-
 .modern-input-small {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    padding: 10px 20px;
-    border-radius: 30px;
+    padding: 12px 24px;
+    border-radius: 50px;
     color: var(--color-text);
     text-align: center;
-    width: 300px;
+    width: 100%; max-width: 320px;
     font-size: 1rem;
     box-shadow: var(--shadow-card);
     transition: all 0.3s ease;
@@ -149,7 +136,7 @@
     outline: none;
     border-color: var(--color-primary);
     box-shadow: 0 0 0 4px var(--color-primary-transparent);
-    width: 320px;
+    width: 340px;
 }
 
 @media (max-width: 768px) {

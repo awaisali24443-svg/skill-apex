@@ -51,33 +51,52 @@ async function startLevel() {
     
     switchState('level-loading-state');
     
-    // SAFETY: If loading takes > 15s, assume error and allow user to escape
+    // SAFETY: If loading takes > 10s, offer retry or abort
     loadingTimeout = setTimeout(() => {
         const loadingText = document.getElementById('loading-status-text');
-        if (loadingText) loadingText.textContent = "Taking longer than expected... Retrying connection.";
-    }, 8000);
+        if (loadingText) {
+            loadingText.innerHTML = "Network sluggish... <br><button onclick='window.location.reload()' class='btn btn-small' style='margin-top:10px'>Retry Connection</button>";
+        }
+    }, 10000);
     
     try {
-        const [lessonData, questionsData] = await Promise.all([
+        // Use Promise.allSettled to ensure if lesson fails but questions work (or vice versa), we can handle it
+        const results = await Promise.allSettled([
             apiService.generateLevelLesson({ topic, level, totalLevels }),
             apiService.generateLevelQuestions({ topic, level, totalLevels })
         ]);
 
         clearTimeout(loadingTimeout);
 
-        levelData = {
-            lesson: lessonData.lesson,
-            questions: questionsData.questions
-        };
+        const lessonResult = results[0];
+        const questionsResult = results[1];
+
+        // Process Questions (Critical)
+        if (questionsResult.status === 'fulfilled' && questionsResult.value) {
+            levelData.questions = questionsResult.value.questions;
+        } else {
+            throw new Error("Failed to generate questions");
+        }
+
+        // Process Lesson (Optional - fallback if failed)
+        if (lessonResult.status === 'fulfilled' && lessonResult.value) {
+            levelData.lesson = lessonResult.value.lesson;
+        } else {
+            levelData.lesson = "Briefing unavailable. Proceed to mission.";
+        }
         
         currentQuestions = levelData.questions;
         renderLesson();
+        
+        // Background prefetch next level
         preloadNextLevel();
 
     } catch (error) {
         clearTimeout(loadingTimeout);
         console.error("Level Start Error:", error);
-        showToast("Connection Error. Returning to Map...", "error");
+        showToast("Connection Error. Using offline protocols...", "error");
+        
+        // Final fallback if everything fails
         setTimeout(() => window.history.back(), 2000);
     }
 }
@@ -88,15 +107,13 @@ async function preloadNextLevel() {
     if (levelCacheService.getLevel(levelContext.topic, nextLevel)) return;
 
     try {
-        const [lData, qData] = await Promise.all([
-            apiService.generateLevelLesson({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels }),
-            apiService.generateLevelQuestions({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels })
-        ]);
-        
-        const nextLevelData = { lesson: lData.lesson, questions: qData.questions };
-        levelCacheService.saveLevel(levelContext.topic, nextLevel, nextLevelData);
+        // Fire and forget, don't await
+        apiService.generateLevelQuestions({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels })
+            .then(qData => {
+                levelCacheService.saveLevel(levelContext.topic, nextLevel, { questions: qData.questions, lesson: "Loading next briefing..." });
+            });
     } catch(e) {
-        console.warn("[EXPO PREFETCH] Background gen failed (silent)", e);
+        // Silent fail
     }
 }
 
