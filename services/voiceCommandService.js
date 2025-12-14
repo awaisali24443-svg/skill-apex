@@ -7,7 +7,7 @@ let recognition;
 let isListening = false;
 
 export function isSupported() {
-    return ('webkitSpeechRecognition' in window) || ('SpeechRecognition' in window);
+    return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
 }
 
 export function init() {
@@ -26,18 +26,21 @@ export function init() {
         recognition.maxAlternatives = 1;
 
         recognition.onresult = (event) => {
-            const command = event.results[0][0].transcript.toLowerCase().trim();
-            console.log('Voice Command:', command);
-            processCommand(command);
+            if (event.results.length > 0) {
+                const command = event.results[0][0].transcript.toLowerCase().trim();
+                console.log('Voice Command:', command);
+                processCommand(command);
+            }
         };
 
         recognition.onerror = (event) => {
             console.warn('Voice Command Error:', event.error);
-            // Don't show toast for 'no-speech' as it's annoying
-            if (event.error !== 'no-speech') {
+            setListeningState(false);
+            if (event.error === 'not-allowed') {
+                showToast('Microphone permission denied.', 'error');
+            } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
                 showToast('Voice command failed. Try again.', 'error');
             }
-            setListeningState(false);
         };
 
         recognition.onend = () => {
@@ -57,7 +60,9 @@ export function toggleListening() {
     }
 
     if (isListening) {
-        recognition.stop();
+        try {
+            recognition.stop();
+        } catch(e) { /* ignore if already stopped */ }
         setListeningState(false);
     } else {
         try {
@@ -121,7 +126,6 @@ function processCommand(command) {
     }
 
     // --- 2. Intelligent Action Commands (Start Level / Resume) ---
-    // Matches: "Start level...", "Resume...", "Play...", "Begin...", "Launch..."
     if (command.includes('start') || command.includes('resume') || command.includes('continue') || command.includes('play') || command.includes('begin') || command.includes('launch')) {
         const journeys = learningPathService.getAllJourneys();
         
@@ -130,14 +134,8 @@ function processCommand(command) {
             return;
         }
 
-        // Strategy A: Specific Topic Matching
-        // We look for words in the command that match part of a journey's goal.
-        // e.g. Command "Resume Cyber Security" matches Journey "Cybersecurity & Ethical Hacking" via the word "Cyber"
         const matchedJourney = journeys.find(j => {
-            // Split journey goal into keywords (remove symbols)
             const topicKeywords = j.goal.toLowerCase().replace(/[^a-z0-9 ]/g, "").split(' ');
-            
-            // Check if any significant keyword (len > 2) from the topic exists in the spoken command
             return topicKeywords.some(keyword => keyword.length > 2 && command.includes(keyword));
         });
 
@@ -146,9 +144,6 @@ function processCommand(command) {
             return;
         }
 
-        // Strategy B: Generic "Resume" (Most Recent)
-        // If command is generic ("start level", "resume mission"), pick the most recent one (index 0)
-        // But only if we didn't find a specific match and the user didn't specify a topic name that we failed to catch.
         if (command.includes('level') || command.includes('mission') || command.includes('resume') || command.includes('continue') || command.includes('journey')) {
             launchLevel(journeys[0]);
             return;
@@ -168,10 +163,8 @@ function launchLevel(journey) {
 
     showToast(`Resuming ${journey.goal}: Level ${journey.currentLevel}`, 'success');
     
-    // Determine Boss Status (Every 50 levels is a chapter boss)
     const isBoss = (journey.currentLevel % 50 === 0) || (journey.currentLevel === journey.totalLevels);
     
-    // Set Context for Game Level
     stateService.setNavigationContext({
         topic: journey.goal,
         level: journey.currentLevel,
@@ -180,6 +173,5 @@ function launchLevel(journey) {
         isBoss: isBoss
     });
     
-    // Direct Deep Link to Gameplay
     window.location.hash = '#/level';
 }

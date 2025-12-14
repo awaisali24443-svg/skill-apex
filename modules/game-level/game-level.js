@@ -42,7 +42,7 @@ function switchState(targetStateId) {
 async function startLevel() {
     const { topic, level, totalLevels } = levelContext;
     
-    // VALIDATION: Ensure we have a valid topic. If not (e.g. reload), go back to journeys.
+    // VALIDATION: Ensure we have a valid topic.
     if (!topic) {
         showToast("Session restored. Redirecting to topics...", "info");
         window.location.hash = '#/topics';
@@ -107,7 +107,7 @@ async function preloadNextLevel() {
     if (levelCacheService.getLevel(levelContext.topic, nextLevel)) return;
 
     try {
-        // Fire and forget, don't await
+        // Fire and forget
         apiService.generateLevelQuestions({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels })
             .then(qData => {
                 levelCacheService.saveLevel(levelContext.topic, nextLevel, { questions: qData.questions, lesson: "Loading next briefing..." });
@@ -145,6 +145,9 @@ function startQuiz() {
 }
 
 function renderQuestion() {
+    // Ensure cleanup of previous question's timer
+    if (timerInterval) clearInterval(timerInterval);
+
     answered = false;
     selectedAnswerIndex = null;
     hintUsedThisQuestion = false;
@@ -172,11 +175,11 @@ function renderQuestion() {
     elements.hintBtn.disabled = false;
 
     startTimer();
-    questionStartTime = Date.now(); // Start clock for "Speed Demon"
+    questionStartTime = Date.now(); // Start clock
 }
 
 function startTimer() {
-    clearInterval(timerInterval);
+    if (timerInterval) clearInterval(timerInterval);
     timeLeft = 60;
     
     elements.timerText.textContent = `00:${timeLeft}`;
@@ -226,7 +229,6 @@ function updateComboDisplay() {
     if (currentCombo > 1) {
         comboEl.classList.remove('hidden');
         comboCountEl.textContent = `x${currentCombo}`;
-        // Trigger pulse animation
         comboEl.classList.remove('pulse');
         void comboEl.offsetWidth; // Force reflow
         comboEl.classList.add('pulse');
@@ -251,7 +253,8 @@ function handleSubmitAnswer() {
         handleNextQuestion();
         return;
     }
-    clearInterval(timerInterval);
+    if (timerInterval) clearInterval(timerInterval);
+    
     answered = true;
     userAnswers[currentQuestionIndex] = selectedAnswerIndex;
 
@@ -263,16 +266,13 @@ function handleSubmitAnswer() {
         score++;
         currentCombo++;
         
-        // Base XP
         let xp = hintUsedThisQuestion ? 5 : 10;
         
-        // Speed Bonus
         if (timeTaken < 5) {
             fastAnswersCount++;
-            xp += 5; // Bonus XP
+            xp += 5; 
         }
         
-        // Combo Bonus
         if (currentCombo > 1) {
             xp += (currentCombo * 2);
         }
@@ -284,9 +284,7 @@ function handleSubmitAnswer() {
         const selectedBtn = elements.quizOptionsContainer.querySelector('.option-btn.selected');
         if (selectedBtn) {
             const rect = selectedBtn.getBoundingClientRect();
-            // Confetti on button
             vfxService.burstConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2);
-            // Floating Text
             showFloatingText(selectedBtn, `+${xp} XP`);
         }
     } else {
@@ -317,7 +315,6 @@ function handleNextQuestion() {
     }
 }
 
-// --- WINNING FEATURE: DIGITAL CERTIFICATE ---
 function generateCertificateHTML(name, topic, level) {
     const date = new Date().toLocaleDateString();
     return `
@@ -335,8 +332,8 @@ function generateCertificateHTML(name, topic, level) {
                     <div class="cert-footer">
                         <div class="cert-date">${date}</div>
                         <div class="cert-sig">
-                            Awais Ali<br>
-                            <span style="font-size:0.6em; letter-spacing:1px; opacity:0.8;">SYSTEM ARCHITECT</span>
+                            System Admin<br>
+                            <span style="font-size:0.6em; letter-spacing:1px; opacity:0.8;">SKILL APEX</span>
                         </div>
                     </div>
                     <div class="cert-seal">
@@ -355,17 +352,28 @@ function showResults() {
     soundService.playSound(passed ? 'finish' : 'incorrect');
     
     if (passed) {
-        vfxService.burstConfetti(); // Big Burst center screen
+        vfxService.burstConfetti(); 
     }
 
+    // --- CRITICAL FIX: PASS QUESTIONS TO HISTORY SERVICE ---
+    // Previously, 'questions' and 'userAnswers' were missing, causing the attempt to be rejected.
     historyService.addQuizAttempt({
         topic: `${levelContext.topic} - Level ${levelContext.level}`,
         score: score,
         totalQuestions: total,
-        startTime: Date.now(), // Rough approx
+        startTime: Date.now(),
         endTime: Date.now(),
         xpGained: xpGainedThisLevel,
-        fastAnswers: fastAnswersCount
+        fastAnswers: fastAnswersCount,
+        questions: currentQuestions, // <--- Added
+        userAnswers: userAnswers     // <--- Added (optional but good for future review features)
+    });
+    
+    // Update Context for Review Module
+    stateService.setNavigationContext({
+        ...levelContext,
+        questions: currentQuestions,
+        userAnswers: userAnswers
     });
 
     if (passed) {
@@ -380,6 +388,7 @@ function showResults() {
         
         elements.resultsActions.innerHTML = `
             <a href="#/game/${encodeURIComponent(levelContext.topic)}" class="btn btn-primary" style="width:100%">Continue Journey</a>
+            <a href="#/review" class="btn">Review Answers</a>
         `;
         
         const journey = learningPathService.getJourneyById(levelContext.journeyId);
@@ -388,7 +397,10 @@ function showResults() {
     } else {
         elements.resultsTitle.textContent = 'Mission Failed';
         elements.resultsDetails.textContent = `Score: ${score}/${total}. Review the briefing and try again.`;
-        elements.resultsActions.innerHTML = `<button id="retry-level-btn" class="btn btn-primary">Retry Mission</button>`;
+        elements.resultsActions.innerHTML = `
+            <button id="retry-level-btn" class="btn btn-primary">Retry Mission</button>
+            <a href="#/review" class="btn">Review Mistakes</a>
+        `;
         document.getElementById('retry-level-btn').onclick = () => startLevel();
     }
     
@@ -471,7 +483,16 @@ export function init() {
 }
 
 export function destroy() {
-    clearInterval(timerInterval);
-    clearTimeout(loadingTimeout);
-    if (typewriterInterval) clearInterval(typewriterInterval);
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    if (typewriterInterval) {
+        clearInterval(typewriterInterval);
+        typewriterInterval = null;
+    }
+    if (loadingTimeout) {
+        clearTimeout(loadingTimeout);
+        loadingTimeout = null;
+    }
 }

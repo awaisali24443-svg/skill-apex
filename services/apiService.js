@@ -32,8 +32,9 @@ let isConfigLoaded = false;
 async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
     try {
         const response = await fetch(url, options);
+        
+        // Handle non-200 responses
         if (!response.ok) {
-            // If server error 5xx, retry. If 4xx, throw.
             if (response.status >= 500 && retries > 0) {
                 console.log(`Retrying ${url}... (${retries} left)`);
                 await new Promise(r => setTimeout(r, RETRY_DELAY_BASE));
@@ -41,7 +42,17 @@ async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
             }
             throw new Error(`Server Error: ${response.status}`);
         }
-        return await response.json();
+
+        // Check Content-Type to prevent crashing on 500 HTML pages
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+            return await response.json();
+        } else {
+            const text = await response.text();
+            console.warn("Received non-JSON response:", text.substring(0, 100));
+            throw new Error("Invalid response format (Not JSON)");
+        }
+
     } catch (error) {
         if (retries > 0) {
             console.log(`Fetch failed, retrying... (${retries} left)`);
@@ -60,8 +71,8 @@ export async function fetchTopics() {
     } catch (e) {
         console.warn("Using fallback topics");
         return [
-            { name: "General Knowledge", description: "Test your awareness.", styleClass: "topic-arts" },
-            { name: "Tech Fundamentals", description: "Basic computer science.", styleClass: "topic-programming" }
+            { name: "Python Mastery", description: "Learn Python from scratch.", styleClass: "topic-programming" },
+            { name: "Machine Learning", description: "Basics of AI and Neural Networks.", styleClass: "topic-robotics" }
         ];
     }
 }
@@ -75,11 +86,11 @@ export async function generateJourneyPlan(topic) {
         });
     } catch (error) {
         console.error("Journey Gen Failed:", error);
-        // Fallback structure
+        // Robust Fallback
         return {
             topicName: topic,
-            totalLevels: 10,
-            description: "Offline Mode: Detailed plan unavailable. Defaulting to standard path."
+            totalLevels: 20,
+            description: `(Offline Simulation) Custom training path for ${topic}.`
         };
     }
 }
@@ -92,7 +103,7 @@ export async function generateCurriculumOutline({ topic, totalLevels }) {
             body: JSON.stringify({ topic, totalLevels })
         });
     } catch (e) {
-        return { chapters: ["Basics", "Intermediate", "Advanced", "Mastery"] };
+        return { chapters: ["Core Concepts", "Advanced Techniques", "Practical Application", "Mastery"] };
     }
 }
 
@@ -105,14 +116,26 @@ export async function generateLevelQuestions({ topic, level, totalLevels }) {
         });
     } catch (e) {
         console.error("Question Gen Failed:", e);
-        // Return minimal fallback structure to prevent crash
+        // THEMED FALLBACKS FOR OFFLINE MODE
         return {
             questions: [
                 {
-                    question: "Network connection lost. What is the best action?",
-                    options: ["Panic", "Retry Later", "Check Cables", "Reboot"],
+                    question: `In the context of ${topic}, what is the most important fundamental principle?`,
+                    options: ["Speed", "Consistency/Logic", "Randomness", "Complexity"],
                     correctAnswerIndex: 1,
-                    explanation: "Retry logic is essential in distributed systems."
+                    explanation: "Foundational logic is key to mastering this subject."
+                },
+                {
+                    question: `Which tool is commonly used when working with ${topic}?`,
+                    options: ["Hammer", "IDE / Code Editor", "Microscope", "Telescope"],
+                    correctAnswerIndex: 1,
+                    explanation: "Software development and IT tasks usually require an Integrated Development Environment."
+                },
+                {
+                    question: "What happens if you ignore error handling in your code?",
+                    options: ["Nothing", "The system crashes unexpectedly", "It runs faster", "It fixes itself"],
+                    correctAnswerIndex: 1,
+                    explanation: "Robust systems require handling edge cases to prevent crashes."
                 }
             ]
         };
@@ -127,7 +150,7 @@ export async function generateLevelLesson({ topic, level, totalLevels }) {
             body: JSON.stringify({ topic, level, totalLevels })
         });
     } catch (e) {
-        return { lesson: "### Offline Briefing\n\nUnable to retrieve dynamic lesson data from HQ. Proceed to questions based on your existing knowledge." };
+        return { lesson: `### **OFFLINE BRIEFING**\n\n**TOPIC:** ${topic}\n\nWe are unable to reach the central AI core. Engaging local backup archives.\n\n*   **Focus:** Review your basics.\n*   **Objective:** Complete the practice questions to maintain your streak.\n\nProceed to the challenge.` };
     }
 }
 
@@ -139,7 +162,7 @@ export async function generateHint({ topic, question, options }) {
             body: JSON.stringify({ topic, question, options })
         });
     } catch (e) {
-        return { hint: "Review the question options carefully." };
+        return { hint: "Review the options. One of them is a standard industry best practice." };
     }
 }
 
@@ -151,7 +174,7 @@ export async function explainError(topic, question, userChoice, correctChoice) {
             body: JSON.stringify({ topic, question, userChoice, correctChoice })
         });
     } catch (e) {
-        return { explanation: "An error occurred while fetching the explanation." };
+        return { explanation: "Offline Mode: The selected answer is incorrect based on standard principles." };
     }
 }
 
@@ -160,7 +183,7 @@ export async function generateJourneyFromImage(imageBase64, mimeType) {
     return new Promise((resolve) => {
         setTimeout(() => {
             resolve({
-                topicName: "Scanned Topic",
+                topicName: "Scanned IT Topic",
                 totalLevels: 15,
                 description: "AI identified a technical subject from your image scan."
             });
