@@ -42,7 +42,7 @@
     "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
     "express-rate-limit": "https://aistudiocdn.com/express-rate-limit@^8.2.1",
     "ws": "https://aistudiocdn.com/ws@^8.18.3",
-    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
+    "firebase/": "https://aistudiocdn.com/firebase@10.13.0/",
     "url": "https://aistudiocdn.com/url@^0.11.4",
     "fs/": "https://aistudiocdn.com/fs@^0.0.1-security/",
     "http": "https://aistudiocdn.com/http@^0.0.1-security",
@@ -69,9 +69,11 @@
     <!-- Intro Splash -->
     <div id="splash-screen">
         <img src="assets/icons/favicon.svg" alt="Skill Apex Logo" class="splash-logo">
-        <h2 style="color:var(--color-primary); font-family: 'Exo 2'; letter-spacing: 2px; margin-top:10px;">INITIALIZING CORE...</h2>
+        <h2 id="splash-status-text" style="color:var(--color-primary); font-family: 'Exo 2'; letter-spacing: 2px; margin-top:10px;">INITIALIZING CORE...</h2>
         <!-- UPDATED ORB LOADER -->
-        <div class="orb-loader" role="status"></div>
+        <div class="orb-loader" id="splash-loader" role="status"></div>
+        <div id="splash-error-log" style="color: #ef4444; margin-top: 20px; font-family: 'Roboto Mono', monospace; font-size: 0.8rem; max-width: 80%; text-align: center;"></div>
+        <button id="splash-reload-btn" class="btn btn-primary" style="display: none; margin-top: 20px;">System Reboot</button>
     </div>
 
     <div id="welcome-screen" style="display: none;">
@@ -112,6 +114,48 @@
         <svg class="icon" style="width:16px;height:16px;margin-right:8px;"><use href="assets/icons/feather-sprite.svg#shield"/></svg>
         OFFLINE SIMULATION MODE
     </div>
+
+    <script>
+        // --- EMERGENCY ERROR HANDLER & TIMEOUT ---
+        // This script runs before modules to catch loading failures (e.g., bad imports)
+        (function() {
+            const loadTimeout = setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                if (splash && !splash.classList.contains('hidden') && splash.style.display !== 'none') {
+                    document.getElementById('splash-status-text').innerText = "SYSTEM INITIALIZATION TIMEOUT";
+                    document.getElementById('splash-status-text').style.color = "#ef4444";
+                    document.getElementById('splash-loader').style.display = 'none';
+                    document.getElementById('splash-reload-btn').style.display = 'inline-flex';
+                    document.getElementById('splash-error-log').innerText = "The server is taking too long to respond. Check internet connection or modules.";
+                }
+            }, 8000); // 8 Seconds timeout
+
+            window.addEventListener('error', function(event) {
+                const splashLog = document.getElementById('splash-error-log');
+                if (splashLog) {
+                    splashLog.innerText = "Error: " + (event.message || "Unknown Script Error");
+                    document.getElementById('splash-status-text').innerText = "CRITICAL FAILURE";
+                    document.getElementById('splash-status-text').style.color = "#ef4444";
+                    document.getElementById('splash-loader').style.display = 'none';
+                    document.getElementById('splash-reload-btn').style.display = 'inline-flex';
+                }
+                // Stop spinning if error
+                clearTimeout(loadTimeout);
+            });
+
+            document.getElementById('splash-reload-btn').addEventListener('click', function() {
+                // Clear Service Worker cache attempt before reload
+                if(navigator.serviceWorker) {
+                    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                        for(let registration of registrations) { registration.unregister(); }
+                        window.location.reload();
+                    });
+                } else {
+                    window.location.reload();
+                }
+            });
+        })();
+    </script>
 
     <script src="global/global.js"></script>
     <script type="module" src="index.js"></script>

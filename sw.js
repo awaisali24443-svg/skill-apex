@@ -1,12 +1,12 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 5.20.0 (Firebase Auth Fix)
+ * @version 5.21.0 (Import Map Fix)
  *
  * This service worker implements a robust offline-first caching strategy.
  */
 
-const CACHE_NAME = 'skill-apex-v5.20.0-firebase-fix';
+const CACHE_NAME = 'skill-apex-v5.21.0-import-fix';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [
