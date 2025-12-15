@@ -34,6 +34,14 @@ const PORT = process.env.PORT || 3000;
 let topicsCache = null;
 let prebakedLevelsCache = {}; // IN-MEMORY DATABASE
 
+// --- MODEL CONFIGURATION WITH FALLBACK ---
+// We try models in this order to ensure stability
+const MODELS_TO_TRY = [
+    'gemini-2.5-flash',
+    'gemini-2.0-flash-exp',
+    'gemini-1.5-flash' // Ultimate fallback
+];
+
 // Load Prebaked Data on Start
 (async () => {
     try {
@@ -147,20 +155,29 @@ try {
     console.error(`❌ Failed to initialize AI: ${error.message}`);
 }
 
-// --- AGGRESSIVE RETRY HELPER ---
-async function callAIWithRetry(fn, retries = 5, delay = 2000) {
-    try {
-        return await fn();
-    } catch (error) {
-        const status = error.status || error.code; 
-        if (retries > 0 && (status === 429 || status === 503 || status === 'RESOURCE_EXHAUSTED')) {
-            console.warn(`⚠️ AI Busy (Status ${status}). Retrying in ${delay}ms... (${retries} attempts left)`);
-            await new Promise(res => setTimeout(res, delay));
-            return callAIWithRetry(fn, retries - 1, Math.floor(delay * 1.5)); 
+// --- SMART GENERATION HELPER (With Model Fallback) ---
+async function generateWithFallback(callFn) {
+    let lastError = null;
+    
+    // Try each model in sequence
+    for (const model of MODELS_TO_TRY) {
+        try {
+            return await callFn(model);
+        } catch (error) {
+            const status = error.status || error.code;
+            console.warn(`⚠️ Model ${model} failed (${status}). Trying next...`);
+            lastError = error;
+            
+            // If it's a 429 (Busy), wait a bit before trying next model
+            if (status === 429 || status === 503) {
+                await new Promise(r => setTimeout(r, 1000));
+            }
         }
-        console.error("❌ AI Call Failed Final:", error.message);
-        throw error;
     }
+    
+    // If all models fail, throw the last error
+    console.error("❌ All models failed.");
+    throw lastError;
 }
 
 // --- SERVICE FUNCTIONS ---
@@ -181,8 +198,8 @@ async function generateJourneyPlan(topic, persona) {
     
     const prompt = `Analyze "${topic}". Output JSON: { topicName, totalLevels (10-50), description }`;
     try {
-        const response = await callAIWithRetry(() => ai.models.generateContent({
-            model: 'gemini-2.5-flash', 
+        const response = await generateWithFallback((model) => ai.models.generateContent({
+            model: model, 
             contents: prompt,
             config: { 
                 responseMimeType: 'application/json',
@@ -201,8 +218,8 @@ async function generateJourneyPlan(topic, persona) {
         return cleanAndParseJSON(response.text) || FALLBACK_DATA.journey(topic);
     } catch (error) {
         console.error("Error in generateJourneyPlan:", error);
-        // We do NOT return fallback here if this is a debug call, we let error propagate
-        if (topic === "PING_TEST_PROTOCOL_DEBUG") throw error; 
+        // Special case for debug tool - rethrow to see message
+        if (topic === "PING_TEST_PROTOCOL_DEBUG") throw error;
         return FALLBACK_DATA.journey(topic);
     }
 }
@@ -210,8 +227,8 @@ async function generateJourneyPlan(topic, persona) {
 async function generateCurriculumOutline(topic, totalLevels, persona) {
     if (!ai) return FALLBACK_DATA.curriculum(topic);
     try {
-        const response = await callAIWithRetry(() => ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+        const response = await generateWithFallback((model) => ai.models.generateContent({
+            model: model,
             contents: `Topic: ${topic}. Break into 4 chapter titles. JSON: { chapters: [] }`,
             config: { 
                 responseMimeType: 'application/json',
@@ -247,8 +264,8 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
     `;
 
     try {
-        const response = await callAIWithRetry(() => ai.models.generateContent({
-            model: 'gemini-2.5-flash', 
+        const response = await generateWithFallback((model) => ai.models.generateContent({
+            model: model, 
             contents: prompt,
             config: { 
                 responseMimeType: 'application/json',
@@ -297,8 +314,8 @@ async function generateLevelLesson(topic, level, totalLevels, questions, persona
     if (!ai) return FALLBACK_DATA.lesson(topic);
     
     try {
-        const response = await callAIWithRetry(() => ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+        const response = await generateWithFallback((model) => ai.models.generateContent({
+            model: model,
             contents: `Write a short, exciting lesson briefing for ${topic}, Level ${level}. Under 150 words.`,
             config: { 
                 responseMimeType: 'application/json',
@@ -333,8 +350,8 @@ async function generateJourneyFromFile(fileData, mimeType, persona) {
     `;
 
     try {
-        const response = await callAIWithRetry(() => ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+        const response = await generateWithFallback((model) => ai.models.generateContent({
+            model: model,
             contents: {
                 role: 'user',
                 parts: [

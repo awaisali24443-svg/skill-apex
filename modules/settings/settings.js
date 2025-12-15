@@ -190,10 +190,11 @@ async function handleTestConnection() {
             btn.style.borderColor = 'var(--color-success)';
             showToast(`System Nominal. Latency: ${result.latency}ms`, 'success');
         } else if (result.status === 'offline') {
-            btn.innerHTML = `<svg class="icon" style="color:white;"><use href="assets/icons/feather-sprite.svg#x-circle"/></svg> <span style="color:white">AI OFFLINE</span>`;
+            const errorMsg = result.message || 'AI Unreachable';
+            btn.innerHTML = `<svg class="icon" style="color:white;"><use href="assets/icons/feather-sprite.svg#x-circle"/></svg> <span style="color:white">${errorMsg.substring(0, 15)}...</span>`;
             btn.style.backgroundColor = '#f59e0b'; // Warning Orange
             btn.style.borderColor = '#f59e0b';
-            showToast(`Server OK, but AI is unreachable. Using Backup Data.`, 'info');
+            showToast(`Error: ${result.message}`, 'error', 5000); // Long duration for reading
         } else {
             throw new Error(result.message);
         }
@@ -204,13 +205,13 @@ async function handleTestConnection() {
         showToast('Connection Failed: Network unreachable.', 'error');
     }
     
-    // Reset after 3 seconds
+    // Reset after 5 seconds to let them read error
     setTimeout(() => {
         btn.innerHTML = originalContent;
         btn.style.backgroundColor = '';
         btn.style.borderColor = '';
         btn.disabled = false;
-    }, 3000);
+    }, 5000);
 }
 
 function handleInstallClick() {
