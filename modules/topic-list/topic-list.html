@@ -52,7 +52,7 @@
     </div>
 
     <!-- 3. Available Topics -->
-    <h3 class="section-label"><svg class="icon"><use href="assets/icons/feather-sprite.svg#grid"/></svg> Available Protocols</h3>
+    <h3 class="section-label"><svg class="icon"><use href="assets/icons/feather-sprite.svg#grid"/></svg> Explore Topics</h3>
     
     <!-- Skeleton Loader -->
     <div id="topics-skeleton" class="topic-grid">
@@ -67,28 +67,35 @@
     </div>
 </div>
 
+<!-- TEMPLATE UPDATED TO MATCH REFERENCE IMAGE LAYOUT -->
 <template id="topic-card-template">
-    <div class="card topic-card" tabindex="0" role="button">
-        <div class="topic-bg-glow"></div>
-        <div class="topic-card-content">
-            <h3 class="topic-name"></h3>
-            <p class="topic-description"></p>
-            <div class="topic-footer">
-                <span class="topic-action">Initialize <svg class="icon"><use href="assets/icons/feather-sprite.svg#chevron-down" style="transform: rotate(-90deg);"/></svg></span>
+    <div class="topic-card" tabindex="0" role="button">
+        <div class="topic-card-header">
+            <div class="topic-icon-wrapper">
+                <!-- Icon injected via JS -->
             </div>
+            <h3 class="topic-name"></h3>
         </div>
+        <div class="topic-card-body">
+            <p class="topic-description"></p>
+        </div>
+        <div class="topic-card-glow"></div>
     </div>
 </template>
 
 <template id="active-journey-template">
-    <div class="card topic-card active-journey-card" tabindex="0" role="button">
-        <div class="active-status-indicator"></div>
-        <div class="topic-card-content">
+    <div class="topic-card active-journey-card" tabindex="0" role="button">
+        <div class="topic-card-header">
+            <div class="topic-icon-wrapper">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#play-circle"/></svg>
+            </div>
+            <h3 class="topic-name"></h3>
+        </div>
+        <div class="topic-card-body">
             <div class="active-meta">
                 <span class="journey-level-badge">Level <span class="journey-level"></span></span>
                 <span class="resume-text">Resume</span>
             </div>
-            <h3 class="topic-name"></h3>
             <div class="journey-progress-track">
                 <div class="journey-progress-fill"></div>
             </div>

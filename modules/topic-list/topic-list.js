@@ -14,7 +14,7 @@ let prefetchQueue = [];
 let isPrefetching = false;
 let prefetchTimeout = null;
 
-// Available styles defined in CSS with background images
+// Available styles defined in CSS
 const STYLE_CLASSES = [
     'topic-programming', 
     'topic-space', 
@@ -23,8 +23,22 @@ const STYLE_CLASSES = [
     'topic-finance', 
     'topic-robotics',
     'topic-medicine',
-    'topic-philosophy'
+    'topic-philosophy',
+    'topic-ecology'
 ];
+
+// Map styles to specific feather icons for the reference look
+const ICON_MAP = {
+    'topic-programming': 'cpu',     // Represents Microchip/Tech
+    'topic-space': 'globe',         // Represents Planet/Cosmos
+    'topic-biology': 'activity',    // Represents DNA/Pulse
+    'topic-arts': 'image',          // Represents Palette/Art
+    'topic-finance': 'trending-up', // Represents Chart/Growth
+    'topic-robotics': 'server',     // Represents Machine/Bot
+    'topic-medicine': 'heart',      // Represents Health
+    'topic-philosophy': 'book-open',// Represents Logic/Law
+    'topic-ecology': 'sun'          // Represents Environment/Nature
+};
 
 function renderTopics(topics) {
     if (!topicGrid) return; // Safety check
@@ -42,9 +56,23 @@ function renderTopics(topics) {
         const card = template.content.cloneNode(true);
         const cardEl = card.querySelector('.topic-card');
         cardEl.dataset.topic = topic.name;
-        if (topic.styleClass) cardEl.classList.add(topic.styleClass);
+        
+        let iconName = 'layers'; // Default fallback
+        
+        if (topic.styleClass) {
+            cardEl.classList.add(topic.styleClass);
+            if (ICON_MAP[topic.styleClass]) {
+                iconName = ICON_MAP[topic.styleClass];
+            }
+        }
         
         cardEl.style.animationDelay = `${index * 50}ms`;
+        
+        // Inject Icon
+        const iconContainer = cardEl.querySelector('.topic-icon-wrapper');
+        if (iconContainer) {
+            iconContainer.innerHTML = `<svg class="icon"><use href="assets/icons/feather-sprite.svg#${iconName}"/></svg>`;
+        }
         
         card.querySelector('.topic-name').textContent = topic.name;
         card.querySelector('.topic-description').textContent = topic.description;
@@ -134,7 +162,7 @@ function renderActiveJourneys() {
             styleClass = STYLE_CLASSES[styleIndex % STYLE_CLASSES.length];
         }
         
-        cardEl.classList.add(styleClass);
+        cardEl.classList.add(styleClass); // Still add class for consistency/data attributes if needed, though CSS overrides active card style
         
         cardEl.style.animationDelay = `${index * 30}ms`;
         
