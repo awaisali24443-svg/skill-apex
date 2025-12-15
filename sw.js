@@ -1,12 +1,12 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 7.1.0 (Report Module Added)
+ * @version 7.2.0 (Icons Repaired)
  *
  * This service worker implements a robust offline-first caching strategy.
  */
 
-const CACHE_NAME = 'skill-apex-v7.1.0-report-update';
+const CACHE_NAME = 'skill-apex-v7.2.0-icons-fix';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [
