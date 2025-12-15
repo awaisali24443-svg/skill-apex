@@ -1,0 +1,123 @@
+
+<div class="page-container profile-container sparked-layout">
+    
+    <!-- LEFT COLUMN: Identity & Controls -->
+    <aside class="profile-sidebar">
+        
+        <!-- Identity Card -->
+        <div class="card profile-identity-card">
+            <div class="profile-banner-bg"></div>
+            
+            <div class="profile-avatar-section" id="avatar-drop-zone">
+                <div class="avatar-ring">
+                    <div id="profile-avatar-display" class="profile-avatar-display">
+                        <!-- Generated content goes here -->
+                    </div>
+                    <div class="avatar-overlay">
+                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#camera"/></svg>
+                    </div>
+                </div>
+                <input type="file" id="avatar-upload" accept="image/*" class="sr-only">
+            </div>
+
+            <div class="profile-info">
+                <div class="name-row">
+                    <h2 id="user-name-display">User Profile</h2>
+                    <button class="btn-icon-tiny" id="edit-profile-btn">
+                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#edit-2"/></svg>
+                    </button>
+                </div>
+                
+                <div class="edit-name-wrapper" id="edit-name-wrapper" style="display: none;">
+                    <input type="text" id="user-name-input" class="modern-input" placeholder="Your Name">
+                    <button id="save-name-btn" class="btn-save">
+                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#check-circle"/></svg>
+                    </button>
+                </div>
+
+                <span class="user-email" id="user-email-text">Loading...</span>
+                
+                <div class="level-badge-row">
+                    <div class="status-pill blue">Learner</div>
+                    <div class="status-pill purple">Beta User</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Widget -->
+        <div class="card widget-card">
+            <div class="widget-header">
+                <h3>Skill Progress</h3>
+            </div>
+            <div class="progress-circle-container">
+                <!-- SVG Circle Progress handled by CSS/JS -->
+                <svg viewBox="0 0 36 36" class="circular-chart blue">
+                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="circle" id="progress-circle-path" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <text x="18" y="20.35" class="percentage" id="progress-percent">0%</text>
+                </svg>
+                <p class="progress-sub">XP to Next Level</p>
+            </div>
+        </div>
+
+        <!-- Invite Widget -->
+        <div class="card widget-card">
+            <div class="widget-header">
+                <h3>Invite Friends</h3>
+            </div>
+            <p class="widget-desc">Share Skill Apex with your network.</p>
+            <div class="copy-input-group">
+                <input type="text" id="recruiter-id-input" readonly value="...">
+                <button id="copy-ref-btn">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#copy"/></svg>
+                </button>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- RIGHT COLUMN: Achievements & Showcase -->
+    <main class="profile-main">
+        
+        <!-- NEW: Career Stats Strip -->
+        <div class="career-stats-row">
+            <div class="stat-block">
+                <div class="stat-icon icon-fire">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#zap"/></svg>
+                </div>
+                <div class="stat-data">
+                    <span class="stat-value" id="stat-streak">0</span>
+                    <span class="stat-label">Day Streak</span>
+                </div>
+            </div>
+            <div class="stat-block">
+                <div class="stat-icon icon-star">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#star"/></svg>
+                </div>
+                <div class="stat-data">
+                    <span class="stat-value" id="stat-xp">0</span>
+                    <span class="stat-label">Total XP</span>
+                </div>
+            </div>
+            <div class="stat-block">
+                <div class="stat-icon icon-check">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#check-circle"/></svg>
+                </div>
+                <div class="stat-data">
+                    <span class="stat-value" id="stat-quizzes">0</span>
+                    <span class="stat-label">Quizzes</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-heading">
+            <h1>Achievements</h1>
+            <p>Milestones unlocked during your learning journey.</p>
+        </div>
+
+        <div id="achievements-grid" class="achievements-grid">
+            <!-- Items injected by JS -->
+        </div>
+    </main>
+
+</div>
