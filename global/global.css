@@ -86,6 +86,38 @@ html, body {
     padding-bottom: 4rem; /* Bottom spacing for content */
 }
 
+/* --- ADAPTIVE HEADER UTILITY --- */
+.adaptive-header-layout {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Align top for better multiline handling */
+    gap: var(--space-md);
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+    margin-bottom: var(--space-xl);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--space-lg);
+}
+
+.header-text-group {
+    flex: 1 1 300px; /* Grow, shrink, base width */
+}
+
+.header-text-group h1 {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+}
+
+.header-text-group p {
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+    max-width: 600px;
+}
+
+.adaptive-header-layout .btn {
+    white-space: nowrap; /* Prevent button text wrap */
+}
+
 /* --- DESKTOP SIDEBAR (Glassmorphism) --- */
 #sidebar {
     position: relative; 
@@ -270,6 +302,10 @@ html, body {
     .desktop-only,
     .adaptive-spacer { 
         display: none !important; 
+    }
+    
+    .mobile-hidden {
+        display: none !important;
     }
 
     .sidebar-links {
