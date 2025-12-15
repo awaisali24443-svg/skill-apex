@@ -2,7 +2,7 @@
 import { ROUTES, FEATURES } from '../constants.js';
 import * as firebaseService from './firebaseService.js';
 
-// Global listener to update sidebar elements when profile changes (e.g. from Profile module)
+// Global listener to update sidebar elements when profile changes
 window.addEventListener('profile-updated', () => {
     const container = document.querySelector('.profile-avatar-container');
     const nameText = document.querySelector('.sidebar-profile-header .profile-name');
@@ -20,7 +20,6 @@ window.addEventListener('profile-updated', () => {
 
 /**
  * Generates HTML for the avatar. 
- * If photoURL exists, uses IMG. If not, generates a unique SVG based on the name.
  */
 function generateAvatarHTML(photoURL, name) {
     if (photoURL) {
@@ -37,7 +36,6 @@ function generateAvatarHTML(photoURL, name) {
     const color1 = `hsl(${hue}, 70%, 60%)`;
     const color2 = `hsl(${(hue + 40) % 360}, 70%, 40%)`;
     
-    // Get initials (max 2 chars)
     const initials = str.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
     return `
@@ -49,12 +47,13 @@ function generateAvatarHTML(photoURL, name) {
 
 /**
  * Creates the HTML for a single navigation link.
+ * Uses absolute path for icons to ensure they load from any route depth.
  */
 function createNavLink(route) {
     return `
         <a href="#${route.path}" class="sidebar-link" data-path="${route.path}" aria-label="${route.name}">
             <div class="link-icon-wrapper">
-                <svg class="icon"><use href="assets/icons/feather-sprite.svg#${route.icon}"/></svg>
+                <svg class="icon"><use href="/assets/icons/feather-sprite.svg#${route.icon}"/></svg>
             </div>
             <span class="text">${route.name}</span>
         </a>
@@ -62,9 +61,11 @@ function createNavLink(route) {
 }
 
 /**
- * Renders the Floating Glass Sidebar (Facenote Style).
+ * Renders the Floating Glass Sidebar.
  */
 export function renderSidebar(container) {
+    if (!container) return;
+    
     container.setAttribute('aria-label', 'Main Navigation');
 
     const mainLinks = ROUTES.filter(r => r.nav && !r.footer);
@@ -76,7 +77,6 @@ export function renderSidebar(container) {
         return true;
     });
 
-    // Use getUserName for display name logic which handles display name > email split > default
     const displayName = firebaseService.getUserName();
     const photoURL = firebaseService.getUserPhoto();
     
@@ -110,7 +110,7 @@ export function renderSidebar(container) {
                 <span class="profile-name">${displayName}</span>
                 <span class="profile-role">My Account</span>
             </div>
-            <svg class="icon profile-chevron"><use href="assets/icons/feather-sprite.svg#chevron-down"/></svg>
+            <svg class="icon profile-chevron"><use href="/assets/icons/feather-sprite.svg#chevron-down"/></svg>
         </div>
 
         <div class="sidebar-divider"></div>
@@ -128,7 +128,7 @@ export function renderSidebar(container) {
             ${settingsLink ? createNavLink(settingsLink) : ''}
             <button id="sidebar-logout-btn" class="sidebar-link logout-link">
                 <div class="link-icon-wrapper">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#power"/></svg>
+                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#power"/></svg>
                 </div>
                 <span class="text">Log Out</span>
             </button>
@@ -155,7 +155,7 @@ export function renderSidebar(container) {
             });
             if (confirmed) {
                 await firebaseService.logout();
-                window.location.reload(); // Critical Fix: Force reload to clear all SPA state
+                window.location.reload(); 
             }
         });
     }
