@@ -51,29 +51,22 @@ async function startLevel() {
     switchState('level-loading-state');
     
     const loadingTextEl = document.getElementById('loading-status-text');
-    if (loadingTextEl) loadingTextEl.textContent = "The AI is crafting your next challenge...";
+    if (loadingTextEl) loadingTextEl.textContent = "Hacking the mainframe for Level " + level + "...";
 
-    // SAFETY: Increased timeout to 60s. The server might retry for ~30s if rate limited.
-    // We want to wait for the real data instead of giving up too early.
+    // Update text after 5s to keep user entertained
     loadingTimeout = setTimeout(() => {
-        if (loadingTextEl) loadingTextEl.textContent = "Network traffic high. Rerouting neural link...";
-    }, 15000);
-    
-    // Extended timeout notification
-    setTimeout(() => {
         if (loadingTextEl && document.getElementById('level-loading-state').classList.contains('active')) {
-            loadingTextEl.textContent = "Finalizing secure connection... almost there.";
+            loadingTextEl.textContent = "Brewing fresh knowledge... hold tight.";
         }
-    }, 35000);
+    }, 5000);
     
     try {
-        // Sequential requests to minimize "burst" load on API key
-        const lessonData = await apiService.generateLevelLesson({ topic, level, totalLevels });
-        
-        // Small cool-down
-        await new Promise(r => setTimeout(r, 500)); 
-        
-        const questionsData = await apiService.generateLevelQuestions({ topic, level, totalLevels });
+        // PERFORMANCE BOOST: Parallel Fetching
+        // Fetch lesson AND questions simultaneously to cut wait time in half
+        const [lessonData, questionsData] = await Promise.all([
+            apiService.generateLevelLesson({ topic, level, totalLevels }),
+            apiService.generateLevelQuestions({ topic, level, totalLevels })
+        ]);
 
         clearTimeout(loadingTimeout);
 
@@ -86,12 +79,12 @@ async function startLevel() {
         renderLesson();
         
         // Very delayed preloading to keep channel clear
-        setTimeout(() => preloadNextLevel(), 10000);
+        setTimeout(() => preloadNextLevel(), 8000);
 
     } catch (error) {
         clearTimeout(loadingTimeout);
         console.error("Level Start Error:", error);
-        showToast("Connection Error. Returning to Map...", "error");
+        showToast("Signal Lost. Returning to Map...", "error");
         setTimeout(() => window.history.back(), 2000);
     }
 }
@@ -102,9 +95,11 @@ async function preloadNextLevel() {
     if (levelCacheService.getLevel(levelContext.topic, nextLevel)) return;
 
     try {
-        const lData = await apiService.generateLevelLesson({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels });
-        await new Promise(r => setTimeout(r, 2000)); // Generous cool down for background tasks
-        const qData = await apiService.generateLevelQuestions({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels });
+        // Parallel preloading too
+        const [lData, qData] = await Promise.all([
+            apiService.generateLevelLesson({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels }),
+            apiService.generateLevelQuestions({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels })
+        ]);
         
         const nextLevelData = { lesson: lData.lesson, questions: qData.questions };
         levelCacheService.saveLevel(levelContext.topic, nextLevel, nextLevelData);
@@ -115,12 +110,15 @@ async function preloadNextLevel() {
 
 function renderLessonTypewriter(htmlContent) {
     if (typewriterInterval) clearInterval(typewriterInterval);
+    // Directly inject HTML for instant gratification in Expo mode
+    // Typewriter is cool but slows down the "fast" feel requested
     const container = elements.lessonBody;
     container.innerHTML = htmlContent;
+    container.scrollTop = 0;
 }
 
 function renderLesson() {
-    elements.lessonTitle.textContent = `Level ${levelContext.level}: Mission Briefing`;
+    elements.lessonTitle.textContent = `Level ${levelContext.level} Briefing`;
     const rawHtml = markdownService.render(levelData.lesson);
     switchState('level-lesson-state');
     renderLessonTypewriter(rawHtml);

@@ -13,7 +13,7 @@ const FALLBACK_DATA = {
     journey: (topic) => ({
         topicName: topic || "IT Mastery",
         totalLevels: 10,
-        description: `(Offline Mode) A comprehensive training course on ${topic}. Server connection unavailable.`,
+        description: `(Offline Mode) A specialized training course on ${topic}. Server connection unavailable.`,
         isFallback: true
     }),
     curriculum: () => ({
@@ -23,7 +23,7 @@ const FALLBACK_DATA = {
     questions: (topic) => ({
         questions: [
             {
-                question: `Scenario: You are working on a project related to ${topic} and the system crashes. What is the first logical step?`,
+                question: `Scenario: You are optimizing a system for ${topic} and the system crashes. What is the first logical step?`,
                 options: ["Panic", "Check the logs/debug", "Restart everything immediately", "Call the client"],
                 correctAnswerIndex: 1,
                 explanation: "Debugging and log analysis is the professional first step in any IT crisis."
@@ -44,7 +44,7 @@ const FALLBACK_DATA = {
         isFallback: true
     }),
     lesson: (topic) => ({
-        lesson: `### System Briefing: ${topic}\n\n**Status:** Offline Backup Protocol Active.\n\nSince the AI connection is currently offline, we are accessing the local reserve archives.\n\n*   **Core Concept:** Mastery of ${topic} requires understanding both the 'How' and the 'Why'.\n*   **Industry Standard:** This skill is highly valued in the global market.\n*   **Objective:** Prove your knowledge to proceed.\n\nProceed to the challenge.`,
+        lesson: `### ⚡ System Briefing: ${topic}\n\n**Status:** Offline Mode (AI Nap Time).\n\nSince the neural network is snoozing, here's the raw deal:\n\n*   **The Hook:** Mastering ${topic} is like learning to ride a bike. Wobbly at first, then you fly.\n*   **The Core:** Focus on the fundamentals. Don't rush.\n*   **The Payoff:** This skill pays the bills.\n\n**Action:** Prove your skills in the quiz below!`,
         isFallback: true
     })
 };

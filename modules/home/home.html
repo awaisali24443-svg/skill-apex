@@ -1,63 +1,115 @@
 
 <div class="page-container home-container">
-    <!-- Hero Section -->
-    <header class="dashboard-header" style="text-align: center; margin-top: 1rem; margin-bottom: 2rem;">
-        <div class="glitch-wrapper">
-            <h1 class="glitch" data-text="NEURAL INTERFACE READY">NEURAL INTERFACE READY</h1>
+    
+    <!-- 1. Hero / Greeting Section -->
+    <header class="home-hero">
+        <div class="hero-text">
+            <h1 id="home-greeting">Initializing...</h1>
+            <p class="hero-sub">System Ready. Awaiting Directives.</p>
         </div>
-        <p class="fade-in-delay" style="color: var(--color-primary); letter-spacing: 2px; font-weight: bold;">SELECT PROTOCOL //</p>
+        <div class="hero-status">
+            <span class="status-indicator online"></span>
+            <span class="status-text">NETWORK: SECURE</span>
+        </div>
     </header>
 
-    <!-- EXPO MODE: Instant Action Grid -->
-    <div class="expo-grid">
-        
-        <!-- Card 1: Cyber Security (Exciting) -->
-        <div class="card expo-card preset-topic" data-topic="Cybersecurity Breach">
-            <div class="expo-icon-bg"><svg class="icon"><use href="assets/icons/feather-sprite.svg#shield"/></svg></div>
-            <div class="expo-content">
-                <h2>DEFEND SERVER</h2>
-                <p>Status: <span style="color:var(--color-error)">CRITICAL</span></p>
-                <div class="expo-action">ENGAGE <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg></div>
-            </div>
-        </div>
-
-        <!-- Card 2: Space (Visual) -->
-        <div class="card expo-card preset-topic" data-topic="Mars Mission Landing">
-            <div class="expo-icon-bg"><svg class="icon"><use href="assets/icons/feather-sprite.svg#circle"/></svg></div>
-            <div class="expo-content">
-                <h2>MARS LANDING</h2>
-                <p>Status: <span style="color:var(--color-accent)">ORBITAL</span></p>
-                <div class="expo-action">INITIATE <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg></div>
-            </div>
-        </div>
-
-        <!-- Card 3: AI (Trendy) -->
-        <div class="card expo-card preset-topic" data-topic="Artificial Intelligence Logic">
-            <div class="expo-icon-bg"><svg class="icon"><use href="assets/icons/feather-sprite.svg#cpu"/></svg></div>
-            <div class="expo-content">
-                <h2>DEBUG A.I. CORE</h2>
-                <p>Status: <span style="color:var(--color-primary)">ONLINE</span></p>
-                <div class="expo-action">ACCESS <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg></div>
-            </div>
-        </div>
-
-        <!-- Card 4: Crypto (Money/Finance appeals to everyone) -->
-        <div class="card expo-card preset-topic" data-topic="Crypto Trading Strategy">
-            <div class="expo-icon-bg"><svg class="icon"><use href="assets/icons/feather-sprite.svg#star"/></svg></div>
-            <div class="expo-content">
-                <h2>MARKET CRASH</h2>
-                <p>Status: <span style="color:#ffd700">VOLATILE</span></p>
-                <div class="expo-action">TRADE <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg></div>
-            </div>
-        </div>
-
+    <!-- 2. Active Mission (Resume) - Injected via JS if exists -->
+    <div id="resume-section" class="resume-section" style="display: none;">
+        <!-- Resume Card Template injected here -->
     </div>
 
-    <!-- Hidden Manual Input (Still there if a pro wants it) -->
-    <div style="margin-top: 3rem; text-align: center; opacity: 0.6;">
-        <p style="font-size: 0.8rem; margin-bottom: 0.5rem;">MANUAL OVERRIDE</p>
-        <form id="quick-quiz-form" style="display: inline-block;">
-            <input type="text" id="quick-quiz-input" class="modern-input-small" placeholder="Enter custom topic..." autocomplete="off">
-        </form>
-    </div>
+    <!-- 3. Command Input (Generate New) -->
+    <section class="command-section">
+        <div class="command-bar-wrapper">
+            <div class="command-icon">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#search"/></svg>
+            </div>
+            <form id="command-form" class="command-form">
+                <input type="text" id="command-input" class="command-input" placeholder="Initialize new protocol (e.g., 'Quantum Physics', 'ReactJS')..." autocomplete="off">
+                <button type="submit" id="command-submit-btn" class="btn-command-go">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- 4. Featured Protocols (Presets) -->
+    <section class="featured-section">
+        <h3 class="section-label">RECOMMENDED OPERATIONS</h3>
+        <div class="expo-grid">
+            
+            <!-- Op 1: Security -->
+            <div class="card expo-card preset-topic" data-topic="Cybersecurity & Ethical Hacking">
+                <div class="card-bg-glow red"></div>
+                <div class="expo-icon-wrapper">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#shield"/></svg>
+                </div>
+                <div class="expo-content">
+                    <span class="expo-tag">DEFENSE</span>
+                    <h2>Cyber Security</h2>
+                    <p>Red Teaming & Network Defense.</p>
+                </div>
+                <div class="expo-arrow">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
+                </div>
+            </div>
+
+            <!-- Op 2: AI -->
+            <div class="card expo-card preset-topic" data-topic="Artificial Intelligence & LLMs">
+                <div class="card-bg-glow blue"></div>
+                <div class="expo-icon-wrapper">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#cpu"/></svg>
+                </div>
+                <div class="expo-content">
+                    <span class="expo-tag">INTELLIGENCE</span>
+                    <h2>Generative AI</h2>
+                    <p>Transformers & Neural Networks.</p>
+                </div>
+                <div class="expo-arrow">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
+                </div>
+            </div>
+
+            <!-- Op 3: Space -->
+            <div class="card expo-card preset-topic" data-topic="Astrophysics & Space Exploration">
+                <div class="card-bg-glow purple"></div>
+                <div class="expo-icon-wrapper">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#circle"/></svg>
+                </div>
+                <div class="expo-content">
+                    <span class="expo-tag">FRONTIER</span>
+                    <h2>Cosmos</h2>
+                    <p>Orbital Mechanics & Beyond.</p>
+                </div>
+                <div class="expo-arrow">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
+                </div>
+            </div>
+
+            <!-- Op 4: Blockchain -->
+            <div class="card expo-card preset-topic" data-topic="Blockchain & Cryptography">
+                <div class="card-bg-glow gold"></div>
+                <div class="expo-icon-wrapper">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#lock"/></svg>
+                </div>
+                <div class="expo-content">
+                    <span class="expo-tag">FINANCE</span>
+                    <h2>Blockchain</h2>
+                    <p>Decentralized Ledger Tech.</p>
+                </div>
+                <div class="expo-arrow">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Recent History (Compact) -->
+    <section class="recent-section">
+        <h3 class="section-label">RECENT LOGS</h3>
+        <div id="recent-history-container" class="recent-list">
+            <!-- Injected -->
+        </div>
+    </section>
 </div>

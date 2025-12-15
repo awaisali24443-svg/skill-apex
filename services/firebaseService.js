@@ -63,6 +63,23 @@ try {
 let currentUser = null;
 let authStateCallback = null;
 
+// --- MOCK DATA (Global Elite) ---
+// Ensures leaderboard is never empty. Used for Expo/Demo purposes.
+const MOCK_LEADERBOARD = [
+    { id: 'm1', username: 'Arslan Ash', level: 99, xp: 98500, isMock: true }, // PK eSports Legend
+    { id: 'm2', username: 'Sumail Hassan', level: 96, xp: 94200, isMock: true }, // PK Dota Legend
+    { id: 'm3', username: 'Sarah Connor', level: 91, xp: 88000, isMock: true },
+    { id: 'm4', username: 'Hamza Ali', level: 85, xp: 81500, isMock: true },
+    { id: 'm5', username: 'Chen Wei', level: 82, xp: 79200, isMock: true },
+    { id: 'm6', username: 'Ayesha Khan', level: 78, xp: 75400, isMock: true },
+    { id: 'm7', username: 'John Wick', level: 75, xp: 72000, isMock: true },
+    { id: 'm8', username: 'Bilal Ahmed', level: 70, xp: 68000, isMock: true },
+    { id: 'm9', username: 'Zara Sheikh', level: 65, xp: 63500, isMock: true },
+    { id: 'm10', username: 'Dev Patel', level: 60, xp: 59000, isMock: true },
+    { id: 'm11', username: 'Fatima Noor', level: 58, xp: 56000, isMock: true },
+    { id: 'm12', username: 'Usman Ghani', level: 55, xp: 53000, isMock: true }
+];
+
 // --- Helper for Offline Mode (LocalStorage Persistence) ---
 const OFFLINE_USER_KEY = 'kt_offline_user';
 
@@ -336,22 +353,38 @@ async function updateLeaderboardScore(stats) {
 }
 
 async function getLeaderboard(limitCount = 20) {
-    if (!isFirebaseActive) return [];
-    
-    const lbRef = collection(db, "leaderboard");
-    const q = query(lbRef, orderBy("xp", "desc"), limit(limitCount));
-    
-    try {
-        const querySnapshot = await getDocs(q);
-        const results = [];
-        querySnapshot.forEach((doc) => {
-            results.push({ id: doc.id, ...doc.data() });
-        });
-        return results;
-    } catch(e) {
-        console.warn("Failed to fetch leaderboard", e);
-        return [];
+    let results = [];
+
+    // 1. Try fetching real data first
+    if (isFirebaseActive) {
+        const lbRef = collection(db, "leaderboard");
+        const q = query(lbRef, orderBy("xp", "desc"), limit(limitCount));
+        
+        try {
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc) => {
+                results.push({ id: doc.id, ...doc.data() });
+            });
+        } catch(e) {
+            console.warn("Failed to fetch leaderboard, failing over to mock.", e);
+        }
     }
+
+    // 2. Fallback / Merge Strategy
+    // If real results are few, pad with mock data to make it look alive for everyone
+    if (results.length < 10) {
+        // Filter out any mock users that might conflict (unlikely given IDs)
+        const existingIds = new Set(results.map(r => r.id));
+        const needed = limitCount - results.length;
+        
+        const mockToAdd = MOCK_LEADERBOARD.filter(m => !existingIds.has(m.id)).slice(0, needed);
+        results = [...results, ...mockToAdd];
+        
+        // Re-sort just in case
+        results.sort((a, b) => b.xp - a.xp);
+    }
+
+    return results;
 }
 
 export { 

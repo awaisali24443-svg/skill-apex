@@ -63,26 +63,25 @@ const MODELS_TO_TRY = [
 // --- DYNAMIC PERSONA SYSTEM (LOCALIZED) ---
 const PERSONA_DEFINITIONS = {
     apex: `
-    You are ApexCore, an advanced AI Tutor designed for a Tech Expo in Pakistan.
+    You are ApexCore, a high-energy, witty, and ultra-modern AI Tutor.
     
-    TONE: Professional, encouraging, but use LOCAL ANALOGIES to explain complex tech.
+    TONE: Enthusiastic, punchy, and fun. Think "Cool Tech Mentor" or "Podcast Host", not "Boring Professor".
     
-    GUIDELINES:
-    1. If explaining speed/latency, use examples like "Traffic in Peshawar" or "Cricket ball speed (Shoaib Akhtar)".
-    2. If explaining loops/structure, maybe reference "Brick Kiln (Bhatta)" or "Textile Loom".
-    3. Keep English simple and high-impact.
-    4. NO long paragraphs. Bullet points are best.
-    
-    Your goal is to impress judges by making high-tech concepts feel native and understandable.
+    CRITICAL GUIDELINES:
+    1. **NO ACADEMIC JARGON**: Explain things like you are talking to a smart friend at a cafe.
+    2. **ANALOGIES FIRST**: Always start with a real-world comparison (e.g., "RAM is like a kitchen counter").
+    3. **LOCAL FLAVOR (Pakistan)**: Use relatable references like Cricket, Chai, Traffic in Lahore/Karachi, or Biryani vs Pulao debates.
+    4. **BREVITY IS KING**: Keep it short. No long paragraphs. Bullet points are your best friend.
+    5. **HUMOR**: It is okay to be funny. Make the user smile.
     `,
-    sage: `Persona: A Wise Professor. Tone: Thoughtful, deep.`,
-    commander: `Persona: Tactical Mission Control. Tone: Urgent, military.`,
-    eli5: `Persona: A Creative Workshop Director. Tone: Playful.`
+    sage: `Persona: A Wise Grandmaster. Tone: Deep, metaphorical, concise.`,
+    commander: `Persona: Tactical Mission Control. Tone: Urgent, military, precise.`,
+    eli5: `Persona: A Fun Kindergarten Teacher. Tone: Super simple, playful, emoji-heavy.`
 };
 
 function getSystemInstruction(personaKey = 'apex') {
     return `${PERSONA_DEFINITIONS[personaKey] || PERSONA_DEFINITIONS.apex} 
-    RULES: No rote memorization. Scenario-based questions. JSON output only.`;
+    RULES: JSON output only. No markdown formatting outside the JSON string.`;
 }
 
 // --- FALLBACK DATA GENERATORS (Safety Net) ---
@@ -90,7 +89,7 @@ const FALLBACK_DATA = {
     journey: (topic) => ({
         topicName: topic || "IT Mastery",
         totalLevels: 10,
-        description: `(Offline Simulation) A specialized training course on ${topic}. AI connection currently stabilizing.`,
+        description: `(Offline Mode) A specialized training course on ${topic}. AI connection currently stabilizing.`,
         isFallback: true
     }),
     curriculum: (topic) => ({
@@ -121,7 +120,7 @@ const FALLBACK_DATA = {
         isFallback: true
     }),
     lesson: (topic) => ({
-        lesson: `### System Briefing: ${topic}\n\n**Status:** Simulated Data Link.\n\nWe are accessing the local backup archives for **${topic}**.\n\n*   **Concept 1:** Understanding the basics is key to mastering this field.\n*   **Concept 2:** Practical application beats theory every time.\n\n**Action:** Proceed to the quiz to test your baseline knowledge.`,
+        lesson: `### ⚡ System Briefing: ${topic}\n\n**Status:** Simulated Data Link.\n\nSince the AI brain is taking a nap (Offline Mode), here is the raw data:\n\n*   **The Hook:** Mastering ${topic} is like learning to ride a bike. Hard at first, then you fly.\n*   **The Core:** Focus on the fundamentals. Don't rush.\n\n**Action:** Prove your skills in the quiz below!`,
         isFallback: true
     })
 };
@@ -267,7 +266,8 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
 
     const prompt = `
     Topic: ${topic}. Level: ${level}/${totalLevels}. ${focusArea}
-    Generate 3 multiple choice questions.
+    Generate 3 engaging multiple choice questions.
+    Make the scenarios realistic but fun.
     `;
 
     try {
@@ -321,9 +321,26 @@ async function generateLevelLesson(topic, level, totalLevels, questions, persona
     if (!ai) return FALLBACK_DATA.lesson(topic);
     
     try {
+        // Optimized prompt for speed and engagement
+        const prompt = `
+        Topic: ${topic}. Level: ${level}/${totalLevels}.
+        Goal: Explain the ONE most critical concept for this level.
+        
+        Constraints:
+        1. MAX 80 WORDS. Keep it punchy.
+        2. START with a fun analogy (e.g. "Think of X like a Pizza...").
+        3. NO academic intros like "In this lesson...".
+        4. Make it sound like a cool tech blog post.
+        
+        Format:
+        - ⚡ **The Hook**: The analogy.
+        - 🧠 **The Logic**: What it actually is.
+        - 🚀 **Real World**: Why it matters.
+        `;
+
         const response = await generateWithFallback((model) => ai.models.generateContent({
             model: model,
-            contents: `Write a short, exciting lesson briefing for ${topic}, Level ${level}. Under 150 words.`,
+            contents: prompt,
             config: { 
                 responseMimeType: 'application/json',
                 systemInstruction: getSystemInstruction(persona),
@@ -348,11 +365,11 @@ async function generateJourneyFromFile(fileData, mimeType, persona) {
     if (!ai) return FALLBACK_DATA.journey("Document Analysis");
 
     const prompt = `
-    Analyze the provided document or image.
-    1. Identify the CORE TOPIC (e.g. "Biology", "Financial Report Analysis", "History of Rome").
+    Analyze this document/image.
+    1. Identify the CORE TOPIC.
     2. Create a catchy Topic Name.
-    3. Determine a suitable number of levels (10-30).
-    4. Write a brief description summarizing the content.
+    3. Suggest levels (10-30).
+    4. Write a brief description.
     Output JSON: { topicName, totalLevels, description }
     `;
 

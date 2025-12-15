@@ -226,7 +226,7 @@ async function startSession() {
                 speechConfig: {
                     voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } }
                 },
-                systemInstruction: "You are ApexCore, an elite AI tutor. Respond quickly, concisely, and with high energy."
+                systemInstruction: "You are ApexCore. Speak like a witty, high-energy tech podcast host. Keep answers under 15 seconds. Use analogies. Be funny. If asked about code, describe the logic simply. No lecturing!"
             },
             callbacks: {
                 onopen: () => {
