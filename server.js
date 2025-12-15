@@ -15,21 +15,17 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ==================================================================================
-// 🚨 CRITICAL FIX: API KEY INJECTED 🚨
-// This ensures it works 100% without needing .env files or config panels.
+// API KEY CONFIGURATION
+// We exclusively use the environment variable process.env.API_KEY
 // ==================================================================================
-const MY_DIRECT_API_KEY = "AIzaSyBtG_AZjwA59BW6l2EKjl6TRhoLVnyMKYE"; 
-// ==================================================================================
-
-const rawKey = MY_DIRECT_API_KEY !== "PASTE_YOUR_GEMINI_API_KEY_HERE" ? MY_DIRECT_API_KEY : (process.env.API_KEY || process.env.GEMINI_API_KEY);
-const API_KEY = rawKey ? rawKey.trim() : null;
+const API_KEY = process.env.API_KEY;
 
 console.log("--- SYSTEM STARTUP DIAGNOSTICS ---");
 console.log(`Node Version: ${process.version}`);
 if (API_KEY) {
     console.log(`✅ API Key Detected. Length: ${API_KEY.length} characters.`);
 } else {
-    console.error("❌ FATAL: API_KEY is missing! Please paste it in server.js line 18.");
+    console.error("❌ FATAL: API_KEY is missing in environment variables!");
 }
 console.log("----------------------------------");
 
@@ -137,7 +133,7 @@ try {
         ai = new GoogleGenAI({ apiKey: API_KEY });
         console.log(`✅ GoogleGenAI initialized.`);
     } else {
-        console.warn("⚠️ Server running in OFFLINE MODE (No AI). Fallback data will be used.");
+        console.warn("⚠️ Server running in OFFLINE MODE (No AI Key). Fallback data will be used.");
     }
 } catch (error) {
     console.error(`❌ Failed to initialize AI: ${error.message}`);
@@ -187,6 +183,7 @@ async function generateCurriculumOutline(topic, totalLevels, persona) {
         });
         return cleanAndParseJSON(response.text) || FALLBACK_DATA.curriculum(topic);
     } catch (error) {
+        console.error("AI Error (Curriculum):", error.message);
         return FALLBACK_DATA.curriculum(topic);
     }
 }
