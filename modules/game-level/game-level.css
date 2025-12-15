@@ -105,8 +105,10 @@
     flex-wrap: wrap; gap: 1rem;
 }
 
-.timer-section p { font-size: 0.8rem; margin: 0; color: var(--color-text-secondary); text-transform: uppercase; }
-#timer-text { font-size: 1.8rem; font-weight: 800; color: var(--color-primary); font-family: var(--font-family-mono); }
+/* ALIGNMENT FIX: Center timer text vertically */
+.timer-section { display: flex; flex-direction: column; justify-content: center; }
+.timer-section p { font-size: 0.8rem; margin: 0; color: var(--color-text-secondary); text-transform: uppercase; text-align: center; }
+#timer-text { font-size: 1.8rem; font-weight: 800; color: var(--color-primary); font-family: var(--font-family-mono); line-height: 1; text-align: center; }
 #timer-text.panic { color: var(--color-error); animation: panic-pulse 0.5s infinite; }
 
 @keyframes panic-pulse {
@@ -115,8 +117,8 @@
     100% { transform: scale(1); opacity: 1; }
 }
 
-.question-progress-section { flex-grow: 1; margin-left: 2rem; max-width: 400px; }
-.progress-bar { height: 10px; background: var(--color-surface-hover); border-radius: 5px; overflow: hidden; border: 1px solid var(--color-border); }
+.question-progress-section { flex-grow: 1; margin-left: 2rem; max-width: 400px; display: flex; flex-direction: column; justify-content: center; }
+.progress-bar { height: 10px; background: var(--color-surface-hover); border-radius: 5px; overflow: hidden; border: 1px solid var(--color-border); margin-top: 6px; }
 .progress-bar-fill {
     height: 100%; background: repeating-linear-gradient(45deg, var(--color-primary), var(--color-primary) 10px, var(--color-secondary) 10px, var(--color-secondary) 20px);
     width: 0%; transition: width 0.3s ease; animation: stripe-move 1s linear infinite;

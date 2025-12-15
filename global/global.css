@@ -226,6 +226,7 @@ html, body {
     justify-content: center;
     margin-bottom: 20px;
     position: relative;
+    width: 100%;
 }
 
 .brand-text-collapsed {
@@ -251,14 +252,17 @@ html, body {
 #sidebar.expanded .brand-text-collapsed { opacity: 0; }
 #sidebar.expanded .brand-text-expanded { opacity: 1; }
 
-/* 2. Profile Card */
+/* 2. Profile Card - Center Aligned */
 .sidebar-profile-header {
     display: flex;
     align-items: center;
-    padding: 8px 20px; /* Consistent padding */
+    justify-content: center; /* ALIGNMENT FIX: Default center for collapsed */
+    padding: 8px 0; /* Remove horizontal padding to prevent width issues */
+    width: 100%;
     cursor: pointer;
     transition: background 0.2s;
     overflow: hidden;
+    position: relative;
 }
 .sidebar-profile-header:hover { background: rgba(255,255,255,0.05); }
 
@@ -267,8 +271,16 @@ html, body {
     border-radius: 50%;
     flex-shrink: 0;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    margin: 0 auto; /* Center when collapsed */
+    margin: 0; /* Remove auto margin, let flex center it */
     transition: margin 0.3s;
+    position: relative;
+    z-index: 2;
+}
+
+/* Expanded Adjustment */
+#sidebar.expanded .sidebar-profile-header {
+    justify-content: flex-start; /* Align left when expanded */
+    padding: 8px 20px;
 }
 #sidebar.expanded .profile-avatar-container { margin: 0 14px 0 0; }
 
@@ -329,6 +341,7 @@ html, body {
     flex-direction: column;
     gap: 8px;
     width: 100%;
+    align-items: center; /* ALIGNMENT FIX: Force center items in column */
 }
 
 .sidebar-link {
@@ -341,7 +354,7 @@ html, body {
     font-weight: 500;
     font-size: 1.05rem;
     transition: all 0.2s ease;
-    border-radius: 0; /* Full width hover effect looks better here */
+    border-radius: 0; 
     position: relative;
     width: 100%;
     white-space: nowrap;
@@ -374,6 +387,7 @@ html, body {
 .sidebar-link.active { color: var(--color-primary); font-weight: 700; background: rgba(var(--color-primary-rgb), 0.05); }
 
 /* Expanded Link Styling */
+#sidebar.expanded .sidebar-links { align-items: stretch; } /* Fill width when expanded */
 #sidebar.expanded .sidebar-link {
     justify-content: flex-start; /* Align Left */
     padding-left: 28px;
@@ -391,6 +405,7 @@ html, body {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    width: 100%;
 }
 
 /* --- MOBILE RESPONSIVE (< 768px) --- */
@@ -423,7 +438,7 @@ html, body {
         
         display: flex;
         flex-direction: row; 
-        justify-content: space-evenly;
+        justify-content: space-around; /* ALIGNMENT FIX: Better distribution */
         padding: 0 12px;
         z-index: 9999;
         overflow-x: auto;
@@ -682,13 +697,13 @@ html, body {
 }
 
 @keyframes wing-assemble-left {
-    from { transform: translateX(-50px) opacity(0); }
-    to { transform: translateX(0) opacity(1); }
+    from { transform: translateX(-50px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
 }
 
 @keyframes wing-assemble-right {
-    from { transform: translateX(50px) opacity(0); }
-    to { transform: translateX(0) opacity(1); }
+    from { transform: translateX(50px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
 }
 
 @keyframes spark-pulse {
@@ -743,4 +758,47 @@ html, body {
 @keyframes particle-float {
     0%, 100% { transform: translate(0, 0); opacity: 0; }
     50% { transform: translate(20px, -20px); opacity: 0.8; }
+}
+
+/* --- PRESENTATION POLISH: GLOBAL UI TWEAKS --- */
+
+html {
+    scroll-behavior: smooth;
+    /* Prevent rubber-banding on Mac/iOS for "App" feel */
+    overscroll-behavior: none; 
+}
+
+/* Premium Custom Scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent; 
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-border); 
+    border-radius: 3px;
+    transition: background 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-secondary); 
+}
+
+/* Custom Text Selection */
+::selection {
+    background: var(--color-primary);
+    color: white;
+}
+
+/* Hide scrollbar for cleaner look in specific containers but allow scroll */
+.hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
 }
