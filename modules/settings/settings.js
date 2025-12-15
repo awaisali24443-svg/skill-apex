@@ -6,6 +6,7 @@ import { showToast } from '../../services/toastService.js';
 import * as levelCacheService from '../../services/levelCacheService.js';
 import * as learningPathService from '../../services/learningPathService.js';
 import * as firebaseService from '../../services/firebaseService.js';
+import * as apiService from '../../services/apiService.js';
 
 let elements = {};
 const animationLevels = ['off', 'subtle', 'full'];
@@ -172,6 +173,46 @@ async function handleLogout() {
     }
 }
 
+async function handleTestConnection() {
+    const btn = document.getElementById('test-connection-btn');
+    if (!btn) return;
+    
+    const originalContent = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<div class="spinner" style="width:16px;height:16px;border-width:2px;margin-right:8px;"></div> Pinging Core...`;
+    
+    try {
+        const result = await apiService.checkSystemStatus();
+        
+        if (result.status === 'online') {
+            btn.innerHTML = `<svg class="icon" style="color:white;"><use href="assets/icons/feather-sprite.svg#check-circle"/></svg> <span style="color:white">ONLINE (${result.latency}ms)</span>`;
+            btn.style.backgroundColor = 'var(--color-success)';
+            btn.style.borderColor = 'var(--color-success)';
+            showToast(`System Nominal. Latency: ${result.latency}ms`, 'success');
+        } else if (result.status === 'offline') {
+            btn.innerHTML = `<svg class="icon" style="color:white;"><use href="assets/icons/feather-sprite.svg#x-circle"/></svg> <span style="color:white">AI OFFLINE</span>`;
+            btn.style.backgroundColor = '#f59e0b'; // Warning Orange
+            btn.style.borderColor = '#f59e0b';
+            showToast(`Server OK, but AI is unreachable. Using Backup Data.`, 'info');
+        } else {
+            throw new Error(result.message);
+        }
+    } catch (e) {
+        btn.innerHTML = `<svg class="icon" style="color:white;"><use href="assets/icons/feather-sprite.svg#x-circle"/></svg> <span style="color:white">NET ERROR</span>`;
+        btn.style.backgroundColor = 'var(--color-error)';
+        btn.style.borderColor = 'var(--color-error)';
+        showToast('Connection Failed: Network unreachable.', 'error');
+    }
+    
+    // Reset after 3 seconds
+    setTimeout(() => {
+        btn.innerHTML = originalContent;
+        btn.style.backgroundColor = '';
+        btn.style.borderColor = '';
+        btn.disabled = false;
+    }, 3000);
+}
+
 function handleInstallClick() {
     const promptEvent = window.deferredInstallPrompt;
     if (!promptEvent) return;
@@ -329,6 +370,9 @@ export function init() {
         themeLightBtn: document.getElementById('theme-light-btn'),
         themeDarkBtn: document.getElementById('theme-dark-btn'),
         
+        // Diagnostics
+        testConnectionBtn: document.getElementById('test-connection-btn'),
+        
         // Upgrade Elements
         upgradeSection: document.getElementById('upgrade-account-section'),
         linkGoogleBtn: document.getElementById('link-google-btn'),
@@ -362,6 +406,8 @@ export function init() {
     if (elements.changeInterestBtn) elements.changeInterestBtn.addEventListener('click', handleChangeInterest);
     
     if (elements.logoutBtn) elements.logoutBtn.addEventListener('click', handleLogout);
+    
+    if (elements.testConnectionBtn) elements.testConnectionBtn.addEventListener('click', handleTestConnection);
     
     // Persona Selection
     elements.personaCards.forEach(card => {
@@ -400,6 +446,8 @@ export function destroy() {
 
     if (elements.installBtn) elements.installBtn.removeEventListener('click', handleInstallClick);
     if (elements.logoutBtn) elements.logoutBtn.removeEventListener('click', handleLogout);
+    
+    if (elements.testConnectionBtn) elements.testConnectionBtn.removeEventListener('click', handleTestConnection);
     
     if (elements.linkGoogleBtn) elements.linkGoogleBtn.removeEventListener('click', handleLinkGoogle);
     if (elements.linkEmailBtn) elements.linkEmailBtn.removeEventListener('click', openLinkEmailModal);

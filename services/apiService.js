@@ -156,6 +156,25 @@ export async function generateJourneyFromFile(fileBase64, mimeType) {
     return data;
 }
 
+// --- DIAGNOSTICS ---
+export async function checkSystemStatus() {
+    const start = Date.now();
+    try {
+        // We use journey generation as a ping because checking fallback is reliable there
+        const response = await generateJourneyPlan("PING_TEST_PROTOCOL");
+        const latency = Date.now() - start;
+        
+        // If the server returns fallback data, it means the AI failed or key is missing
+        if (response.isFallback) {
+            return { status: 'offline', latency, message: 'Server Reachable, AI Offline' };
+        }
+        
+        return { status: 'online', latency, message: 'Neural Link Stable' };
+    } catch (e) {
+        return { status: 'error', latency: 0, message: 'Network Unreachable' };
+    }
+}
+
 // Helper to get client for Aural Mode (which must run in browser)
 // We fetch the key from the server first to keep it somewhat obscure
 export async function getAIClient() {
