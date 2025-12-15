@@ -57,6 +57,34 @@ async function loadProgress() {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS);
         gameProgress = stored ? JSON.parse(stored) : [];
 
+        // --- ONE-TIME DEMO INJECTION: UNLOCK LEVEL 50 ---
+        const DEMO_KEY = 'kt_demo_it_unlock_v1';
+        if (!localStorage.getItem(DEMO_KEY)) {
+            const demoTopic = "Cybersecurity: Red Teaming";
+            const existingIndex = gameProgress.findIndex(p => p.goal === demoTopic);
+            
+            if (existingIndex !== -1) {
+                // Boost existing
+                gameProgress[existingIndex].currentLevel = 50;
+                gameProgress[existingIndex].totalLevels = 50;
+            } else {
+                // Create new unlocked journey
+                gameProgress.unshift({
+                    id: `journey_demo_${Date.now()}`,
+                    goal: demoTopic,
+                    description: "Advanced simulation. Penetration testing and red team operations. [BOSS LEVEL UNLOCKED]",
+                    currentLevel: 50,
+                    totalLevels: 50,
+                    styleClass: "topic-space",
+                    createdAt: new Date().toISOString(),
+                });
+            }
+            saveProgressLocal();
+            localStorage.setItem(DEMO_KEY, 'true');
+            console.log("🔓 SYSTEM OVERRIDE: Level 50 Unlocked for Cybersecurity.");
+        }
+        // ------------------------------------------------
+
         // Background Sync (Skip if Guest)
         if (navigator.onLine && !isGuest()) {
             const userId = getUserId();

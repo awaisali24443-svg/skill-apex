@@ -83,9 +83,10 @@ export function renderSidebar(container) {
 
     const html = `
         <div class="sidebar-inner">
-            <!-- 1. Brand Header -->
+            <!-- 1. Brand Header (Dual State) -->
             <div class="sidebar-brand-section">
-                <h1 class="brand-text-sidebar">Skill Apex</h1>
+                <span class="brand-text-collapsed">SA</span>
+                <h1 class="brand-text-expanded">Skill Apex</h1>
             </div>
 
             <!-- 2. Profile Section -->
@@ -129,10 +130,29 @@ export function renderSidebar(container) {
     
     container.innerHTML = html;
 
+    // --- Interaction Handlers ---
+    
+    // Toggle expand on click anywhere on sidebar
+    container.addEventListener('click', (e) => {
+        // Stop propagation so document listener doesn't immediately close it
+        e.stopPropagation();
+        container.classList.add('expanded');
+    });
+
+    // Close when clicking outside
+    document.addEventListener('click', (e) => {
+        if (container.classList.contains('expanded') && !container.contains(e.target)) {
+            container.classList.remove('expanded');
+        }
+    });
+
     // Attach Logout Listener
     const logoutBtn = document.getElementById('sidebar-logout-btn');
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', async () => {
+        logoutBtn.addEventListener('click', async (e) => {
+            e.stopPropagation(); // Keep sidebar open during modal interaction if desired, or let it close. 
+            // Better to let it stay open or standard behavior.
+            
             const { showConfirmationModal } = await import('./modalService.js');
             const confirmed = await showConfirmationModal({
                 title: 'Log Out',

@@ -1,291 +1,179 @@
 
 {
     "Next.js & React Server Components": {
-        "lesson": "### **MISSION BRIEFING: THE MODERN WEB**\n\n**OBJECTIVE:** Server-Side Rendering (SSR).\n\n*   **App Router:** The new file-system based routing.\n*   **RSC:** React Server Components run on the server, sending zero JS to the client.\n*   **Hydration:** Making static HTML interactive.\n\n**STATUS:** Compiling...",
+        "lesson": "### ⚡ The Vibe Check: Server Components\n\n**Think of it like this:** The server is the chef, and the client (browser) is the diner. In the old days, we sent raw ingredients (JS) to the diner to cook themselves. Now? The chef cooks the heavy stuff (RSC) and just sends the plated food (HTML). Fast, tasty, zero work for the diner.\n\n*   **RSC:** Runs on the server. Zero bundle size. Magic.\n*   **Client Components:** The interactive bits (buttons, forms) that need to 'listen' to clicks.\n*   **The Win:** Faster loads, happier users, better SEO.",
         "questions": [
-            { "question": "What is the primary benefit of React Server Components?", "options": ["More JavaScript", "Zero Bundle Size impact", "Better CSS", "Database access on client"], "correctAnswerIndex": 1, "explanation": "RSC run on the server and are not included in the client-side JavaScript bundle." },
-            { "question": "Which directory is used for the App Router in Next.js 13+?", "options": ["/pages", "/src", "/app", "/routes"], "correctAnswerIndex": 2, "explanation": "The `/app` directory is the home of the new App Router." },
-            { "question": "How do you fetch data in a Server Component?", "options": ["useEffect", "async/await directly", "getStaticProps", "AJAX"], "correctAnswerIndex": 1, "explanation": "Server Components can be async functions, allowing direct `await fetch()` calls." }
+            { "question": "Why do we love React Server Components (RSC)?", "options": ["They make coffee", "They send zero JavaScript to the client", "They run inside the user's phone", "They are built with Python"], "correctAnswerIndex": 1, "explanation": "RSCs render on the server and send plain HTML, keeping the client bundle tiny." },
+            { "question": "Where does a 'Client Component' usually live?", "options": ["On the server only", "In the database", "In the browser", "In the cloud"], "correctAnswerIndex": 2, "explanation": "Client components hydrate in the browser to handle interactivity like clicks and state." },
+            { "question": "What's the default component type in the Next.js App Router?", "options": ["Client Component", "Server Component", "Hybrid Component", "Legacy Component"], "correctAnswerIndex": 1, "explanation": "By default, everything is a Server Component unless you explicitly say 'use client'." }
         ]
     },
     "NestJS Fundamentals": {
-        "lesson": "### **MISSION BRIEFING: SCALABLE NODE.JS**\n\n**OBJECTIVE:** Enterprise-grade backend.\n\n*   **Decorators:** `@Controller`, `@Get`, `@Post`.\n*   **Modules:** Organizing code into cohesive blocks.\n*   **Dependency Injection:** Managing services efficiently.\n\n**STATUS:** Server listening.",
+        "lesson": "### 🦁 Taming the Node.js Zoo\n\nNode.js is great, but messy. **NestJS** is like the strict parent that forces you to clean your room. It uses **Decorators** (like stickers on code) to tell the computer what to do.\n\n*   **Controllers:** The front desk. They take orders (Requests).\n*   **Providers:** The kitchen staff. They do the work (Logic).\n*   **Modules:** The boxes. They keep everything organized.",
         "questions": [
-            { "question": "NestJS is heavily inspired by which frontend framework?", "options": ["React", "Vue", "Angular", "Svelte"], "correctAnswerIndex": 2, "explanation": "It shares concepts like Modules, Providers, and Decorators with Angular." },
-            { "question": "What decorator defines a basic controller?", "options": ["@Service()", "@Controller()", "@Route()", "@API()"], "correctAnswerIndex": 1, "explanation": "`@Controller()` marks a class as a request handler." },
-            { "question": "What is the default language for NestJS?", "options": ["JavaScript", "Python", "TypeScript", "Go"], "correctAnswerIndex": 2, "explanation": "NestJS is built with and fully supports TypeScript out of the box." }
+            { "question": "What acts as the 'Front Desk' in NestJS?", "options": ["Providers", "Controllers", "Modules", "Guards"], "correctAnswerIndex": 1, "explanation": "Controllers handle incoming requests and return responses to the client." },
+            { "question": "NestJS looks and feels a lot like which frontend framework?", "options": ["React", "Angular", "Vue", "Svelte"], "correctAnswerIndex": 1, "explanation": "It borrows heavily from Angular's architecture (Decorators, Modules, DI)." },
+            { "question": "What is the purpose of a Module?", "options": ["To confuse you", "To organize code into cohesive blocks", "To database data", "To run tests"], "correctAnswerIndex": 1, "explanation": "Modules group related controllers and providers together." }
         ]
     },
     "Docker & Kubernetes": {
-        "lesson": "### **MISSION BRIEFING: CONTAINERIZATION**\n\n**OBJECTIVE:** Ship code anywhere.\n\n*   **Image:** Read-only template (The Blueprint).\n*   **Container:** Running instance (The House).\n*   **Pod:** The smallest unit in Kubernetes.\n\n**STATUS:** Orchestrating...",
+        "lesson": "### 🐳 Shipping Containers for Code\n\nImagine moving house but instead of boxes, you move the entire room. That's **Docker**. It wraps your app and everything it needs into a container so it runs *exactly* the same on your laptop and the cloud.\n\n*   **Image:** The blueprint.\n*   **Container:** The actual house built from the blueprint.\n*   **Kubernetes:** The landlord managing thousands of these houses at once.",
         "questions": [
-            { "question": "Which command builds a Docker image?", "options": ["docker run", "docker build", "docker compose", "docker create"], "correctAnswerIndex": 1, "explanation": "`docker build` creates an image from a Dockerfile." },
-            { "question": "What is the 'Control Plane' in Kubernetes?", "options": ["The worker node", "The brain of the cluster", "The database", "The network"], "correctAnswerIndex": 1, "explanation": "The Control Plane manages the worker nodes and the Pods in the cluster." },
-            { "question": "What file defines a Docker container?", "options": ["package.json", "Dockerfile", "docker-compose.yml", "Container.txt"], "correctAnswerIndex": 1, "explanation": "A Dockerfile contains the instructions to assemble the image." }
+            { "question": "What solves the 'It works on my machine' problem?", "options": ["Restarting", "Docker", "Buying a new laptop", "Praying"], "correctAnswerIndex": 1, "explanation": "Docker ensures the environment is identical everywhere." },
+            { "question": "What is Kubernetes basically?", "options": ["A database", "A container orchestration tool", "A coding language", "A virus"], "correctAnswerIndex": 1, "explanation": "It manages, scales, and heals fleets of containers automatically." },
+            { "question": "A Dockerfile is like a...", "options": ["Recipe", "Picture", "Video Game", "Network Cable"], "correctAnswerIndex": 0, "explanation": "It contains the instructions (recipe) to build the image." }
         ]
     },
     "TypeScript Mastery": {
-        "lesson": "### **MISSION BRIEFING: TYPE SAFETY**\n\n**OBJECTIVE:** Robust JavaScript.\n\n*   **Interfaces:** Defining the shape of objects.\n*   **Generics:** Reusable components working with any type.\n*   **Union Types:** `string | number`.\n\n**STATUS:** Compiling...",
+        "lesson": "### 🛡️ JavaScript with a Safety Belt\n\nJavaScript is wild; it lets you do anything. **TypeScript** is the responsible friend who stops you from doing stupid things. It forces you to define what your data *is* before you use it.\n\n*   **Types:** Is this a number or a word? Decide now.\n*   **Interfaces:** Defining the shape of an object (like a contract).\n*   **The Catch:** It compiles down to regular JS in the end.",
         "questions": [
-            { "question": "Which keyword defines a custom type structure?", "options": ["def", "struct", "interface", "shape"], "correctAnswerIndex": 2, "explanation": "`interface` (and `type`) is used to define object shapes." },
-            { "question": "What is `any` in TypeScript?", "options": ["A strict type", "Opting out of type checking", "A string", "A number"], "correctAnswerIndex": 1, "explanation": "`any` disables type checking for that variable, effectively reverting to standard JS behavior." },
-            { "question": "What symbol is used for optional properties?", "options": ["!", "?", "*", "#"], "correctAnswerIndex": 1, "explanation": "`name?: string` means the property `name` is optional." }
+            { "question": "What is the main benefit of TypeScript?", "options": ["It runs faster", "Type safety and catching errors early", "It uses less memory", "It replaces HTML"], "correctAnswerIndex": 1, "explanation": "It catches bugs during development instead of crashing in production." },
+            { "question": "If you don't know the type, what is the 'escape hatch'?", "options": ["whatever", "idk", "any", "random"], "correctAnswerIndex": 2, "explanation": "`any` turns off type checking, effectively reverting to plain JS behavior." },
+            { "question": "Does the browser understand TypeScript?", "options": ["Yes, natively", "No, it must be compiled to JS", "Only Chrome", "Only on Tuesdays"], "correctAnswerIndex": 1, "explanation": "Browsers only speak JavaScript; TS is a build-time tool." }
         ]
     },
     "Rust Programming": {
-        "lesson": "### **MISSION BRIEFING: MEMORY SAFETY**\n\n**OBJECTIVE:** Blazing speed without GC.\n\n*   **Ownership:** A unique system to manage memory.\n*   **Borrowing:** Accessing data without taking ownership.\n*   **Cargo:** The package manager and build tool.\n\n**STATUS:** Compiling release...",
+        "lesson": "### 🦀 Fast, Safe, and slightly scary\n\n**Rust** is the speed demon of languages. It runs as fast as C++ but stops you from shooting yourself in the foot with memory errors. \n\n*   **Ownership:** The golden rule. Every piece of data has exactly *one* owner.\n*   **Borrowing:** You can look at my toy, but you can't break it.\n*   **Cargo:** The best package manager ever built. Seriously.",
         "questions": [
-            { "question": "What ensures memory safety in Rust without a Garbage Collector?", "options": ["Manual malloc", "Ownership & Borrow Checker", "Virtual Machine", "Magic"], "correctAnswerIndex": 1, "explanation": "The Ownership system enforces rules at compile time to prevent memory errors." },
-            { "question": "Variables in Rust are ___ by default.", "options": ["Mutable", "Immutable", "Global", "Public"], "correctAnswerIndex": 1, "explanation": "You must explicitly use `mut` to make a variable mutable." },
-            { "question": "What is `Cargo`?", "options": ["A shipping container", "The build system & package manager", "The compiler", "The IDE"], "correctAnswerIndex": 1, "explanation": "Cargo handles building code, downloading libraries (crates), and building documentation." }
+            { "question": "What makes Rust distinct from languages like Java?", "options": ["It has no Garbage Collector", "It is slower", "It uses HTML", "It is interpreted"], "correctAnswerIndex": 0, "explanation": "Rust manages memory via Ownership rules at compile time, removing the need for a runtime GC." },
+            { "question": "What happens if two variables try to own the same data?", "options": ["They share it", "A compiler error occurs", " The program crashes", "Nothing"], "correctAnswerIndex": 1, "explanation": "Rust prevents this race condition by enforcing single ownership." },
+            { "question": "What is 'Cargo'?", "options": ["A game", "Rust's build system and package manager", "A database", "The compiler"], "correctAnswerIndex": 1, "explanation": "Cargo handles building, testing, and dependency management." }
         ]
     },
     "Generative AI (LLMs)": {
-        "lesson": "### **MISSION BRIEFING: LARGE LANGUAGE MODELS**\n\n**OBJECTIVE:** Understanding the hype.\n\n*   **Tokens:** Pieces of words/characters.\n*   **Transformer:** The architecture behind GPT.\n*   **Hallucination:** When AI confidently makes things up.\n\n**STATUS:** Predicting next token...",
+        "lesson": "### 🤖 The Text Prediction Machine\n\nHere's a secret: ChatGPT doesn't 'know' anything. It's just really, really good at guessing the next word. \n\n*   **Tokens:** LLMs don't read words, they read chunks of characters called tokens.\n*   **Temperature:** A setting. Low = Boring/Accurate. High = Wild/Creative.\n*   **Prompt Engineering:** The art of asking nicely to get what you want.",
         "questions": [
-            { "question": "What does 'GPT' stand for?", "options": ["General Processing Tool", "Generative Pre-trained Transformer", "Google Public Technology", "Graphics Processing Tensors"], "correctAnswerIndex": 1, "explanation": "Generative Pre-trained Transformer." },
-            { "question": "What is a 'Prompt'?", "options": ["The AI's answer", "The user's input text", "The training data", "The coding language"], "correctAnswerIndex": 1, "explanation": "The prompt is the text input provided to the model to generate a response." },
-            { "question": "Why do LLMs sometimes 'hallucinate'?", "options": ["They are evil", "They predict probable words, not facts", "Virus infection", "Database error"], "correctAnswerIndex": 1, "explanation": "LLMs are probabilistic engines designed to generate coherent text, not fact-checking engines." }
+            { "question": "LLMs are fundamentally engines that...", "options": ["Think like humans", "Predict the next token", "Search Google", "Feel emotions"], "correctAnswerIndex": 1, "explanation": "They are statistical models predicting the most likely next piece of text." },
+            { "question": "What happens if you raise the 'Temperature'?", "options": ["The AI gets angry", "The output becomes more random/creative", "The server overheats", "The output becomes precise"], "correctAnswerIndex": 1, "explanation": "Higher temperature increases randomness in token selection." },
+            { "question": "What is a 'Hallucination'?", "options": ["When the AI sleeps", "Confidently stating false information", "A feature of GPT-5", "Correct data"], "correctAnswerIndex": 1, "explanation": "When the model fills in gaps with plausible-sounding but incorrect facts." }
+        ]
+    },
+    "AI & Machine Learning": {
+        "lesson": "### 🧠 Teaching Rocks to Think\n\nMachine Learning is just using math to find patterns in data. Instead of writing rules (`if x do y`), we feed the machine answers and let it figure out the rules.\n\n*   **Training:** showing the model thousands of cat photos.\n*   **Inference:** The model looking at a new photo and saying 'Cat!'.\n*   **Neural Network:** Layers of math loosely inspired by the brain.",
+        "questions": [
+            { "question": "What is 'Training Data'?", "options": ["The code", "The examples used to teach the model", "The final exam", "The internet"], "correctAnswerIndex": 1, "explanation": "Models learn patterns from labeled training examples." },
+            { "question": "Which type of learning uses labeled data?", "options": ["Unsupervised", "Supervised", "Reinforcement", "Magic"], "correctAnswerIndex": 1, "explanation": "Supervised learning maps input -> output based on labeled examples." },
+            { "question": "What happens during 'Inference'?", "options": ["The model learns", "The model makes a prediction on new data", "The model crashes", "The model sleeps"], "correctAnswerIndex": 1, "explanation": "Inference is using the trained model to predict results for live data." }
         ]
     },
     "Cybersecurity: Red Teaming": {
-        "lesson": "### **MISSION BRIEFING: OFFENSIVE SECURITY**\n\n**OBJECTIVE:** Think like the adversary.\n\n*   **Social Engineering:** Hacking humans.\n*   **Phishing:** Deceptive emails.\n*   **Privilege Escalation:** Going from user to admin.\n\n**STATUS:** Access granted.",
+        "lesson": "### 🕵️‍♂️ FINAL LEVEL: Red Teaming Ops\n\n**Mission: Breach and Clear.** \n\nYou are simulating a nation-state actor. Your goal is not just access, but persistence. \n\n*   **C2 (Command & Control):** Your secret channel back to the infected machine. HTTPS traffic hides in plain sight.\n*   **Living off the Land (LotL):** Don't bring malware. Use built-in tools like PowerShell (`powershell.exe`) to avoid antivirus detection.\n*   **Golden Ticket:** Forging a Kerberos ticket to masquerade as the Domain Admin. Game Over.",
         "questions": [
-            { "question": "What is the goal of a Red Team?", "options": ["Fix printers", "Simulate a real-world attack", "Defend the firewall", "Write documentation"], "correctAnswerIndex": 1, "explanation": "Red Teams act as ethical hackers to test defenses." },
-            { "question": "Which is a common method of Social Engineering?", "options": ["SQL Injection", "Tailgating", "Buffer Overflow", "DDOS"], "correctAnswerIndex": 1, "explanation": "Tailgating involves following an authorized person into a secure area." },
-            { "question": "What does RAT stand for in malware?", "options": ["Remote Access Trojan", "Real Audio Type", "Random Access Tool", "Rapid Attack Technology"], "correctAnswerIndex": 0, "explanation": "Remote Access Trojan allows attackers to control a system remotely." }
+            { "question": "What does 'Living off the Land' mean in a Red Team context?", "options": ["Camping in the server room", "Using pre-installed system tools (like PowerShell) to evade detection", "Stealing hardware", "Writing malware from scratch"], "correctAnswerIndex": 1, "explanation": "Using native tools (LotL) bypasses antivirus signatures since the tools are trusted." },
+            { "question": "What is a 'Golden Ticket' attack?", "options": ["Winning a lottery", "Forging a Kerberos TGT to gain unlimited domain access", "Stealing a password", "Phishing the CEO"], "correctAnswerIndex": 1, "explanation": "A Golden Ticket grants persistence as any user (including Admin) for up to 10 years." },
+            { "question": "Why do C2 servers often use HTTPS (Port 443)?", "options": ["It is faster", "It encrypts traffic, blending in with normal web browsing", "It is free", "It requires no setup"], "correctAnswerIndex": 1, "explanation": "HTTPS encryption hides the command contents from firewall inspection." }
         ]
     },
     "Mobile App Dev (Flutter)": {
-        "lesson": "### **MISSION BRIEFING: CROSS-PLATFORM**\n\n**OBJECTIVE:** One codebase, all screens.\n\n*   **Widgets:** Everything is a widget.\n*   **Dart:** The language of Flutter.\n*   **Hot Reload:** Instant UI updates during dev.\n\n**STATUS:** Building APK...",
+        "lesson": "### 📱 One Codebase to Rule Them All\n\n**Flutter** lets you write an app once and run it on iPhone, Android, Web, and your Fridge. It uses **Dart**, and everything is a **Widget**.\n\n*   **Widgets:** Buttons, text, layout... it's all widgets nested in widgets.\n*   **Hot Reload:** Change code, hit save, see update instantly. No waiting.\n*   **Native Performance:** It draws pixels directly to the screen.",
         "questions": [
-            { "question": "Which company developed Flutter?", "options": ["Facebook", "Google", "Microsoft", "Apple"], "correctAnswerIndex": 1, "explanation": "Flutter is Google's UI toolkit." },
-            { "question": "What language is used for Flutter?", "options": ["Java", "Swift", "Dart", "Kotlin"], "correctAnswerIndex": 2, "explanation": "Dart is optimized for fast apps on any platform." },
-            { "question": "What is the core building block of a Flutter UI?", "options": ["Divs", "Components", "Widgets", "Elements"], "correctAnswerIndex": 2, "explanation": "In Flutter, everything from layout to text is a Widget." }
-        ]
-    },
-    "Python for Beginners": {
-        "lesson": "### **MISSION BRIEFING: PYTHON SYNTAX**\n\n**OBJECTIVE:** Master the basic syntax of Python.\n\n*   **Variables:** Labeled boxes for data. `score = 10`.\n*   **Print:** Output data. `print('Hello')`.\n*   **Indentation:** Python uses whitespace (4 spaces) to define code blocks, not curly braces.\n\n**STATUS:** System waiting for input.",
-        "questions": [
-            { "question": "Which symbol is used for comments in Python?", "options": ["//", "#", "/*", "--"], "correctAnswerIndex": 1, "explanation": "Python uses # for single-line comments." },
-            { "question": "How do you create a variable?", "options": ["var x = 5", "int x = 5", "x = 5", "declare x = 5"], "correctAnswerIndex": 2, "explanation": "Python is dynamically typed; just assign a value." },
-            { "question": "What is the output of `print(2 ** 3)`?", "options": ["6", "8", "9", "5"], "correctAnswerIndex": 1, "explanation": "`**` is the exponentiation operator (2 to the power of 3)." }
-        ]
-    },
-    "Data Structures & Algorithms": {
-        "lesson": "### **MISSION BRIEFING: CORE LOGIC**\n\n**OBJECTIVE:** Organize data efficiently.\n\n*   **Array/List:** Ordered collection of items.\n*   **Hash Map:** Key-Value pairs for fast lookups.\n*   **Big O:** Measuring how code slows down as data grows.\n\n**STATUS:** Optimizing complexity.",
-        "questions": [
-            { "question": "Which data structure follows LIFO (Last In, First Out)?", "options": ["Queue", "Stack", "Array", "Tree"], "correctAnswerIndex": 1, "explanation": "A Stack works like a stack of plates; the last one added is the first removed." },
-            { "question": "What is the time complexity of accessing an array index?", "options": ["O(1)", "O(n)", "O(log n)", "O(n^2)"], "correctAnswerIndex": 0, "explanation": "Array access is constant time O(1) because the memory address is calculated instantly." },
-            { "question": "Which algorithm is used to find the shortest path in a graph?", "options": ["Bubble Sort", "Dijkstra's", "Binary Search", "Merge Sort"], "correctAnswerIndex": 1, "explanation": "Dijkstra's algorithm finds the shortest path between nodes in a graph." }
-        ]
-    },
-    "Web Development 101": {
-        "lesson": "### **MISSION BRIEFING: THE DOM**\n\n**OBJECTIVE:** Manipulate the web.\n\n*   **HTML:** Structure.\n*   **CSS:** Style.\n*   **JS:** Logic.\n*   **DOM:** Document Object Model - the tree structure of the page.\n\n**STATUS:** Rendering...",
-        "questions": [
-            { "question": "Which tag is used to link a JavaScript file?", "options": ["<link>", "<script>", "<js>", "<style>"], "correctAnswerIndex": 1, "explanation": "The `<script src='...'>` tag is used to load JS." },
-            { "question": "What does CSS stand for?", "options": ["Computer Style Sheets", "Cascading Style Sheets", "Creative Style System", "Colorful Style Sheets"], "correctAnswerIndex": 1, "explanation": "Cascading Style Sheets control the layout and appearance." },
-            { "question": "How do you select an element with id='btn' in JS?", "options": ["getElement('btn')", "querySelector('#btn')", "select('#btn')", "find('btn')"], "correctAnswerIndex": 1, "explanation": "`document.querySelector('#btn')` selects by CSS selector." }
-        ]
-    },
-    "React.js Essentials": {
-        "lesson": "### **MISSION BRIEFING: COMPONENT ARCHITECTURE**\n\n**OBJECTIVE:** Build UI with React.\n\n*   **Components:** Reusable UI blocks.\n*   **State:** Data that changes over time (`useState`).\n*   **Props:** Data passed down from parent to child.\n\n**STATUS:** Virtual DOM mounted.",
-        "questions": [
-            { "question": "What hook is used to manage state in a functional component?", "options": ["useEffect", "useState", "useContext", "useReducer"], "correctAnswerIndex": 1, "explanation": "`useState` returns a stateful value and a function to update it." },
-            { "question": "JSX allows you to write what inside JavaScript?", "options": ["CSS", "HTML-like syntax", "SQL", "Python"], "correctAnswerIndex": 1, "explanation": "JSX is a syntax extension that looks like HTML but is syntactic sugar for `React.createElement`." },
-            { "question": "How do you pass data to a child component?", "options": ["State", "Props", "Context", "Redux"], "correctAnswerIndex": 1, "explanation": "Props (properties) are read-only inputs passed to components." }
-        ]
-    },
-    "SQL Database Mastery": {
-        "lesson": "### **MISSION BRIEFING: RELATIONAL DATA**\n\n**OBJECTIVE:** Query the database.\n\n*   **SELECT:** Retrieve data.\n*   **WHERE:** Filter data.\n*   **JOIN:** Combine rows from two or more tables.\n\n**STATUS:** Connection established.",
-        "questions": [
-            { "question": "Which command retrieves data from a database?", "options": ["GET", "FETCH", "SELECT", "PULL"], "correctAnswerIndex": 2, "explanation": "SELECT is the standard SQL command to query data." },
-            { "question": "Which key uniquely identifies a record in a table?", "options": ["Foreign Key", "Primary Key", "Unique Key", "Super Key"], "correctAnswerIndex": 1, "explanation": "A Primary Key must contain unique values and cannot contain NULL values." },
-            { "question": "How do you filter records where age is greater than 18?", "options": ["FILTER age > 18", "WHERE age > 18", "IF age > 18", "HAVING age > 18"], "correctAnswerIndex": 1, "explanation": "The WHERE clause is used to extract only those records that fulfill a specified condition." }
-        ]
-    },
-    "Git Version Control": {
-        "lesson": "### **MISSION BRIEFING: TIME TRAVEL**\n\n**OBJECTIVE:** Manage code history.\n\n*   **Commit:** Save a snapshot of changes.\n*   **Push:** Upload changes to a remote repo.\n*   **Branch:** Create a parallel version of code.\n\n**STATUS:** HEAD pointing to main.",
-        "questions": [
-            { "question": "Which command stages files for a commit?", "options": ["git push", "git commit", "git add", "git save"], "correctAnswerIndex": 2, "explanation": "`git add` adds files to the staging area." },
-            { "question": "How do you download a repository from GitHub?", "options": ["git pull", "git clone", "git fork", "git download"], "correctAnswerIndex": 1, "explanation": "`git clone` creates a local copy of a remote repository." },
-            { "question": "What command combines a branch into the current one?", "options": ["git join", "git combine", "git merge", "git fuse"], "correctAnswerIndex": 2, "explanation": "`git merge` joins two or more development histories together." }
-        ]
-    },
-    "Artificial Intelligence": {
-        "lesson": "### **MISSION BRIEFING: NEURAL NETWORKS**\n\n**OBJECTIVE:** Mimic the brain.\n\n*   **Neurons:** Processing units.\n*   **Weights:** Connection strengths.\n*   **Training:** Adjusting weights to minimize error.\n\n**STATUS:** Learning rate set.",
-        "questions": [
-            { "question": "What process corrects the AI's mistakes during training?", "options": ["Forward Pass", "Backpropagation", "Inference", "Recursion"], "correctAnswerIndex": 1, "explanation": "Backpropagation calculates the gradient of the loss function to update weights." },
-            { "question": "Labelled data is used in...", "options": ["Supervised Learning", "Unsupervised Learning", "Reinforcement Learning", "Clustering"], "correctAnswerIndex": 0, "explanation": "Supervised learning maps inputs to known outputs (labels)." },
-            { "question": "What is 'Overfitting'?", "options": ["Model is too simple", "Model memorized noise", "Model is too slow", "Data is missing"], "correctAnswerIndex": 1, "explanation": "Overfitting occurs when a model learns the training data too well, including noise, failing to generalize." }
+            { "question": "Who created Flutter?", "options": ["Facebook", "Microsoft", "Google", "Apple"], "correctAnswerIndex": 2, "explanation": "Flutter is Google's UI toolkit." },
+            { "question": "In Flutter, the UI is built using...", "options": ["HTML", "Widgets", "Divs", "Blocks"], "correctAnswerIndex": 1, "explanation": "The core philosophy is 'Everything is a Widget'." },
+            { "question": "What language does Flutter use?", "options": ["Java", "Swift", "Dart", "JavaScript"], "correctAnswerIndex": 2, "explanation": "Dart is optimized for fast compilation and UI performance." }
         ]
     },
     "Cloud Computing (AWS)": {
-        "lesson": "### **MISSION BRIEFING: THE CLOUD**\n\n**OBJECTIVE:** Scale infrastructure on demand.\n\n*   **EC2:** Virtual servers.\n*   **S3:** Scalable storage.\n*   **Lambda:** Serverless code execution.\n\n**STATUS:** Spinning up instances.",
+        "lesson": "### ☁️ Someone Else's Computer\n\nThe Cloud isn't magic; it's just renting servers from Amazon (AWS). \n\n*   **EC2:** Renting a virtual computer.\n*   **S3:** A giant hard drive bucket for files.\n*   **Lambda:** Run code without caring about the server (Serverless).\n\n**Why?** Scale. You can go from 1 user to 1 million in seconds.",
         "questions": [
-            { "question": "What does S3 stand for?", "options": ["Simple Storage Service", "Super Speed Server", "Secure Socket System", "Scalable Server Solution"], "correctAnswerIndex": 0, "explanation": "Amazon S3 stands for Simple Storage Service." },
-            { "question": "Which service allows running code without managing servers?", "options": ["EC2", "Lambda", "RDS", "VPC"], "correctAnswerIndex": 1, "explanation": "AWS Lambda is a serverless compute service." },
-            { "question": "What is 'Scaling Out'?", "options": ["Making a server bigger", "Adding more servers", "Deleting data", "Moving to a new region"], "correctAnswerIndex": 1, "explanation": "Scaling out (horizontal scaling) means adding more nodes to a system." }
+            { "question": "What is 'EC2' essentially?", "options": ["A database", "A virtual server you can rent", "A storage bucket", "A login screen"], "correctAnswerIndex": 1, "explanation": "Elastic Compute Cloud (EC2) provides resizable compute capacity." },
+            { "question": "What does S3 stand for?", "options": ["Super Speed Server", "Simple Storage Service", "System Safe Storage", "Standard Server Side"], "correctAnswerIndex": 1, "explanation": "It's AWS's object storage service." },
+            { "question": "With 'Serverless' computing...", "options": ["There are no servers anywhere", "You don't manage the servers", "The internet is not used", "It's free"], "correctAnswerIndex": 1, "explanation": "Servers exist, but the cloud provider handles the maintenance and scaling." }
         ]
     },
     "Blockchain Fundamentals": {
-        "lesson": "### **MISSION BRIEFING: DECENTRALIZATION**\n\n**OBJECTIVE:** Trust without intermediaries.\n\n*   **Ledger:** A record of all transactions.\n*   **Immutable:** Cannot be changed once written.\n*   **Smart Contracts:** Self-executing code on chain.\n\n**STATUS:** Mining block...",
+        "lesson": "### 🔗 The Trust Machine\n\nA **Blockchain** is just a shared Google Doc that no one can delete or edit, only add to. \n\n*   **Decentralized:** No bank or boss in charge.\n*   **Immutable:** Once it's written, it's history forever.\n*   **Smart Contracts:** Code that runs automatically when conditions are met. Vending machine logic.",
         "questions": [
-            { "question": "What ensures data cannot be altered in a blockchain?", "options": ["Encryption", "Hashing & Chaining", "Firewalls", "Admin passwords"], "correctAnswerIndex": 1, "explanation": "Each block contains the hash of the previous block, chaining them together immutably." },
-            { "question": "Who controls a public blockchain like Bitcoin?", "options": ["The CEO", "Government", "No central authority", "Miners only"], "correctAnswerIndex": 2, "explanation": "Public blockchains are decentralized and distributed." },
-            { "question": "What is 'Gas' in Ethereum?", "options": ["Fuel for servers", "Fee for transaction processing", "Cooling system", "Speed limit"], "correctAnswerIndex": 1, "explanation": "Gas is the fee required to conduct a transaction or execute a contract." }
+            { "question": "What makes blockchain 'Immutable'?", "options": ["Passwords", "Cryptographic Hashing & Chaining", "The Government", "Cloud Backups"], "correctAnswerIndex": 1, "explanation": "Each block is mathematically locked to the previous one." },
+            { "question": "What is a Smart Contract?", "options": ["A legal document", "Self-executing code on the blockchain", "A handshake", "An AI lawyer"], "correctAnswerIndex": 1, "explanation": "Code that runs automatically (If X happens, send Y money)." },
+            { "question": "Who controls a public blockchain like Bitcoin?", "options": ["Satoshi Nakamoto", "The Miners", "No central authority", "Microsoft"], "correctAnswerIndex": 2, "explanation": "It is a distributed network with no single point of control." }
         ]
     },
-    "Physics: Motion": {
-        "lesson": "### **MISSION BRIEFING: NEWTONIAN MECHANICS**\n\n**OBJECTIVE:** Predict movement.\n\n*   **Velocity:** Speed with direction.\n*   **Acceleration:** Rate of change of velocity.\n*   **Force:** Mass x Acceleration (F=ma).\n\n**STATUS:** Calculating trajectory.",
+    "Python for Beginners": {
+        "lesson": "### 🐍 The Swiss Army Knife\n\n**Python** is popular because it reads like English. It's slow, but development is fast. It powers Instagram, AI, and your local scripts.\n\n*   **Variables:** `x = 5`. No semicolons needed.\n*   **Indentation:** Spaces matter! Python uses whitespace to group code.\n*   **Lists:** `['pizza', 'tacos']`. Easy to store stuff.",
         "questions": [
-            { "question": "What is Newton's First Law?", "options": ["F=ma", "Inertia", "Action/Reaction", "Gravity"], "correctAnswerIndex": 1, "explanation": "An object at rest stays at rest unless acted upon by an unbalanced force." },
-            { "question": "If you drop a ball, what causes it to accelerate?", "options": ["Wind", "Gravity", "Mass", "Velocity"], "correctAnswerIndex": 1, "explanation": "Gravity provides the constant downward acceleration." },
-            { "question": "Which unit measures Force?", "options": ["Joule", "Watt", "Newton", "Pascal"], "correctAnswerIndex": 2, "explanation": "Force is measured in Newtons (kg·m/s²)." }
-        ]
-    },
-    "Chemistry: Periodic Table": {
-        "lesson": "### **MISSION BRIEFING: ELEMENTAL BLOCKS**\n\n**OBJECTIVE:** Decode matter.\n\n*   **Atomic Number:** Number of protons.\n*   **Groups:** Vertical columns (similar properties).\n*   **Noble Gases:** Unreactive, stable elements.\n\n**STATUS:** Reaction imminent.",
-        "questions": [
-            { "question": "Which element is 'H'?", "options": ["Helium", "Hydrogen", "Hafnium", "Holmium"], "correctAnswerIndex": 1, "explanation": "Hydrogen is the first and lightest element." },
-            { "question": "What distinguishes Noble Gases?", "options": ["Highly explosive", "Very heavy", "Unreactive", "Liquid at room temp"], "correctAnswerIndex": 2, "explanation": "They have full valence electron shells, making them stable and inert." },
-            { "question": "What allows atoms to bond?", "options": ["Protons", "Neutrons", "Electrons", "Nucleus"], "correctAnswerIndex": 2, "explanation": "Sharing or transferring electrons creates chemical bonds." }
-        ]
-    },
-    "Biology: Genetics": {
-        "lesson": "### **MISSION BRIEFING: THE CODE OF LIFE**\n\n**OBJECTIVE:** Understand heredity.\n\n*   **DNA:** Double helix storing instructions.\n*   **Gene:** Segment of DNA coding for a trait.\n*   **Mutation:** Change in the DNA sequence.\n\n**STATUS:** Sequencing...",
-        "questions": [
-            { "question": "What shape is DNA?", "options": ["Single loop", "Double Helix", "Flat sheet", "Sphere"], "correctAnswerIndex": 1, "explanation": "DNA consists of two strands coiled around each other." },
-            { "question": "Who is the 'Father of Genetics'?", "options": ["Darwin", "Mendel", "Pasteur", "Watson"], "correctAnswerIndex": 1, "explanation": "Gregor Mendel discovered the fundamental laws of inheritance using pea plants." },
-            { "question": "Which molecule carries instructions from DNA to ribosomes?", "options": ["RNA", "ATP", "Lipid", "Protein"], "correctAnswerIndex": 0, "explanation": "Messenger RNA (mRNA) carries the genetic code for protein synthesis." }
-        ]
-    },
-    "Astronomy: The Solar System": {
-        "lesson": "### **MISSION BRIEFING: ORBITAL DYNAMICS**\n\n**OBJECTIVE:** Explore our neighborhood.\n\n*   **Terrestrial Planets:** Rocky inner worlds.\n*   **Gas Giants:** Massive outer worlds.\n*   **AU:** Distance from Earth to Sun.\n\n**STATUS:** Telescope aligned.",
-        "questions": [
-            { "question": "Which is the largest planet in our solar system?", "options": ["Earth", "Saturn", "Jupiter", "Neptune"], "correctAnswerIndex": 2, "explanation": "Jupiter is more massive than all other planets combined." },
-            { "question": "What lies between Mars and Jupiter?", "options": ["Kuiper Belt", "Asteroid Belt", "Oort Cloud", "Black Hole"], "correctAnswerIndex": 1, "explanation": "The Asteroid Belt is a region of rocky remnants." },
-            { "question": "Which planet is known as the 'Morning Star'?", "options": ["Mercury", "Venus", "Mars", "Uranus"], "correctAnswerIndex": 1, "explanation": "Venus shines brightly just before sunrise or after sunset." }
-        ]
-    },
-    "World War II": {
-        "lesson": "### **MISSION BRIEFING: GLOBAL CONFLICT**\n\n**OBJECTIVE:** Analyze the 20th century's turning point.\n\n*   **Axis vs Allies:** The main factions.\n*   **Blitzkrieg:** Lightning war tactic.\n*   **1945:** The end of the war and atomic age.\n\n**STATUS:** Archives loaded.",
-        "questions": [
-            { "question": "Which event triggered WWII?", "options": ["Pearl Harbor", "Invasion of Poland", "D-Day", "Assassination of Archduke"], "correctAnswerIndex": 1, "explanation": "Germany's invasion of Poland in 1939 led Britain and France to declare war." },
-            { "question": "What was D-Day?", "options": ["End of war", "Allied invasion of Normandy", "Bombing of Berlin", "Battle of Midway"], "correctAnswerIndex": 1, "explanation": "June 6, 1944: The massive Allied landing in France." },
-            { "question": "Who was the British Prime Minister during most of the war?", "options": ["Chamberlain", "Churchill", "Attlee", "Thatcher"], "correctAnswerIndex": 1, "explanation": "Winston Churchill led Britain to victory." }
-        ]
-    },
-    "History: The Cold War": {
-        "lesson": "### **MISSION BRIEFING: IRON CURTAIN**\n\n**OBJECTIVE:** Understanding proxy wars and ideology.\n\n*   **USA vs USSR:** Capitalism vs Communism.\n*   **MAD:** Mutually Assured Destruction.\n*   **Space Race:** Technology as a battlefield.\n\n**STATUS:** DEFCON 3.",
-        "questions": [
-            { "question": "What symbolized the division of Europe?", "options": ["The Great Wall", "The Iron Curtain", "The Maginot Line", "The Steel Fence"], "correctAnswerIndex": 1, "explanation": "A term coined by Churchill to describe the separation of East and West." },
-            { "question": "Which crisis brought the world closest to nuclear war?", "options": ["Korean War", "Cuban Missile Crisis", "Vietnam War", "Berlin Airlift"], "correctAnswerIndex": 1, "explanation": "The 1962 standoff over Soviet missiles in Cuba." },
-            { "question": "When did the Soviet Union dissolve?", "options": ["1989", "1991", "1975", "1999"], "correctAnswerIndex": 1, "explanation": "The USSR officially ended in December 1991." }
-        ]
-    },
-    "Ancient Rome": {
-        "lesson": "### **MISSION BRIEFING: SPQR**\n\n**OBJECTIVE:** The rise of the Empire.\n\n*   **Legions:** The Roman military machine.\n*   **Senate:** The governing council.\n*   **Pax Romana:** The long period of relative peace.\n\n**STATUS:** Entering the Forum.",
-        "questions": [
-            { "question": "Who was the first Emperor of Rome?", "options": ["Julius Caesar", "Augustus", "Nero", "Trajan"], "correctAnswerIndex": 1, "explanation": "Augustus (Octavian) founded the Roman Empire." },
-            { "question": "Which rival city did Rome destroy in the Punic Wars?", "options": ["Athens", "Sparta", "Carthage", "Alexandria"], "correctAnswerIndex": 2, "explanation": "Rome fought three wars against Carthage for Mediterranean dominance." },
-            { "question": "What structure was used for gladiator games?", "options": ["Pantheon", "Colosseum", "Forum", "Aqueduct"], "correctAnswerIndex": 1, "explanation": "The Colosseum (Flavian Amphitheatre) hosted public spectacles." }
-        ]
-    },
-    "Art History: Renaissance": {
-        "lesson": "### **MISSION BRIEFING: REBIRTH**\n\n**OBJECTIVE:** The bridge to modernity.\n\n*   **Humanism:** Focus on human potential.\n*   **Perspective:** Creating depth in art.\n*   **Florence:** The birthplace of the movement.\n\n**STATUS:** Mixing pigments.",
-        "questions": [
-            { "question": "Who painted the Mona Lisa?", "options": ["Michelangelo", "Da Vinci", "Raphael", "Donatello"], "correctAnswerIndex": 1, "explanation": "Leonardo da Vinci created the masterpiece." },
-            { "question": "Which family ruled Florence and patronized the arts?", "options": ["Borgia", "Medici", "Sforza", "Tudor"], "correctAnswerIndex": 1, "explanation": "The Medici family were wealthy bankers and patrons." },
-            { "question": "What does 'Renaissance' mean?", "options": ["New Art", "Rebirth", "Awakening", "Discovery"], "correctAnswerIndex": 1, "explanation": "It refers to the rebirth of classical Greek and Roman culture." }
-        ]
-    },
-    "Public Speaking": {
-        "lesson": "### **MISSION BRIEFING: COMMAND THE ROOM**\n\n**OBJECTIVE:** Persuade and inform.\n\n*   **Body Language:** 55% of communication.\n*   **Eye Contact:** Builds trust.\n*   **Pacing:** Don't rush; use pauses for effect.\n\n**STATUS:** Microphone check.",
-        "questions": [
-            { "question": "What is the best way to handle nervousness?", "options": ["Avoid eye contact", "Memorize word-for-word", "Practice and breathe", "Read from slides"], "correctAnswerIndex": 2, "explanation": "Preparation and deep breathing reduce anxiety." },
-            { "question": "What should you avoid in a presentation?", "options": ["Stories", "Walls of text on slides", "Hand gestures", "Q&A"], "correctAnswerIndex": 1, "explanation": "Slides should support you, not replace you. Too much text bores the audience." },
-            { "question": "The 'Hook' comes at which part of the speech?", "options": ["Beginning", "Middle", "End", "Q&A"], "correctAnswerIndex": 0, "explanation": "You must grab attention immediately with a hook." }
-        ]
-    },
-    "Time Management": {
-        "lesson": "### **MISSION BRIEFING: PRODUCTIVITY**\n\n**OBJECTIVE:** Get more done.\n\n*   **Pomodoro:** 25 mins work, 5 mins break.\n*   **Prioritization:** Important vs Urgent.\n*   **Deep Work:** Distraction-free concentration.\n\n**STATUS:** Timer started.",
-        "questions": [
-            { "question": "What is the Eisenhower Matrix used for?", "options": ["Tracking time", "Prioritizing tasks", "Scheduling meetings", "Sleeping"], "correctAnswerIndex": 1, "explanation": "It categorizes tasks by Urgency and Importance." },
-            { "question": "In the Pomodoro technique, how long is a standard work interval?", "options": ["10 min", "25 min", "45 min", "60 min"], "correctAnswerIndex": 1, "explanation": "25 minutes of focus followed by a 5 minute break." },
-            { "question": "Multitasking generally leads to...", "options": ["Higher efficiency", "Reduced productivity", "Better focus", "Genius level work"], "correctAnswerIndex": 1, "explanation": "Switching contexts costs mental energy and lowers overall efficiency." }
-        ]
-    },
-    "Personal Finance": {
-        "lesson": "### **MISSION BRIEFING: WEALTH**\n\n**OBJECTIVE:** Financial freedom.\n\n*   **Budgeting:** Income > Expenses.\n*   **Compound Interest:** Money making money.\n*   **Diversification:** Don't put all eggs in one basket.\n\n**STATUS:** Ledger open.",
-        "questions": [
-            { "question": "What is the '50/30/20' rule?", "options": ["A tax law", "A budgeting strategy", "An investment tip", "A retirement age"], "correctAnswerIndex": 1, "explanation": "50% Needs, 30% Wants, 20% Savings/Debt." },
-            { "question": "Which represents ownership in a company?", "options": ["Bond", "Stock", "Savings Account", "Mortgage"], "correctAnswerIndex": 1, "explanation": "A stock share represents partial equity ownership." },
-            { "question": "Why is an 'Emergency Fund' important?", "options": ["To buy a boat", "To cover unexpected expenses", "To invest in crypto", "To pay taxes"], "correctAnswerIndex": 1, "explanation": "It prevents you from going into debt when accidents or job loss occur." }
-        ]
-    },
-    "Leadership Skills": {
-        "lesson": "### **MISSION BRIEFING: INFLUENCE**\n\n**OBJECTIVE:** Guide the team.\n\n*   **Empathy:** Understanding others' feelings.\n*   **Delegation:** Trusting others with tasks.\n*   **Vision:** Seeing the destination.\n\n**STATUS:** Taking charge.",
-        "questions": [
-            { "question": "What distinguishes a leader from a boss?", "options": ["Salary", "Title", "Inspiration vs Command", "Age"], "correctAnswerIndex": 2, "explanation": "A boss drives employees; a leader coaches them." },
-            { "question": "What is 'Micromanagement'?", "options": ["Detailed planning", "Controlling every small step", "Efficient oversight", "Using a microscope"], "correctAnswerIndex": 1, "explanation": "Excessive control that kills morale and autonomy." },
-            { "question": "Effective feedback should be...", "options": ["Brutal and public", "Specific and constructive", "Vague and rare", "Only positive"], "correctAnswerIndex": 1, "explanation": "Feedback helps growth when it is actionable and specific." }
-        ]
-    },
-    "Digital Photography": {
-        "lesson": "### **MISSION BRIEFING: EXPOSURE TRIANGLE**\n\n**OBJECTIVE:** Capture the light.\n\n*   **Aperture:** Hole size (Depth of Field).\n*   **Shutter Speed:** Time sensor is exposed (Motion).\n*   **ISO:** Sensor sensitivity (Grain/Noise).\n\n**STATUS:** Lens cap off.",
-        "questions": [
-            { "question": "Which setting controls Depth of Field (background blur)?", "options": ["ISO", "Shutter Speed", "Aperture", "White Balance"], "correctAnswerIndex": 2, "explanation": "A wider aperture (lower f-number) creates a shallower depth of field." },
-            { "question": "High ISO allows shooting in low light but causes...", "options": ["Blur", "Noise/Grain", "Darkness", "Vignetting"], "correctAnswerIndex": 1, "explanation": "Amplifying the signal introduces digital noise." },
-            { "question": "To freeze a fast-moving car, you need...", "options": ["Fast Shutter Speed", "Slow Shutter Speed", "High Aperture", "Low ISO"], "correctAnswerIndex": 0, "explanation": "A fast shutter (e.g., 1/1000s) freezes motion." }
-        ]
-    },
-    "Philosophy: Stoicism": {
-        "lesson": "### **MISSION BRIEFING: INNER CITADEL**\n\n**OBJECTIVE:** Control your reaction.\n\n*   **Control:** Focus only on what is up to you.\n*   **Virtue:** The only good.\n*   **Memento Mori:** Remember you will die.\n\n**STATUS:** Meditating.",
-        "questions": [
-            { "question": "Who was the famous Roman Emperor and Stoic?", "options": ["Nero", "Marcus Aurelius", "Caligula", "Caesar"], "correctAnswerIndex": 1, "explanation": "Marcus Aurelius wrote 'Meditations', a key Stoic text." },
-            { "question": "What is the core dichotomy of control?", "options": ["Good vs Evil", "Internal vs External", "Rich vs Poor", "Life vs Death"], "correctAnswerIndex": 1, "explanation": "Distinguishing between what we can control (our mind) and what we can't (events)." },
-            { "question": "How do Stoics view 'bad' luck?", "options": ["As a curse", "As an opportunity to practice virtue", "With anger", "By crying"], "correctAnswerIndex": 1, "explanation": "The obstacle becomes the way; challenges build character." }
-        ]
-    },
-    "Psychology 101": {
-        "lesson": "### **MISSION BRIEFING: THE MIND**\n\n**OBJECTIVE:** Understand behavior.\n\n*   **Conditioning:** Learning via association (Pavlov).\n*   **Cognitive Bias:** Errors in thinking.\n*   **Unconscious:** Hidden drivers of action.\n\n**STATUS:** Analyzing.",
-        "questions": [
-            { "question": "What is 'Confirmation Bias'?", "options": ["Hating everything", "Seeking info that agrees with existing beliefs", "Being confused", "Scientific testing"], "correctAnswerIndex": 1, "explanation": "We tend to favor information that confirms what we already believe." },
-            { "question": "Pavlov's dogs demonstrated what?", "options": ["Operant Conditioning", "Classical Conditioning", "Psychoanalysis", "Dream Interpretation"], "correctAnswerIndex": 1, "explanation": "Associating a neutral stimulus (bell) with a biological one (food)." },
-            { "question": "Who founded Psychoanalysis?", "options": ["Jung", "Freud", "Skinner", "Piaget"], "correctAnswerIndex": 1, "explanation": "Sigmund Freud developed the theory of the unconscious mind." }
+            { "question": "How do you group code blocks in Python?", "options": ["Curly braces {}", "Indentation (Whitespace)", "Parentheses ()", "You don't"], "correctAnswerIndex": 1, "explanation": "Python forces readable code by making indentation mandatory." },
+            { "question": "Which creates a list?", "options": ["(1, 2)", "{1, 2}", "[1, 2]", "<1, 2>"], "correctAnswerIndex": 2, "explanation": "Square brackets `[]` define a list." },
+            { "question": "Is Python compiled or interpreted?", "options": ["Compiled", "Interpreted", "Neither", "Both"], "correctAnswerIndex": 1, "explanation": "It is interpreted line-by-line, which makes it flexible but slower than C++." }
         ]
     },
     "Startups & Entrepreneurship": {
-        "lesson": "### **MISSION BRIEFING: THE FOUNDER**\n\n**OBJECTIVE:** Build the future.\n\n*   **MVP:** Minimum Viable Product.\n*   **Pivot:** Changing strategy based on feedback.\n*   **Runway:** Time until money runs out.\n\n**STATUS:** Pitching...",
+        "lesson": "### 🚀 From Zero to One\n\nA startup is a temporary organization searching for a business model. \n\n*   **MVP (Minimum Viable Product):** The ugliest version of your product that still works. Ship it.\n*   **Pivot:** Changing direction when your idea fails.\n*   **Product-Market Fit:** When customers want your product faster than you can build it.",
         "questions": [
-            { "question": "What is an MVP?", "options": ["Most Valuable Player", "Minimum Viable Product", "Maximum Viral Potential", "Money Value Protocol"], "correctAnswerIndex": 1, "explanation": "A version of a product with just enough features to be usable by early customers." },
-            { "question": "What does 'Bootstrapping' mean?", "options": ["Buying boots", "Using external VC funding", "Self-funding the startup", "Hiring a large team"], "correctAnswerIndex": 2, "explanation": "Starting a company with little or no outside cash or other support." },
-            { "question": "Which document outlines a startup's business strategy?", "options": ["Pitch Deck", "Balance Sheet", "Codebase", "Git Log"], "correctAnswerIndex": 0, "explanation": "A pitch deck is a brief presentation used to provide investors with an overview." }
+            { "question": "What is an MVP?", "options": ["Most Valuable Player", "Minimum Viable Product", "Maximum Viral Potential", "My Very Product"], "correctAnswerIndex": 1, "explanation": "The simplest version of a product released to test a new business idea." },
+            { "question": "What does it mean to 'Pivot'?", "options": ["Quit the business", "Change strategy based on feedback", "Hire more staff", "Raise prices"], "correctAnswerIndex": 1, "explanation": "Shifting the business model to solve a different problem or target a different market." },
+            { "question": "What is 'Bootstrapping'?", "options": ["Using VC money", "Self-funding the business", "Buying boots", "Stealing code"], "correctAnswerIndex": 1, "explanation": "Building the company using personal savings and revenue, without outside investment." }
         ]
     },
     "5G & Future Networks": {
-        "lesson": "### **MISSION BRIEFING: HYPER-CONNECTIVITY**\n\n**OBJECTIVE:** Instant data.\n\n*   **Latency:** The delay in data transfer (ms).\n*   **Bandwidth:** The amount of data per second.\n*   **IoT:** Internet of Things devices.\n\n**STATUS:** Signal strong.",
+        "lesson": "### 📡 Speed of Light\n\n**5G** isn't just faster internet; it's instant internet. \n\n*   **Latency:** The delay. 5G drops this to near zero (1ms).\n*   **Bandwidth:** The pipe size. More data at once.\n*   **IoT:** Connecting your toaster, car, and dog collar to the web.",
         "questions": [
-            { "question": "What is the main advantage of 5G over 4G?", "options": ["Slower speed", "Higher Latency", "Lower Latency & Higher Speed", "Analog signals"], "correctAnswerIndex": 2, "explanation": "5G offers significantly faster speeds and near-zero latency." },
-            { "question": "What does IoT stand for?", "options": ["Input of Text", "Internet of Things", "Internal office Technology", "International online Trade"], "correctAnswerIndex": 1, "explanation": "IoT refers to physical objects with sensors and software that connect to the internet." },
-            { "question": "Which frequency band does high-band 5G use?", "options": ["kHz", "MHz", "mmWave", "X-Ray"], "correctAnswerIndex": 2, "explanation": "Millimeter wave (mmWave) allows for ultra-high speeds but has shorter range." }
+            { "question": "What is the biggest game-changer of 5G?", "options": ["Cooler name", "Low Latency (Lag)", "Cheaper phones", "Bigger antennas"], "correctAnswerIndex": 1, "explanation": "Near-zero latency enables real-time tech like remote surgery and self-driving cars." },
+            { "question": "What does IoT stand for?", "options": ["Input of Text", "Internet of Things", "Internal Office Tech", "International Online Trade"], "correctAnswerIndex": 1, "explanation": "Connecting everyday physical objects to the internet." },
+            { "question": "Which frequency allows the fastest 5G speeds?", "options": ["Low-band", "Mid-band", "Millimeter Wave (mmWave)", "AM Radio"], "correctAnswerIndex": 2, "explanation": "mmWave offers crazy speeds but has very short range." }
         ]
     },
     "UI/UX Design Principles": {
-        "lesson": "### **MISSION BRIEFING: VISUAL LOGIC**\n\n**OBJECTIVE:** Design for humans.\n\n*   **Hierarchy:** Order of importance (Big = Important).\n*   **Contrast:** Difference between elements.\n*   **Whitespace:** Breathing room for content.\n\n**STATUS:** Wireframing...",
+        "lesson": "### 🎨 Make it Pretty, Make it Work\n\n**UI** is how it looks. **UX** is how it feels.\n\n*   **Hierarchy:** Make the important stuff BIG.\n*   **Whitespace:** Don't cram everything in. Let the design breathe.\n*   **Consistency:** Don't use 5 different fonts. Please.",
         "questions": [
-            { "question": "What does UX stand for?", "options": ["User Xenon", "User Experience", "Under Xylophone", "United Xylographers"], "correctAnswerIndex": 1, "explanation": "User Experience encompasses all aspects of the end-user's interaction." },
-            { "question": "What is a 'Wireframe'?", "options": ["A finished design", "A code snippet", "A skeletal blueprint", "A 3D model"], "correctAnswerIndex": 2, "explanation": "A low-fidelity visual guide that represents the skeletal framework of a website." },
-            { "question": "Which color combination offers the highest contrast?", "options": ["Red on Pink", "Black on White", "Yellow on White", "Blue on Green"], "correctAnswerIndex": 1, "explanation": "Black text on a white background provides maximum readability." }
+            { "question": "What does UX stand for?", "options": ["User Xenon", "User Experience", "Under Xylophone", "United Xylographers"], "correctAnswerIndex": 1, "explanation": "It focuses on the overall feel and usability of the product." },
+            { "question": "What is 'Whitespace'?", "options": ["The color white", "Empty space around elements", "A bug", "A loading screen"], "correctAnswerIndex": 1, "explanation": "Negative space that helps focus attention and reduce clutter." },
+            { "question": "Why is Hierarchy important?", "options": ["It looks cool", "It guides the user's eye to what matters", "It creates chaos", "It is required by law"], "correctAnswerIndex": 1, "explanation": "It tells the user what to read first, second, and third." }
         ]
     },
     "Agile & Scrum": {
-        "lesson": "### **MISSION BRIEFING: ITERATIVE WORK**\n\n**OBJECTIVE:** Adapt to change.\n\n*   **Sprint:** A set period of time to complete work (usually 2 weeks).\n*   **Stand-up:** Daily quick update meeting.\n*   **Backlog:** List of tasks to do.\n\n**STATUS:** Planning poker...",
+        "lesson": "### 🏃‍♂️ Move Fast, Break Things\n\n**Agile** is about adapting to change, not following a rigid plan. **Scrum** is a way to do Agile.\n\n*   **Sprint:** A 2-week work cycle. Focus on shipping.\n*   **Stand-up:** A 15-min daily meeting. What did you do? What's blocking you?\n*   **Retrospective:** Looking back to fix what sucked.",
         "questions": [
-            { "question": "What is a 'Sprint' in Scrum?", "options": ["Running fast", "A fixed timebox for work", "A permanent deadline", "A coding error"], "correctAnswerIndex": 1, "explanation": "A short, time-boxed period when a scrum team works to complete a set amount of work." },
-            { "question": "Who manages the Backlog?", "options": ["Scrum Master", "Product Owner", "The Developers", "The CEO"], "correctAnswerIndex": 1, "explanation": "The Product Owner is responsible for maximizing the value of the product and managing the backlog." },
-            { "question": "What happens at a Daily Stand-up?", "options": ["Code reviews", "Detailed planning", "Quick status updates", "Lunch"], "correctAnswerIndex": 2, "explanation": "A 15-minute meeting to sync activities and create a plan for the next 24 hours." }
+            { "question": "How long is a typical 'Sprint'?", "options": ["1 day", "2-4 weeks", "6 months", "1 year"], "correctAnswerIndex": 1, "explanation": "Sprints are short time-boxed periods to deliver working software." },
+            { "question": "What happens at a Daily Stand-up?", "options": ["Detailed coding", "Quick status sync", "Performance review", "Lunch"], "correctAnswerIndex": 1, "explanation": "Team members quickly share progress and blockers." },
+            { "question": "Who prioritizes the work in Scrum?", "options": ["The Developer", "The Scrum Master", "The Product Owner", "The Intern"], "correctAnswerIndex": 2, "explanation": "The Product Owner manages the backlog and decides what provides the most value." }
+        ]
+    },
+    "Data Structures & Algorithms": {
+        "lesson": "### 🧠 The Interview Gauntlet\n\nThis is how computers organize data. Pick the wrong one, and your app crawls.\n\n*   **Array:** A list. Fast to read, slow to insert in the middle.\n*   **Hash Map:** A dictionary. Instant lookups (Key -> Value).\n*   **Big O:** How we measure how slow code gets as data grows.",
+        "questions": [
+            { "question": "Which data structure works like a line at a store (First In, First Out)?", "options": ["Stack", "Queue", "Tree", "Graph"], "correctAnswerIndex": 1, "explanation": "A Queue follows FIFO logic." },
+            { "question": "What is the Big O for looking up an item in a Hash Map?", "options": ["O(n)", "O(1)", "O(log n)", "O(n^2)"], "correctAnswerIndex": 1, "explanation": "Hash maps provide constant time average access." },
+            { "question": "Which structure follows LIFO (Last In, First Out)?", "options": ["Queue", "Stack", "Array", "Linked List"], "correctAnswerIndex": 1, "explanation": "Like a stack of plates: the last one put on top is the first one taken off." }
+        ]
+    },
+    "SQL Database Mastery": {
+        "lesson": "### 🗄️ Talking to Data\n\n**SQL** is the language of data. \n\n*   **SELECT:** 'Hey database, give me this data.'\n*   **WHERE:** '...but only if it matches this.'\n*   **JOIN:** 'Also, grab related info from that other table.'\n*   **Primary Key:** The unique ID for a row.",
+        "questions": [
+            { "question": "Which command grabs data?", "options": ["GET", "FETCH", "SELECT", "PULL"], "correctAnswerIndex": 2, "explanation": "SELECT is the standard command to query databases." },
+            { "question": "What ensures a row is unique?", "options": ["Foreign Key", "Primary Key", "Index", "Column"], "correctAnswerIndex": 1, "explanation": "A Primary Key is a unique identifier for a record." },
+            { "question": "How do you combine two tables?", "options": ["MERGE", "COMBINE", "JOIN", "ATTACH"], "correctAnswerIndex": 2, "explanation": "JOIN clauses link rows between tables based on a related column." }
+        ]
+    },
+    "Git Version Control": {
+        "lesson": "### ⏳ The Time Machine\n\n**Git** lets you save checkpoints of your code. Messed up? Just load an old save.\n\n*   **Commit:** A save point.\n*   **Branch:** A parallel universe to test crazy ideas.\n*   **Merge:** Bringing that crazy idea back to the main timeline.",
+        "questions": [
+            { "question": "What command saves your changes to history?", "options": ["git save", "git commit", "git add", "git push"], "correctAnswerIndex": 1, "explanation": "Commit creates a snapshot of the staged changes." },
+            { "question": "How do you get a repo from GitHub to your laptop?", "options": ["git download", "git clone", "git pull", "git fork"], "correctAnswerIndex": 1, "explanation": "Clone copies the entire repository." },
+            { "question": "What area holds files before you commit them?", "options": ["The Stage", "The Lobby", "The Box", "The Void"], "correctAnswerIndex": 0, "explanation": "You 'add' files to the Staging Area before committing." }
+        ]
+    },
+    "Physics: Motion": {
+        "lesson": "### 🍎 Newton's Rules\n\nWhy do things move? Sir Isaac knows.\n\n*   **Velocity:** Speed + Direction.\n*   **Acceleration:** Speeding up or slowing down.\n*   **Inertia:** Lazy objects want to keep doing what they're doing (moving or staying still).",
+        "questions": [
+            { "question": "What is Force equal to (F=?)?", "options": ["mc^2", "ma", "mv", "mg"], "correctAnswerIndex": 1, "explanation": "Force = Mass x Acceleration (Newton's Second Law)." },
+            { "question": "What is the tendency of an object to resist change in motion?", "options": ["Friction", "Gravity", "Inertia", "Velocity"], "correctAnswerIndex": 2, "explanation": "Inertia is the resistance to changes in velocity." },
+            { "question": "If you drop a ball, what accelerates it?", "options": ["The wind", "Gravity", "Its mass", "Nothing"], "correctAnswerIndex": 1, "explanation": "Gravity provides a constant acceleration downwards." }
+        ]
+    },
+    "Digital Photography": {
+        "lesson": "### 📸 Master the Light\n\nPhotography is just trapping light in a box.\n\n*   **Aperture:** The eye pupil. Wide open = blurry background (Bokeh).\n*   **Shutter Speed:** The blink. Fast = freezes action. Slow = motion blur.\n*   **ISO:** Night vision. Higher = brighter but grainier.",
+        "questions": [
+            { "question": "Which setting controls background blur (Depth of Field)?", "options": ["ISO", "Shutter Speed", "Aperture", "White Balance"], "correctAnswerIndex": 2, "explanation": "A wider aperture (lower f-number) creates a shallow depth of field." },
+            { "question": "To freeze a fast car, you need...", "options": ["Fast Shutter Speed", "Slow Shutter Speed", "High ISO", "Low ISO"], "correctAnswerIndex": 0, "explanation": "A fast shutter creates a crisp image of moving objects." },
+            { "question": "High ISO introduces what into the image?", "options": ["More color", "Digital Noise/Grain", "Blur", "Sharpness"], "correctAnswerIndex": 1, "explanation": "Amplifying the sensor signal creates digital noise." }
+        ]
+    },
+    "Public Speaking": {
+        "lesson": "### 🎤 Own the Room\n\nPeople fear this more than death. Weird, right? \n\n*   **The Hook:** Grab them in the first 10 seconds.\n*   **Eye Contact:** Don't stare at your shoes. Build trust.\n*   **The Pause:** ... silence is powerful.",
+        "questions": [
+            { "question": "What is the most effective way to reduce anxiety?", "options": ["Drink coffee", "Preparation and Practice", "Picture audience naked", "Read from a script"], "correctAnswerIndex": 1, "explanation": "Knowing your material cold is the best confidence booster." },
+            { "question": "What part of communication is body language?", "options": ["10%", "50%", "Over 90% (Non-verbal)", "0%"], "correctAnswerIndex": 2, "explanation": "Most communication is non-verbal (tone, stance, eyes)." },
+            { "question": "Why should you use pauses?", "options": ["To remember lines", "To emphasize points", "To check your phone", "To bore people"], "correctAnswerIndex": 1, "explanation": "Pauses let important points sink in and create anticipation." }
         ]
     }
 }

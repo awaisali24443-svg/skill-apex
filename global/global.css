@@ -129,7 +129,10 @@ html, body {
     overflow-y: auto; 
     overflow-x: hidden;
     position: relative; 
-    padding: 2rem var(--page-padding) 8rem var(--page-padding);
+    
+    /* Padding Left accounts for the fixed collapsed sidebar */
+    padding: 2rem var(--page-padding) 8rem calc(var(--sidebar-width-collapsed) + var(--page-padding));
+    
     scroll-behavior: smooth;
     transition: padding 0.3s ease;
 }
@@ -178,83 +181,123 @@ html, body {
 
 /* --- SIDEBAR (Desktop & Tablet) --- */
 #sidebar {
-    position: relative; 
-    z-index: 100;
-    /* Expanded by default for Tablet+ */
-    width: var(--sidebar-width-desktop); 
-    min-width: var(--sidebar-width-desktop);
-    flex: 0 0 var(--sidebar-width-desktop);
-    height: 100%; 
+    position: fixed; /* Fixed to allow floating expansion */
+    top: 0; left: 0; bottom: 0;
+    z-index: 900;
     
-    /* Matching Reference Image: Transparent Glass */
+    /* Default: Collapsed Width */
+    width: var(--sidebar-width-collapsed);
+    
+    /* Glass Effect */
     background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(40px);
     -webkit-backdrop-filter: blur(40px);
     border-right: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 20px 0 60px rgba(0,0,0,0.2);
+    
+    /* Physics */
+    transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), background 0.3s;
+    overflow: hidden;
     
     display: flex; 
     flex-direction: column;
-    overflow-x: hidden;
-    overflow-y: auto;
+}
+
+/* Expanded State */
+#sidebar.expanded {
+    width: var(--sidebar-width-desktop);
+    background: rgba(30, 30, 35, 0.85); /* Darker/Solid when open */
+    box-shadow: 20px 0 80px rgba(0,0,0,0.4);
 }
 
 .sidebar-inner {
-    padding: 30px 24px;
+    padding: 30px 0; /* Vertical padding only, horizontal handled by flex items */
     display: flex;
     flex-direction: column;
     gap: 16px;
     height: 100%;
+    width: 100%;
 }
 
 /* 1. Brand */
 .sidebar-brand-section {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-bottom: 20px;
+    position: relative;
 }
-.brand-text-sidebar {
+
+.brand-text-collapsed {
+    position: absolute;
+    font-family: var(--font-family-heading);
+    font-weight: 900;
+    font-size: 1.5rem;
+    color: var(--color-primary);
+    transition: opacity 0.2s;
+}
+
+.brand-text-expanded {
     font-family: var(--font-family-heading);
     font-weight: 900;
     font-size: 1.8rem;
-    color: var(--color-text); /* Ensure contrast */
-    letter-spacing: -0.5px;
+    color: var(--color-text);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease 0.1s;
+    white-space: nowrap;
 }
 
-/* 2. Profile Card (Reference Style) */
+#sidebar.expanded .brand-text-collapsed { opacity: 0; }
+#sidebar.expanded .brand-text-expanded { opacity: 1; }
+
+/* 2. Profile Card */
 .sidebar-profile-header {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 8px 0;
+    padding: 8px 20px; /* Consistent padding */
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: background 0.2s;
+    overflow: hidden;
 }
-.sidebar-profile-header:hover { opacity: 0.8; }
+.sidebar-profile-header:hover { background: rgba(255,255,255,0.05); }
 
 .profile-avatar-container {
     width: 48px; height: 48px;
     border-radius: 50%;
     flex-shrink: 0;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    margin: 0 auto; /* Center when collapsed */
+    transition: margin 0.3s;
 }
+#sidebar.expanded .profile-avatar-container { margin: 0 14px 0 0; }
+
 .profile-avatar-img, .profile-avatar-svg {
     width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
+}
+
+.profile-info-text, .profile-chevron {
+    opacity: 0;
+    pointer-events: none;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+}
+
+#sidebar.expanded .profile-info-text, 
+#sidebar.expanded .profile-chevron {
+    opacity: 1;
+    transition: opacity 0.4s ease 0.1s;
 }
 
 .profile-info-text {
     flex-grow: 1;
     display: flex; flex-direction: column;
     line-height: 1.2;
+    overflow: hidden;
 }
-.profile-name {
-    font-weight: 700; font-size: 1rem; color: var(--color-text);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;
-}
-.profile-role {
-    font-size: 0.75rem; color: var(--color-text-secondary);
-}
-.profile-chevron {
-    width: 16px; height: 16px; color: var(--color-text-secondary); margin-left: auto;
-}
+.profile-name { font-weight: 700; font-size: 1rem; color: var(--color-text); text-overflow: ellipsis; overflow: hidden; }
+.profile-role { font-size: 0.75rem; color: var(--color-text-secondary); }
+.profile-chevron { width: 16px; height: 16px; color: var(--color-text-secondary); margin-left: auto; }
 
 /* Divider */
 .sidebar-divider {
@@ -273,48 +316,73 @@ html, body {
     text-transform: uppercase;
     margin-top: 8px;
     margin-bottom: 4px;
+    padding-left: 24px;
+    opacity: 0;
+    white-space: nowrap;
+    transition: opacity 0.2s;
 }
+#sidebar.expanded .sidebar-menu-label { opacity: 1; transition-delay: 0.1s; }
 
 /* 4. Links */
 .sidebar-links {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    width: 100%;
 }
 
 .sidebar-link {
     display: flex;
     align-items: center;
-    padding: 12px 0; /* Minimal vertical padding, no horizontal background by default */
+    justify-content: center; /* Center icon by default */
+    padding: 14px 0; 
     text-decoration: none;
     color: var(--color-text-secondary);
     font-weight: 500;
     font-size: 1.05rem;
     transition: all 0.2s ease;
-    border-radius: 12px;
+    border-radius: 0; /* Full width hover effect looks better here */
+    position: relative;
+    width: 100%;
+    white-space: nowrap;
 }
+
+/* Left Accent Bar for Active State */
+.sidebar-link::before {
+    content: ''; position: absolute; left: 0; top: 10%; height: 80%; width: 4px;
+    background: var(--color-primary); border-radius: 0 4px 4px 0;
+    opacity: 0; transition: opacity 0.2s;
+}
+.sidebar-link.active::before { opacity: 1; }
 
 .link-icon-wrapper {
-    width: 24px; display: flex; justify-content: center; margin-right: 16px;
+    width: 24px; display: flex; justify-content: center; 
+    margin-right: 0;
     color: inherit;
+    transition: margin 0.3s;
 }
-.sidebar-link .icon {
-    width: 22px; height: 22px; stroke-width: 2;
+.sidebar-link .icon { width: 22px; height: 22px; stroke-width: 2; }
+
+.sidebar-link .text {
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.2s;
 }
 
-.sidebar-link:hover {
-    color: var(--color-primary);
-    transform: translateX(4px);
-}
+/* Hover/Active states */
+.sidebar-link:hover { color: var(--color-text); background: rgba(255,255,255,0.05); }
+.sidebar-link.active { color: var(--color-primary); font-weight: 700; background: rgba(var(--color-primary-rgb), 0.05); }
 
-/* Active State - Glow Text */
-.sidebar-link.active {
-    color: var(--color-primary);
-    font-weight: 700;
+/* Expanded Link Styling */
+#sidebar.expanded .sidebar-link {
+    justify-content: flex-start; /* Align Left */
+    padding-left: 28px;
 }
-.sidebar-link.active .icon {
-    stroke-width: 2.5;
-    filter: drop-shadow(0 0 8px var(--color-primary));
+#sidebar.expanded .link-icon-wrapper { margin-right: 16px; }
+#sidebar.expanded .sidebar-link .text {
+    opacity: 1;
+    transform: translateX(0);
+    transition: all 0.3s ease 0.1s;
 }
 
 /* Footer Section */
@@ -330,7 +398,8 @@ html, body {
     #app-wrapper { flex-direction: column; }
 
     #app-container {
-        padding-bottom: calc(var(--bottom-nav-height) + 30px);
+        /* Reset left padding on mobile */
+        padding: 2rem var(--page-padding) calc(var(--bottom-nav-height) + 30px) var(--page-padding);
     }
 
     #sidebar {
@@ -339,6 +408,7 @@ html, body {
         bottom: 20px; 
         left: 20px;
         right: 20px;
+        top: auto; /* Reset top */
         width: auto; 
         max-width: 100%;
         height: 70px; 
@@ -359,6 +429,9 @@ html, body {
         overflow-x: auto;
         overflow-y: hidden;
     }
+    
+    /* Disable expansion logic on mobile */
+    #sidebar.expanded { width: auto; background: rgba(30, 30, 35, 0.85); box-shadow: none; }
 
     .sidebar-inner {
         padding: 0;
@@ -398,13 +471,16 @@ html, body {
     
     .link-icon-wrapper { margin: 0; margin-bottom: 4px; }
     .sidebar-link .icon { width: 24px; height: 24px; }
+    .sidebar-link .text { display: none; } 
     
-    .sidebar-link .text { display: none; } /* Hide text for cleaner bar */
+    /* Reset Active indicator for mobile */
+    .sidebar-link::before { display: none; }
     
-    .sidebar-link:hover { transform: none; color: var(--color-text); }
+    .sidebar-link:hover { transform: none; color: var(--color-text); background: transparent; }
     
     .sidebar-link.active {
         color: var(--color-primary);
+        background: transparent;
         position: relative;
     }
     
