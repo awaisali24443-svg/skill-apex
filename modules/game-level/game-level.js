@@ -7,7 +7,6 @@ import * as historyService from '../../services/historyService.js';
 import * as levelCacheService from '../../services/levelCacheService.js';
 import { showConfirmationModal } from '../../services/modalService.js';
 import * as stateService from '../../services/stateService.js';
-import * as libraryService from '../../services/libraryService.js';
 import { showToast } from '../../services/toastService.js';
 import * as vfxService from '../../services/vfxService.js';
 import * as firebaseService from '../../services/firebaseService.js';
@@ -31,10 +30,7 @@ let questionStartTime = 0;
 let fastAnswersCount = 0;
 let currentCombo = 0;
 
-let typewriterInterval = null;
 let loadingTimeout = null;
-
-// Keyboard Listener
 let keydownHandler = null;
 
 function switchState(targetStateId) {
@@ -46,26 +42,24 @@ async function startLevel() {
     const { topic, level, totalLevels } = levelContext;
     
     if (!topic) {
-        showToast("Session restored. Redirecting to topics...", "info");
-        window.location.hash = '#/topics';
+        showToast("No topic selected. Redirecting...", "info");
+        window.location.hash = '#/';
         return;
     }
     
     switchState('level-loading-state');
     
     const loadingTextEl = document.getElementById('loading-status-text');
-    if (loadingTextEl) loadingTextEl.textContent = "Hacking the mainframe for Level " + level + "...";
+    if (loadingTextEl) loadingTextEl.textContent = `Generating Quiz for "${topic}"...`;
 
-    // Update text after 5s to keep user entertained
     loadingTimeout = setTimeout(() => {
         if (loadingTextEl && document.getElementById('level-loading-state').classList.contains('active')) {
-            loadingTextEl.textContent = "Brewing fresh knowledge... hold tight.";
+            loadingTextEl.textContent = "Finalizing questions...";
         }
-    }, 5000);
+    }, 4000);
     
     try {
-        // PERFORMANCE BOOST: Parallel Fetching
-        // Fetch lesson AND questions simultaneously to cut wait time in half
+        // Parallel Fetching
         const [lessonData, questionsData] = await Promise.all([
             apiService.generateLevelLesson({ topic, level, totalLevels }),
             apiService.generateLevelQuestions({ topic, level, totalLevels })
@@ -80,51 +74,21 @@ async function startLevel() {
         
         currentQuestions = levelData.questions;
         renderLesson();
-        
-        // Very delayed preloading to keep channel clear
-        setTimeout(() => preloadNextLevel(), 8000);
 
     } catch (error) {
         clearTimeout(loadingTimeout);
         console.error("Level Start Error:", error);
-        showToast("Signal Lost. Returning to Map...", "error");
+        showToast("Generation Failed. Please try again.", "error");
         setTimeout(() => window.history.back(), 2000);
     }
 }
 
-async function preloadNextLevel() {
-    const nextLevel = levelContext.level + 1;
-    if (nextLevel > levelContext.totalLevels) return;
-    if (levelCacheService.getLevel(levelContext.topic, nextLevel)) return;
-
-    try {
-        // Parallel preloading too
-        const [lData, qData] = await Promise.all([
-            apiService.generateLevelLesson({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels }),
-            apiService.generateLevelQuestions({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels })
-        ]);
-        
-        const nextLevelData = { lesson: lData.lesson, questions: qData.questions };
-        levelCacheService.saveLevel(levelContext.topic, nextLevel, nextLevelData);
-    } catch(e) {
-        console.warn("[EXPO PREFETCH] Background gen failed (silent)", e);
-    }
-}
-
-function renderLessonTypewriter(htmlContent) {
-    if (typewriterInterval) clearInterval(typewriterInterval);
-    // Directly inject HTML for instant gratification in Expo mode
-    // Typewriter is cool but slows down the "fast" feel requested
-    const container = elements.lessonBody;
-    container.innerHTML = htmlContent;
-    container.scrollTop = 0;
-}
-
 function renderLesson() {
-    elements.lessonTitle.textContent = `Level ${levelContext.level} Briefing`;
+    elements.lessonTitle.textContent = `Topic Briefing`;
     const rawHtml = markdownService.render(levelData.lesson);
     switchState('level-lesson-state');
-    renderLessonTypewriter(rawHtml);
+    elements.lessonBody.innerHTML = rawHtml;
+    elements.lessonBody.scrollTop = 0;
 }
 
 function startQuiz() {
@@ -151,369 +115,3 @@ function renderQuestion() {
     const progress = ((currentQuestionIndex + 1) / currentQuestions.length) * 100;
     elements.quizProgressBarFill.style.width = `${progress}%`;
     
-    elements.quizQuestionText.textContent = question.question;
-    elements.quizOptionsContainer.innerHTML = '';
-    
-    question.options.forEach((optionText, index) => {
-        const button = document.createElement('button');
-        button.className = 'btn option-btn';
-        // Add number hint
-        const keyHint = document.createElement('span');
-        keyHint.className = 'key-hint';
-        keyHint.textContent = index + 1;
-        keyHint.style.cssText = 'margin-right: 10px; font-weight: bold; opacity: 0.5; border: 1px solid var(--color-border); border-radius: 4px; padding: 2px 6px; font-size: 0.8rem;';
-        
-        const textSpan = document.createElement('span');
-        textSpan.textContent = optionText;
-        
-        button.appendChild(keyHint);
-        button.appendChild(textSpan);
-        button.dataset.index = index;
-        elements.quizOptionsContainer.appendChild(button);
-    });
-
-    elements.submitAnswerBtn.disabled = true;
-    elements.submitAnswerBtn.textContent = 'Submit';
-    elements.hintBtn.disabled = false;
-
-    startTimer();
-    questionStartTime = Date.now(); // Start clock for "Speed Demon"
-}
-
-function startTimer() {
-    clearInterval(timerInterval);
-    timeLeft = 60;
-    
-    elements.timerText.textContent = `00:${timeLeft}`;
-    elements.timerText.classList.remove('panic');
-    
-    timerInterval = setInterval(() => {
-        timeLeft--;
-        const seconds = String(timeLeft % 60).padStart(2, '0');
-        elements.timerText.textContent = `00:${seconds}`;
-        
-        if (timeLeft <= 10) {
-            elements.timerText.classList.add('panic');
-        }
-        
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            handleTimeUp();
-        }
-    }, 1000);
-}
-
-function handleTimeUp() {
-    soundService.playSound('incorrect');
-    vfxService.shake(document.getElementById('question-container'));
-    selectedAnswerIndex = -1;
-    currentCombo = 0;
-    updateComboDisplay();
-    handleSubmitAnswer();
-}
-
-function handleOptionClick(event) {
-    const button = event.target.closest('.option-btn');
-    if (answered || !button) return;
-    
-    selectOption(parseInt(button.dataset.index, 10));
-}
-
-function selectOption(index) {
-    if (answered) return;
-    soundService.playSound('click');
-    
-    elements.quizOptionsContainer.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
-    
-    const targetBtn = elements.quizOptionsContainer.querySelector(`.option-btn[data-index="${index}"]`);
-    if(targetBtn) targetBtn.classList.add('selected');
-    
-    selectedAnswerIndex = index;
-    elements.submitAnswerBtn.disabled = false;
-}
-
-function updateComboDisplay() {
-    const comboEl = document.getElementById('combo-display');
-    const comboCountEl = document.getElementById('combo-count');
-    
-    if (currentCombo > 1) {
-        comboEl.classList.remove('hidden');
-        comboCountEl.textContent = `x${currentCombo}`;
-        // Trigger pulse animation
-        comboEl.classList.remove('pulse');
-        void comboEl.offsetWidth; // Force reflow
-        comboEl.classList.add('pulse');
-    } else {
-        comboEl.classList.add('hidden');
-    }
-}
-
-function showFloatingText(element, text) {
-    const floatEl = document.createElement('span');
-    floatEl.className = 'float-xp';
-    floatEl.textContent = text;
-    element.appendChild(floatEl);
-    
-    setTimeout(() => {
-        floatEl.remove();
-    }, 1000);
-}
-
-function handleSubmitAnswer() {
-    if (answered) {
-        handleNextQuestion();
-        return;
-    }
-    
-    // Safety check: Don't submit if nothing selected
-    if (selectedAnswerIndex === null) return;
-
-    clearInterval(timerInterval);
-    answered = true;
-    userAnswers[currentQuestionIndex] = selectedAnswerIndex;
-
-    const question = currentQuestions[currentQuestionIndex];
-    const isCorrect = question.correctAnswerIndex === selectedAnswerIndex;
-    const timeTaken = (Date.now() - questionStartTime) / 1000;
-    
-    if (isCorrect) {
-        score++;
-        currentCombo++;
-        
-        // Base XP
-        let xp = hintUsedThisQuestion ? 5 : 10;
-        
-        // Speed Bonus
-        if (timeTaken < 5) {
-            fastAnswersCount++;
-            xp += 5; // Bonus XP
-        }
-        
-        // Combo Bonus
-        if (currentCombo > 1) {
-            xp += (currentCombo * 2);
-        }
-        
-        xpGainedThisLevel += xp;
-        // Pass combo count for dynamic pitch
-        soundService.playSound('correct', currentCombo);
-        updateComboDisplay();
-        
-        const selectedBtn = elements.quizOptionsContainer.querySelector('.option-btn.selected');
-        if (selectedBtn) {
-            const rect = selectedBtn.getBoundingClientRect();
-            // Confetti on button
-            vfxService.burstConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2);
-            // Floating Text
-            showFloatingText(selectedBtn, `+${xp} XP`);
-        }
-    } else {
-        currentCombo = 0;
-        updateComboDisplay();
-        soundService.playSound('incorrect');
-        vfxService.shake(document.getElementById('question-container'));
-    }
-
-    elements.quizOptionsContainer.querySelectorAll('.option-btn').forEach(btn => {
-        const index = parseInt(btn.dataset.index, 10);
-        if (index === question.correctAnswerIndex) btn.classList.add('correct');
-        else if (index === selectedAnswerIndex) btn.classList.add('incorrect');
-        btn.disabled = true;
-    });
-
-    elements.hintBtn.disabled = true;
-    elements.submitAnswerBtn.textContent = currentQuestionIndex < currentQuestions.length - 1 ? 'Next' : 'Results';
-    elements.submitAnswerBtn.disabled = false;
-    
-    // Auto-focus next button for Enter key usability
-    elements.submitAnswerBtn.focus();
-}
-
-function handleNextQuestion() {
-    if (currentQuestionIndex < currentQuestions.length - 1) {
-        currentQuestionIndex++;
-        renderQuestion();
-    } else {
-        showResults();
-    }
-}
-
-// --- WINNING FEATURE: DIGITAL CERTIFICATE ---
-function generateCertificateHTML(name, topic, level) {
-    const date = new Date().toLocaleDateString();
-    return `
-        <div class="certificate-container">
-            <div class="cert-border">
-                <div class="cert-content">
-                    <div class="cert-header">CERTIFICATE OF COMPETENCY</div>
-                    <div class="cert-body">
-                        <p>This certifies that</p>
-                        <h2 class="cert-name">${name}</h2>
-                        <p>has successfully cleared</p>
-                        <h3 class="cert-topic">${topic}</h3>
-                        <p class="cert-level">Level ${level} Assessment</p>
-                    </div>
-                    <div class="cert-footer">
-                        <div class="cert-date">${date}</div>
-                        <div class="cert-sig">
-                            Awais Ali<br>
-                            <span style="font-size:0.6em; letter-spacing:1px; opacity:0.8;">SYSTEM ARCHITECT</span>
-                        </div>
-                    </div>
-                    <div class="cert-seal">
-                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#award"/></svg>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-function showResults() {
-    const total = currentQuestions.length;
-    const passed = (score / total) >= 0.7;
-
-    soundService.playSound(passed ? 'finish' : 'incorrect');
-    
-    if (passed) {
-        vfxService.burstConfetti(); // Big Burst center screen
-    }
-
-    historyService.addQuizAttempt({
-        topic: `${levelContext.topic} - Level ${levelContext.level}`,
-        score: score,
-        totalQuestions: total,
-        startTime: Date.now(), // Rough approx
-        endTime: Date.now(),
-        xpGained: xpGainedThisLevel,
-        fastAnswers: fastAnswersCount
-    });
-
-    if (passed) {
-        const userName = firebaseService.getUserName() || "Guest Agent";
-        const certHTML = generateCertificateHTML(userName, levelContext.topic, levelContext.level);
-        
-        elements.resultsTitle.textContent = 'Mission Complete';
-        elements.resultsDetails.innerHTML = `
-            Score: ${score}/${total}.<br>
-            <div class="cert-wrapper">${certHTML}</div>
-        `;
-        
-        elements.resultsActions.innerHTML = `
-            <a href="#/game/${encodeURIComponent(levelContext.topic)}" class="btn btn-primary" style="width:100%">Continue Journey</a>
-        `;
-        
-        const journey = learningPathService.getJourneyById(levelContext.journeyId);
-        if (journey) learningPathService.completeLevel(levelContext.journeyId);
-
-    } else {
-        elements.resultsTitle.textContent = 'Mission Failed';
-        elements.resultsDetails.textContent = `Score: ${score}/${total}. Review the briefing and try again.`;
-        elements.resultsActions.innerHTML = `<button id="retry-level-btn" class="btn btn-primary">Retry Mission</button>`;
-        document.getElementById('retry-level-btn').onclick = () => startLevel();
-    }
-    
-    switchState('level-results-state');
-    
-    if (xpGainedThisLevel > 0) {
-        vfxService.animateNumber(elements.xpGainText, 0, xpGainedThisLevel);
-    } else {
-        elements.xpGainText.textContent = '';
-    }
-}
-
-async function handleQuit() {
-    const confirmed = await showConfirmationModal({
-        title: 'Abort Mission?',
-        message: 'Progress will be lost.',
-        confirmText: 'Abort',
-        cancelText: 'Stay',
-        danger: true,
-    });
-    if (confirmed) {
-        window.location.hash = `#/game/${encodeURIComponent(levelContext.topic)}`;
-    }
-}
-
-async function handleHintClick() {
-    if (elements.hintBtn.disabled) return;
-    elements.hintBtn.disabled = true;
-    
-    try {
-        const question = currentQuestions[currentQuestionIndex];
-        const data = await apiService.generateHint({ topic: levelContext.topic, question: question.question, options: question.options });
-        showToast(data.hint, 'info', 4000);
-        hintUsedThisQuestion = true;
-    } catch (e) {
-        showToast("Hint unavailable.", "error");
-    }
-}
-
-// --- Keyboard Event Handler ---
-function handleKeyDown(e) {
-    // Only active in quiz state
-    if (!document.getElementById('level-quiz-state').classList.contains('active')) return;
-
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        handleSubmitAnswer();
-    } else if (['1', '2', '3', '4'].includes(e.key)) {
-        e.preventDefault();
-        const index = parseInt(e.key) - 1;
-        selectOption(index);
-    }
-}
-
-export function init() {
-    const { navigationContext } = stateService.getState();
-    levelContext = navigationContext;
-
-    elements = {
-        lessonTitle: document.getElementById('lesson-title'),
-        lessonBody: document.getElementById('lesson-body'),
-        startQuizBtn: document.getElementById('start-quiz-btn'),
-        skipBtn: document.getElementById('skip-to-quiz-btn'), 
-        cancelBtn: document.getElementById('cancel-generation-btn'),
-        
-        quizProgressText: document.getElementById('quiz-progress-text'),
-        quizProgressBarFill: document.getElementById('quiz-progress-bar-fill'),
-        quizQuestionText: document.getElementById('quiz-question-text'),
-        quizOptionsContainer: document.getElementById('quiz-options-container'),
-        submitAnswerBtn: document.getElementById('submit-answer-btn'),
-        timerText: document.getElementById('timer-text'),
-        
-        hintBtn: document.getElementById('hint-btn'),
-        quitBtn: document.getElementById('quit-btn'),
-        
-        resultsTitle: document.getElementById('results-title'),
-        resultsDetails: document.getElementById('results-details'),
-        resultsActions: document.getElementById('results-actions'),
-        xpGainText: document.getElementById('xp-gain-text')
-    };
-
-    if(elements.skipBtn) elements.skipBtn.addEventListener('click', startQuiz);
-    if(elements.cancelBtn) elements.cancelBtn.addEventListener('click', () => {
-        clearTimeout(loadingTimeout);
-        window.history.back();
-    });
-    
-    elements.startQuizBtn.addEventListener('click', startQuiz);
-    elements.submitAnswerBtn.addEventListener('click', handleSubmitAnswer);
-    elements.quizOptionsContainer.addEventListener('click', handleOptionClick);
-    elements.quitBtn.addEventListener('click', handleQuit);
-    elements.hintBtn.addEventListener('click', handleHintClick);
-
-    // Attach Keyboard Listener
-    keydownHandler = handleKeyDown;
-    document.addEventListener('keydown', keydownHandler);
-
-    startLevel();
-}
-
-export function destroy() {
-    clearInterval(timerInterval);
-    clearTimeout(loadingTimeout);
-    if (typewriterInterval) clearInterval(typewriterInterval);
-    // Remove Keyboard Listener
-    if (keydownHandler) document.removeEventListener('keydown', keydownHandler);
-}

@@ -1,172 +1,72 @@
 
 <div class="game-level-container">
-    <div class="sr-only" id="announcer-region" role="alert" aria-live="assertive"></div>
-    <div class="sr-only" id="timer-announcer-region" role="status" aria-live="polite"></div>
     
-    <!-- State 1: Loading (Skeleton) -->
+    <!-- Loading State -->
     <div id="level-loading-state" class="game-level-state active">
-        <div class="state-content card hud-corners">
-             <div class="skeleton-header">
-                <div class="skeleton" style="width: 60%; height: 32px; margin-bottom: 20px;"></div>
-             </div>
-             <div class="skeleton-body">
-                <div class="skeleton" style="width: 100%; height: 16px; margin-bottom: 10px;"></div>
-                <div class="skeleton" style="width: 90%; height: 16px; margin-bottom: 10px;"></div>
-                <div class="skeleton" style="width: 95%; height: 16px; margin-bottom: 10px;"></div>
-                <div class="skeleton" style="width: 80%; height: 16px; margin-bottom: 20px;"></div>
-             </div>
-             <div id="loading-text-container" style="margin-top: 40px; display: flex; flex-direction: column; align-items: center;">
-                 <!-- UPDATED: Mini Brand Logo Pulse instead of generic orb -->
-                 <svg class="mini-logo-pulse" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path class="wing-left" d="M96 416 L232 136 L256 180 L170 416 H96Z" stroke="none" />
-                    <path class="wing-right" d="M416 416 L280 136 L256 180 L342 416 H416Z" stroke="none" />
-                    <circle class="spark" cx="256" cy="100" r="32" />
-                 </svg>
-                 
-                 <p id="loading-status-text" style="text-align: center; margin-top: 20px; font-weight: 600;">Constructing neural pathway...</p>
-                 
-                 <div id="skip-lesson-popup" class="skip-lesson-popup" style="display: none; margin-top: 1rem; width: 100%;">
-                     <button id="skip-to-quiz-btn" class="btn btn-primary" style="width: 100%;">
-                         <svg class="icon"><use href="assets/icons/feather-sprite.svg#zap"/></svg>
-                         <span>Questions Ready! Start Quiz</span>
-                     </button>
-                     <p class="small-text" style="font-size: 0.8rem; color: var(--color-text-secondary); margin-top: 5px; text-align: center;">Briefing generating in background...</p>
-                 </div>
-
-                 <button id="cancel-generation-btn" class="btn" style="margin-top: 10px;">Cancel</button>
-             </div>
+        <div class="card loading-card">
+             <div class="spinner"></div>
+             <h2>Constructing Scenario...</h2>
+             <p id="loading-status-text">Interfacing with neural core.</p>
+             <button id="cancel-generation-btn" class="btn" style="margin-top: 20px;">Abort</button>
         </div>
     </div>
 
-    <!-- State 2: Lesson -->
+    <!-- Lesson State -->
     <div id="level-lesson-state" class="game-level-state">
-        <div class="state-content card hud-corners">
+        <div class="card lesson-card">
             <header class="lesson-header">
-                <h1 id="lesson-title"></h1>
+                <h1 id="lesson-title">Briefing</h1>
             </header>
-            <main id="lesson-body" class="lesson-body"></main>
-            
-            <div id="ask-ai-container" class="ask-ai-container" style="display:none;">
-                <div class="ask-ai-content">
-                    <h3>AI Deep Dive</h3>
-                    <p id="ask-ai-answer"></p>
-                    <button id="close-ask-ai-btn" class="btn">Close</button>
-                </div>
-            </div>
-
+            <div id="lesson-body" class="lesson-body"></div>
             <footer class="lesson-footer">
-                <button id="ask-ai-btn" class="btn" title="Select text to ask about it">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#search"/></svg>
-                    <span>Deep Dive</span>
-                </button>
-                <button id="read-aloud-btn" class="btn">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#volume-2"/></svg>
-                    <span>Read Aloud</span>
-                </button>
-                <button id="start-quiz-btn" class="btn btn-primary">
-                    <span>Let's Go!</span>
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
+                <button id="start-quiz-btn" class="btn btn-primary btn-block">
+                    Start Mission <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
                 </button>
             </footer>
         </div>
     </div>
 
-    <!-- State 3: Quiz / Interactive Challenge -->
+    <!-- Quiz State -->
     <div id="level-quiz-state" class="game-level-state">
-        <header class="new-quiz-header">
-            <!-- Brand Wrapper -->
-            <div class="quiz-header-brand">
-                <a href="#/" class="logo-link-header" aria-label="Skill Apex Home">
-                    <div class="logo-container-header">
-                        <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <defs>
-                                <linearGradient id="logoGradHeader" x1="0%" y1="100%" x2="100%" y2="0%">
-                                    <stop offset="0%" stop-color="#4338CA"/> <!-- Indigo -->
-                                    <stop offset="100%" stop-color="#7C3AED"/> <!-- Violet -->
-                                </linearGradient>
-                            </defs>
-                            <path d="M50 5 L95 27.5 V72.5 L50 95 L5 72.5 V27.5 Z" stroke="url(#logoGradHeader)" stroke-width="4" stroke-linecap="round" fill="none" />
-                            <path d="M50 25 L75 80 H65 L50 45 L35 80 H25 Z" fill="url(#logoGradHeader)" />
-                            <circle cx="50" cy="55" r="4" fill="white" stroke="url(#logoGradHeader)" stroke-width="2"/>
-                        </svg>
-                    </div>
-                    <span class="brand-text-header">Skill Apex</span>
-                </a>
+        <header class="quiz-hud">
+            <div class="hud-item timer">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#clock"/></svg>
+                <span id="timer-text">00:00</span>
             </div>
-
-            <!-- Boss Health Bar -->
-            <div id="boss-health-container" class="boss-health-container" style="display: none;">
-                <span class="boss-label">BOSS HP</span>
-                <div class="boss-health-bar">
-                    <div id="boss-health-fill" class="boss-health-fill" style="width: 100%;"></div>
-                </div>
+            <div class="hud-progress">
+                <div class="progress-bar"><div id="quiz-progress-bar-fill"></div></div>
+                <span id="quiz-progress-text">1/5</span>
             </div>
-
-            <!-- Actions Wrapper -->
-            <div class="quiz-header-actions">
-                <div id="combo-display" class="combo-display hidden">
-                    <span id="combo-count">0</span>
-                    <span class="combo-label">COMBO</span>
-                </div>
-                <button id="quit-btn" class="btn btn-danger icon-only-mobile">
-                    <span class="btn-text-desktop">Quit</span>
-                    <svg class="icon btn-icon-mobile"><use href="assets/icons/feather-sprite.svg#x-circle"/></svg>
-                </button>
-            </div>
+            <button id="quit-btn" class="btn-icon" aria-label="Quit">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#x-circle"/></svg>
+            </button>
         </header>
 
-        <div class="new-quiz-content">
-            <div class="quiz-status-card">
-                <div class="timer-section">
-                    <p>Time Left</p>
-                    <span id="timer-text">01:00</span>
-                </div>
-                <div class="question-progress-section">
-                    <p id="quiz-progress-text">Question 1 of 5</p>
-                    <div class="progress-bar">
-                        <div id="quiz-progress-bar-fill" class="progress-bar-fill"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Standard MCQ Container -->
-            <div id="question-container" class="card main-question-card hud-corners">
-                <h2 id="quiz-question-text">Loading question...</h2>
-                <div id="quiz-options-container" class="options-grid">
-                    <!-- Options injected here -->
-                </div>
-            </div>
-            
-            <!-- NEW: Interactive Challenge Container -->
-            <div id="interactive-container" class="card main-question-card" style="display: none;">
-                <h2 id="interactive-instruction"></h2>
-                <div id="interactive-playground" class="interactive-playground">
-                    <!-- Sorting/Matching items injected here -->
-                </div>
+        <div class="quiz-main-area">
+            <!-- Question Card -->
+            <div class="card question-card">
+                <h2 id="quiz-question-text">Loading...</h2>
             </div>
 
+            <!-- Options Grid -->
+            <div id="quiz-options-container" class="options-grid"></div>
         </div>
-        <footer class="new-quiz-footer">
-             <button id="home-btn" class="btn icon-only-mobile">
-                <svg class="icon"><use href="assets/icons/feather-sprite.svg#home"/></svg>
-                <span class="btn-text-desktop">Home</span>
+
+        <footer class="quiz-footer">
+             <button id="hint-btn" class="btn">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#lightbulb"/></svg> Hint
             </button>
-             <button id="hint-btn" class="btn icon-only-mobile">
-                <svg class="icon"><use href="assets/icons/feather-sprite.svg#lightbulb"/></svg>
-                <span class="btn-text-desktop">Hint</span>
-            </button>
-            <div class="footer-spacer"></div>
-            <button id="submit-answer-btn" class="btn btn-primary" disabled>Submit Answer</button>
+            <button id="submit-answer-btn" class="btn btn-primary" disabled>Submit</button>
         </footer>
     </div>
     
-    <!-- State 4: Results -->
+    <!-- Results State -->
     <div id="level-results-state" class="game-level-state">
-        <div class="state-content card results-content hud-corners">
-            <div id="results-icon" class="results-icon"></div>
-            <h1 id="results-title"></h1>
-            <p id="xp-gain-text" class="xp-gain"></p>
+        <div class="card results-card">
+            <h1 id="results-title">Mission Report</h1>
+            <div id="results-icon" class="results-visual"></div>
             <p id="results-details"></p>
+            <p id="xp-gain-text" class="xp-text"></p>
             <div id="results-actions" class="results-actions"></div>
         </div>
     </div>
