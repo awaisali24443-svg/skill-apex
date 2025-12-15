@@ -1,56 +1,59 @@
 
 :root {
-    /* --- DEEP SPACE CYBER (High Definition Dark) --- */
+    /* --- NEON TOKYO (Deep Night & Neon Lights) --- */
 
-    /* Primary Colors - Neon Pop */
+    /* Primary Colors */
     --color-primary: #22D3EE;   /* Cyan 400 - Electric Blue */
-    --color-secondary: #E879F9; /* Fuchsia 400 - Cyber Pink */
-    --color-accent: #818CF8;    /* Indigo 400 */
+    --color-secondary: #F472B6; /* Pink 400 - Neon Pink */
+    --color-accent: #A78BFA;    /* Violet 400 */
+    --color-primary-rgb: 34, 211, 238;
 
-    /* Backgrounds - Rich Depth (Not just black) */
-    --color-background: #020617; /* Slate 950 - Deepest Navy */
-    --color-surface: #0F172A;    /* Slate 900 */
-    --color-card-background: rgba(15, 23, 42, 0.8);
-    --color-surface-hover: #1E293B; /* Slate 800 */
-    --color-surface-active: #334155; /* Slate 700 */
+    /* Backgrounds - Deepest Indigo, not flat black */
+    --color-background: #000000; /* True Black for depth */
     
-    /* Glassmorphism */
-    --glass-bg: rgba(15, 23, 42, 0.7);
-    --glass-border: rgba(34, 211, 238, 0.2);
+    /* iOS Dark Mode Glass Variables */
+    /* System Gray 6 equivalent transparency */
+    --color-surface: rgba(28, 28, 30, 0.65);    
+    --color-surface-hover: rgba(44, 44, 46, 0.75); 
+    --color-surface-active: rgba(58, 58, 60, 0.75);
+    
+    /* Specific Glass Props */
+    --glass-surface: rgba(30, 30, 35, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.12); /* Subtle white border */
 
-    /* Text - High Contrast */
-    --color-text: #F1F5F9;       /* Slate 100 - Crisp White */
-    --color-text-secondary: #94A3B8; /* Slate 400 - Cool Grey (Readable) */
+    /* Text - Crisp White */
+    --color-text: #F8FAFC;       /* Slate 50 - Pure White */
+    --color-text-secondary: #94A3B8; /* Slate 400 - Cool Grey */
 
     /* UI Elements */
-    --color-border: #1E293B;     /* Slate 800 */
+    --color-border: rgba(255, 255, 255, 0.1);
 
-    /* Shadows - Colored Glows */
+    /* Shadows - Neon Glows */
     --shadow-card: 
-        0 4px 6px -1px rgba(0, 0, 0, 0.5), 
-        0 0 0 1px rgba(255, 255, 255, 0.08); 
+        0 8px 32px 0 rgba(0, 0, 0, 0.4); /* Deeper shadow for dark mode */
         
     --shadow-float: 
-        0 20px 25px -5px rgba(0, 0, 0, 0.6), 
-        0 0 20px rgba(34, 211, 238, 0.15); /* Cyan glow */
+        0 20px 50px -10px rgba(0, 0, 0, 0.8), 
+        0 0 30px rgba(34, 211, 238, 0.1); /* Cyan glow */
         
     --shadow-hover: 
-        0 0 30px rgba(34, 211, 238, 0.2);
+        0 0 40px rgba(34, 211, 238, 0.15),
+        0 0 0 1px rgba(34, 211, 238, 0.3);
 
     /* Gradients */
-    --brand-gradient: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%);
+    --brand-gradient: linear-gradient(135deg, #06B6D4 0%, #3B82F6 50%, #8B5CF6 100%);
     --bg-tech: radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.15) 0%, transparent 70%);
 
     /* Transparencies */
     --color-primary-transparent: rgba(34, 211, 238, 0.15);
     --color-primary-transparent-heavy: rgba(34, 211, 238, 0.3);
-    --color-secondary-transparent: rgba(232, 121, 249, 0.15);
-    --color-surface-transparent: rgba(15, 23, 42, 0.6);
+    --color-secondary-transparent: rgba(244, 114, 182, 0.15);
+    --color-surface-transparent: rgba(17, 24, 39, 0.6);
 
     /* Status Colors */
     --color-success: #34D399; /* Emerald 400 */
     --color-error: #F87171;   /* Red 400 */
-    --color-success-bg: rgba(52, 211, 153, 0.1);
+    --color-success-bg: rgba(52, 211, 153, 0.15);
     --color-error-bg: rgba(248, 113, 113, 0.15);
     --color-success-border: rgba(52, 211, 153, 0.3);
     --color-error-border: rgba(248, 113, 113, 0.3);

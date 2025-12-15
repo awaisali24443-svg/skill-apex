@@ -37,21 +37,12 @@
     gap: 1.5rem;
 }
 
-/* Cards Generic */
+/* Cards Generic - Inherits from Global .card, only layout specifics here */
 .settings-card {
-    background: var(--color-surface);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--shadow-card);
-    border-radius: 20px;
-    overflow: hidden;
-    position: relative;
+    /* Uses global .card glass styles automatically */
+    display: flex; 
+    flex-direction: column;
     padding: 1.5rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.settings-card:hover {
-    box-shadow: var(--shadow-hover);
-    transform: translateY(-2px);
-    border-color: var(--color-primary-transparent);
 }
 
 .card-header {
@@ -63,7 +54,7 @@
 /* 1. Account Card */
 .account-card {
     grid-column: 1 / -1; /* Full width top */
-    display: flex; flex-direction: column;
+    position: relative; overflow: hidden;
 }
 .card-bg-gradient {
     position: absolute; top: 0; left: 0; width: 100%; height: 6px;
@@ -111,7 +102,7 @@
 
 .persona-option {
     position: relative;
-    background: var(--color-background);
+    background: var(--color-background); /* Inner card background */
     border: 2px solid transparent;
     border-radius: 16px;
     padding: 1rem;
@@ -176,8 +167,6 @@
     background: var(--color-primary); border-radius: 26px;
     transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
-/* Move bg based on state is handled by JS changing a class or just rely on DOM order/width. 
-   Actually, easier to just toggle class on wrapper */
 
 /* Toggle Switch */
 .toggle-switch {
