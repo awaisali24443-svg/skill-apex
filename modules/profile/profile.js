@@ -6,6 +6,31 @@ import * as vfxService from '../../services/vfxService.js';
 
 let elements = {};
 
+function generateAvatarHTML(photoURL, name) {
+    if (photoURL) {
+        return `<img src="${photoURL}" alt="Profile" class="avatar-img">`;
+    }
+    
+    // Generate a consistent color based on name
+    let hash = 0;
+    const str = name || 'Agent';
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const hue = Math.abs(hash % 360);
+    const color1 = `hsl(${hue}, 70%, 60%)`;
+    const color2 = `hsl(${(hue + 40) % 360}, 70%, 40%)`;
+    
+    // Get initials (max 2 chars)
+    const initials = str.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+    return `
+        <div class="avatar-svg-generated" style="background: linear-gradient(135deg, ${color1}, ${color2}); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white;">
+            <span style="font-weight: 800; font-size: 2.5rem; font-family: var(--font-family-heading); text-shadow: 0 2px 4px rgba(0,0,0,0.2);">${initials}</span>
+        </div>
+    `;
+}
+
 function renderProfile() {
     const stats = gamificationService.getStats();
     const displayName = firebaseService.getUserName() || 'Agent';
@@ -17,15 +42,16 @@ function renderProfile() {
     elements.nameInput.value = displayName;
     elements.emailText.textContent = firebaseService.getUserEmail() || 'Guest Mode';
     
-    if (photoURL) {
-        elements.avatarImg.src = photoURL;
+    // 2. Avatar (Code Based)
+    if (elements.avatarContainer) {
+        elements.avatarContainer.innerHTML = generateAvatarHTML(photoURL, displayName);
     }
     
-    // 2. Recruitment Link - UPDATED DOMAIN
+    // 3. Recruitment Link
     const shortId = userId.substring(0, 6).toUpperCase();
     elements.recruiterInput.value = `https://skill-apex.onrender.com/join/${shortId}`;
 
-    // 3. Circle Progress
+    // 4. Circle Progress
     const xpCurrent = stats.xp;
     const xpNext = gamificationService.getXpForNextLevel(stats.level);
     const percent = Math.min(100, Math.round((xpCurrent / xpNext) * 100)) || 0;
@@ -35,7 +61,7 @@ function renderProfile() {
         if(elements.progressCircle) elements.progressCircle.setAttribute('stroke-dasharray', `${percent}, 100`);
     }, 100);
 
-    // 4. Populate Stats Strip (Animated)
+    // 5. Populate Stats Strip (Animated)
     if(elements.statStreak) vfxService.animateNumber(elements.statStreak, 0, stats.currentStreak, 1000);
     if(elements.statXp) vfxService.animateNumber(elements.statXp, 0, stats.xp, 1500);
     if(elements.statQuizzes) vfxService.animateNumber(elements.statQuizzes, 0, stats.totalQuizzesCompleted, 1000);
@@ -106,6 +132,9 @@ async function saveName() {
     try {
         await firebaseService.updateUserProfile({ displayName: newName });
         elements.nameDisplay.textContent = newName;
+        // Refresh avatar to update initials
+        const photoURL = firebaseService.getUserPhoto();
+        elements.avatarContainer.innerHTML = generateAvatarHTML(photoURL, newName);
         showToast('Codename updated.', 'success');
         toggleNameEdit();
     } catch (e) {
@@ -123,10 +152,11 @@ function handleFileSelect(file) {
 
     const reader = new FileReader();
     reader.onload = (e) => {
+        const result = e.target.result;
         // Optimistic UI update
-        elements.avatarImg.src = e.target.result;
+        elements.avatarContainer.innerHTML = generateAvatarHTML(result, elements.nameDisplay.textContent);
         
-        firebaseService.updateUserProfile({ photoURL: e.target.result })
+        firebaseService.updateUserProfile({ photoURL: result })
             .then(() => showToast('Avatar updated.', 'success'))
             .catch(() => showToast('Upload failed.', 'error'));
     };
@@ -164,14 +194,13 @@ export function init() {
         editBtn: document.getElementById('edit-profile-btn'),
         saveNameBtn: document.getElementById('save-name-btn'),
         emailText: document.getElementById('user-email-text'),
-        avatarImg: document.getElementById('profile-avatar-img'),
+        avatarContainer: document.getElementById('profile-avatar-container'),
         fileInput: document.getElementById('avatar-upload'),
         recruiterInput: document.getElementById('recruiter-id-input'),
         progressPercent: document.getElementById('progress-percent'),
         progressCircle: document.getElementById('progress-circle-path'),
         copyBtn: document.getElementById('copy-ref-btn'),
         
-        // New Stats
         statStreak: document.getElementById('stat-streak'),
         statXp: document.getElementById('stat-xp'),
         statQuizzes: document.getElementById('stat-quizzes'),

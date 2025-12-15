@@ -4,20 +4,48 @@ import * as firebaseService from './firebaseService.js';
 
 // Global listener to update sidebar elements when profile changes (e.g. from Profile module)
 window.addEventListener('profile-updated', () => {
-    const img = document.querySelector('.sidebar-profile-header .profile-avatar-img');
+    const container = document.querySelector('.profile-avatar-container');
     const nameText = document.querySelector('.sidebar-profile-header .profile-name');
     
-    if (img) {
+    if (container) {
         const photoURL = firebaseService.getUserPhoto();
-        if (photoURL) {
-            img.src = photoURL;
-        }
+        const userName = firebaseService.getUserName();
+        container.innerHTML = generateAvatarHTML(photoURL, userName);
     }
     
     if (nameText) {
         nameText.textContent = firebaseService.getUserName();
     }
 });
+
+/**
+ * Generates HTML for the avatar. 
+ * If photoURL exists, uses IMG. If not, generates a unique SVG based on the name.
+ */
+function generateAvatarHTML(photoURL, name) {
+    if (photoURL) {
+        return `<img src="${photoURL}" alt="Profile" class="profile-avatar-img">`;
+    }
+    
+    // Generate a consistent color based on name
+    let hash = 0;
+    const str = name || 'Agent';
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const hue = Math.abs(hash % 360);
+    const color1 = `hsl(${hue}, 70%, 60%)`;
+    const color2 = `hsl(${(hue + 40) % 360}, 70%, 40%)`;
+    
+    // Get initials (max 2 chars)
+    const initials = str.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+    return `
+        <div class="profile-avatar-svg" style="background: linear-gradient(135deg, ${color1}, ${color2}); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+            <span style="color: white; font-weight: 700; font-size: 1.1em; font-family: var(--font-family-heading); text-shadow: 0 1px 2px rgba(0,0,0,0.3);">${initials}</span>
+        </div>
+    `;
+}
 
 /**
  * Creates the HTML for a single navigation link.
@@ -48,26 +76,26 @@ export function renderSidebar(container) {
         return true;
     });
 
-    const userEmail = firebaseService.getUserEmail() || 'Guest';
     // Use getUserName for display name logic which handles display name > email split > default
     const displayName = firebaseService.getUserName();
-    const photoURL = firebaseService.getUserPhoto() || 'assets/images/avatar-placeholder.png';
-    const isGuest = firebaseService.isGuest();
+    const photoURL = firebaseService.getUserPhoto();
+    
+    const avatarHTML = generateAvatarHTML(photoURL, displayName);
 
     const html = `
         <!-- Top: Brand Logo (Code Based) -->
         <a href="#/" class="sidebar-brand-section" aria-label="Skill Apex Home">
             <div class="logo-container-sidebar">
-                <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg class="logo-svg" viewBox="0 0 100 100" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <linearGradient id="logoGradSidebar" x1="0%" y1="100%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="var(--color-primary)"/>
-                            <stop offset="100%" stop-color="var(--color-secondary)"/>
+                            <stop offset="0%" stop-color="#4338CA"/> <!-- Indigo -->
+                            <stop offset="100%" stop-color="#7C3AED"/> <!-- Violet -->
                         </linearGradient>
                     </defs>
-                    <path d="M50 5 L95 27.5 V72.5 L50 95 L5 72.5 V27.5 Z" stroke="url(#logoGradSidebar)" stroke-width="4" stroke-linecap="round" fill="none" />
-                    <path d="M50 25 L75 80 H65 L50 45 L35 80 H25 Z" fill="url(#logoGradSidebar)" />
-                    <circle cx="50" cy="55" r="4" fill="var(--color-background)" stroke="var(--color-primary)" stroke-width="2"/>
+                    <path class="logo-path-stroke" d="M50 5 L95 27.5 V72.5 L50 95 L5 72.5 V27.5 Z" stroke="url(#logoGradSidebar)" stroke-width="4" stroke-linecap="round" fill="none" />
+                    <path class="logo-path-fill" d="M50 25 L75 80 H65 L50 45 L35 80 H25 Z" fill="url(#logoGradSidebar)" />
+                    <circle cx="50" cy="55" r="4" fill="white" stroke="url(#logoGradSidebar)" stroke-width="2"/>
                 </svg>
             </div>
             <span class="brand-text-sidebar">Skill Apex</span>
@@ -76,7 +104,7 @@ export function renderSidebar(container) {
         <!-- Header: Facenote Style Profile -->
         <div class="sidebar-profile-header">
             <div class="profile-avatar-container">
-                <img src="${photoURL}" alt="Profile" class="profile-avatar-img">
+                ${avatarHTML}
             </div>
             <div class="profile-info-text">
                 <span class="profile-name">${displayName}</span>

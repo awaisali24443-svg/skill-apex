@@ -10,7 +10,17 @@
             
             <div class="profile-avatar-section" id="avatar-drop-zone">
                 <div class="avatar-ring">
-                    <img src="assets/images/avatar-placeholder.png" alt="Avatar" id="profile-avatar-img" class="avatar-img">
+                    <!-- Dynamic Container for IMG or SVG -->
+                    <div id="profile-avatar-container" class="avatar-container-inner">
+                        <!-- SVG Placeholder Default -->
+                        <div class="default-avatar-svg">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="12" cy="8" r="4" fill="currentColor" opacity="0.8"/>
+                                <path d="M4 20C4 16 8 13 12 13C16 13 20 16 20 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                    </div>
+                    
                     <div class="avatar-overlay">
                         <svg class="icon"><use href="assets/icons/feather-sprite.svg#camera"/></svg>
                     </div>
