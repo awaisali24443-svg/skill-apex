@@ -160,18 +160,20 @@ export async function generateJourneyFromFile(fileBase64, mimeType) {
 export async function checkSystemStatus() {
     const start = Date.now();
     try {
-        // We use journey generation as a ping because checking fallback is reliable there
-        const response = await generateJourneyPlan("PING_TEST_PROTOCOL");
+        const response = await fetch(`${API_BASE_URL}/debug-status`, { method: 'POST' });
+        if (!response.ok) throw new Error('Network Error');
+        
+        const data = await response.json();
         const latency = Date.now() - start;
         
-        // If the server returns fallback data, it means the AI failed or key is missing
-        if (response.isFallback) {
-            return { status: 'offline', latency, message: 'Server Reachable, AI Offline' };
+        if (data.status === 'online') {
+            return { status: 'online', latency, message: 'Neural Link Stable' };
+        } else {
+            // Return the specific server error
+            return { status: 'offline', latency, message: data.message || 'AI Error' };
         }
-        
-        return { status: 'online', latency, message: 'Neural Link Stable' };
     } catch (e) {
-        return { status: 'error', latency: 0, message: 'Network Unreachable' };
+        return { status: 'error', latency: 0, message: 'Server Unreachable' };
     }
 }
 

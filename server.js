@@ -16,16 +16,16 @@ const __dirname = path.dirname(__filename);
 
 // ==================================================================================
 // API KEY CONFIGURATION
-// We exclusively use the environment variable process.env.API_KEY
+// Checking both common variable names for maximum compatibility
 // ==================================================================================
-const API_KEY = process.env.API_KEY;
+const API_KEY = process.env.API_KEY || process.env.GEMINI_API_KEY;
 
 console.log("--- SYSTEM STARTUP DIAGNOSTICS ---");
 console.log(`Node Version: ${process.version}`);
 if (API_KEY) {
     console.log(`✅ API Key Detected. Length: ${API_KEY.length} characters.`);
 } else {
-    console.error("❌ FATAL: API_KEY is missing in environment variables!");
+    console.error("❌ FATAL: API_KEY (or GEMINI_API_KEY) is missing in environment variables!");
 }
 console.log("----------------------------------");
 
@@ -185,7 +185,6 @@ async function generateJourneyPlan(topic, persona) {
             model: 'gemini-2.5-flash', 
             contents: prompt,
             config: { 
-                thinkingConfig: { thinkingBudget: 0 },
                 responseMimeType: 'application/json',
                 systemInstruction: getSystemInstruction(persona),
                 responseSchema: {
@@ -201,6 +200,9 @@ async function generateJourneyPlan(topic, persona) {
         }));
         return cleanAndParseJSON(response.text) || FALLBACK_DATA.journey(topic);
     } catch (error) {
+        console.error("Error in generateJourneyPlan:", error);
+        // We do NOT return fallback here if this is a debug call, we let error propagate
+        if (topic === "PING_TEST_PROTOCOL_DEBUG") throw error; 
         return FALLBACK_DATA.journey(topic);
     }
 }
@@ -212,13 +214,13 @@ async function generateCurriculumOutline(topic, totalLevels, persona) {
             model: 'gemini-2.5-flash',
             contents: `Topic: ${topic}. Break into 4 chapter titles. JSON: { chapters: [] }`,
             config: { 
-                thinkingConfig: { thinkingBudget: 0 },
                 responseMimeType: 'application/json',
                 systemInstruction: getSystemInstruction(persona)
             }
         }));
         return cleanAndParseJSON(response.text) || FALLBACK_DATA.curriculum(topic);
     } catch (error) {
+        console.error("Error in generateCurriculumOutline:", error);
         return FALLBACK_DATA.curriculum(topic);
     }
 }
@@ -249,7 +251,6 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
             model: 'gemini-2.5-flash', 
             contents: prompt,
             config: { 
-                thinkingConfig: { thinkingBudget: 0 },
                 responseMimeType: 'application/json',
                 systemInstruction: getSystemInstruction(persona),
                 responseSchema: {
@@ -281,6 +282,7 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
             return FALLBACK_DATA.questions(topic);
         }
     } catch (error) {
+        console.error("Error in generateLevelQuestions:", error);
         return FALLBACK_DATA.questions(topic);
     }
 }
@@ -299,7 +301,6 @@ async function generateLevelLesson(topic, level, totalLevels, questions, persona
             model: 'gemini-2.5-flash',
             contents: `Write a short, exciting lesson briefing for ${topic}, Level ${level}. Under 150 words.`,
             config: { 
-                thinkingConfig: { thinkingBudget: 0 },
                 responseMimeType: 'application/json',
                 systemInstruction: getSystemInstruction(persona),
                 responseSchema: {
@@ -313,6 +314,7 @@ async function generateLevelLesson(topic, level, totalLevels, questions, persona
         }));
         return cleanAndParseJSON(response.text) || FALLBACK_DATA.lesson(topic);
     } catch (error) {
+        console.error("Error in generateLevelLesson:", error);
         return FALLBACK_DATA.lesson(topic);
     }
 }
@@ -346,7 +348,6 @@ async function generateJourneyFromFile(fileData, mimeType, persona) {
                 ]
             },
             config: {
-                thinkingConfig: { thinkingBudget: 0 },
                 responseMimeType: 'application/json',
                 systemInstruction: getSystemInstruction(persona),
                 responseSchema: {
@@ -394,6 +395,27 @@ app.get('/api/client-config', (req, res) => {
         return res.status(503).json({ error: 'Server offline (Key missing)' });
     }
     res.json({ apiKey: API_KEY });
+});
+
+// --- DEBUG ENDPOINT FOR CLIENT ---
+app.post('/api/debug-status', async (req, res) => {
+    if (!API_KEY) {
+        return res.json({ status: 'error', message: 'Env Var API_KEY is missing on Server' });
+    }
+    if (!ai) {
+        return res.json({ status: 'error', message: 'AI Client failed to initialize' });
+    }
+    try {
+        // Try a very simple generation to test the key validity
+        await generateJourneyPlan("PING_TEST_PROTOCOL_DEBUG", "apex");
+        res.json({ status: 'online', message: 'AI Responded Successfully' });
+    } catch (e) {
+        res.json({ 
+            status: 'error', 
+            message: e.message || 'Unknown API Error',
+            code: e.status || e.code
+        });
+    }
 });
 
 // Helper for safe route handling
