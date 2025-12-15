@@ -193,10 +193,41 @@ async function generateCurriculumOutline(topic, totalLevels, persona) {
 
 async function generateLevelQuestions(topic, level, totalLevels, persona) {
     if (!ai) return FALLBACK_DATA.questions(topic);
+    
+    // --- DYNAMIC DIFFICULTY & VARIETY LOGIC ---
+    // Calculate progress ratio (0.0 to 1.0)
+    const ratio = level / totalLevels;
+    let focusArea = "";
+    
+    if (ratio < 0.2) {
+        focusArea = "Focus: Fundamental Definitions, Vocabulary, and Identifying Tools.";
+    } else if (ratio < 0.4) {
+        focusArea = "Focus: Basic Syntax, Simple Practical Application, and 'How-To' scenarios.";
+    } else if (ratio < 0.6) {
+        focusArea = "Focus: Debugging common errors, Best Practices, and Comparison of methods.";
+    } else if (ratio < 0.8) {
+        focusArea = "Focus: Optimization, Security implications, and Efficiency.";
+    } else {
+        focusArea = "Focus: Complex Architecture, System Design, Edge Cases, and Strategic Trade-offs.";
+    }
+
+    const prompt = `
+    Topic: ${topic}
+    Current Level: ${level} / ${totalLevels}
+    ${focusArea}
+
+    Generate 3 DISTINCT multiple choice questions:
+    1. Question 1 must be CONCEPTUAL (Theoretical understanding).
+    2. Question 2 must be PRACTICAL (A specific scenario or code snippet analysis).
+    3. Question 3 must be PROBLEM-SOLVING (Diagnosing an issue or choosing the best fix).
+
+    Do NOT repeat questions from previous levels. Make them challenging but fair.
+    `;
+
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash', 
-            contents: `Topic: ${topic}. Level ${level}. Generate 3 scenario-based multiple choice questions.`,
+            contents: prompt,
             config: { 
                 responseMimeType: 'application/json',
                 systemInstruction: getSystemInstruction(persona),
@@ -239,10 +270,17 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
 
 async function generateLevelLesson(topic, level, totalLevels, questions, persona) {
     if (!ai) return FALLBACK_DATA.lesson(topic);
+    
+    const ratio = level / totalLevels;
+    let lessonTone = "";
+    if (ratio < 0.2) lessonTone = "Tone: Introductory and welcoming. Explain 'What' and 'Why'.";
+    else if (ratio < 0.8) lessonTone = "Tone: Technical and hands-on. Explain 'How' and 'When'.";
+    else lessonTone = "Tone: Expert and strategic. Explain 'What if' and trade-offs.";
+
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
-            contents: `Write a short, exciting lesson for ${topic} level ${level}. Under 150 words. Use simple analogies.`,
+            contents: `Write a short, exciting lesson briefing for ${topic}, Level ${level}. ${lessonTone}. Under 150 words. Use simple analogies where possible.`,
             config: { 
                 responseMimeType: 'application/json',
                 systemInstruction: getSystemInstruction(persona),
