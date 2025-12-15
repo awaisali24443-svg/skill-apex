@@ -86,7 +86,7 @@ export function renderSidebar(container) {
         <!-- Top: Brand Logo (Code Based) -->
         <a href="#/" class="sidebar-brand-section" aria-label="Skill Apex Home">
             <div class="logo-container-sidebar">
-                <!-- Fallback styles added directly to paths to prevent black blob issue if gradients fail -->
+                <!-- Explicit fallback styles to fix "Black Blob" issue if gradients fail -->
                 <svg class="logo-svg" viewBox="0 0 100 100" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <linearGradient id="logoGradSidebar" x1="0%" y1="100%" x2="100%" y2="0%">
@@ -94,6 +94,7 @@ export function renderSidebar(container) {
                             <stop offset="100%" stop-color="#7C3AED"/> <!-- Violet -->
                         </linearGradient>
                     </defs>
+                    <!-- Fallback color provided directly in fill/stroke as inline style to override any potential black default -->
                     <path class="logo-path-stroke" style="stroke: #4338CA;" d="M50 5 L95 27.5 V72.5 L50 95 L5 72.5 V27.5 Z" stroke="url(#logoGradSidebar)" stroke-width="4" stroke-linecap="round" fill="none" />
                     <path class="logo-path-fill" style="fill: #7C3AED;" d="M50 25 L75 80 H65 L50 45 L35 80 H25 Z" fill="url(#logoGradSidebar)" />
                     <circle cx="50" cy="55" r="4" fill="white" stroke="url(#logoGradSidebar)" style="stroke: #4338CA;" stroke-width="2"/>
