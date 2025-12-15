@@ -139,6 +139,22 @@ try {
     console.error(`❌ Failed to initialize AI: ${error.message}`);
 }
 
+// --- RETRY HELPER FOR 429 ERRORS ---
+async function callAIWithRetry(fn, retries = 2, delay = 2000) {
+    try {
+        return await fn();
+    } catch (error) {
+        // Check for Quota Exceeded (429) or Service Unavailable (503)
+        const status = error.status || error.code; // Gemini SDK errors might have code
+        if (retries > 0 && (status === 429 || status === 503 || status === 'RESOURCE_EXHAUSTED')) {
+            console.warn(`⚠️ AI Busy (Status ${status}). Retrying in ${delay}ms...`);
+            await new Promise(res => setTimeout(res, delay));
+            return callAIWithRetry(fn, retries - 1, delay * 2); // Exponential backoff
+        }
+        throw error;
+    }
+}
+
 // --- SERVICE FUNCTIONS ---
 
 async function generateJourneyPlan(topic, persona) {
@@ -146,7 +162,7 @@ async function generateJourneyPlan(topic, persona) {
     
     const prompt = `Analyze "${topic}". Output JSON: { topicName, totalLevels (10-50), description }`;
     try {
-        const response = await ai.models.generateContent({
+        const response = await callAIWithRetry(() => ai.models.generateContent({
             model: 'gemini-2.5-flash', 
             contents: prompt,
             config: { 
@@ -162,7 +178,7 @@ async function generateJourneyPlan(topic, persona) {
                     required: ["topicName", "totalLevels", "description"]
                 }
             }
-        });
+        }));
         return cleanAndParseJSON(response.text) || FALLBACK_DATA.journey(topic);
     } catch (error) {
         console.error("AI Error (Journey):", error.message);
@@ -173,14 +189,14 @@ async function generateJourneyPlan(topic, persona) {
 async function generateCurriculumOutline(topic, totalLevels, persona) {
     if (!ai) return FALLBACK_DATA.curriculum(topic);
     try {
-        const response = await ai.models.generateContent({
+        const response = await callAIWithRetry(() => ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: `Topic: ${topic}. Break into 4 chapter titles. JSON: { chapters: [] }`,
             config: { 
                 responseMimeType: 'application/json',
                 systemInstruction: getSystemInstruction(persona)
             }
-        });
+        }));
         return cleanAndParseJSON(response.text) || FALLBACK_DATA.curriculum(topic);
     } catch (error) {
         console.error("AI Error (Curriculum):", error.message);
@@ -222,7 +238,7 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await callAIWithRetry(() => ai.models.generateContent({
             model: 'gemini-2.5-flash', 
             contents: prompt,
             config: { 
@@ -248,7 +264,7 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
                     required: ["questions"]
                 }
             }
-        });
+        }));
         
         const data = cleanAndParseJSON(response.text);
         
@@ -275,7 +291,7 @@ async function generateLevelLesson(topic, level, totalLevels, questions, persona
     else lessonTone = "Tone: Expert and strategic. Explain 'What if' and trade-offs.";
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await callAIWithRetry(() => ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: `Write a short, exciting lesson briefing for ${topic}, Level ${level}. ${lessonTone}. Under 150 words. Use simple analogies where possible.`,
             config: { 
@@ -289,7 +305,7 @@ async function generateLevelLesson(topic, level, totalLevels, questions, persona
                     required: ["lesson"]
                 }
             }
-        });
+        }));
         return cleanAndParseJSON(response.text) || FALLBACK_DATA.lesson(topic);
     } catch (error) {
         console.error("AI Error (Lesson):", error.message);
@@ -302,6 +318,10 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
+// FIX: REQUIRED FOR DEPLOYMENT (Render/Heroku/etc)
+// Solves: ValidationError: The 'X-Forwarded-For' header is set but the Express 'trust proxy' setting is false
+app.set('trust proxy', 1);
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname)));
 
@@ -311,6 +331,7 @@ const apiLimiter = rateLimit({
     max: 300, // Higher limit for Expo usage
     standardHeaders: true,
     legacyHeaders: false,
+    // Add skip for known proxies if needed, but 'trust proxy' usually fixes it
 }); 
 app.use('/api', apiLimiter);
 

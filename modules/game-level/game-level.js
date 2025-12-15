@@ -51,11 +51,11 @@ async function startLevel() {
     
     switchState('level-loading-state');
     
-    // SAFETY: If loading takes > 15s, assume error and allow user to escape
+    // SAFETY: Increased timeout to 25s to allow server-side retries (429 handling)
     loadingTimeout = setTimeout(() => {
         const loadingText = document.getElementById('loading-status-text');
         if (loadingText) loadingText.textContent = "Taking longer than expected... Retrying connection.";
-    }, 8000);
+    }, 25000);
     
     try {
         const [lessonData, questionsData] = await Promise.all([
