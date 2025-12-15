@@ -1,12 +1,12 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 7.3.1 (Visual Sync Update)
+ * @version 7.4.0 (Adaptive Layout Update)
  *
  * This service worker implements a robust offline-first caching strategy.
  */
 
-const CACHE_NAME = 'skill-apex-v7.3.1-visual-sync';
+const CACHE_NAME = 'skill-apex-v7.4.0-adaptive';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [

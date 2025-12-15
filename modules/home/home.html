@@ -7,16 +7,21 @@
             <h1 id="home-greeting">System Initializing...</h1>
             <p class="hud-subtitle">Neural Interface Active</p>
         </div>
+        
+        <!-- Grouped Stats for Adaptive Layout -->
         <div class="hud-right">
-            <div class="stat-pill level-pill">
-                <span class="pill-label">LVL</span>
-                <span class="pill-value" id="home-level">--</span>
+            <div class="hud-stats-cluster">
+                <div class="stat-pill level-pill">
+                    <span class="pill-label">LVL</span>
+                    <span class="pill-value" id="home-level">--</span>
+                </div>
+                <div class="stat-pill streak-pill">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#zap"/></svg>
+                    <span class="pill-value" id="home-streak">0</span>
+                </div>
             </div>
-            <div class="stat-pill streak-pill">
-                <svg class="icon"><use href="assets/icons/feather-sprite.svg#zap"/></svg>
-                <span class="pill-value" id="home-streak">0</span>
-            </div>
-            <div class="system-status-indicator">
+            
+            <div class="system-status-indicator" title="System Online">
                 <div class="status-ring"></div>
                 <div class="status-core"></div>
             </div>

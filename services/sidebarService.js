@@ -48,9 +48,9 @@ function generateAvatarHTML(photoURL, name) {
 /**
  * Creates the HTML for a single navigation link.
  */
-function createNavLink(route) {
+function createNavLink(route, extraClass = '') {
     return `
-        <a href="#${route.path}" class="sidebar-link" data-path="${route.path}" aria-label="${route.name}">
+        <a href="#${route.path}" class="sidebar-link ${extraClass}" data-path="${route.path}" aria-label="${route.name}">
             <div class="link-icon-wrapper">
                 <svg class="icon"><use href="assets/icons/feather-sprite.svg#${route.icon}"/></svg>
             </div>
@@ -106,23 +106,24 @@ export function renderSidebar(container) {
         <!-- Menu Label -->
         <div class="sidebar-menu-label">MENU</div>
         
-        <!-- Navigation Links -->
+        <!-- Combined Navigation Links Container -->
         <nav class="sidebar-links">
             ${filteredMainLinks.map(link => createNavLink(link)).join('')}
-        </nav>
-
-        <div class="sidebar-spacer"></div>
-
-        <!-- Bottom Actions (Settings & Logout) -->
-        <div class="sidebar-links footer-links">
-            ${settingsLink ? createNavLink(settingsLink) : ''}
-            <button id="sidebar-logout-btn" class="sidebar-link logout-link">
+            
+            <!-- Adaptive Spacer: Grows on Desktop, Hides on Mobile -->
+            <div class="sidebar-spacer adaptive-spacer"></div>
+            
+            <!-- Settings Link: Part of flow on Mobile, Pushed down on Desktop -->
+            ${settingsLink ? createNavLink(settingsLink, 'settings-link') : ''}
+            
+            <!-- Logout: Desktop Only Button (Mobile uses Settings page) -->
+            <button id="sidebar-logout-btn" class="sidebar-link logout-link desktop-only">
                 <div class="link-icon-wrapper">
                     <svg class="icon"><use href="assets/icons/feather-sprite.svg#power"/></svg>
                 </div>
                 <span class="text">Log Out</span>
             </button>
-        </div>
+        </nav>
     `;
     
     container.innerHTML = html;

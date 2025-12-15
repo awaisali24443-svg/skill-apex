@@ -74,37 +74,47 @@
     <!-- State 3: Quiz / Interactive Challenge -->
     <div id="level-quiz-state" class="game-level-state">
         <header class="new-quiz-header">
-            <a href="#/" class="logo-link-header" aria-label="Skill Apex Home">
-                <div class="logo-container-header">
-                    <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <linearGradient id="logoGradHeader" x1="0%" y1="100%" x2="100%" y2="0%">
-                                <stop offset="0%" stop-color="#4338CA"/> <!-- Indigo -->
-                                <stop offset="100%" stop-color="#7C3AED"/> <!-- Violet -->
-                            </linearGradient>
-                        </defs>
-                        <path d="M50 5 L95 27.5 V72.5 L50 95 L5 72.5 V27.5 Z" stroke="url(#logoGradHeader)" stroke-width="4" stroke-linecap="round" fill="none" />
-                        <path d="M50 25 L75 80 H65 L50 45 L35 80 H25 Z" fill="url(#logoGradHeader)" />
-                        <circle cx="50" cy="55" r="4" fill="white" stroke="url(#logoGradHeader)" stroke-width="2"/>
-                    </svg>
-                </div>
-                <span class="brand-text-header">Skill Apex</span>
-            </a>
-            <!-- Boss Health Bar (Hidden by default) -->
+            <!-- Brand Wrapper -->
+            <div class="quiz-header-brand">
+                <a href="#/" class="logo-link-header" aria-label="Skill Apex Home">
+                    <div class="logo-container-header">
+                        <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="logoGradHeader" x1="0%" y1="100%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#4338CA"/> <!-- Indigo -->
+                                    <stop offset="100%" stop-color="#7C3AED"/> <!-- Violet -->
+                                </linearGradient>
+                            </defs>
+                            <path d="M50 5 L95 27.5 V72.5 L50 95 L5 72.5 V27.5 Z" stroke="url(#logoGradHeader)" stroke-width="4" stroke-linecap="round" fill="none" />
+                            <path d="M50 25 L75 80 H65 L50 45 L35 80 H25 Z" fill="url(#logoGradHeader)" />
+                            <circle cx="50" cy="55" r="4" fill="white" stroke="url(#logoGradHeader)" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <span class="brand-text-header">Skill Apex</span>
+                </a>
+            </div>
+
+            <!-- Boss Health Bar -->
             <div id="boss-health-container" class="boss-health-container" style="display: none;">
                 <span class="boss-label">BOSS HP</span>
                 <div class="boss-health-bar">
                     <div id="boss-health-fill" class="boss-health-fill" style="width: 100%;"></div>
                 </div>
             </div>
+
+            <!-- Actions Wrapper -->
             <div class="quiz-header-actions">
                 <div id="combo-display" class="combo-display hidden">
                     <span id="combo-count">0</span>
                     <span class="combo-label">COMBO</span>
                 </div>
-                <button id="quit-btn" class="btn btn-danger">Quit</button>
+                <button id="quit-btn" class="btn btn-danger icon-only-mobile">
+                    <span class="btn-text-desktop">Quit</span>
+                    <svg class="icon btn-icon-mobile"><use href="assets/icons/feather-sprite.svg#x-circle"/></svg>
+                </button>
             </div>
         </header>
+
         <div class="new-quiz-content">
             <div class="quiz-status-card">
                 <div class="timer-section">
@@ -137,13 +147,13 @@
 
         </div>
         <footer class="new-quiz-footer">
-             <button id="home-btn" class="btn">
+             <button id="home-btn" class="btn icon-only-mobile">
                 <svg class="icon"><use href="assets/icons/feather-sprite.svg#home"/></svg>
-                <span>Home</span>
+                <span class="btn-text-desktop">Home</span>
             </button>
-             <button id="hint-btn" class="btn">
+             <button id="hint-btn" class="btn icon-only-mobile">
                 <svg class="icon"><use href="assets/icons/feather-sprite.svg#lightbulb"/></svg>
-                <span>Hint</span>
+                <span class="btn-text-desktop">Hint</span>
             </button>
             <div class="footer-spacer"></div>
             <button id="submit-answer-btn" class="btn btn-primary" disabled>Submit Answer</button>
