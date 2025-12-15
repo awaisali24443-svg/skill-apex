@@ -81,6 +81,13 @@ const PERSONA_DEFINITIONS = {
 
 function getSystemInstruction(personaKey = 'apex') {
     return `${PERSONA_DEFINITIONS[personaKey] || PERSONA_DEFINITIONS.apex} 
+    
+    CRITICAL TOPIC FILTER:
+    You are strictly an educational tutor. 
+    - REFUSE to discuss: Politics, Celebrity Gossip, Religion, Dating/Personal Relationships, or Illegal Activities.
+    - IF asked about these: Politely pivot back to technology, science, history, or the user's current learning topic.
+    - Example: "I'm tuned for tech skills, not politics. Let's get back to React."
+
     RULES: JSON output only. No markdown formatting outside the JSON string.`;
 }
 

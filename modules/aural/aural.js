@@ -55,6 +55,84 @@ let analyser = null;
 let animationFrameId = null;
 let elements = {};
 
+// Chat UI Manager
+let chatManager = null;
+
+// --- CHAT MANAGER ---
+class ChatManager {
+    constructor(container) {
+        this.container = container;
+        this.currentUserBubble = null;
+        this.currentAiBubble = null;
+        this.userTextBuffer = "";
+        this.aiTextBuffer = "";
+    }
+
+    createBubble(type) {
+        const bubble = document.createElement('div');
+        bubble.className = `chat-bubble ${type}-bubble`;
+        
+        const content = document.createElement('div');
+        content.className = 'bubble-content';
+        
+        // Add label
+        const label = document.createElement('span');
+        label.className = 'bubble-label';
+        label.textContent = type === 'user' ? 'YOU' : 'APEX CORE';
+        
+        bubble.appendChild(label);
+        bubble.appendChild(content);
+        
+        this.container.appendChild(bubble);
+        this.scrollToBottom();
+        return content;
+    }
+
+    updateUserText(text, isFinal) {
+        if (!this.currentUserBubble) {
+            this.currentUserBubble = this.createBubble('user');
+            this.userTextBuffer = "";
+        }
+        
+        this.userTextBuffer += text;
+        this.currentUserBubble.textContent = this.userTextBuffer;
+        
+        if (isFinal) {
+            this.currentUserBubble = null; // Reset for next turn
+            this.userTextBuffer = "";
+        }
+        this.scrollToBottom();
+    }
+
+    updateAiText(text, isFinal) {
+        if (!this.currentAiBubble) {
+            this.currentAiBubble = this.createBubble('ai');
+            this.aiTextBuffer = "";
+        }
+
+        this.aiTextBuffer += text;
+        this.currentAiBubble.textContent = this.aiTextBuffer;
+
+        if (isFinal) {
+            this.currentAiBubble = null;
+            this.aiTextBuffer = "";
+        }
+        this.scrollToBottom();
+    }
+    
+    addSystemLog(text) {
+        const log = document.createElement('div');
+        log.className = 'system-log-entry';
+        log.innerHTML = `<svg class="icon"><use href="assets/icons/feather-sprite.svg#activity"/></svg> ${text}`;
+        this.container.appendChild(log);
+        this.scrollToBottom();
+    }
+
+    scrollToBottom() {
+        this.container.scrollTop = this.container.scrollHeight;
+    }
+}
+
 // --- UTILS: BASE64 & PCM ---
 
 function base64ToBytes(base64) {
@@ -199,13 +277,7 @@ async function executeLocalTool(toolCall) {
     if (toolCall.name === 'get_quiz_question') {
         const topic = toolCall.args.topic || "General Technology";
         showToast(`AI is generating a quiz for: ${topic}`, "info");
-        
-        // Add visual log
-        const logEntry = document.createElement('div');
-        logEntry.className = 'transcription-entry tool';
-        logEntry.textContent = `⚡ Generating Quiz: ${topic}`;
-        elements.log.appendChild(logEntry);
-        elements.log.scrollTop = elements.log.scrollHeight;
+        chatManager.addSystemLog(`Executing Tool: Quiz Generation [${topic}]`);
 
         try {
             // Fetch from API
@@ -232,6 +304,7 @@ async function executeLocalTool(toolCall) {
 
 async function startSession() {
     updateUI(STATE.CONNECTING);
+    chatManager = new ChatManager(elements.log);
     
     const client = await getAIClient();
     if (!client) {
@@ -265,6 +338,7 @@ async function startSession() {
     3. **Tools**: If the user asks for a quiz or test, USE the 'get_quiz_question' tool.
     4. **Teaching**: Use analogies. Connect abstract code to physical objects.
     5. **Interaction**: Don't just lecture. Ask checking questions.
+    6. **Topic Guardrails**: You are an Educational AI. STRICTLY REFUSE non-educational topics (Politics, Gossip, Dating, NSFW). Pivot back to learning immediately.
     `;
 
     try {
@@ -286,12 +360,15 @@ async function startSession() {
         sessionPromise = client.live.connect({
             model: MODEL_LIVE,
             config: {
-                responseModalities: ['AUDIO'],
+                responseModalities: ['AUDIO'], // We want Audio back
                 speechConfig: {
                     voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } }
                 },
                 systemInstruction: sysInstruction,
-                tools: TOOLS 
+                tools: TOOLS,
+                // ENABLE TRANSCRIPTIONS
+                inputAudioTranscription: { model: MODEL_LIVE }, 
+                outputAudioTranscription: { model: MODEL_LIVE }
             },
             callbacks: {
                 onopen: () => {
@@ -299,6 +376,7 @@ async function startSession() {
                     updateUI(STATE.LISTENING);
                     nextStartTime = outputAudioContext.currentTime;
                     elements.placeholder.style.display = 'none';
+                    chatManager.addSystemLog('Neural Link Established');
                 },
                 onmessage: async (msg) => {
                     handleServerMessage(msg);
@@ -333,21 +411,15 @@ async function startSession() {
 async function handleServerMessage(message) {
     const { serverContent, toolCall } = message;
     
-    // 1. Handle Tool Calls (The "Smart" Part)
+    // 1. Handle Tool Calls
     if (toolCall) {
-        console.log("Tool Call Received:", toolCall);
         updateUI(STATE.SPEAKING, "PROCESSING DATA...");
-        
         for (const fc of toolCall.functionCalls) {
             const executionResult = await executeLocalTool(fc);
-            
-            // Send result back to model
             sessionPromise.then(session => {
                 session.sendToolResponse({
                     functionResponses: [{
-                        id: fc.id,
-                        name: fc.name,
-                        response: executionResult
+                        id: fc.id, name: fc.name, response: executionResult
                     }]
                 });
             });
@@ -362,15 +434,39 @@ async function handleServerMessage(message) {
         queueAudioOutput(modelAudio);
     }
 
-    // 3. Handle Interruption
+    // 3. Handle Transcriptions (Chat Bubbles)
+    
+    // User Input Transcription
+    if (serverContent?.inputTranscription) {
+        const text = serverContent.inputTranscription.text;
+        if (text) {
+            chatManager.updateUserText(text, false);
+        }
+    }
+
+    // Model Output Transcription
+    if (serverContent?.outputTranscription) {
+        const text = serverContent.outputTranscription.text;
+        if (text) {
+            chatManager.updateAiText(text, false);
+        }
+    }
+
+    // Turn Complete Events (Finalize Bubbles)
+    if (serverContent?.turnComplete) {
+        updateUI(STATE.LISTENING);
+        // Force finalize both buffers if turn completes
+        chatManager.updateUserText("", true);
+        chatManager.updateAiText("", true);
+    }
+
+    // 4. Handle Interruption
     if (serverContent?.interrupted) {
         console.log("Model Interrupted");
         clearAudioQueue();
         updateUI(STATE.LISTENING);
-    }
-
-    if (serverContent?.turnComplete) {
-        updateUI(STATE.LISTENING);
+        chatManager.addSystemLog('Interruption Detected');
+        chatManager.updateAiText("", true); // Finalize cut-off text
     }
 }
 
@@ -436,6 +532,7 @@ function stopSession() {
     }
 
     analyser = null;
+    chatManager = null;
     updateUI(STATE.IDLE);
     if(elements.placeholder) elements.placeholder.style.display = 'block';
     if(elements.contextBadge) elements.contextBadge.style.display = 'none';
@@ -460,6 +557,10 @@ export function init() {
         contextBadge: document.getElementById('aural-context-badge'),
         contextText: document.getElementById('aural-context-text')
     };
+
+    // Clean log
+    elements.log.innerHTML = '';
+    elements.log.appendChild(elements.placeholder);
 
     const { navigationContext } = stateService.getState();
     elements.headerControls.innerHTML = '';
