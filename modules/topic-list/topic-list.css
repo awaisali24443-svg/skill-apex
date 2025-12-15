@@ -1,69 +1,230 @@
 
-.topic-list-container { display: flex; flex-direction: column; }
-
-.page-header { margin-bottom: var(--space-6); }
-.page-header h1 { font-size: var(--fs-3xl); font-weight: 800; margin-bottom: var(--space-2); }
-.page-header p { color: var(--color-text-secondary); }
-
-.section-title { 
-    font-size: var(--fs-lg); font-weight: 700; color: var(--color-text-secondary); 
-    text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--space-4);
+/* --- MISSION CONTROL LAYOUT --- */
+.topic-list-container {
+    padding-bottom: 4rem;
 }
 
-.cards-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4);
-}
-
-/* Creator Card */
-.creator-card {
-    display: flex; gap: var(--space-4); align-items: center;
-    background: var(--color-surface);
-}
-.creator-icon {
-    width: 48px; height: 48px; border-radius: 50%;
-    background: var(--color-primary-transparent); color: var(--color-primary);
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.creator-content { flex-grow: 1; }
-.creator-content h3 { font-size: var(--fs-lg); font-weight: 700; margin-bottom: 4px; }
-.creator-content p { font-size: var(--fs-sm); color: var(--color-text-secondary); margin-bottom: 12px; }
-
-.creator-form { display: flex; gap: 8px; }
-.creator-form input { 
-    flex-grow: 1; padding: 10px 12px; border-radius: 8px; 
-    border: 1px solid var(--color-border); outline: none;
-}
-.creator-form input:focus { border-color: var(--color-primary); }
-
-/* Topic Card */
-.topic-card {
-    display: flex; flex-direction: column; height: 100%; min-height: 180px;
+.journey-header {
+    display: flex;
     justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: var(--space-xl);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--space-lg);
 }
-.topic-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-.topic-name { font-size: var(--fs-xl); font-weight: 700; line-height: 1.2; }
-.topic-badge { 
-    font-size: 0.7rem; font-weight: 700; background: var(--color-surface-hover); 
-    padding: 2px 6px; border-radius: 4px; border: 1px solid var(--color-border);
+
+.header-content h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
 }
-.topic-desc { 
-    font-size: var(--fs-sm); color: var(--color-text-secondary); 
+.header-content p {
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+}
+
+.section-label {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-lg);
+    margin-top: var(--space-xl);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* --- 1. UPLINK CARD (Hero) --- */
+.uplink-section {
+    margin-bottom: var(--space-xl);
+}
+
+.journey-creator-card {
+    display: flex;
+    gap: var(--space-xl);
+    align-items: center;
+    padding: 2.5rem;
+    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-surface-hover) 100%);
+    border: 1px solid var(--color-primary-transparent);
+    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.2);
+    overflow: hidden;
+}
+
+/* Glowing Icon */
+.uplink-visual {
+    position: relative;
+    width: 80px; height: 80px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.uplink-icon {
+    width: 40px; height: 40px;
+    color: var(--color-primary);
+    z-index: 2;
+}
+.pulse-ring {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    border: 2px solid var(--color-primary);
+    opacity: 0.5;
+    animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes ping {
+    75%, 100% { transform: scale(1.5); opacity: 0; }
+}
+
+.creator-content { flex-grow: 1; }
+.creator-content h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+.creator-content p { color: var(--color-text-secondary); margin-bottom: 1.5rem; }
+
+.creator-form {
+    display: flex; gap: var(--space-md); flex-wrap: wrap;
+}
+
+.input-group {
+    flex-grow: 1;
+    display: flex;
+    position: relative;
+    max-width: 600px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 16px;
+    padding-right: 50px; /* Space for camera btn */
+    border-radius: 12px;
+    border: 1px solid var(--color-border);
+    background: var(--color-background);
+    color: var(--color-text);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+.form-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px var(--color-primary-transparent);
+}
+
+.scan-btn {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    width: 32px; height: 32px;
+    background: transparent; color: var(--color-text-secondary);
+    border-radius: 8px;
+    padding: 0; display: flex; align-items: center; justify-content: center;
+}
+.scan-btn:hover { background: var(--color-surface-hover); color: var(--color-primary); }
+
+.generate-action {
+    padding-left: 1.5rem; padding-right: 1.5rem;
+}
+
+/* --- 2. GRID LAYOUTS --- */
+.topic-grid {
+    display: grid;
+    /* Adjusted minmax to fit smaller mobile screens (down to 260px or full width) */
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--space-lg);
+}
+
+/* --- CARD STYLES --- */
+.topic-card {
+    height: 100%;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+    padding: var(--space-lg);
+}
+
+.topic-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--color-primary);
+    box-shadow: 0 15px 30px -5px rgba(0,0,0,0.2);
+}
+
+/* Background Gradients based on type */
+.topic-card.topic-programming { --card-accent: #2196f3; }
+.topic-card.topic-space { --card-accent: #9c27b0; }
+.topic-card.topic-biology { --card-accent: #4caf50; }
+.topic-card.topic-arts { --card-accent: #ff9800; }
+.topic-card.topic-finance { --card-accent: #ffc107; }
+.topic-card.topic-robotics { --card-accent: #607d8b; }
+
+.topic-bg-glow {
+    position: absolute; top: -50%; right: -50%;
+    width: 100%; height: 100%;
+    background: radial-gradient(circle, var(--card-accent, var(--color-primary)) 0%, transparent 70%);
+    opacity: 0.1; transition: opacity 0.3s;
+    filter: blur(40px);
+}
+.topic-card:hover .topic-bg-glow { opacity: 0.2; }
+
+.topic-card-content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; }
+
+.topic-name {
+    font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;
+    color: var(--color-text);
+}
+.topic-description {
+    font-size: 0.9rem; color: var(--color-text-secondary); line-height: 1.5;
     display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-}
-.topic-footer { 
-    margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--color-border);
-    display: flex; justify-content: space-between; align-items: center; color: var(--color-primary); font-weight: 600; font-size: var(--fs-sm);
+    margin-bottom: auto;
 }
 
-/* Active Journey Card */
-.active-card { border-color: var(--color-primary); background: linear-gradient(to bottom right, var(--color-surface), var(--color-surface-hover)); }
-.active-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--color-text-secondary); }
-.status-indicator { color: var(--color-success); display: flex; align-items: center; gap: 4px; }
-.status-indicator::before { content:''; width: 6px; height: 6px; background: currentColor; border-radius: 50%; }
+.topic-footer {
+    margin-top: var(--space-lg);
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--space-sm);
+    display: flex; justify-content: flex-end;
+}
+.topic-action {
+    font-size: 0.8rem; font-weight: 700; color: var(--color-primary);
+    text-transform: uppercase; display: flex; align-items: center; gap: 4px;
+    opacity: 0; transform: translateX(-10px); transition: all 0.3s;
+}
+.topic-card:hover .topic-action { opacity: 1; transform: translateX(0); }
 
-.progress-track { height: 6px; background: var(--color-border); border-radius: 4px; margin-top: 16px; overflow: hidden; }
-.progress-fill { height: 100%; background: var(--color-primary); width: 0%; }
+/* --- ACTIVE JOURNEY SPECIFIC --- */
+.active-journey-card {
+    border-left: 4px solid var(--color-primary);
+    background: linear-gradient(to right, var(--color-surface), var(--color-surface-hover));
+}
 
-/* Skeleton */
-.skeleton-card { height: 200px; background: var(--color-surface-hover); opacity: 0.5; animation: pulse 1.5s infinite; }
-@keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 0.8; } 100% { opacity: 0.5; } }
+.active-meta {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;
+}
+.journey-level-badge {
+    background: var(--color-primary); color: white;
+    font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px;
+}
+.resume-text {
+    font-size: 0.7rem; color: var(--color-primary); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;
+}
+
+.journey-progress-track {
+    height: 6px; background: var(--color-border); border-radius: 4px; margin-top: 1rem; overflow: hidden;
+}
+.journey-progress-fill {
+    height: 100%; background: var(--color-primary); width: 0%;
+}
+
+/* Filter Badge */
+.filter-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 12px; background: var(--color-surface-hover);
+    border: 1px solid var(--color-primary); border-radius: 20px;
+    color: var(--color-primary); font-size: 0.85rem; font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .journey-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .creator-form { flex-direction: column; }
+    .input-group { max-width: 100%; }
+    .generate-action { width: 100%; }
+    .journey-creator-card { flex-direction: column; text-align: center; padding: 1.5rem; }
+    .uplink-visual { margin-bottom: 1rem; }
+}

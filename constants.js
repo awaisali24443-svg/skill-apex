@@ -8,27 +8,28 @@ export const LOCAL_STORAGE_KEYS = {
     WELCOME_COMPLETED: 'knowledge-tester-welcome-completed',
 };
 
-// Features config
+// Re-enabling all features and routes for the full application experience.
 export const FEATURES = {
-    AURAL_MODE: true, // Re-enabled Aural Mode
+    AURAL_MODE: true,
 };
 
 export const ROUTES = [
-    // Dashboard & Navigation
-    { path: '/', module: 'home', name: 'Dashboard', icon: 'home', nav: true },
-    { path: '/topics', module: 'topic-list', name: 'Protocols', icon: 'grid', nav: true },
+    // Main navigation routes
+    { path: '/', module: 'home', name: 'Home', icon: 'home', nav: true },
+    { path: '/topics', module: 'topic-list', name: 'Journeys', icon: 'git-branch', nav: true },
+    { path: '/report', module: 'report', name: 'Analytics', icon: 'activity', nav: true }, /* NEW REPORT MODULE */
     { path: '/library', module: 'library', name: 'Library', icon: 'book', nav: true },
-    { path: '/history', module: 'history', name: 'History', icon: 'clock', nav: true },
-    
-    // Feature Modules
-    { path: '/profile', module: 'profile', name: 'Identity', icon: 'user', nav: true },
-    { path: '/settings', module: 'settings', name: 'Config', icon: 'settings', nav: true, footer: true },
-    
-    // Hidden / Action Routes
-    { path: '/game/:topic', module: 'game-map', name: 'Mission Map', nav: false, fullBleed: true },
-    { path: '/level', module: 'game-level', name: 'Active Simulation', nav: false, fullBleed: true },
-    { path: '/review', module: 'quiz-review', name: 'After Action Report', nav: false },
-    { path: '/study', module: 'study', name: 'Memory Consolidation', nav: false, fullBleed: true },
-    { path: '/report', module: 'report', name: 'Performance Analysis', nav: false },
-    { path: '/aural', module: 'aural', name: 'Neural Link', nav: false, fullBleed: true },
+    { path: '/history', module: 'history', name: 'History', icon: 'archive', nav: true },
+    { path: '/leaderboard', module: 'leaderboard', name: 'Leaderboard', icon: 'award', nav: true },
+    { path: '/profile', module: 'profile', name: 'Profile', icon: 'user', nav: true },
+    { path: '/aural', module: 'aural', name: 'Aural Tutor', icon: 'mic', nav: true, fullBleed: true },
+
+    // Footer/Settings routes
+    { path: '/settings', module: 'settings', name: 'Settings', icon: 'settings', nav: true, footer: true },
+
+    // Non-navigational routes (part of application flow)
+    { path: '/study', module: 'study', name: 'Study Session', nav: false },
+    { path: '/game/:topic', module: 'game-map', name: 'Game Map', nav: false },
+    { path: '/level', module: 'game-level', name: 'Game Level', nav: false, fullBleed: true },
+    { path: '/review', module: 'quiz-review', name: 'Quiz Review', nav: false },
 ];

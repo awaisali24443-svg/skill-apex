@@ -1,50 +1,61 @@
 
 :root {
-    /* --- LIGHT CYBER THEME (Professional & Futuristic) --- */
+    /* --- MODERN DAYLIGHT (Crisp, High Contrast, Energetic) --- */
 
-    /* Core Palette */
-    --color-primary: #4338CA;       /* Indigo 700 - Bold, confident */
-    --color-primary-hover: #3730A3;
-    --color-secondary: #7C3AED;     /* Violet 600 - Creative accent */
-    --color-accent: #06B6D4;        /* Cyan 500 - Tech accent */
+    /* Brand Colors - Deep & Vibrant */
+    --color-primary: #4338CA;   /* Indigo 700 - Much richer than before */
+    --color-secondary: #7C3AED; /* Violet 600 */
+    --color-accent: #0284C7;    /* Sky 600 */
 
-    /* Neutrals */
-    --color-background: #F8FAFC;    /* Slate 50 - Cool grey background, distinct from surface */
-    --color-surface: #FFFFFF;       /* Pure white cards */
-    --color-surface-hover: #F1F5F9; /* Slate 100 */
+    /* Backgrounds - No more boring flat white */
+    --color-background: #F1F5F9; /* Slate 100 - Cool grey-blue tint, not yellow-white */
+    --color-surface: #FFFFFF;    /* Pure White for cards */
+    --color-surface-hover: #F8FAFC; /* Slate 50 */
     --color-surface-active: #E2E8F0; /* Slate 200 */
+    --color-card-background: rgba(255, 255, 255, 0.95);
     
-    /* Text */
-    --color-text: #0F172A;          /* Slate 900 - Sharp, high contrast */
-    --color-text-secondary: #64748B; /* Slate 500 - Readable secondary */
+    /* Text - FIXED CONTRAST */
+    --color-text: #0F172A;       /* Slate 900 - Almost black, sharp and crisp */
+    --color-text-secondary: #475569; /* Slate 600 - Darker grey, readable on white */
 
-    /* UI Borders & Lines */
-    --color-border: #E2E8F0;        /* Slate 200 - Subtle but visible structure */
+    /* UI Elements */
+    --color-border: #CBD5E1;     /* Slate 300 - Distinct borders, not faint */
+    
+    /* Glassmorphism - Frosty */
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.5);
 
-    /* Shadows (Clean & layered) */
-    --shadow-card: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
-    --shadow-hover: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.025);
-    --shadow-float: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
-    --shadow-lg: 0 10px 30px rgba(0,0,0,0.08);
+    /* Shadows - Deep and Soft (Modern) */
+    --shadow-card: 
+        0 4px 6px -1px rgba(15, 23, 42, 0.05), 
+        0 10px 15px -3px rgba(15, 23, 42, 0.05),
+        0 0 0 1px rgba(15, 23, 42, 0.05); /* Subtle ring for definition */
+        
+    --shadow-float: 
+        0 20px 25px -5px rgba(15, 23, 42, 0.1), 
+        0 10px 10px -5px rgba(15, 23, 42, 0.04);
+        
+    --shadow-hover: 
+        0 20px 25px -5px rgba(67, 56, 202, 0.15), 
+        0 0 0 1px rgba(67, 56, 202, 0.1);
 
     /* Gradients */
     --brand-gradient: linear-gradient(135deg, #4338CA 0%, #7C3AED 100%);
-    --bg-tech: radial-gradient(circle at 50% 0%, rgba(67, 56, 202, 0.05) 0%, transparent 70%);
+    --bg-tech: radial-gradient(circle at 50% 0%, rgba(67, 56, 202, 0.1) 0%, transparent 70%);
 
-    /* States */
-    --color-success: #10B981;
-    --color-success-bg: #ECFDF5;
-    --color-success-border: #A7F3D0;
+    /* Status Colors */
+    --color-success: #059669; /* Emerald 600 */
+    --color-error: #DC2626;   /* Red 600 */
+    --color-success-bg: #D1FAE5;
+    --color-error-bg: #FEE2E2;
+    --color-success-border: #34D399;
+    --color-error-border: #F87171;
     
-    --color-error: #EF4444;
-    --color-error-bg: #FEF2F2;
-    --color-error-border: #FECACA;
-
-    /* Transparency Utilities */
-    --color-primary-transparent: rgba(67, 56, 202, 0.1);
-    --color-primary-transparent-heavy: rgba(67, 56, 202, 0.2);
-    --color-secondary-transparent: rgba(124, 58, 237, 0.1);
+    /* Transparencies */
+    --color-primary-transparent: rgba(67, 56, 202, 0.12);
+    --color-primary-transparent-heavy: rgba(67, 56, 202, 0.25);
+    --color-secondary-transparent: rgba(124, 58, 237, 0.12);
     
-    /* Glass */
-    --glass-bg: rgba(255, 255, 255, 0.85);
+    --scrollbar-thumb: #94A3B8;
+    --scrollbar-track: transparent;
 }

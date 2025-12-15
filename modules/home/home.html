@@ -1,75 +1,102 @@
 
 <div class="page-container home-dashboard">
     
-    <!-- 1. HUD Header -->
-    <header class="card hero-card">
-        <div class="hero-content">
-            <h1 id="home-greeting">System Online</h1>
-            <p>Neural interface active. Ready for skill acquisition.</p>
-            <div class="hero-stats">
-                <div class="stat-badge">
-                    <span class="label">LEVEL</span>
-                    <strong id="home-level">--</strong>
+    <!-- 1. Status HUD (Heads-Up Display) -->
+    <header class="dashboard-hud">
+        <div class="hud-left">
+            <h1 id="home-greeting">System Initializing...</h1>
+            <p class="hud-subtitle">Neural Interface Active</p>
+        </div>
+        
+        <!-- Grouped Stats for Adaptive Layout -->
+        <div class="hud-right">
+            <div class="hud-stats-cluster">
+                <div class="stat-pill level-pill">
+                    <span class="pill-label">LVL</span>
+                    <span class="pill-value" id="home-level">--</span>
                 </div>
-                <div class="stat-badge">
+                <div class="stat-pill streak-pill">
                     <svg class="icon"><use href="assets/icons/feather-sprite.svg#zap"/></svg>
-                    <strong id="home-streak">0</strong>
+                    <span class="pill-value" id="home-streak">0</span>
                 </div>
             </div>
-        </div>
-        <div class="hero-visual">
-            <svg class="icon-hero"><use href="assets/icons/favicon.svg#root"/></svg>
+            
+            <div class="system-status-indicator" title="System Online">
+                <div class="status-ring"></div>
+                <div class="status-core"></div>
+            </div>
         </div>
     </header>
 
-    <!-- 2. Resume / Active Mission -->
-    <div id="resume-section" style="display: none;">
-        <!-- Injected via JS -->
-    </div>
-
-    <!-- 3. Quick Actions Grid -->
-    <div class="section-header">
-        <h2>Quick Access</h2>
-    </div>
-    
-    <div class="cards-grid quick-access-grid">
-        <a href="#/topics" class="card action-card">
-            <div class="icon-box blue"><svg class="icon"><use href="assets/icons/feather-sprite.svg#grid"/></svg></div>
-            <span>New Protocol</span>
-        </a>
-        <a href="#/library" class="card action-card">
-            <div class="icon-box purple"><svg class="icon"><use href="assets/icons/feather-sprite.svg#book"/></svg></div>
-            <span>Smart Library</span>
-        </a>
-        <a href="#/history" class="card action-card">
-            <div class="icon-box green"><svg class="icon"><use href="assets/icons/feather-sprite.svg#clock"/></svg></div>
-            <span>Log</span>
-        </a>
-        <a href="#/profile" class="card action-card">
-            <div class="icon-box gold"><svg class="icon"><use href="assets/icons/feather-sprite.svg#user"/></svg></div>
-            <span>Profile</span>
-        </a>
-    </div>
-
-    <!-- 4. Quick Generation Command -->
-    <section class="card command-card">
-        <form id="command-form" class="command-form">
+    <!-- 2. Command Interface -->
+    <section class="command-interface">
+        <form id="command-form" class="cyber-input-form">
             <div class="input-wrapper">
-                <svg class="icon input-icon"><use href="assets/icons/feather-sprite.svg#search"/></svg>
-                <input type="text" id="command-input" class="command-input" placeholder="Type a topic to instant-start..." autocomplete="off">
+                <div class="input-icon-zone">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#search"/></svg>
+                </div>
+                <input type="text" id="command-input" class="cyber-input" placeholder="Input directive, topic, or query..." autocomplete="off">
+                <div class="input-actions">
+                    <button type="button" id="home-camera-btn" class="action-btn" title="Scan Document/Image" aria-label="Upload Image">
+                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#camera"/></svg>
+                    </button>
+                </div>
             </div>
-            <button type="submit" id="command-submit-btn" class="btn btn-primary">
-                Initialize
+            <button type="submit" id="command-submit-btn" class="cyber-submit-btn" aria-label="Execute">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
             </button>
         </form>
+        <input type="file" id="home-file-input" accept="image/*,application/pdf" style="display: none;">
     </section>
 
-    <!-- 5. Recent Activity -->
-    <div class="section-header">
-        <h2>Recent Logs</h2>
-    </div>
-    <div id="recent-history-container" class="activity-feed">
-        <!-- Injected via JS -->
-    </div>
+    <!-- 3. Dashboard Grid -->
+    <div class="dashboard-grid">
+        
+        <!-- A. Priority Mission (Resume) -->
+        <div id="resume-section" class="dashboard-panel mission-panel" style="display: none;">
+            <!-- Injected by JS -->
+        </div>
 
+        <!-- B. Featured Protocols -->
+        <div class="dashboard-panel protocols-panel">
+            <div class="panel-header">
+                <h3><svg class="icon"><use href="assets/icons/feather-sprite.svg#grid"/></svg> Quick Access</h3>
+                <a href="#/topics" class="panel-link">View All</a>
+            </div>
+            <div class="protocol-grid">
+                <button class="protocol-card" data-topic="Cybersecurity">
+                    <div class="protocol-icon red"><svg class="icon"><use href="assets/icons/feather-sprite.svg#shield"/></svg></div>
+                    <span>Security</span>
+                </button>
+                <button class="protocol-card" data-topic="Artificial Intelligence">
+                    <div class="protocol-icon blue"><svg class="icon"><use href="assets/icons/feather-sprite.svg#cpu"/></svg></div>
+                    <span>AI Core</span>
+                </button>
+                <button class="protocol-card" data-topic="Web Development">
+                    <div class="protocol-icon purple"><svg class="icon"><use href="assets/icons/feather-sprite.svg#layers"/></svg></div>
+                    <span>Web Dev</span>
+                </button>
+                <button class="protocol-card" data-topic="Crypto & Blockchain">
+                    <div class="protocol-icon gold"><svg class="icon"><use href="assets/icons/feather-sprite.svg#lock"/></svg></div>
+                    <span>Crypto</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- C. Recent Activity Logs -->
+        <div class="dashboard-panel history-panel">
+            <div class="panel-header">
+                <h3><svg class="icon"><use href="assets/icons/feather-sprite.svg#activity"/></svg> Recent Logs</h3>
+            </div>
+            <div id="recent-history-container" class="history-list">
+                <!-- Injected by JS -->
+            </div>
+        </div>
+
+    </div>
+    
+    <footer class="home-footer">
+        <span class="footer-status">SYSTEM NOMINAL</span>
+        <span class="footer-credit">ARCHITECT: AWAIS ALI</span>
+    </footer>
 </div>

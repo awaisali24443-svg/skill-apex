@@ -1,65 +1,97 @@
 
 <div class="page-container topic-list-container">
-    <header class="page-header">
-        <h1>Mission Protocols</h1>
-        <p>Select a learning path or initialize a new one.</p>
+    <header class="page-header journey-header adaptive-header-layout">
+        <div class="header-text-group">
+            <h1>Mission Control</h1>
+            <p>Select your next objective or initialize a new protocol.</p>
+        </div>
+        <!-- Active Filter Badge -->
+        <div id="active-filter-container" class="active-filter-container" style="display: none;">
+            <span class="filter-badge">
+                <span id="filter-name"></span>
+                <button id="clear-filter-btn" class="btn-icon-small" aria-label="Clear Filter">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#x-circle"/></svg>
+                </button>
+            </span>
+        </div>
     </header>
 
-    <!-- Creator Card -->
-    <section class="card creator-card">
-        <div class="creator-icon">
-            <svg class="icon"><use href="assets/icons/feather-sprite.svg#plus-circle"/></svg>
-        </div>
-        <div class="creator-content">
-            <h3>Create New Protocol</h3>
-            <p>Enter any topic to generate a custom curriculum.</p>
-            <form id="journey-creator-form" class="creator-form">
-                <input type="text" id="custom-topic-input" class="form-input" placeholder="e.g. 'Quantum Mechanics'..." required>
-                <button type="submit" id="generate-btn" class="btn btn-primary">Generate</button>
-            </form>
+    <!-- 1. AI Generator (Hero) -->
+    <section class="uplink-section">
+        <div class="card journey-creator-card">
+            <div class="uplink-visual mobile-hidden">
+                <div class="pulse-ring"></div>
+                <svg class="icon uplink-icon"><use href="assets/icons/feather-sprite.svg#cpu"/></svg>
+            </div>
+            <div class="creator-content">
+                <h2>Initialize Custom Protocol</h2>
+                <p>Input a topic or upload a <strong>PDF / Image</strong> to generate a specialized training curriculum.</p>
+                <form id="journey-creator-form" class="creator-form">
+                    <div class="input-group">
+                        <input type="text" id="custom-topic-input" class="form-input" placeholder="Enter topic or upload file..." required>
+                        <button type="button" id="camera-btn" class="btn btn-icon-only scan-btn" title="Upload PDF or Image">
+                            <svg class="icon"><use href="assets/icons/feather-sprite.svg#box"/></svg> <!-- Changed icon to Box/File generic -->
+                        </button>
+                        <input type="file" id="image-upload-input" accept="image/*,application/pdf" style="display: none;">
+                    </div>
+                    <button type="submit" id="generate-btn" class="btn btn-primary generate-action">
+                        <span>Generate</span>
+                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
+                    </button>
+                </form>
+            </div>
         </div>
     </section>
 
-    <div id="active-journeys-section" style="display: none; margin-top: var(--space-8);">
-        <h2 class="section-title">Active Missions</h2>
-        <div id="active-journeys-grid" class="cards-grid"></div>
+    <!-- 2. Active Missions -->
+    <div id="active-journeys-section" class="missions-section" style="display: none;">
+        <h3 class="section-label"><svg class="icon"><use href="assets/icons/feather-sprite.svg#activity"/></svg> Active Missions</h3>
+        <div id="active-journeys-grid" class="topic-grid active-grid">
+            <!-- Active journeys rendered here -->
+        </div>
     </div>
 
-    <div style="margin-top: var(--space-8);">
-        <h2 class="section-title">Available Protocols</h2>
-        <div id="topics-skeleton" class="cards-grid">
-            <!-- Skeleton cards -->
-            <div class="card skeleton-card"></div>
-            <div class="card skeleton-card"></div>
-            <div class="card skeleton-card"></div>
-        </div>
-        <div id="topic-grid-container" class="cards-grid" style="display: none;"></div>
+    <!-- 3. Available Topics -->
+    <h3 class="section-label"><svg class="icon"><use href="assets/icons/feather-sprite.svg#grid"/></svg> Available Protocols</h3>
+    
+    <!-- Skeleton Loader -->
+    <div id="topics-skeleton" class="topic-grid">
+        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 90%; height: 16px;"></div></div>
+        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 90%; height: 16px;"></div></div>
+        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 90%; height: 16px;"></div></div>
+        <div class="card topic-card skeleton-card"><div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 90%; height: 16px;"></div></div>
+    </div>
+
+    <div id="topic-grid-container" class="topic-grid" style="display: none;">
+        <!-- Topic cards will be rendered here -->
     </div>
 </div>
 
 <template id="topic-card-template">
-    <div class="card topic-card interactive" tabindex="0" role="button">
-        <div class="topic-header">
-            <h3 class="topic-name">Topic Name</h3>
-            <span class="topic-badge">AI</span>
-        </div>
-        <p class="topic-desc">Description goes here.</p>
-        <div class="topic-footer">
-            <span class="topic-action">Start Mission</span>
-            <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
+    <div class="card topic-card" tabindex="0" role="button">
+        <div class="topic-bg-glow"></div>
+        <div class="topic-card-content">
+            <h3 class="topic-name"></h3>
+            <p class="topic-description"></p>
+            <div class="topic-footer">
+                <span class="topic-action">Initialize <svg class="icon"><use href="assets/icons/feather-sprite.svg#chevron-down" style="transform: rotate(-90deg);"/></svg></span>
+            </div>
         </div>
     </div>
 </template>
 
 <template id="active-journey-template">
-    <div class="card active-card interactive" tabindex="0" role="button">
-        <div class="active-header">
-            <span class="status-indicator">Active</span>
-            <span class="level-indicator">Lvl <span class="journey-level"></span></span>
-        </div>
-        <h3 class="topic-name">Topic</h3>
-        <div class="progress-track">
-            <div class="progress-fill"></div>
+    <div class="card topic-card active-journey-card" tabindex="0" role="button">
+        <div class="active-status-indicator"></div>
+        <div class="topic-card-content">
+            <div class="active-meta">
+                <span class="journey-level-badge">Level <span class="journey-level"></span></span>
+                <span class="resume-text">Resume</span>
+            </div>
+            <h3 class="topic-name"></h3>
+            <div class="journey-progress-track">
+                <div class="journey-progress-fill"></div>
+            </div>
         </div>
     </div>
 </template>
