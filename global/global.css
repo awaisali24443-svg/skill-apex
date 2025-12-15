@@ -251,7 +251,8 @@ html, body {
 .link-icon-wrapper {
     width: 24px; display: flex; justify-content: center; align-items: center; flex-shrink: 0;
 }
-.sidebar-link .icon { width: 20px; height: 20px; stroke-width: 2px; }
+/* Updated for new icons: allow cleaner scaling */
+.sidebar-link .icon { width: 22px; height: 22px; stroke-width: 2; }
 
 .sidebar-link .text {
     margin-left: 14px; opacity: 0; transition: opacity 0.2s;
@@ -332,7 +333,7 @@ html, body {
     }
 
     .sidebar-link .icon {
-        width: 24px; height: 24px; margin-bottom: 4px;
+        width: 24px; height: 24px; margin-bottom: 4px; stroke-width: 2.2; /* Slightly thicker for mobile readability */
     }
 
     .sidebar-link .text {
@@ -349,7 +350,7 @@ html, body {
     /* Button Text Hide on Mobile */
     .btn-text-desktop { display: none; }
     .btn.icon-only-mobile { padding: 0.8rem; }
-    .btn-icon-mobile { margin: 0; width: 20px; height: 20px; }
+    .btn-icon-mobile { margin: 0; width: 22px; height: 22px; }
 }
 
 /* --- UI COMPONENTS --- */
