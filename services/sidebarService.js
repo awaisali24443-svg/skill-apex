@@ -47,13 +47,12 @@ function generateAvatarHTML(photoURL, name) {
 
 /**
  * Creates the HTML for a single navigation link.
- * Uses absolute path for icons to ensure they load from any route depth.
  */
 function createNavLink(route) {
     return `
         <a href="#${route.path}" class="sidebar-link" data-path="${route.path}" aria-label="${route.name}">
             <div class="link-icon-wrapper">
-                <svg class="icon"><use href="/assets/icons/feather-sprite.svg#${route.icon}"/></svg>
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#${route.icon}"/></svg>
             </div>
             <span class="text">${route.name}</span>
         </a>
@@ -83,27 +82,16 @@ export function renderSidebar(container) {
     const avatarHTML = generateAvatarHTML(photoURL, displayName);
 
     const html = `
-        <!-- Top: Brand Logo (Code Based) -->
+        <!-- Top: Brand Logo (Left Aligned on Expand) -->
         <a href="#/" class="sidebar-brand-section" aria-label="Skill Apex Home">
             <div class="logo-container-sidebar">
-                <!-- Explicit fallback styles to fix "Black Blob" issue if gradients fail -->
-                <svg class="logo-svg" viewBox="0 0 100 100" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="logoGradSidebar" x1="0%" y1="100%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#4338CA"/> <!-- Indigo -->
-                            <stop offset="100%" stop-color="#7C3AED"/> <!-- Violet -->
-                        </linearGradient>
-                    </defs>
-                    <!-- Fallback color provided directly in fill/stroke as inline style to override any potential black default -->
-                    <path class="logo-path-stroke" style="stroke: #4338CA;" d="M50 5 L95 27.5 V72.5 L50 95 L5 72.5 V27.5 Z" stroke="url(#logoGradSidebar)" stroke-width="4" stroke-linecap="round" fill="none" />
-                    <path class="logo-path-fill" style="fill: #7C3AED;" d="M50 25 L75 80 H65 L50 45 L35 80 H25 Z" fill="url(#logoGradSidebar)" />
-                    <circle cx="50" cy="55" r="4" fill="white" stroke="url(#logoGradSidebar)" style="stroke: #4338CA;" stroke-width="2"/>
-                </svg>
+                <!-- Simple "F" style letter or Icon -->
+                <span>SA</span>
             </div>
             <span class="brand-text-sidebar">Skill Apex</span>
         </a>
 
-        <!-- Header: Facenote Style Profile -->
+        <!-- Profile Card (Glass Style) -->
         <div class="sidebar-profile-header">
             <div class="profile-avatar-container">
                 ${avatarHTML}
@@ -112,33 +100,28 @@ export function renderSidebar(container) {
                 <span class="profile-name">${displayName}</span>
                 <span class="profile-role">My Account</span>
             </div>
-            <svg class="icon profile-chevron"><use href="/assets/icons/feather-sprite.svg#chevron-down"/></svg>
+            <svg class="icon profile-chevron"><use href="assets/icons/feather-sprite.svg#chevron-down"/></svg>
         </div>
 
-        <div class="sidebar-divider"></div>
-
-        <!-- Menu -->
+        <!-- Menu Label -->
         <div class="sidebar-menu-label">MENU</div>
-        <ul class="sidebar-links">
+        
+        <!-- Navigation Links -->
+        <nav class="sidebar-links">
             ${filteredMainLinks.map(link => createNavLink(link)).join('')}
-        </ul>
+        </nav>
 
         <div class="sidebar-spacer"></div>
 
-        <!-- Bottom Actions (Hidden on Mobile) -->
-        <ul class="sidebar-links footer-links">
+        <!-- Bottom Actions (Settings & Logout) -->
+        <div class="sidebar-links footer-links">
             ${settingsLink ? createNavLink(settingsLink) : ''}
             <button id="sidebar-logout-btn" class="sidebar-link logout-link">
                 <div class="link-icon-wrapper">
-                    <svg class="icon"><use href="/assets/icons/feather-sprite.svg#power"/></svg>
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#power"/></svg>
                 </div>
                 <span class="text">Log Out</span>
             </button>
-        </ul>
-        
-        <!-- AUTHORSHIP CREDIT -->
-        <div class="sidebar-credit" style="padding: 10px 16px 0; margin-top: 10px; font-size: 0.65rem; color: var(--color-text-secondary); text-align: center; border-top: 1px solid rgba(255,255,255,0.05); opacity:0.8;">
-            <span class="text" style="display:block;">Architect: <span style="color:var(--color-primary); font-weight:700;">Awais Ali</span></span>
         </div>
     `;
     
