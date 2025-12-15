@@ -1,7 +1,7 @@
 
 import { GoogleGenAI } from "@google/genai";
 import * as stateService from '../../services/stateService.js';
-import * as historyService from '../../services/historyService.js';
+import * as apiService from '../../services/apiService.js';
 import { showToast } from '../../services/toastService.js';
 import { getAIClient } from '../../services/apiService.js';
 
@@ -14,6 +14,25 @@ const STATE = {
 };
 
 const MODEL_LIVE = 'gemini-2.5-flash-native-audio-preview-09-2025';
+
+// --- TOOL DEFINITIONS ---
+const TOOLS = [
+  {
+    functionDeclarations: [
+      {
+        name: "get_quiz_question",
+        description: "Fetch a technical interview question or quiz problem to test the user's knowledge.",
+        parameters: {
+          type: "OBJECT",
+          properties: {
+            topic: { type: "STRING", description: "The specific topic to quiz on (e.g., 'React Hooks', 'Python Lists')." }
+          },
+          required: ["topic"]
+        }
+      }
+    ]
+  }
+];
 
 let currentState = STATE.IDLE;
 let sessionPromise = null;
@@ -57,12 +76,10 @@ function bytesToBase64(bytes) {
   return btoa(binary);
 }
 
-// Convert Float32 (Web Audio) to Int16 (Gemini API)
 function createPcmBlob(float32Data) {
   const l = float32Data.length;
   const int16 = new Int16Array(l);
   for (let i = 0; i < l; i++) {
-    // Clamp and scale
     const s = Math.max(-1, Math.min(1, float32Data[i]));
     int16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
   }
@@ -72,7 +89,6 @@ function createPcmBlob(float32Data) {
   };
 }
 
-// Convert Int16 (Gemini API) to Float32 (Web Audio)
 function decodeAudioData(base64Str, ctx) {
     const bytes = base64ToBytes(base64Str);
     const int16 = new Int16Array(bytes.buffer);
@@ -82,7 +98,7 @@ function decodeAudioData(base64Str, ctx) {
         float32[i] = int16[i] / 32768.0;
     }
     
-    const buffer = ctx.createBuffer(1, float32.length, 24000); // Model output is 24kHz
+    const buffer = ctx.createBuffer(1, float32.length, 24000); 
     buffer.getChannelData(0).set(float32);
     return buffer;
 }
@@ -110,7 +126,6 @@ function initVisualizer() {
             analyser.getByteFrequencyData(dataArray);
         }
 
-        // Calculate average volume
         let sum = 0;
         for(let i=0; i<dataArray.length; i++) sum += dataArray[i];
         const average = sum / (dataArray.length || 1);
@@ -119,10 +134,9 @@ function initVisualizer() {
         if (currentState === STATE.LISTENING || currentState === STATE.SPEAKING) {
             amplitude = average / 5; 
         } else {
-            amplitude = 2 + Math.sin(Date.now() / 500); // Idle pulse
+            amplitude = 2 + Math.sin(Date.now() / 500);
         }
 
-        // Draw Waves
         drawWave(ctx, canvas, amplitude, 1, '#0052CC', 0.002);
         drawWave(ctx, canvas, amplitude * 0.8, -1, '#D946EF', 0.003);
         drawWave(ctx, canvas, amplitude * 0.5, 1, '#7C3AED', 0.001);
@@ -133,24 +147,18 @@ function initVisualizer() {
 function drawWave(ctx, canvas, amplitude, direction, color, frequency) {
     const centerY = canvas.height / 2;
     const time = Date.now() * frequency;
-    
     ctx.beginPath();
     ctx.moveTo(0, centerY);
-    
     for (let x = 0; x < canvas.width; x += 10) {
         const y = Math.sin(x * 0.01 + time * direction) * amplitude * Math.sin(x / canvas.width * Math.PI); 
         ctx.lineTo(x, centerY + y * 20);
     }
-    
     ctx.strokeStyle = color;
     ctx.lineWidth = 3;
-    ctx.shadowBlur = 5;
-    ctx.shadowColor = color;
     ctx.stroke();
-    ctx.shadowBlur = 0;
 }
 
-// --- MAIN AUDIO LOGIC ---
+// --- MAIN LOGIC ---
 
 function updateUI(newState, msg = '') {
     currentState = newState;
@@ -161,7 +169,7 @@ function updateUI(newState, msg = '') {
         case STATE.CONNECTING:
             statusText.textContent = "ESTABLISHING UPLINK...";
             statusText.style.color = "#FFC107";
-            micBtn.classList.add('active'); // Pulse while connecting
+            micBtn.classList.add('active'); 
             break;
         case STATE.LISTENING:
             statusText.textContent = "LISTENING // FREQUENCY OPEN";
@@ -179,12 +187,47 @@ function updateUI(newState, msg = '') {
             micBtn.classList.remove('active');
             if(msg) showToast(msg, 'error');
             break;
-        default: // IDLE
+        default: 
             statusText.textContent = "SYSTEM STANDBY";
             statusText.style.color = "#9CA3AF";
             micBtn.classList.remove('active');
             break;
     }
+}
+
+async function executeLocalTool(toolCall) {
+    if (toolCall.name === 'get_quiz_question') {
+        const topic = toolCall.args.topic || "General Technology";
+        showToast(`AI is generating a quiz for: ${topic}`, "info");
+        
+        // Add visual log
+        const logEntry = document.createElement('div');
+        logEntry.className = 'transcription-entry tool';
+        logEntry.textContent = `⚡ Generating Quiz: ${topic}`;
+        elements.log.appendChild(logEntry);
+        elements.log.scrollTop = elements.log.scrollHeight;
+
+        try {
+            // Fetch from API
+            const data = await apiService.generateLevelQuestions({ 
+                topic: topic, 
+                level: 1, 
+                totalLevels: 10 
+            });
+            
+            if (data && data.questions && data.questions.length > 0) {
+                const q = data.questions[0];
+                return {
+                    result: `Here is a question for the user: "${q.question}" Options: ${q.options.join(', ')}. The correct answer is ${q.options[q.correctAnswerIndex]}. Ask the user to answer.`
+                };
+            }
+        } catch (e) {
+            console.error("Tool execution failed", e);
+        }
+        
+        return { result: "Could not generate a specific question right now. Just ask the user a general trivia question about " + topic };
+    }
+    return { result: "Tool not found." };
 }
 
 async function startSession() {
@@ -196,29 +239,50 @@ async function startSession() {
         return;
     }
 
+    // --- CONTEXT INJECTION ---
+    const { navigationContext } = stateService.getState();
+    const contextTopic = navigationContext?.topic || null;
+    const contextLevel = navigationContext?.level || 1;
+    
+    // Update Context Badge
+    if (contextTopic) {
+        elements.contextBadge.style.display = 'flex';
+        elements.contextText.textContent = contextTopic;
+    } else {
+        elements.contextBadge.style.display = 'none';
+    }
+
+    const sysInstruction = `
+    You are ApexCore, an elite AI technical mentor for the Skill Apex platform.
+    
+    CURRENT USER CONTEXT:
+    ${contextTopic ? `Focus Topic: ${contextTopic}` : 'Focus: General Tech'}
+    ${contextTopic ? `Current Level: ${contextLevel}` : ''}
+    
+    GUIDELINES:
+    1. **Persona**: Intelligent, witty, and concise. Think "Senior Engineer" meets "Podcast Host".
+    2. **Brevity**: Speak efficiently. Max 20 seconds per turn unless explaining deep concepts.
+    3. **Tools**: If the user asks for a quiz or test, USE the 'get_quiz_question' tool.
+    4. **Teaching**: Use analogies. Connect abstract code to physical objects.
+    5. **Interaction**: Don't just lecture. Ask checking questions.
+    `;
+
     try {
-        // 1. Setup Audio Contexts
-        // Input: 16kHz for model compatibility
         inputAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-        // Output: 24kHz matches model output
         outputAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
         
-        // 2. Setup Mic Stream
         mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         
-        // 3. Setup Analyser (Visualizer) attached to Mic
         analyser = inputAudioContext.createAnalyser();
         analyser.fftSize = 256;
         
-        // 4. Setup Input Processing
         inputSource = inputAudioContext.createMediaStreamSource(mediaStream);
         scriptProcessor = inputAudioContext.createScriptProcessor(4096, 1, 1);
         
-        inputSource.connect(analyser); // For visualizer
+        inputSource.connect(analyser); 
         inputSource.connect(scriptProcessor);
         scriptProcessor.connect(inputAudioContext.destination);
 
-        // 5. Connect to Gemini Live
         sessionPromise = client.live.connect({
             model: MODEL_LIVE,
             config: {
@@ -226,15 +290,17 @@ async function startSession() {
                 speechConfig: {
                     voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } }
                 },
-                systemInstruction: "You are ApexCore. Speak like a witty, high-energy tech podcast host. Keep answers under 15 seconds. Use analogies. Be funny. If asked about code, describe the logic simply. No lecturing!"
+                systemInstruction: sysInstruction,
+                tools: TOOLS 
             },
             callbacks: {
                 onopen: () => {
                     console.log("Gemini Live Session Opened");
                     updateUI(STATE.LISTENING);
                     nextStartTime = outputAudioContext.currentTime;
+                    elements.placeholder.style.display = 'none';
                 },
-                onmessage: (msg) => {
+                onmessage: async (msg) => {
                     handleServerMessage(msg);
                 },
                 onclose: (e) => {
@@ -248,19 +314,13 @@ async function startSession() {
             }
         });
 
-        // 6. Hook up Processor to Send Data
         scriptProcessor.onaudioprocess = (e) => {
             if (!sessionPromise) return;
-            
             const inputData = e.inputBuffer.getChannelData(0);
             const pcmBlob = createPcmBlob(inputData);
-            
-            // Send to model if session is ready
             sessionPromise.then(session => {
                 session.sendRealtimeInput({ media: pcmBlob });
-            }).catch(err => {
-                console.warn("Failed to send audio", err);
-            });
+            }).catch(err => {});
         };
 
     } catch (e) {
@@ -270,24 +330,45 @@ async function startSession() {
     }
 }
 
-function handleServerMessage(message) {
-    const { serverContent } = message;
+async function handleServerMessage(message) {
+    const { serverContent, toolCall } = message;
     
-    // 1. Handle Audio Output
+    // 1. Handle Tool Calls (The "Smart" Part)
+    if (toolCall) {
+        console.log("Tool Call Received:", toolCall);
+        updateUI(STATE.SPEAKING, "PROCESSING DATA...");
+        
+        for (const fc of toolCall.functionCalls) {
+            const executionResult = await executeLocalTool(fc);
+            
+            // Send result back to model
+            sessionPromise.then(session => {
+                session.sendToolResponse({
+                    functionResponses: [{
+                        id: fc.id,
+                        name: fc.name,
+                        response: executionResult
+                    }]
+                });
+            });
+        }
+        return; 
+    }
+
+    // 2. Handle Audio Output
     const modelAudio = serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
     if (modelAudio) {
         updateUI(STATE.SPEAKING);
         queueAudioOutput(modelAudio);
     }
 
-    // 2. Handle Interruption
+    // 3. Handle Interruption
     if (serverContent?.interrupted) {
         console.log("Model Interrupted");
         clearAudioQueue();
         updateUI(STATE.LISTENING);
     }
 
-    // 3. Handle Turn Complete (Model finished speaking this phrase)
     if (serverContent?.turnComplete) {
         updateUI(STATE.LISTENING);
     }
@@ -295,31 +376,22 @@ function handleServerMessage(message) {
 
 function queueAudioOutput(base64Audio) {
     if (!outputAudioContext) return;
-
     try {
         const audioBuffer = decodeAudioData(base64Audio, outputAudioContext);
-        
         const source = outputAudioContext.createBufferSource();
         source.buffer = audioBuffer;
         source.connect(outputAudioContext.destination);
         
-        // Schedule gapless playback
-        // Ensure we don't schedule in the past
         const now = outputAudioContext.currentTime;
         nextStartTime = Math.max(nextStartTime, now);
         
         source.start(nextStartTime);
         nextStartTime += audioBuffer.duration;
         
-        // Track for cancellation
         scheduledSources.add(source);
         source.onended = () => {
             scheduledSources.delete(source);
-            if (scheduledSources.size === 0) {
-               // Could trigger idle state here if strictly needed
-            }
         };
-        
     } catch (e) {
         console.error("Audio Decode Error", e);
     }
@@ -334,7 +406,6 @@ function clearAudioQueue() {
 }
 
 function stopSession() {
-    // 1. Stop Input
     if (scriptProcessor) {
         scriptProcessor.disconnect();
         scriptProcessor.onaudioprocess = null;
@@ -353,14 +424,12 @@ function stopSession() {
         inputAudioContext = null;
     }
 
-    // 2. Stop Output
     clearAudioQueue();
     if (outputAudioContext) {
         outputAudioContext.close();
         outputAudioContext = null;
     }
 
-    // 3. Close Session
     if (sessionPromise) {
         sessionPromise.then(session => session.close()).catch(() => {});
         sessionPromise = null;
@@ -368,6 +437,8 @@ function stopSession() {
 
     analyser = null;
     updateUI(STATE.IDLE);
+    if(elements.placeholder) elements.placeholder.style.display = 'block';
+    if(elements.contextBadge) elements.contextBadge.style.display = 'none';
 }
 
 function handleToggle() {
@@ -386,9 +457,10 @@ export function init() {
         status: document.getElementById('aural-status'),
         micBtn: document.getElementById('aural-mic-btn'),
         headerControls: document.getElementById('aural-header-controls'),
+        contextBadge: document.getElementById('aural-context-badge'),
+        contextText: document.getElementById('aural-context-text')
     };
 
-    // Setup Header Back Button
     const { navigationContext } = stateService.getState();
     elements.headerControls.innerHTML = '';
     const backBtn = document.createElement('button');

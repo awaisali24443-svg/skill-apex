@@ -3,7 +3,7 @@
     height: 100%;
     width: 100%;
     position: relative;
-    background: var(--color-background); /* White */
+    background: var(--color-background);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -25,6 +25,37 @@
     z-index: 20;
 }
 
+/* Context Badge */
+.aural-context-badge {
+    position: absolute;
+    top: 1.5rem; right: 1.5rem;
+    z-index: 20;
+    background: var(--color-surface);
+    border: 1px solid var(--color-primary-transparent);
+    padding: 8px 16px;
+    border-radius: 20px;
+    box-shadow: var(--shadow-float);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    backdrop-filter: blur(10px);
+}
+
+.context-label {
+    font-size: 0.65rem;
+    color: var(--color-text-secondary);
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+}
+
+.context-value {
+    font-size: 0.9rem;
+    color: var(--color-primary);
+    font-weight: 600;
+    font-family: var(--font-family-mono);
+}
+
 .transcription-log {
     flex-grow: 1;
     z-index: 10;
@@ -33,12 +64,10 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    /* Fade mask for smooth scrolling text - adjusted for white bg */
     mask-image: linear-gradient(to bottom, transparent 0%, black 10%);
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%);
 }
 
-/* Modern Chat Bubbles */
 .transcription-entry {
     max-width: 85%;
     padding: 1rem 1.5rem;
@@ -68,6 +97,17 @@
     border-bottom-left-radius: 4px;
 }
 
+.transcription-entry.tool {
+    align-self: center;
+    background: var(--color-surface-hover);
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    font-family: var(--font-family-mono);
+    padding: 8px 16px;
+    border-radius: 12px;
+    opacity: 0.8;
+}
+
 @keyframes slide-up {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
@@ -77,8 +117,9 @@
     margin: auto;
     text-align: center;
     opacity: 0.8;
+    pointer-events: none;
 }
-.aural-title { font-size: 2rem; letter-spacing: 4px; color: var(--color-primary); margin-bottom: 0.5rem; }
+.aural-title { font-size: 2rem; letter-spacing: 4px; color: var(--color-primary); margin-bottom: 0.5rem; font-weight: 800; }
 .aural-subtitle { font-family: var(--font-family-mono); color: var(--color-text-secondary); }
 
 /* Footer Controls */
@@ -89,7 +130,6 @@
     flex-direction: column;
     align-items: center;
     padding-bottom: 3rem;
-    /* White Gradient fade */
     background: linear-gradient(to top, var(--color-background), transparent);
 }
 
@@ -102,7 +142,6 @@
     text-transform: uppercase;
 }
 
-/* BIG MIC BUTTON */
 .btn-mic-large {
     width: 90px; height: 90px;
     border-radius: 50%;
@@ -130,7 +169,6 @@
 
 .mic-icon-wrapper svg { width: 40px; height: 40px; }
 
-/* Pulse Rings */
 .mic-ring {
     position: absolute; inset: -10px;
     border: 2px solid var(--color-primary);

@@ -1,61 +1,60 @@
 
 :root {
-    /* --- MODERN EXPO PALETTE (Light Mode) --- */
+    /* --- MODERN EXPO PALETTE (Light Mode - Enhanced) --- */
 
-    /* Core Brand - Vibrant & Electric */
-    --color-primary: #4F46E5;   /* Indigo 600 - The core "Intelligence" color */
-    --color-secondary: #7C3AED; /* Violet 600 - The "Magic" / AI color */
-    --color-accent: #0EA5E9;    /* Sky 500 - The "Speed" / Data color */
+    /* Core Brand - Deeper & richer for better contrast */
+    --color-primary: #4338ca;   /* Indigo 700 - Stronger anchor color */
+    --color-secondary: #7e22ce; /* Purple 700 - Richer secondary */
+    --color-accent: #0284c7;    /* Sky 600 - Vivid accent */
 
-    /* Backgrounds - Tech Paper Look */
-    --color-background: #F8FAFC; /* Crisp White-Blue tint, not gray */
-    --color-surface: rgba(255, 255, 255, 0.85); /* Frosty Glass */
-    --color-surface-hover: #F1F5F9;
-    --color-surface-active: #E0E7FF; /* Very faint indigo tint */
+    /* Backgrounds - Clean Tech */
+    --color-background: #f1f5f9; /* Slate 100 - Cool grey-white */
+    --color-surface: rgba(255, 255, 255, 0.9); /* High opacity glass */
+    --color-surface-hover: #ffffff; /* Pure white on hover */
+    --color-surface-active: #eef2ff; /* Very faint indigo tint */
     
-    /* Text - High Contrast & Sharp */
-    --color-text: #0F172A;       /* Slate 900 - Almost Black */
-    --color-text-secondary: #475569; /* Slate 600 - Readable, professional */
+    /* Text - Maximum Legibility */
+    --color-text: #0f172a;       /* Slate 900 */
+    --color-text-secondary: #475569; /* Slate 600 */
 
     /* UI Elements */
-    --color-border: #E2E8F0;     /* Slate 200 */
+    --color-border: #cbd5e1;     /* Slate 300 - Crisper borders */
     
     /* Glassmorphism Configuration */
-    --glass-bg: rgba(255, 255, 255, 0.65);
-    --glass-border: rgba(255, 255, 255, 0.8);
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.9);
 
     /* --- PREMIUM SHADOWS (The "Pop" Factor) --- */
-    /* Soft, colored shadows that make elements float */
     --shadow-card: 
-        0 4px 6px -1px rgba(79, 70, 229, 0.05), 
-        0 10px 15px -3px rgba(79, 70, 229, 0.08),
-        0 0 0 1px rgba(255, 255, 255, 0.8); /* Inner white highlight */
+        0 4px 6px -1px rgba(0, 0, 0, 0.05), 
+        0 10px 15px -3px rgba(0, 0, 0, 0.05),
+        0 0 0 1px rgba(255, 255, 255, 0.6) inset; /* Inner light highlight */
         
     --shadow-float: 
-        0 20px 30px -5px rgba(79, 70, 229, 0.15), 
-        0 10px 10px -5px rgba(79, 70, 229, 0.06);
+        0 20px 25px -5px rgba(67, 56, 202, 0.15), 
+        0 8px 10px -6px rgba(67, 56, 202, 0.1);
         
     --shadow-hover: 
-        0 25px 50px -12px rgba(124, 58, 237, 0.25);
+        0 20px 40px -12px rgba(126, 34, 206, 0.25);
 
     /* Gradients */
-    --brand-gradient: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
-    --bg-tech: radial-gradient(circle at 50% 0%, rgba(79, 70, 229, 0.08) 0%, transparent 60%);
+    --brand-gradient: linear-gradient(135deg, #4338ca 0%, #7e22ce 100%);
+    --bg-tech: radial-gradient(circle at 50% 0%, rgba(67, 56, 202, 0.05) 0%, transparent 70%);
 
     /* Colors for transparency/overlays */
-    --color-primary-transparent: rgba(79, 70, 229, 0.1);
-    --color-primary-transparent-heavy: rgba(79, 70, 229, 0.2);
-    --color-secondary-transparent: rgba(124, 58, 237, 0.1);
-    --color-secondary-transparent-heavy: rgba(124, 58, 237, 0.2);
+    --color-primary-transparent: rgba(67, 56, 202, 0.1);
+    --color-primary-transparent-heavy: rgba(67, 56, 202, 0.25);
+    --color-secondary-transparent: rgba(126, 34, 206, 0.1);
+    --color-secondary-transparent-heavy: rgba(126, 34, 206, 0.25);
     
     /* Feedback */
-    --color-success: #059669;
-    --color-error: #DC2626;
-    --color-success-bg: #D1FAE5;
-    --color-error-bg: #FEE2E2;
-    --color-success-border: #6EE7B7;
-    --color-error-border: #FCA5A5;
+    --color-success: #15803d; /* Green 700 */
+    --color-error: #b91c1c;   /* Red 700 */
+    --color-success-bg: #dcfce7;
+    --color-error-bg: #fee2e2;
+    --color-success-border: #86efac;
+    --color-error-border: #fca5a5;
     
-    --scrollbar-thumb: #94A3B8;
-    --scrollbar-track: transparent;
+    --scrollbar-thumb: #94a3b8;
+    --scrollbar-track: #e2e8f0;
 }
