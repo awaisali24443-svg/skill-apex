@@ -517,3 +517,89 @@ html, body {
         right: 20px;
     }
 }
+
+/* --- MODAL SYSTEM (CENTERING FIX) --- */
+#modal-container {
+    position: relative;
+    z-index: 9000;
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 9999;
+    
+    /* Centering Magic */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    opacity: 0;
+    animation: fadeInBackdrop 0.3s forwards;
+}
+
+/* Force flex even if JS sets display: block */
+.modal-backdrop[style*="display: block"] {
+    display: flex !important;
+}
+
+@keyframes fadeInBackdrop {
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 24px;
+    padding: 2rem;
+    width: 90%;
+    max-width: 500px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    position: relative;
+    
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    
+    /* Pop Animation */
+    transform: scale(0.9) translateY(20px);
+    opacity: 0;
+    animation: popInModal 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes popInModal {
+    to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.modal-header h2 {
+    font-size: 1.5rem;
+    margin: 0;
+    color: var(--color-primary);
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: auto;
+    padding-top: 1rem;
+}
+
+/* Mobile Modal Adjustments */
+@media (max-width: 480px) {
+    .modal-content {
+        padding: 1.5rem;
+        width: 95%;
+    }
+    .modal-footer {
+        flex-direction: column-reverse;
+    }
+    .modal-footer .btn {
+        width: 100%;
+    }
+}
