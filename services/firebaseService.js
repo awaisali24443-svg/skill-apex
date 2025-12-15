@@ -62,6 +62,7 @@ try {
 
 let currentUser = null;
 let authStateCallback = null;
+let authInitialized = false;
 
 // --- MOCK DATA (Global Elite) ---
 // Ensures leaderboard is never empty. Used for Expo/Demo purposes.
@@ -254,11 +255,24 @@ function onAuthChange(callback) {
     
     // If we have a mock user already, fire immediately
     if (mockAuth.user) {
+        authInitialized = true;
         callback(mockAuth.user);
     }
     
     if (isFirebaseActive) {
+        // FAILSAFE: If Firebase hangs (slow network), assume offline after 4s
+        const failsafeTimeout = setTimeout(() => {
+            if (!authInitialized) {
+                console.warn("⚠️ Firebase Auth timed out. Fallback active.");
+                authInitialized = true;
+                if (!mockAuth.user) callback(null); // Show Login/Guest screen
+                else callback(mockAuth.user);
+            }
+        }, 4000);
+
         return onAuthStateChanged(auth, (user) => {
+            clearTimeout(failsafeTimeout);
+            authInitialized = true;
             currentUser = user;
             if (user) {
                 // If firebase connects, use that user
@@ -270,7 +284,10 @@ function onAuthChange(callback) {
         });
     } else {
         // If firebase dead, just ensure we fired the mock state
-        if (!mockAuth.user) callback(null);
+        if (!mockAuth.user) {
+            authInitialized = true;
+            callback(null);
+        }
         return () => {};
     }
 }
