@@ -215,13 +215,8 @@ function loginWithGoogle() {
 }
 
 function loginAsGuest() {
-    // FORCE MOCK LOGIN IF FIREBASE FAILS OR JUST TO BE SAFE
-    // Use Firebase anonymous login ONLY if perfectly connected, otherwise fallback immediately
     if (isFirebaseActive) {
-        return signInAnonymously(auth).catch((e) => {
-            console.warn("Firebase Anon Login failed, falling back to local mock", e);
-            return mockAuth.loginGuest();
-        });
+        return signInAnonymously(auth);
     }
     return mockAuth.loginGuest();
 }
@@ -253,32 +248,21 @@ function onAuthChange(callback) {
     // Always listen to mock changes
     mockAuth.listeners.push(callback);
     
-    // If we have a mock user already, fire immediately
+    // If we have a mock user already, fire immediately (only if specifically logged in offline previously)
     if (mockAuth.user) {
         authInitialized = true;
         callback(mockAuth.user);
     }
     
     if (isFirebaseActive) {
-        // FAILSAFE: If Firebase hangs (slow network), assume offline after 4s
-        const failsafeTimeout = setTimeout(() => {
-            if (!authInitialized) {
-                console.warn("⚠️ Firebase Auth timed out. Fallback active.");
-                authInitialized = true;
-                if (!mockAuth.user) callback(null); // Show Login/Guest screen
-                else callback(mockAuth.user);
-            }
-        }, 4000);
-
+        // ONLINE MODE: Rely solely on Firebase Auth state.
         return onAuthStateChanged(auth, (user) => {
-            clearTimeout(failsafeTimeout);
             authInitialized = true;
             currentUser = user;
             if (user) {
-                // If firebase connects, use that user
                 callback(user);
             } else if (!mockAuth.user) {
-                // Only fire null if neither firebase nor mock has user
+                // No firebase user, no mock user -> null (Login Screen)
                 callback(null);
             }
         });

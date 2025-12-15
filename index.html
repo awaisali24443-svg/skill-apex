@@ -189,7 +189,7 @@
                     document.getElementById('splash-reload-btn').style.display = 'inline-flex';
                     document.getElementById('splash-error-log').innerText = "The server is taking too long to respond. Check internet connection or modules.";
                 }
-            }, 15000); // 15 Seconds timeout (Increased for safety)
+            }, 45000); // 45 Seconds timeout (Increased for network latency)
 
             window.addEventListener('error', function(event) {
                 const splashLog = document.getElementById('splash-error-log');
