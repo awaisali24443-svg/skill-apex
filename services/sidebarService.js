@@ -2,43 +2,22 @@
 import { ROUTES, FEATURES } from '../constants.js';
 import * as firebaseService from './firebaseService.js';
 
-// Global listener to update sidebar elements when profile changes
+// Global listener to update sidebar elements when profile changes (e.g. from Profile module)
 window.addEventListener('profile-updated', () => {
-    updateProfileDisplay();
-});
-
-function updateProfileDisplay() {
-    const avatarContainer = document.querySelector('.sidebar-profile-header .profile-avatar-container');
+    const img = document.querySelector('.sidebar-profile-header .profile-avatar-img');
     const nameText = document.querySelector('.sidebar-profile-header .profile-name');
-    const photoURL = firebaseService.getUserPhoto();
-    const displayName = firebaseService.getUserName() || 'Guest';
-
-    if (nameText) {
-        nameText.textContent = displayName;
-    }
-
-    if (avatarContainer) {
-        avatarContainer.innerHTML = '';
+    
+    if (img) {
+        const photoURL = firebaseService.getUserPhoto();
         if (photoURL) {
-            // User uploaded photo (only exception allowed via User Input)
-            const img = document.createElement('img');
             img.src = photoURL;
-            img.alt = 'Profile';
-            img.className = 'profile-avatar-img';
-            avatarContainer.appendChild(img);
-        } else {
-            // GENERATED SVG AVATAR (No Image File)
-            const initials = displayName.substring(0, 2).toUpperCase();
-            const svg = `
-                <svg viewBox="0 0 100 100" class="profile-avatar-svg">
-                    <rect width="100" height="100" fill="var(--color-surface-hover)"/>
-                    <text x="50" y="65" text-anchor="middle" fill="var(--color-primary)" font-size="40" font-weight="bold" font-family="var(--font-family-heading)">${initials}</text>
-                </svg>
-            `;
-            avatarContainer.innerHTML = svg;
         }
     }
-}
+    
+    if (nameText) {
+        nameText.textContent = firebaseService.getUserName();
+    }
+});
 
 /**
  * Creates the HTML for a single navigation link.
@@ -55,7 +34,7 @@ function createNavLink(route) {
 }
 
 /**
- * Renders the Floating Glass Sidebar.
+ * Renders the Floating Glass Sidebar (Facenote Style).
  */
 export function renderSidebar(container) {
     container.setAttribute('aria-label', 'Main Navigation');
@@ -63,38 +42,33 @@ export function renderSidebar(container) {
     const mainLinks = ROUTES.filter(r => r.nav && !r.footer);
     const settingsLink = ROUTES.find(r => r.module === 'settings');
     
-    // Filter links
+    // Filter links (e.g., Aural mode check)
     const filteredMainLinks = mainLinks.filter(r => {
         if (r.module === 'aural' && !FEATURES.AURAL_MODE) return false;
         return true;
     });
 
-    const html = `
-        <!-- Top: Brand Logo (Code Based) -->
-        <a href="#/" class="sidebar-brand-section" aria-label="Skill Apex Home">
-            <div class="logo-container-sidebar">
-                <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="logoGradSidebar" x1="0%" y1="100%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="var(--color-primary)"/>
-                            <stop offset="100%" stop-color="var(--color-secondary)"/>
-                        </linearGradient>
-                    </defs>
-                    <path d="M50 5 L95 27.5 V72.5 L50 95 L5 72.5 V27.5 Z" stroke="url(#logoGradSidebar)" stroke-width="4" stroke-linecap="round" fill="none" />
-                    <path d="M50 25 L75 80 H65 L50 45 L35 80 H25 Z" fill="url(#logoGradSidebar)" />
-                    <circle cx="50" cy="55" r="4" fill="var(--color-background)" stroke="var(--color-primary)" stroke-width="2"/>
-                </svg>
-            </div>
-            <span class="brand-text-sidebar">Skill Apex</span>
-        </a>
+    const userEmail = firebaseService.getUserEmail() || 'Guest';
+    // Use getUserName for display name logic which handles display name > email split > default
+    const displayName = firebaseService.getUserName();
+    const photoURL = firebaseService.getUserPhoto() || 'assets/images/avatar-placeholder.png';
+    const isGuest = firebaseService.isGuest();
 
-        <!-- Header: Generated Profile -->
+    const html = `
+        <!-- Top: Window Controls -->
+        <div class="window-controls">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+        </div>
+
+        <!-- Header: Facenote Style Profile -->
         <div class="sidebar-profile-header">
             <div class="profile-avatar-container">
-                <!-- Injected via JS -->
+                <img src="${photoURL}" alt="Profile" class="profile-avatar-img">
             </div>
             <div class="profile-info-text">
-                <span class="profile-name">Loading...</span>
+                <span class="profile-name">${displayName}</span>
                 <span class="profile-role">My Account</span>
             </div>
             <svg class="icon profile-chevron"><use href="assets/icons/feather-sprite.svg#chevron-down"/></svg>
@@ -128,7 +102,6 @@ export function renderSidebar(container) {
     `;
     
     container.innerHTML = html;
-    updateProfileDisplay(); // Initialize profile visuals
 
     // Attach Logout Listener
     const logoutBtn = document.getElementById('sidebar-logout-btn');
@@ -143,7 +116,7 @@ export function renderSidebar(container) {
             });
             if (confirmed) {
                 await firebaseService.logout();
-                window.location.reload(); 
+                window.location.reload(); // Critical Fix: Force reload to clear all SPA state
             }
         });
     }

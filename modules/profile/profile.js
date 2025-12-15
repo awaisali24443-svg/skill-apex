@@ -17,22 +17,8 @@ function renderProfile() {
     elements.nameInput.value = displayName;
     elements.emailText.textContent = firebaseService.getUserEmail() || 'Guest Mode';
     
-    // RENDER AVATAR (NO IMG unless user uploaded)
-    elements.avatarDisplay.innerHTML = '';
     if (photoURL) {
-        const img = document.createElement('img');
-        img.src = photoURL;
-        img.alt = 'Avatar';
-        img.className = 'profile-avatar-img';
-        elements.avatarDisplay.appendChild(img);
-    } else {
-        const initials = displayName.substring(0, 2).toUpperCase();
-        elements.avatarDisplay.innerHTML = `
-            <svg viewBox="0 0 100 100" class="profile-avatar-svg">
-                <rect width="100" height="100" fill="var(--color-surface-hover)"/>
-                <text x="50" y="65" text-anchor="middle" fill="var(--color-primary)" font-size="40" font-weight="bold" font-family="var(--font-family-heading)">${initials}</text>
-            </svg>
-        `;
+        elements.avatarImg.src = photoURL;
     }
     
     // 2. Recruitment Link - UPDATED DOMAIN
@@ -122,7 +108,6 @@ async function saveName() {
         elements.nameDisplay.textContent = newName;
         showToast('Codename updated.', 'success');
         toggleNameEdit();
-        renderProfile(); // Re-render to update avatar initials
     } catch (e) {
         showToast('Update failed.', 'error');
     } finally {
@@ -138,12 +123,8 @@ function handleFileSelect(file) {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-        // We only allow IMG tags for USER UPLOADED content
-        elements.avatarDisplay.innerHTML = '';
-        const img = document.createElement('img');
-        img.src = e.target.result;
-        img.className = 'profile-avatar-img';
-        elements.avatarDisplay.appendChild(img);
+        // Optimistic UI update
+        elements.avatarImg.src = e.target.result;
         
         firebaseService.updateUserProfile({ photoURL: e.target.result })
             .then(() => showToast('Avatar updated.', 'success'))
@@ -183,7 +164,7 @@ export function init() {
         editBtn: document.getElementById('edit-profile-btn'),
         saveNameBtn: document.getElementById('save-name-btn'),
         emailText: document.getElementById('user-email-text'),
-        avatarDisplay: document.getElementById('profile-avatar-display'),
+        avatarImg: document.getElementById('profile-avatar-img'),
         fileInput: document.getElementById('avatar-upload'),
         recruiterInput: document.getElementById('recruiter-id-input'),
         progressPercent: document.getElementById('progress-percent'),

@@ -51,22 +51,18 @@ function playTone(freq, type, duration, startTime = 0, volume = 0.1) {
 
 /**
  * Plays a specific "Success Chime" (Duolingo-style two-tone ding).
- * Supports combo pitch shifting.
  */
-function playSuccessChime(combo = 0) {
+function playSuccessChime() {
     const ctx = getContext();
     const now = ctx.currentTime;
     
-    // Pitch shift calculation (Limit to max 2x speed for sanity)
-    const pitchMult = 1 + Math.min(combo * 0.1, 1.0); 
-    
-    // Tone 1: High C (C6) -> shifted
-    playTone(1046.50 * pitchMult, 'sine', 0.15, 0, 0.2); 
-    // Tone 2: High E (E6) -> shifted
-    playTone(1318.51 * pitchMult, 'sine', 0.3, 0.08, 0.2);
+    // Tone 1: High C (C6)
+    playTone(1046.50, 'sine', 0.15, 0, 0.2); 
+    // Tone 2: High E (E6) - Harmonious Major 3rd, slightly delayed
+    playTone(1318.51, 'sine', 0.3, 0.08, 0.2);
     
     // Add a subtle "sparkle" overtone
-    playTone(2093.00 * pitchMult, 'triangle', 0.1, 0.08, 0.05);
+    playTone(2093.00, 'triangle', 0.1, 0.08, 0.05);
 }
 
 /**
@@ -129,9 +125,8 @@ function playFanfare() {
 /**
  * Plays a sound effect.
  * @param {'correct'|'incorrect'|'click'|'start'|'finish'|'hover'|'achievement'|'flip'} soundName
- * @param {number} [param=0] - Optional parameter (e.g. Combo count for 'correct')
  */
-export function playSound(soundName, param = 0) {
+export function playSound(soundName) {
     // 1. Haptic Feedback (Always run if available)
     if (navigator.vibrate) {
         try {
@@ -168,7 +163,7 @@ export function playSound(soundName, param = 0) {
             break;
 
         case 'correct':
-            playSuccessChime(param);
+            playSuccessChime();
             break;
 
         case 'incorrect':

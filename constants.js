@@ -1,4 +1,8 @@
 
+
+
+
+
 export const LOCAL_STORAGE_KEYS = {
     CONFIG: 'knowledge-tester-config',
     LIBRARY: 'knowledge-tester-library',
@@ -17,7 +21,6 @@ export const ROUTES = [
     // Main navigation routes
     { path: '/', module: 'home', name: 'Home', icon: 'home', nav: true },
     { path: '/topics', module: 'topic-list', name: 'Journeys', icon: 'git-branch', nav: true },
-    { path: '/report', module: 'report', name: 'Analytics', icon: 'activity', nav: true }, /* NEW REPORT MODULE */
     { path: '/library', module: 'library', name: 'Library', icon: 'book', nav: true },
     { path: '/history', module: 'history', name: 'History', icon: 'archive', nav: true },
     { path: '/leaderboard', module: 'leaderboard', name: 'Leaderboard', icon: 'award', nav: true },

@@ -273,28 +273,6 @@ function updateNetworkStatus() {
     }
 }
 
-// --- GLOBAL KEYBOARD SHORTCUTS ---
-function initGlobalShortcuts() {
-    document.addEventListener('keydown', (e) => {
-        // CMD/CTRL + K to Focus Command Bar (if on Home)
-        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-            e.preventDefault();
-            
-            // If not on home, go home first
-            if (window.location.hash !== '' && window.location.hash !== '#/') {
-                window.location.hash = '/';
-                setTimeout(() => {
-                    const input = document.getElementById('command-input');
-                    if (input) input.focus();
-                }, 500);
-            } else {
-                const input = document.getElementById('command-input');
-                if (input) input.focus();
-            }
-        }
-    });
-}
-
 // --- APP INITIALIZATION ---
 function initializeAppContent(user) {
     const splashScreen = document.getElementById('splash-screen');
@@ -317,7 +295,6 @@ function initializeAppContent(user) {
         gamificationService.init();
         initVoice();
         backgroundService.init(); // Heavy canvas, defer it!
-        initGlobalShortcuts(); // Initialize Shortcuts
     });
 
     // 4. Setup Listeners
