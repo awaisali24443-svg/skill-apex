@@ -379,11 +379,9 @@ function showAuthScreen() {
     
     if (splashScreen && !splashScreen.classList.contains('hidden')) {
         splashScreen.classList.add('hidden');
-        const onAuthTransitionEnd = () => {
+        splashScreen.addEventListener('transitionend', () => {
             splashScreen.style.display = 'none';
-        };
-        splashScreen.addEventListener('transitionend', onAuthTransitionEnd, { once: true });
-        setTimeout(onAuthTransitionEnd, 400); // Robust fallback
+        }, { once: true });
     }
     
     document.getElementById('app-wrapper').style.display = 'none'; 
