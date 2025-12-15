@@ -9,9 +9,8 @@ import { showConfirmationModal } from '../../services/modalService.js';
 import * as stateService from '../../services/stateService.js';
 import { showToast } from '../../services/toastService.js';
 import * as vfxService from '../../services/vfxService.js';
-import * as firebaseService from '../../services/firebaseService.js';
 
-let levelData = {};
+let levelData = { questions: [] };
 let currentQuestions = [];
 let currentQuestionIndex = 0;
 let score = 0;
@@ -37,17 +36,16 @@ function switchState(targetStateId) {
     // 1. Hide all
     document.querySelectorAll('.game-level-state').forEach(s => {
         s.classList.remove('active');
-        s.style.display = 'none'; // Force hide
+        s.style.display = 'none'; 
     });
     
     // 2. Show target
     const target = document.getElementById(targetStateId);
     if (target) {
-        target.style.display = 'flex'; // Force flex
-        // Small delay to allow display:flex to apply before adding active class for opacity transition
-        requestAnimationFrame(() => {
-            target.classList.add('active');
-        });
+        target.style.display = 'flex';
+        // Force reflow
+        void target.offsetWidth; 
+        target.classList.add('active');
     } else {
         console.error(`State ${targetStateId} not found!`);
     }
@@ -55,9 +53,10 @@ function switchState(targetStateId) {
 
 async function startLevel() {
     const { topic, level, totalLevels } = levelContext;
+    console.log("Starting Level:", topic, level);
     
     if (!topic) {
-        showToast("Navigation lost. Returning to base...", "error");
+        showToast("Navigation lost. Returning...", "error");
         setTimeout(() => window.location.hash = '#/topics', 1000);
         return;
     }
@@ -67,19 +66,16 @@ async function startLevel() {
     const loadingTextEl = document.getElementById('loading-status-text');
     if (loadingTextEl) loadingTextEl.textContent = `Initializing Level ${level}...`;
 
-    // SAFETY NET: If API hangs, force fallback after 8 seconds
+    // SAFETY NET: Force fallback if API takes > 6 seconds
     loadingTimeout = setTimeout(() => {
-        if (document.getElementById('level-loading-state').style.display !== 'none') {
-            console.warn("Level load timed out. Using emergency protocol.");
-            showToast("Connection slow. Switching to offline data.", "info");
-            useFallbackData();
-        }
-    }, 8000);
+        console.warn("Level load timed out. Forcing fallback.");
+        useFallbackData("Connection slow. Switching to offline data.");
+    }, 6000);
     
     try {
         // 1. Try Cache First
         const cachedLevel = levelCacheService.getLevel(topic, level);
-        if (cachedLevel) {
+        if (cachedLevel && cachedLevel.questions && cachedLevel.questions.length > 0) {
             console.log("Loaded level from cache");
             clearTimeout(loadingTimeout);
             levelData = cachedLevel;
@@ -88,20 +84,23 @@ async function startLevel() {
         }
 
         // 2. Fetch from API (Parallel)
+        // We catch errors individually so one failure doesn't kill the other
         const [lessonData, questionsData] = await Promise.all([
-            apiService.generateLevelLesson({ topic, level, totalLevels }),
-            apiService.generateLevelQuestions({ topic, level, totalLevels })
+            apiService.generateLevelLesson({ topic, level, totalLevels }).catch(e => null),
+            apiService.generateLevelQuestions({ topic, level, totalLevels }).catch(e => null)
         ]);
 
         clearTimeout(loadingTimeout);
 
         // 3. Validate Data
-        if (!lessonData?.lesson || !questionsData?.questions || questionsData.questions.length === 0) {
-            throw new Error("Invalid data received from Core.");
+        if (!questionsData || !questionsData.questions || questionsData.questions.length === 0) {
+            console.warn("API returned invalid question data. Using fallback.");
+            useFallbackData();
+            return;
         }
 
         levelData = {
-            lesson: lessonData.lesson,
+            lesson: lessonData?.lesson || "Briefing unavailable.",
             questions: questionsData.questions
         };
         
@@ -115,33 +114,35 @@ async function startLevel() {
 
     } catch (error) {
         clearTimeout(loadingTimeout);
-        console.error("Level Start Error:", error);
+        console.error("Level Start Critical Error:", error);
         useFallbackData();
     }
 }
 
-function useFallbackData() {
-    // Manually construct fallback if API failed
+function useFallbackData(msg = "Offline Mode Active") {
+    showToast(msg, "info");
+    
+    // Hardcoded Fallback to ensure UI NEVER stays blank
     levelData = {
-        lesson: `### Offline Mode Active\n\nWe couldn't reach the neural core for **${levelContext.topic}**. \n\nDon't worry, you can still train. Focus on the basics and answer the questions to the best of your ability. Connectivity will be restored shortly.`,
+        lesson: `### Offline Simulation\n\n**Topic:** ${levelContext.topic || 'Unknown'}\n\nWe are currently operating in offline mode. The neural link to the central core is temporarily unavailable. \n\nProceed with the simulation exercises below to maintain proficiency.`,
         questions: [
             {
-                question: "What is the primary goal of this topic?",
-                options: ["Confusion", "Mastery", "Sleep", "Nothing"],
-                correctAnswerIndex: 1,
-                explanation: "The goal of any learning journey is mastery of the subject."
-            },
-            {
-                question: "If you encounter a bug, what should you do?",
-                options: ["Panic", "Debug it", "Ignore it", "Delete system32"],
-                correctAnswerIndex: 1,
-                explanation: "Debugging is the process of finding and resolving defects."
-            },
-            {
-                question: "True or False: Consistency is key.",
-                options: ["True", "False", "Maybe", "Depends"],
+                question: `(Offline) What is the key concept of ${levelContext.topic || 'this topic'}?`,
+                options: ["Consistency", "Magic", "Luck", "Chaos"],
                 correctAnswerIndex: 0,
-                explanation: "Regular practice is the most effective way to learn."
+                explanation: "Consistency is key to mastering any skill."
+            },
+            {
+                question: "Which action helps retention most?",
+                options: ["Sleeping", "Active Recall", "Eating", "Watching TV"],
+                correctAnswerIndex: 1,
+                explanation: "Active Recall forces your brain to retrieve information."
+            },
+            {
+                question: "True or False: Learning is a linear process.",
+                options: ["True", "False", "Maybe", "Unknown"],
+                correctAnswerIndex: 1,
+                explanation: "Learning often involves plateaus and breakthroughs."
             }
         ]
     };
@@ -149,6 +150,10 @@ function useFallbackData() {
 }
 
 function processLevelData() {
+    if (!levelData.questions || levelData.questions.length === 0) {
+        useFallbackData(); // Infinite safety loop breaker
+        return;
+    }
     currentQuestions = levelData.questions;
     renderLesson();
 }
@@ -163,8 +168,8 @@ async function preloadNextLevel() {
             apiService.generateLevelLesson({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels }),
             apiService.generateLevelQuestions({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels })
         ]);
-        if(lData?.lesson && qData?.questions) {
-            levelCacheService.saveLevel(levelContext.topic, nextLevel, { lesson: lData.lesson, questions: qData.questions });
+        if(qData?.questions) {
+            levelCacheService.saveLevel(levelContext.topic, nextLevel, { lesson: lData?.lesson || "", questions: qData.questions });
         }
     } catch(e) { /* Ignore background errors */ }
 }
@@ -174,7 +179,7 @@ function renderLesson() {
     
     const container = elements.lessonBody;
     if (container) {
-        container.innerHTML = markdownService.render(levelData.lesson || "Content unavailable.");
+        container.innerHTML = markdownService.render(levelData.lesson || "Content loading...");
         container.scrollTop = 0;
     }
     
@@ -199,6 +204,12 @@ function renderQuestion() {
     answered = false;
     selectedAnswerIndex = null;
     hintUsedThisQuestion = false;
+    
+    if (!currentQuestions || currentQuestions.length === 0) {
+        showResults();
+        return;
+    }
+
     const question = currentQuestions[currentQuestionIndex];
     
     if (elements.quizProgressText) elements.quizProgressText.textContent = `Question ${currentQuestionIndex + 1} / ${currentQuestions.length}`;
@@ -390,15 +401,18 @@ function showResults() {
     soundService.playSound(passed ? 'finish' : 'incorrect');
     if (passed) vfxService.burstConfetti();
 
-    historyService.addQuizAttempt({
-        topic: `${levelContext.topic} - Level ${levelContext.level}`,
-        score: score,
-        totalQuestions: total,
-        startTime: Date.now(),
-        endTime: Date.now(),
-        xpGained: xpGainedThisLevel,
-        fastAnswers: fastAnswersCount
-    });
+    // Only record if we actually played
+    if (total > 0) {
+        historyService.addQuizAttempt({
+            topic: `${levelContext.topic} - Level ${levelContext.level}`,
+            score: score,
+            totalQuestions: total,
+            startTime: Date.now(),
+            endTime: Date.now(),
+            xpGained: xpGainedThisLevel,
+            fastAnswers: fastAnswersCount
+        });
+    }
 
     if (passed) {
         if (elements.resultsTitle) elements.resultsTitle.textContent = 'Mission Complete';

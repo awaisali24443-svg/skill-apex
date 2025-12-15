@@ -24,15 +24,20 @@ if (API_KEY) {
 }
 
 const PORT = process.env.PORT || 3000;
-let topicsCache = null;
 let prebakedLevelsCache = {};
 
-// Load Prebaked Data
+// Load Prebaked Data (Robust)
 (async () => {
     try {
-        const data = await fs.readFile(path.join(__dirname, 'data', 'prebaked_levels.json'), 'utf-8');
+        const dataPath = path.join(__dirname, 'data', 'prebaked_levels.json');
+        console.log(`Loading prebaked data from: ${dataPath}`);
+        const data = await fs.readFile(dataPath, 'utf-8');
         prebakedLevelsCache = JSON.parse(data);
-    } catch (e) { /* Ignore */ }
+        console.log(`✅ Prebaked levels loaded. Keys: ${Object.keys(prebakedLevelsCache).length}`);
+    } catch (e) { 
+        console.error("⚠️ Failed to load prebaked_levels.json:", e.message);
+        prebakedLevelsCache = {}; // Ensure defined
+    }
 })();
 
 // --- JSON EXTRACTION ENGINE (ROBUST) ---
@@ -83,6 +88,18 @@ const FALLBACK = {
                 options: ["It is unknown", "It relies on fundamentals", "It is magic", "It is irrelevant"],
                 correctAnswerIndex: 1,
                 explanation: "This is a fallback question because the AI connection failed."
+            },
+            {
+                question: "Which of these is a best practice?",
+                options: ["Doing nothing", "Consistent Practice", "Rushing", "Quitting"],
+                correctAnswerIndex: 1,
+                explanation: "Consistency is key."
+            },
+            {
+                question: "True or False: Errors help you learn.",
+                options: ["True", "False", "Maybe", "Depends"],
+                correctAnswerIndex: 0,
+                explanation: "Debugging is learning."
             }
         ]
     }),
@@ -144,7 +161,10 @@ app.post('/api/generate-level-questions', async (req, res) => {
     const { topic, level } = req.body;
     
     // Check prebaked
-    if (prebakedLevelsCache[topic]) return res.json({ questions: prebakedLevelsCache[topic].questions });
+    if (prebakedLevelsCache[topic]) {
+        console.log(`Using prebaked data for: ${topic}`);
+        return res.json({ questions: prebakedLevelsCache[topic].questions });
+    }
 
     const result = await generateWithFallback(
         (model) => ai.models.generateContent({

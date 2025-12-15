@@ -19,15 +19,18 @@
     padding: var(--space-md);
     position: absolute;
     inset: 0;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    /* Removed background-color to restore transparency */
+    /* Removed default opacity: 0 to ensure visibility safety */
 }
 
 .game-level-state.active {
     display: flex !important; /* Force override */
     z-index: 10;
-    opacity: 1;
+    animation: fade-in-state 0.3s ease-out forwards;
+}
+
+@keyframes fade-in-state {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 /* --- CARD STYLES --- */
@@ -47,11 +50,9 @@
     
     color: var(--color-text);
     padding: var(--space-xl);
-    animation: scale-up 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    /* Animation removed from here to rely on parent state fade-in */
     position: relative;
 }
-
-@keyframes scale-up { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
 /* --- LOADING STATE --- */
 .mini-logo-pulse {
