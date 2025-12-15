@@ -7,6 +7,7 @@ import * as apiService from '../../services/apiService.js';
 import * as firebaseService from '../../services/firebaseService.js';
 import { showToast } from '../../services/toastService.js';
 import { showConfirmationModal } from '../../services/modalService.js';
+import * as vfxService from '../../services/vfxService.js';
 
 let elements = {};
 
@@ -23,6 +24,12 @@ function updateGreeting() {
     }
 }
 
+function updateHUD() {
+    const stats = gamificationService.getStats();
+    if(elements.levelDisplay) elements.levelDisplay.textContent = stats.level;
+    if(elements.streakDisplay) elements.streakDisplay.textContent = stats.currentStreak;
+}
+
 function renderResumeCard() {
     const journeys = learningPathService.getAllJourneys();
     
@@ -36,14 +43,14 @@ function renderResumeCard() {
 
     if (elements.resumeSection) {
         elements.resumeSection.innerHTML = `
-            <div class="resume-card">
-                <div class="resume-info">
-                    <h4>Active Mission</h4>
+            <div class="mission-content">
+                <div class="mission-info">
+                    <h4>Current Objective</h4>
                     <h2>${activeJourney.goal}</h2>
-                    <div class="resume-progress-row">
-                        <span>Level ${activeJourney.currentLevel} / ${activeJourney.totalLevels}</span>
-                        <div class="resume-track">
-                            <div class="resume-fill" style="width: ${progressPercent}%"></div>
+                    <div class="mission-meta">
+                        <span>Lvl ${activeJourney.currentLevel}</span>
+                        <div class="mission-progress-track">
+                            <div class="mission-progress-fill" style="width: ${progressPercent}%"></div>
                         </div>
                         <span>${progressPercent}%</span>
                     </div>
@@ -51,6 +58,10 @@ function renderResumeCard() {
                 <button class="btn btn-primary btn-resume" id="resume-btn" data-id="${activeJourney.id}">
                     RESUME
                 </button>
+            </div>
+            <!-- Background Decoration -->
+            <div style="position:absolute; right:-20px; bottom:-20px; opacity:0.05; transform:rotate(-15deg);">
+                <svg class="icon" style="width:150px; height:150px;"><use href="assets/icons/feather-sprite.svg#target"/></svg>
             </div>
         `;
         elements.resumeSection.style.display = 'block';
@@ -74,35 +85,31 @@ function handleResume(journey) {
 }
 
 function renderRecentHistory() {
-    const history = historyService.getRecentHistory(3);
+    const history = historyService.getRecentHistory(4); // Show 4 items
     const container = document.getElementById('recent-history-container');
     if (!container) return;
     
     if (history.length === 0) {
         container.innerHTML = `
-            <div class="empty-state-compact" style="color:var(--color-text-secondary); font-size:0.9rem; padding:10px;">
-                No recent logs. Initialize a protocol to begin.
+            <div style="color:var(--color-text-secondary); font-size:0.85rem; padding:10px; font-style:italic;">
+                No recent activity logged.
             </div>`;
         return;
     }
     
     container.innerHTML = history.map(item => `
-        <div class="history-item-row">
-            <div class="hist-info">
-                <h4 style="margin:0; font-size:0.95rem; color:var(--color-text);">${item.topic}</h4>
-                <span class="hist-meta" style="font-size:0.8rem; color:var(--color-text-secondary);">
-                    ${item.score}/${item.totalQuestions} Correct • ${new Date(item.date).toLocaleDateString()}
-                </span>
-            </div>
-            <button class="btn-icon-tiny retry-btn" data-topic="${item.topic}" style="color:var(--color-primary); cursor:pointer; background:none; border:none;">
-                <svg class="icon" style="width:16px;height:16px;"><use href="assets/icons/feather-sprite.svg#rotate-ccw"/></svg>
-            </button>
+        <div class="history-mini-item clickable-history" data-topic="${item.topic}">
+            <span class="h-topic">${item.topic}</span>
+            <span class="h-meta">
+                ${item.type === 'aural' ? 'Audio' : item.score + '/' + item.totalQuestions}
+            </span>
         </div>
     `).join('');
 
-    container.querySelectorAll('.retry-btn').forEach(btn => {
+    container.querySelectorAll('.clickable-history').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const topic = e.currentTarget.dataset.topic.split(' - ')[0]; 
+            const topicFull = e.currentTarget.dataset.topic;
+            const topic = topicFull.split(' - ')[0]; 
             initiateQuizGeneration(topic);
         });
     });
@@ -119,10 +126,11 @@ async function handleFileSelect(event) {
     event.target.value = ''; // Reset
 
     const submitBtn = document.getElementById('command-submit-btn');
+    const originalIcon = submitBtn.innerHTML;
     submitBtn.innerHTML = `<div class="spinner" style="width:16px;height:16px;border:2px solid white;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;"></div>`;
     submitBtn.disabled = true;
     
-    elements.commandInput.value = "Scanning Document...";
+    elements.commandInput.value = "Scanning Data Stream...";
     elements.commandInput.disabled = true;
 
     const reader = new FileReader();
@@ -138,18 +146,18 @@ async function handleFileSelect(event) {
             const outline = await apiService.generateCurriculumOutline({ topic: plan.topicName, totalLevels: plan.totalLevels });
             
             const curriculumHtml = `
-                <p><strong>Detected Topic:</strong> ${plan.topicName}</p>
-                <p>The AI has generated a <strong>${plan.totalLevels}-level journey</strong> based on your image.</p>
-                <ul class="curriculum-list" style="max-height:150px;overflow-y:auto;background:var(--color-background);padding:10px;border-radius:8px;">
+                <p><strong>Detected Protocol:</strong> ${plan.topicName}</p>
+                <p>Generated ${plan.totalLevels}-Level Learning Path.</p>
+                <ul class="curriculum-list" style="max-height:150px;overflow-y:auto;background:var(--color-background);padding:10px;border-radius:8px;margin-top:10px;">
                     ${outline.chapters.map(chapter => `<li>${chapter}</li>`).join('')}
                 </ul>
             `;
 
             const confirmed = await showConfirmationModal({
-                title: 'Image Analyzed',
+                title: 'Scan Complete',
                 message: curriculumHtml,
-                confirmText: 'Begin Training',
-                cancelText: 'Cancel'
+                confirmText: 'Execute',
+                cancelText: 'Discard'
             });
 
             if (confirmed) {
@@ -162,11 +170,11 @@ async function handleFileSelect(event) {
 
         } catch (error) {
             console.error(error);
-            showToast(`Analysis failed: ${error.message}`, 'error');
+            showToast(`Scan failed: ${error.message}`, 'error');
         } finally {
             elements.commandInput.value = '';
             elements.commandInput.disabled = false;
-            submitBtn.innerHTML = `<svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>`;
+            submitBtn.innerHTML = originalIcon;
             submitBtn.disabled = false;
         }
     };
@@ -177,6 +185,8 @@ async function initiateQuizGeneration(topic) {
     if (!topic) return;
 
     const cmdBtn = document.getElementById('command-submit-btn');
+    const originalIcon = cmdBtn ? cmdBtn.innerHTML : '';
+    
     if (cmdBtn) {
         cmdBtn.innerHTML = `<div class="spinner" style="width:16px;height:16px;border:2px solid white;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;"></div>`;
         cmdBtn.disabled = true;
@@ -200,7 +210,7 @@ async function initiateQuizGeneration(topic) {
         console.error(error);
         showToast("Error initializing protocol.", "error");
         if (cmdBtn) {
-            cmdBtn.innerHTML = `<svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>`;
+            cmdBtn.innerHTML = originalIcon;
             cmdBtn.disabled = false;
         }
     }
@@ -209,6 +219,8 @@ async function initiateQuizGeneration(topic) {
 export function init() {
     elements = {
         greeting: document.getElementById('home-greeting'),
+        levelDisplay: document.getElementById('home-level'),
+        streakDisplay: document.getElementById('home-streak'),
         resumeSection: document.getElementById('resume-section'),
         commandForm: document.getElementById('command-form'),
         commandInput: document.getElementById('command-input'),
@@ -217,6 +229,7 @@ export function init() {
     };
 
     updateGreeting();
+    updateHUD();
     renderResumeCard();
     renderRecentHistory();
 
@@ -227,7 +240,7 @@ export function init() {
             if (topic) {
                 initiateQuizGeneration(topic);
             } else {
-                showToast("Please enter a protocol name.", "info");
+                showToast("Please enter a directive.", "info");
                 elements.commandInput.focus();
             }
         });
@@ -236,7 +249,8 @@ export function init() {
     if (elements.cameraBtn) elements.cameraBtn.addEventListener('click', handleCameraClick);
     if (elements.fileInput) elements.fileInput.addEventListener('change', handleFileSelect);
 
-    document.querySelectorAll('.preset-topic').forEach(card => {
+    // Quick Access Protocol Cards
+    document.querySelectorAll('.protocol-card').forEach(card => {
         card.addEventListener('click', () => {
             const topic = card.dataset.topic;
             initiateQuizGeneration(topic);

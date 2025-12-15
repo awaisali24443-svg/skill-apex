@@ -1,114 +1,97 @@
 
-<div class="page-container home-container">
+<div class="page-container home-dashboard">
     
-    <!-- 1. Hero Section with Graphic -->
-    <header class="home-hero">
-        <div class="hero-content">
-            <h1 id="home-greeting">Welcome, Agent.</h1>
-            <p class="hero-sub">The Infinite Knowledge Engine is online.</p>
-            <div class="hero-status-badge">
-                <span class="status-dot"></span>
-                SYSTEM OPTIMAL
-            </div>
+    <!-- 1. Status HUD (Heads-Up Display) -->
+    <header class="dashboard-hud">
+        <div class="hud-left">
+            <h1 id="home-greeting">System Initializing...</h1>
+            <p class="hud-subtitle">Neural Interface Active</p>
         </div>
-        <!-- Digital Globe Graphic -->
-        <div class="hero-graphic globe-container">
-            <div class="wireframe-globe">
-                <div class="globe-ring"></div>
-                <div class="globe-ring"></div>
-                <div class="globe-ring"></div>
-                <div class="globe-core"></div>
+        <div class="hud-right">
+            <div class="stat-pill level-pill">
+                <span class="pill-label">LVL</span>
+                <span class="pill-value" id="home-level">--</span>
+            </div>
+            <div class="stat-pill streak-pill">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#zap"/></svg>
+                <span class="pill-value" id="home-streak">0</span>
+            </div>
+            <div class="system-status-indicator">
+                <div class="status-ring"></div>
+                <div class="status-core"></div>
             </div>
         </div>
     </header>
 
-    <!-- 2. Active Mission (Resume) -->
-    <div id="resume-section" class="resume-section" style="display: none;"></div>
-
-    <!-- 3. Command Input (Updated with Camera) -->
-    <section class="command-section">
-        <div class="command-bar-wrapper">
-            <div class="command-icon">
-                <svg class="icon"><use href="assets/icons/feather-sprite.svg#search"/></svg>
+    <!-- 2. Command Interface -->
+    <section class="command-interface">
+        <form id="command-form" class="cyber-input-form">
+            <div class="input-wrapper">
+                <div class="input-icon-zone">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#search"/></svg>
+                </div>
+                <input type="text" id="command-input" class="cyber-input" placeholder="Input directive, topic, or query..." autocomplete="off">
+                <div class="input-actions">
+                    <button type="button" id="home-camera-btn" class="action-btn" title="Scan Document/Image" aria-label="Upload Image">
+                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#camera"/></svg>
+                    </button>
+                </div>
             </div>
-            <form id="command-form" class="command-form">
-                <input type="text" id="command-input" class="command-input" placeholder="Enter topic or upload image..." autocomplete="off">
-                
-                <!-- Camera Button -->
-                <button type="button" id="home-camera-btn" class="btn-input-action" aria-label="Upload Image">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#box"/></svg>
+            <button type="submit" id="command-submit-btn" class="cyber-submit-btn" aria-label="Execute">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
+            </button>
+        </form>
+        <input type="file" id="home-file-input" accept="image/*,application/pdf" style="display: none;">
+    </section>
+
+    <!-- 3. Dashboard Grid -->
+    <div class="dashboard-grid">
+        
+        <!-- A. Priority Mission (Resume) -->
+        <div id="resume-section" class="dashboard-panel mission-panel" style="display: none;">
+            <!-- Injected by JS -->
+        </div>
+
+        <!-- B. Featured Protocols -->
+        <div class="dashboard-panel protocols-panel">
+            <div class="panel-header">
+                <h3><svg class="icon"><use href="assets/icons/feather-sprite.svg#grid"/></svg> Quick Access</h3>
+                <a href="#/topics" class="panel-link">View All</a>
+            </div>
+            <div class="protocol-grid">
+                <button class="protocol-card" data-topic="Cybersecurity">
+                    <div class="protocol-icon red"><svg class="icon"><use href="assets/icons/feather-sprite.svg#shield"/></svg></div>
+                    <span>Security</span>
                 </button>
-                <input type="file" id="home-file-input" accept="image/*,application/pdf" style="display: none;">
-
-                <button type="submit" id="command-submit-btn" class="btn-command-go" aria-label="Go">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
+                <button class="protocol-card" data-topic="Artificial Intelligence">
+                    <div class="protocol-icon blue"><svg class="icon"><use href="assets/icons/feather-sprite.svg#cpu"/></svg></div>
+                    <span>AI Core</span>
                 </button>
-            </form>
-        </div>
-    </section>
-
-    <!-- 4. Featured Protocols -->
-    <section class="featured-section">
-        <h3 class="section-label">Top Protocols</h3>
-        <div class="expo-grid">
-            <div class="card expo-card preset-topic" data-topic="Cybersecurity & Ethical Hacking">
-                <div class="card-bg-glow red"></div>
-                <div class="expo-icon-wrapper red">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#shield"/></svg>
-                </div>
-                <div class="expo-content">
-                    <h2>Security</h2>
-                    <p>Defend the network.</p>
-                </div>
-            </div>
-
-            <div class="card expo-card preset-topic" data-topic="Artificial Intelligence & LLMs">
-                <div class="card-bg-glow blue"></div>
-                <div class="expo-icon-wrapper blue">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#cpu"/></svg>
-                </div>
-                <div class="expo-content">
-                    <h2>AI Core</h2>
-                    <p>Master machine learning.</p>
-                </div>
-            </div>
-
-            <div class="card expo-card preset-topic" data-topic="Astrophysics & Space Exploration">
-                <div class="card-bg-glow purple"></div>
-                <div class="expo-icon-wrapper purple">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#circle"/></svg>
-                </div>
-                <div class="expo-content">
-                    <h2>Cosmos</h2>
-                    <p>Explore the stars.</p>
-                </div>
-            </div>
-
-            <div class="card expo-card preset-topic" data-topic="Blockchain & Cryptography">
-                <div class="card-bg-glow gold"></div>
-                <div class="expo-icon-wrapper gold">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#lock"/></svg>
-                </div>
-                <div class="expo-content">
-                    <h2>Crypto</h2>
-                    <p>Decentralized future.</p>
-                </div>
+                <button class="protocol-card" data-topic="Web Development">
+                    <div class="protocol-icon purple"><svg class="icon"><use href="assets/icons/feather-sprite.svg#layers"/></svg></div>
+                    <span>Web Dev</span>
+                </button>
+                <button class="protocol-card" data-topic="Crypto & Blockchain">
+                    <div class="protocol-icon gold"><svg class="icon"><use href="assets/icons/feather-sprite.svg#lock"/></svg></div>
+                    <span>Crypto</span>
+                </button>
             </div>
         </div>
-    </section>
 
-    <!-- Recent Logs -->
-    <section class="recent-section">
-        <h3 class="section-label">Recent Activity</h3>
-        <div id="recent-history-container" class="recent-list"></div>
-    </section>
-
-    <!-- Official Credits Footer (Matches Poster) -->
-    <footer class="official-footer">
-        <div class="credits-row">
-            <span>Supervisor: <strong style="color:var(--color-primary)">Dr. Abdul Wahid Afridi</strong></span>
-            <span class="divider">•</span>
-            <span>Developer: <strong style="color:var(--color-secondary)">Awais Ali</strong></span>
+        <!-- C. Recent Activity Logs -->
+        <div class="dashboard-panel history-panel">
+            <div class="panel-header">
+                <h3><svg class="icon"><use href="assets/icons/feather-sprite.svg#activity"/></svg> Recent Logs</h3>
+            </div>
+            <div id="recent-history-container" class="history-list">
+                <!-- Injected by JS -->
+            </div>
         </div>
+
+    </div>
+    
+    <footer class="home-footer">
+        <span class="footer-status">SYSTEM NOMINAL</span>
+        <span class="footer-credit">ARCHITECT: AWAIS ALI</span>
     </footer>
 </div>
