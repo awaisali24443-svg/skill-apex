@@ -16,16 +16,21 @@ const __dirname = path.dirname(__filename);
 
 // ==================================================================================
 // API KEY CONFIGURATION
-// Checking both common variable names for maximum compatibility
+// Checking both common variable names and sanitizing input (trimming whitespace)
 // ==================================================================================
-const API_KEY = process.env.API_KEY || process.env.GEMINI_API_KEY;
+const rawKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
+const API_KEY = rawKey ? rawKey.trim() : "";
 
 console.log("--- SYSTEM STARTUP DIAGNOSTICS ---");
 console.log(`Node Version: ${process.version}`);
 if (API_KEY) {
-    console.log(`✅ API Key Detected. Length: ${API_KEY.length} characters.`);
+    // Show first 4 chars for verification, hide the rest
+    const masked = API_KEY.substring(0, 4) + "...";
+    console.log(`✅ API Key Detected: ${masked} (Length: ${API_KEY.length})`);
+    console.log(`   Mode: ONLINE (AI Connected)`);
 } else {
-    console.error("❌ FATAL: API_KEY (or GEMINI_API_KEY) is missing in environment variables!");
+    console.error("❌ FATAL: API_KEY is missing in environment variables!");
+    console.log(`   Mode: OFFLINE (Fallback Data Only)`);
 }
 console.log("----------------------------------");
 
@@ -35,11 +40,13 @@ let topicsCache = null;
 let prebakedLevelsCache = {}; // IN-MEMORY DATABASE
 
 // --- MODEL CONFIGURATION WITH FALLBACK ---
-// We try models in this order to ensure stability
+// We try models in this order to ensure stability. 
+// 1.5 Flash is currently the most stable/standard. 
+// 2.5 Flash is preview (better reasoning but might be rate limited).
 const MODELS_TO_TRY = [
-    'gemini-2.5-flash',
-    'gemini-2.0-flash-exp',
-    'gemini-1.5-flash' // Ultimate fallback
+    'gemini-1.5-flash',      // Stable: Safest for production
+    'gemini-2.5-flash',      // Preview: Better reasoning
+    'gemini-2.0-flash-exp'   // Experimental: Fallback
 ];
 
 // Load Prebaked Data on Start
