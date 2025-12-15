@@ -8,187 +8,130 @@
                 <svg class="icon"><use href="assets/icons/feather-sprite.svg#settings"/></svg>
             </div>
             <div>
-                <h1>System Configuration</h1>
-                <p>Personalize your neural interface parameters.</p>
+                <h1>System Config</h1>
+                <p>Manage neural link parameters.</p>
             </div>
         </div>
     </header>
 
     <div class="settings-grid">
         
-        <!-- 1. Account Identity Card (Wide) -->
+        <!-- 1. Account Identity Card (Compact & Actionable) -->
         <section class="card settings-card account-card">
-            <div class="card-bg-gradient"></div>
-            <div class="account-content">
-                <div class="account-details">
-                    <span class="label-tiny">Active Neural Link</span>
-                    <h2 id="account-email-display" class="account-email">Guest User</h2>
+            <div class="card-bg-mesh"></div>
+            <div class="account-flex">
+                <div class="account-info">
+                    <span class="label-tiny">Current Session</span>
+                    <h2 id="account-email-display" class="account-email">Guest Mode</h2>
                     <div id="guest-warning" class="status-badge warning" style="display: none;">
-                        <span class="status-dot"></span> Offline Mode
+                        <span class="status-dot"></span> Offline
                     </div>
                 </div>
-                <div class="account-actions">
-                    <button id="logout-btn" class="btn btn-glass-danger">
-                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#power"/></svg>
-                        <span id="logout-btn-text">Disconnect</span>
-                    </button>
-                </div>
+                <button id="logout-btn" class="btn btn-outline-danger btn-sm">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#power"/></svg>
+                    <span id="logout-btn-text">End Session</span>
+                </button>
             </div>
             
-            <!-- Auth Upsell (Hidden by default) -->
-            <div id="upgrade-account-section" class="auth-upsell" style="display: none;">
-                <p>Link connection to save progress across devices.</p>
-                <div class="upsell-actions">
-                    <button id="link-google-btn" class="btn btn-google-glass">
-                        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .533 5.333.533 12S5.867 24 12.48 24c3.44 0 6.053-1.147 8.213-3.307 2.2-2.2 2.88-5.227 2.88-7.773 0-.773-.08-1.52-.227-2H12.48z"/></svg>
-                        <span>Link Google</span>
-                    </button>
-                    <button id="link-email-btn" class="btn btn-glass">Link Email</button>
-                </div>
+            <!-- Link Buttons -->
+            <div id="upgrade-account-section" class="auth-upgrade-row" style="display: none;">
+                <button id="link-google-btn" class="btn btn-google-flat">
+                    <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .533 5.333.533 12S5.867 24 12.48 24c3.44 0 6.053-1.147 8.213-3.307 2.2-2.2 2.88-5.227 2.88-7.773 0-.773-.08-1.52-.227-2H12.48z"/></svg>
+                    <span>Link Google</span>
+                </button>
+                <button id="link-email-btn" class="btn btn-glass-flat">Link Email</button>
             </div>
         </section>
 
-        <!-- 2. Persona Selector (Full Width) -->
+        <!-- 2. Persona Selector -->
         <section class="card settings-card persona-section">
-            <div class="card-header">
-                <svg class="icon"><use href="assets/icons/feather-sprite.svg#cpu"/></svg>
-                <h3>AI Personality Matrix</h3>
+            <div class="card-header-compact">
+                <h3>AI Persona</h3>
             </div>
-            <div class="persona-grid-modern">
-                <button class="persona-option" data-persona="apex">
-                    <div class="p-visual apex-visual">
-                        <div class="p-icon"><svg><use href="assets/icons/feather-sprite.svg#zap"/></svg></div>
-                    </div>
-                    <div class="p-info">
-                        <span class="p-name">Apex</span>
-                        <span class="p-desc">Balanced</span>
-                    </div>
-                    <div class="selection-ring"></div>
+            <div class="persona-grid-tight">
+                <button class="persona-chip" data-persona="apex">
+                    <div class="chip-icon"><svg><use href="assets/icons/feather-sprite.svg#zap"/></svg></div>
+                    <span>Apex</span>
                 </button>
-                
-                <button class="persona-option" data-persona="sage">
-                    <div class="p-visual sage-visual">
-                        <div class="p-icon"><svg><use href="assets/icons/feather-sprite.svg#book-open"/></svg></div>
-                    </div>
-                    <div class="p-info">
-                        <span class="p-name">Sage</span>
-                        <span class="p-desc">Socratic</span>
-                    </div>
-                    <div class="selection-ring"></div>
+                <button class="persona-chip" data-persona="sage">
+                    <div class="chip-icon"><svg><use href="assets/icons/feather-sprite.svg#book-open"/></svg></div>
+                    <span>Sage</span>
                 </button>
-                
-                <button class="persona-option" data-persona="commander">
-                    <div class="p-visual cmd-visual">
-                        <div class="p-icon"><svg><use href="assets/icons/feather-sprite.svg#shield"/></svg></div>
-                    </div>
-                    <div class="p-info">
-                        <span class="p-name">Commander</span>
-                        <span class="p-desc">Strict</span>
-                    </div>
-                    <div class="selection-ring"></div>
+                <button class="persona-chip" data-persona="commander">
+                    <div class="chip-icon"><svg><use href="assets/icons/feather-sprite.svg#shield"/></svg></div>
+                    <span>Cmdr</span>
                 </button>
-                
-                <button class="persona-option" data-persona="eli5">
-                    <div class="p-visual eli5-visual">
-                        <div class="p-icon"><svg><use href="assets/icons/feather-sprite.svg#star"/></svg></div>
-                    </div>
-                    <div class="p-info">
-                        <span class="p-name">ELI5</span>
-                        <span class="p-desc">Simple</span>
-                    </div>
-                    <div class="selection-ring"></div>
+                <button class="persona-chip" data-persona="eli5">
+                    <div class="chip-icon"><svg><use href="assets/icons/feather-sprite.svg#star"/></svg></div>
+                    <span>ELI5</span>
                 </button>
             </div>
         </section>
 
         <!-- 3. Interface Settings -->
         <section class="card settings-card controls-card">
-            <div class="card-header">
-                <svg class="icon"><use href="assets/icons/feather-sprite.svg#sliders"/></svg>
-                <h3>Interface Controls</h3>
+            <div class="card-header-compact">
+                <h3>Interface</h3>
             </div>
             
-            <div class="control-row">
-                <div class="control-label">
-                    <span>Visual Theme</span>
-                    <small>Daylight / Midnight</small>
+            <div class="control-grid">
+                <div class="control-item">
+                    <div class="control-meta">
+                        <span class="c-label">Theme</span>
+                    </div>
+                    <div class="theme-toggle-wrapper small">
+                        <button class="theme-switch-btn" data-theme="light-cyber" id="theme-light-btn">
+                            <svg class="icon"><use href="assets/icons/feather-sprite.svg#sun"/></svg>
+                        </button>
+                        <button class="theme-switch-btn" data-theme="dark-cyber" id="theme-dark-btn">
+                            <svg class="icon"><use href="assets/icons/feather-sprite.svg#moon"/></svg>
+                        </button>
+                        <div class="theme-active-bg"></div>
+                    </div>
                 </div>
-                <div class="theme-toggle-wrapper">
-                    <button class="theme-switch-btn" data-theme="light-cyber" id="theme-light-btn">
-                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#sun"/></svg>
-                    </button>
-                    <button class="theme-switch-btn" data-theme="dark-cyber" id="theme-dark-btn">
-                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#moon"/></svg>
-                    </button>
-                    <div class="theme-active-bg"></div>
-                </div>
-            </div>
 
-            <div class="control-row">
-                <div class="control-label">
-                    <span>Haptic & Audio</span>
-                    <small>UI Feedback sounds</small>
+                <div class="control-item">
+                    <div class="control-meta">
+                        <span class="c-label">SFX</span>
+                    </div>
+                    <label class="toggle-switch small">
+                        <input type="checkbox" id="sound-toggle">
+                        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                    </label>
                 </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="sound-toggle">
-                    <span class="toggle-track">
-                        <span class="toggle-thumb"></span>
-                    </span>
-                </label>
-            </div>
-
-            <div class="control-row">
-                <div class="control-label">
-                    <span>Motion Intensity</span>
-                    <small>UI Animations</small>
-                </div>
-                <div class="range-wrapper">
-                    <input type="range" id="animation-slider" min="0" max="2" step="1" class="cyber-range">
-                    <div class="range-ticks">
-                        <span>Off</span>
-                        <span>Mid</span>
-                        <span>Max</span>
+                
+                <div class="control-item">
+                    <div class="control-meta">
+                        <span class="c-label">Motion</span>
+                    </div>
+                    <div class="range-wrapper small">
+                        <input type="range" id="animation-slider" min="0" max="2" step="1" class="cyber-range">
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- 4. Diagnostics & Danger -->
-        <section class="settings-sidebar-col">
-            <!-- Field of Study -->
-            <div class="card settings-card mini-card" id="change-interest-btn" role="button">
-                <div class="mini-icon-box blue-box">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#target"/></svg>
-                </div>
-                <div class="mini-content">
-                    <h4>Field of Study</h4>
-                    <p>Change Focus</p>
-                </div>
-                <svg class="icon chevron"><use href="assets/icons/feather-sprite.svg#chevron-right"/></svg>
-            </div>
-
-            <!-- Diagnostics -->
-            <div class="card settings-card diagnostics-card">
-                <div class="card-header-small">
-                    <h4>System Diagnostics</h4>
-                </div>
-                <div class="diag-buttons">
-                    <button id="test-connection-btn" class="btn btn-ghost">
-                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#activity"/></svg>
-                        Ping AI Core
-                    </button>
-                    <button id="clear-data-btn" class="btn btn-ghost-danger">
-                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#trash-2"/></svg>
-                        Flush Cache
-                    </button>
-                </div>
-            </div>
-            
-            <div class="version-tag">
-                <span>SKILL APEX v7.0.0</span>
-                <span>BUILD: STABLE</span>
-            </div>
+        <!-- 4. Utilities Row -->
+        <section class="card settings-card utils-card">
+             <div class="utils-grid">
+                 <button id="change-interest-btn" class="util-btn">
+                     <div class="util-icon blue"><svg class="icon"><use href="assets/icons/feather-sprite.svg#target"/></svg></div>
+                     <span>Change Focus</span>
+                 </button>
+                 <button id="test-connection-btn" class="util-btn">
+                     <div class="util-icon green"><svg class="icon"><use href="assets/icons/feather-sprite.svg#activity"/></svg></div>
+                     <span>Ping AI</span>
+                 </button>
+                 <button id="clear-data-btn" class="util-btn">
+                     <div class="util-icon red"><svg class="icon"><use href="assets/icons/feather-sprite.svg#trash-2"/></svg></div>
+                     <span>Clear Cache</span>
+                 </button>
+             </div>
         </section>
+        
+        <div class="version-info">
+            <span>SKILL APEX v8.0.0</span>
+        </div>
 
     </div>
 </div>

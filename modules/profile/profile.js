@@ -38,9 +38,9 @@ function renderProfile() {
     const userId = firebaseService.getUserId() || 'GUEST';
 
     // 1. Identity
-    elements.nameDisplay.textContent = displayName;
-    elements.nameInput.value = displayName;
-    elements.emailText.textContent = firebaseService.getUserEmail() || 'Guest Mode';
+    if (elements.nameDisplay) elements.nameDisplay.textContent = displayName;
+    if (elements.nameInput) elements.nameInput.value = displayName;
+    if (elements.emailText) elements.emailText.textContent = firebaseService.getUserEmail() || 'Guest Mode';
     
     // 2. Avatar (Code Based)
     if (elements.avatarContainer) {
@@ -48,15 +48,17 @@ function renderProfile() {
     }
     
     // 3. Recruitment Link
-    const shortId = userId.substring(0, 6).toUpperCase();
-    elements.recruiterInput.value = `https://skill-apex.onrender.com/join/${shortId}`;
+    if (elements.recruiterInput) {
+        const shortId = userId.substring(0, 6).toUpperCase();
+        elements.recruiterInput.value = `https://skill-apex.onrender.com/join/${shortId}`;
+    }
 
     // 4. Circle Progress
     const xpCurrent = stats.xp;
     const xpNext = gamificationService.getXpForNextLevel(stats.level);
     const percent = Math.min(100, Math.round((xpCurrent / xpNext) * 100)) || 0;
     
-    elements.progressPercent.textContent = `${percent}%`;
+    if (elements.progressPercent) elements.progressPercent.textContent = `${percent}%`;
     setTimeout(() => {
         if(elements.progressCircle) elements.progressCircle.setAttribute('stroke-dasharray', `${percent}, 100`);
     }, 100);
@@ -71,6 +73,7 @@ function renderProfile() {
 
 function renderAchievements(stats) {
     const grid = document.getElementById('achievements-grid');
+    if (!grid) return;
     grid.innerHTML = '';
 
     const achievements = gamificationService.getAchievementsProgress();
@@ -165,6 +168,7 @@ function handleFileSelect(file) {
 
 function setupDragDrop() {
     const zone = document.getElementById('avatar-drop-zone');
+    if (!zone) return;
     
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         zone.addEventListener(eventName, (e) => {
@@ -173,7 +177,7 @@ function setupDragDrop() {
         }, false);
     });
 
-    zone.addEventListener('dragenter', () => zone.querySelector('.avatar-ring').style.transform = 'scale(1.1)');
+    zone.addEventListener('dragenter', () => zone.querySelector('.avatar-ring').style.transform = 'scale(1.05)');
     zone.addEventListener('dragleave', () => zone.querySelector('.avatar-ring').style.transform = 'scale(1)');
     
     zone.addEventListener('drop', (e) => {
@@ -182,8 +186,14 @@ function setupDragDrop() {
         handleFileSelect(dt.files[0]);
     });
     
-    zone.addEventListener('click', () => elements.fileInput.click());
-    elements.fileInput.addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
+    // Wire up the click to the HIDDEN file input
+    zone.addEventListener('click', () => {
+        if(elements.fileInput) elements.fileInput.click();
+    });
+    
+    if (elements.fileInput) {
+        elements.fileInput.addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
+    }
 }
 
 export function init() {
@@ -209,10 +219,10 @@ export function init() {
     renderProfile();
     setupDragDrop();
     
-    elements.editBtn.addEventListener('click', toggleNameEdit);
-    elements.saveNameBtn.addEventListener('click', saveName);
+    if (elements.editBtn) elements.editBtn.addEventListener('click', toggleNameEdit);
+    if (elements.saveNameBtn) elements.saveNameBtn.addEventListener('click', saveName);
     
-    elements.copyBtn.addEventListener('click', () => {
+    if (elements.copyBtn) elements.copyBtn.addEventListener('click', () => {
         navigator.clipboard.writeText(elements.recruiterInput.value);
         showToast('Link copied.', 'success');
     });

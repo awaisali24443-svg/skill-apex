@@ -25,16 +25,13 @@
                         <svg class="icon"><use href="assets/icons/feather-sprite.svg#camera"/></svg>
                     </div>
                 </div>
-                <input type="file" id="avatar-upload" accept="image/*" class="sr-only">
+                <!-- Hidden Input -->
+                <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
             </div>
 
             <div class="profile-info">
                 <div class="name-row">
                     <h2 id="user-name-display">User Profile</h2>
-                    <!-- Settings Button (Critical for Mobile) -->
-                    <a href="#/settings" class="btn-icon-tiny" title="Settings" style="margin-left:8px; opacity:0.8;">
-                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#settings"/></svg>
-                    </a>
                     <button class="btn-icon-tiny" id="edit-profile-btn" title="Edit Name">
                         <svg class="icon"><use href="assets/icons/feather-sprite.svg#edit-2"/></svg>
                     </button>
@@ -62,7 +59,7 @@
                 <h3>Skill Progress</h3>
             </div>
             <div class="progress-circle-container">
-                <!-- SVG Circle Progress handled by CSS/JS -->
+                <!-- SVG Circle Progress -->
                 <svg viewBox="0 0 36 36" class="circular-chart blue">
                     <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                     <path class="circle" id="progress-circle-path" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
