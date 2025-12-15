@@ -52,38 +52,88 @@ body {
     width: 100%;
     position: relative;
     overflow: hidden;
-    background-color: var(--color-background);
+    /* Transparent body to let global background show through */
+    background-color: transparent; 
 }
 
-/* --- BACKGROUND FX --- */
-#bg-canvas {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 0; pointer-events: none; 
-    opacity: 0.5;
-    mix-blend-mode: multiply; /* Better blending on light backgrounds */
-}
-
-/* --- DYNAMIC TECH BACKGROUND --- */
+/* --- STYLISH MESH GRADIENT BACKGROUND --- */
 #global-background {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
     z-index: -1;
-    background: var(--color-background);
-    
-    /* 1. Subtle Dot Grid (Blueprint Look) */
-    background-image: 
-        radial-gradient(var(--color-border) 1px, transparent 1px),
-        radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.1) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.1) 0px, transparent 50%);
-    background-size: 24px 24px, 100% 100%, 100% 100%;
-    
-    animation: aurora-shift 20s ease-in-out infinite alternate;
+    background-color: var(--color-background);
+    overflow: hidden;
 }
 
-@keyframes aurora-shift {
-    0% { background-position: 0 0, 0% 0%, 0% 0%; }
-    100% { background-position: 24px 24px, 0% 0%, 0% 0%; }
+/* The Mesh Blobs */
+.blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.7; /* Increased slightly since particles are gone */
+    animation: blob-float 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Blob 1: Primary (e.g. Purple/Indigo) */
+.blob-1 {
+    top: -10%;
+    left: -10%;
+    width: 50vw;
+    height: 50vw;
+    background: var(--color-primary);
+    animation-delay: 0s;
+}
+
+/* Blob 2: Secondary (e.g. Pink/Violet) */
+.blob-2 {
+    bottom: -10%;
+    right: -10%;
+    width: 60vw;
+    height: 60vw;
+    background: var(--color-secondary);
+    animation-delay: -5s;
+}
+
+/* Blob 3: Accent (e.g. Cyan/Blue) */
+.blob-3 {
+    top: 20%;
+    right: 10%;
+    width: 40vw;
+    height: 40vw;
+    background: var(--color-accent);
+    opacity: 0.5;
+    animation-delay: -10s;
+}
+
+/* Blob 4: Contrast (e.g. Warm glow) */
+.blob-4 {
+    bottom: 10%;
+    left: 10%;
+    width: 35vw;
+    height: 35vw;
+    background: #ff0080; /* Hot Pink fallback or mixed color */
+    opacity: 0.4;
+    animation-delay: -15s;
+}
+
+@keyframes blob-float {
+    0% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(30px, -50px) scale(1.1); }
+    66% { transform: translate(-20px, 20px) scale(0.9); }
+    100% { transform: translate(0, 0) scale(1); }
+}
+
+/* Digital Grid Overlay - Made subtler */
+.bg-grid-overlay {
+    position: absolute;
+    inset: 0;
+    /* Noise texture to make it look premium/frosted */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E"),
+                      linear-gradient(rgba(120, 120, 120, 0.05) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(120, 120, 120, 0.05) 1px, transparent 1px);
+    background-size: 100px 100px, 60px 60px, 60px 60px;
+    pointer-events: none;
+    z-index: 1; /* Above blobs */
 }
 
 /* --- CUSTOM SCROLLBARS --- */
