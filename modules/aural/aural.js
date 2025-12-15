@@ -1,5 +1,4 @@
 
-import { GoogleGenAI } from "@google/genai";
 import * as stateService from '../../services/stateService.js';
 import * as apiService from '../../services/apiService.js';
 import * as historyService from '../../services/historyService.js';
@@ -348,9 +347,22 @@ async function startSession() {
     updateUI(STATE.CONNECTING);
     chatManager = new ChatManager(elements.log);
     
+    // 1. Initialize Audio Contexts immediately (User Interaction Context)
+    try {
+        inputAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+        outputAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+        // Force resume in case browser suspended it
+        await inputAudioContext.resume();
+        await outputAudioContext.resume();
+    } catch(e) {
+        updateUI(STATE.ERROR, "Audio Init Failed");
+        return;
+    }
+
+    // 2. Fetch Client
     const client = await getAIClient();
     if (!client) {
-        updateUI(STATE.ERROR, "AUTH KEY MISSING");
+        updateUI(STATE.ERROR, "AI Authentication Failed");
         return;
     }
 
@@ -359,7 +371,6 @@ async function startSession() {
     const contextTopic = navigationContext?.topic || null;
     const contextLevel = navigationContext?.level || 1;
     
-    // Update Context Badge
     if (contextTopic) {
         elements.contextBadge.style.display = 'flex';
         elements.contextText.textContent = contextTopic;
@@ -380,13 +391,10 @@ async function startSession() {
     3. **Tools**: If the user asks for a quiz or test, USE the 'get_quiz_question' tool.
     4. **Teaching**: Use analogies. Connect abstract code to physical objects.
     5. **Interaction**: Don't just lecture. Ask checking questions.
-    6. **Topic Guardrails**: You are an Educational AI. STRICTLY REFUSE non-educational topics (Politics, Gossip, Dating, NSFW). Pivot back to learning immediately.
+    6. **Topic Guardrails**: You are an Educational AI. STRICTLY REFUSE non-educational topics.
     `;
 
     try {
-        inputAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-        outputAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
-        
         mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         
         analyser = inputAudioContext.createAnalyser();
@@ -447,7 +455,7 @@ async function startSession() {
 
     } catch (e) {
         console.error("Start Session Failed:", e);
-        updateUI(STATE.ERROR, "Access Denied (Microphone)");
+        updateUI(STATE.ERROR, "Microphone Access Denied");
         stopSession();
     }
 }
@@ -478,7 +486,7 @@ async function handleServerMessage(message) {
         queueAudioOutput(modelAudio);
     }
 
-    // 3. Handle Transcriptions (Chat Bubbles) - THE CORE REQUEST
+    // 3. Handle Transcriptions (Chat Bubbles)
     if(chatManager) {
         // User Input Transcription
         if (serverContent?.inputTranscription) {

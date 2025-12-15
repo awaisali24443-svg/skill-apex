@@ -53,9 +53,6 @@ let topicsCache = null;
 let prebakedLevelsCache = {}; // IN-MEMORY DATABASE
 
 // --- MODEL CONFIGURATION WITH FALLBACK ---
-// We try models in this order to ensure stability. 
-// 1.5 Flash is currently the most stable/standard. 
-// 2.5 Flash is preview (better reasoning but might be rate limited).
 const MODELS_TO_TRY = [
     'gemini-1.5-flash',      // Stable: Safest for production
     'gemini-2.5-flash',      // Preview: Better reasoning
@@ -77,27 +74,14 @@ const MODELS_TO_TRY = [
 const PERSONA_DEFINITIONS = {
     apex: `
 ROLE & IDENTITY
-You are an elite educational intelligence engine designed for live demonstrations, public expos, and first-time users.
+You are an elite educational intelligence engine.
 Your behavior must always feel intelligent, calm, adaptive, and helpful.
 
-You are not a chatbot.
-You are a learning decision-maker.
-
----
-
 CORE PRINCIPLE (NON-NEGOTIABLE)
-Never generate content immediately.
-Always THINK FIRST.
-
-Before responding, silently perform:
 1. Topic analysis
 2. Feasibility evaluation
 3. Output mode decision
 4. Quality check
-
-Only then generate content.
-
----
 
 STEP 3 — CONTENT QUALITY RULES (CRITICAL)
 All generated content must:
@@ -105,60 +89,17 @@ All generated content must:
 - Be short and clear
 - Use examples and analogies
 - Avoid unnecessary jargon
-- Feel human and confident
-- Be suitable for expo visitors with low patience
-
-❌ No filler
-❌ No forced quizzes
-❌ No over-explaining
-
----
 
 STEP 4 — QUIZ INTELLIGENCE RULES
-When quizzes are generated:
 Questions must:
 - Directly match lesson content
 - Be unambiguous
 - Have one clear best answer
 
-Difficulty must:
-- Match the lesson depth
-
 NEVER quiz:
 - Opinions
 - Abstract philosophy
 - Pure facts with no learning value
-
----
-
-STEP 5 — DYNAMIC JOURNEY CREATION
-When journeys are created:
-- Start simple
-- Increase depth gradually
-- Adapt explanations naturally
-- Keep steps visually and mentally digestible
-- Avoid overwhelming users
-
-Journeys should feel like: "A smart teacher guiding me"
-
----
-
-STEP 6 — EDGE CASE HANDLING
-If the user enters random or nonsense text, respond calmly and helpfully by creating a generic logic or critical thinking module.
-NEVER break immersion.
-
----
-
-STEP 7 — CONSISTENCY & TRUST
-Always maintain:
-- High quality
-- Calm confidence
-- Logical flow
-
-Never contradict yourself
-Never surprise the user negatively
-
-Your goal is: "This AI feels smart."
     `,
     sage: `Persona: A Wise Grandmaster. Tone: Deep, metaphorical, concise.`,
     commander: `Persona: Tactical Mission Control. Tone: Urgent, military, precise.`,
@@ -173,7 +114,10 @@ function getSystemInstruction(personaKey = 'apex') {
     - REFUSE to discuss: Politics, Celebrity Gossip, Religion, Dating/Personal Relationships, or Illegal Activities.
     - IF asked about these: Politely pivot back to technology, science, history, or the user's current learning topic.
 
-    RULES: JSON output only. No markdown formatting outside the JSON string.`;
+    IMPORTANT FORMATTING RULE:
+    You must output ONLY valid JSON.
+    Do NOT include Markdown code blocks (like \`\`\`json).
+    Do NOT include any preamble or explanation text outside the JSON object.`;
 }
 
 // --- FALLBACK DATA GENERATORS (Safety Net) ---
@@ -217,13 +161,18 @@ const FALLBACK_DATA = {
     })
 };
 
-// --- VALIDATION HELPERS ---
+// --- ROBUST JSON PARSER ---
 function cleanAndParseJSON(text) {
     if (!text) return null;
+    let clean = text.trim();
+    
+    // Remove Markdown Code Blocks if present
+    clean = clean.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '');
+    
     try {
-        return JSON.parse(text);
+        return JSON.parse(clean);
     } catch (e) {
-        let clean = text.replace(/```json/g, '').replace(/```/g, '');
+        // Aggressive extraction: find first { or [ and last } or ]
         const firstOpen = clean.search(/[\{\[]/);
         let lastClose = -1;
         for (let i = clean.length - 1; i >= 0; i--) {
@@ -234,8 +183,12 @@ function cleanAndParseJSON(text) {
         }
         if (firstOpen !== -1 && lastClose !== -1) {
             clean = clean.substring(firstOpen, lastClose + 1);
+            try { return JSON.parse(clean); } catch (e2) { 
+                console.error("JSON Parse Failed even after cleanup:", clean.substring(0, 50) + "...");
+                return null; 
+            }
         }
-        try { return JSON.parse(clean); } catch (e2) { return null; }
+        return null;
     }
 }
 
@@ -281,12 +234,11 @@ async function generateWithFallback(callFn) {
 // --- SERVICE FUNCTIONS ---
 
 async function generateJourneyPlan(topic, persona) {
-    // 1. Check Offline DB (Instant)
     if (prebakedLevelsCache[topic]) {
         console.log(`⚡ Serving Prebaked Journey for: ${topic}`);
         return {
             topicName: topic,
-            totalLevels: 50, // Standard size for prebaked
+            totalLevels: 50,
             description: "High-performance training module loaded from local archives. 100% Reliable.",
             isPrebaked: true
         };
@@ -294,7 +246,7 @@ async function generateJourneyPlan(topic, persona) {
 
     if (!ai) return FALLBACK_DATA.journey(topic);
     
-    const prompt = `Analyze "${topic}". Output JSON: { topicName, totalLevels (10-50), description }`;
+    const prompt = `Analyze "${topic}". Output pure JSON with keys: topicName, totalLevels (10-50), description.`;
     try {
         const response = await generateWithFallback((model) => ai.models.generateContent({
             model: model, 
@@ -316,7 +268,6 @@ async function generateJourneyPlan(topic, persona) {
         return cleanAndParseJSON(response.text) || FALLBACK_DATA.journey(topic);
     } catch (error) {
         console.error("Error in generateJourneyPlan:", error);
-        // Special case for debug tool - rethrow to see message
         if (topic === "PING_TEST_PROTOCOL_DEBUG") throw error;
         return FALLBACK_DATA.journey(topic);
     }
@@ -327,7 +278,7 @@ async function generateCurriculumOutline(topic, totalLevels, persona) {
     try {
         const response = await generateWithFallback((model) => ai.models.generateContent({
             model: model,
-            contents: `Topic: ${topic}. Break into 4 chapter titles. JSON: { chapters: [] }`,
+            contents: `Topic: ${topic}. Break into 4 chapter titles. Return JSON { chapters: ["title1", "title2", ...] }`,
             config: { 
                 responseMimeType: 'application/json',
                 systemInstruction: getSystemInstruction(persona)
@@ -341,7 +292,6 @@ async function generateCurriculumOutline(topic, totalLevels, persona) {
 }
 
 async function generateLevelQuestions(topic, level, totalLevels, persona) {
-    // 1. Check Prebaked DB
     if (prebakedLevelsCache[topic]) {
         console.log(`⚡ Serving Prebaked Questions for: ${topic}`);
         const data = prebakedLevelsCache[topic];
@@ -359,7 +309,8 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
     const prompt = `
     Topic: ${topic}. Level: ${level}/${totalLevels}. ${focusArea}
     Generate 3 engaging multiple choice questions.
-    Make the scenarios realistic but fun.
+    Output JSON format with array of objects.
+    Each object has: question, options (array of 4 strings), correctAnswerIndex (0-3), explanation.
     `;
 
     try {
@@ -395,6 +346,7 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
         if (data && data.questions && Array.isArray(data.questions)) {
             return data;
         } else {
+            console.warn("Invalid data structure received from AI, using fallback.");
             return FALLBACK_DATA.questions(topic);
         }
     } catch (error) {
@@ -404,7 +356,6 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
 }
 
 async function generateLevelLesson(topic, level, totalLevels, questions, persona) {
-    // 1. Check Prebaked DB
     if (prebakedLevelsCache[topic]) {
         console.log(`⚡ Serving Prebaked Lesson for: ${topic}`);
         return { lesson: prebakedLevelsCache[topic].lesson };
@@ -413,21 +364,11 @@ async function generateLevelLesson(topic, level, totalLevels, questions, persona
     if (!ai) return FALLBACK_DATA.lesson(topic);
     
     try {
-        // Optimized prompt for speed and engagement
         const prompt = `
         Topic: ${topic}. Level: ${level}/${totalLevels}.
         Goal: Explain the ONE most critical concept for this level.
-        
-        Constraints:
-        1. MAX 80 WORDS. Keep it punchy.
-        2. START with a fun analogy (e.g. "Think of X like a Pizza...").
-        3. NO academic intros like "In this lesson...".
-        4. Make it sound like a cool tech blog post.
-        
-        Format:
-        - ⚡ **The Hook**: The analogy.
-        - 🧠 **The Logic**: What it actually is.
-        - 🚀 **Real World**: Why it matters.
+        Constraints: MAX 80 WORDS. Fun analogy.
+        Output JSON: { "lesson": "markdown string here" }
         `;
 
         const response = await generateWithFallback((model) => ai.models.generateContent({
