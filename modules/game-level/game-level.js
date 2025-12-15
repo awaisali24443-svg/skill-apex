@@ -62,7 +62,6 @@ async function startLevel() {
     
     try {
         // PERFORMANCE BOOST: Parallel Fetching
-        // Fetch lesson AND questions simultaneously to cut wait time in half
         const [lessonData, questionsData] = await Promise.all([
             apiService.generateLevelLesson({ topic, level, totalLevels }),
             apiService.generateLevelQuestions({ topic, level, totalLevels })
@@ -78,7 +77,6 @@ async function startLevel() {
         currentQuestions = levelData.questions;
         renderLesson();
         
-        // Very delayed preloading to keep channel clear
         setTimeout(() => preloadNextLevel(), 8000);
 
     } catch (error) {
@@ -95,7 +93,6 @@ async function preloadNextLevel() {
     if (levelCacheService.getLevel(levelContext.topic, nextLevel)) return;
 
     try {
-        // Parallel preloading too
         const [lData, qData] = await Promise.all([
             apiService.generateLevelLesson({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels }),
             apiService.generateLevelQuestions({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels })
@@ -110,8 +107,6 @@ async function preloadNextLevel() {
 
 function renderLessonTypewriter(htmlContent) {
     if (typewriterInterval) clearInterval(typewriterInterval);
-    // Directly inject HTML for instant gratification in Expo mode
-    // Typewriter is cool but slows down the "fast" feel requested
     const container = elements.lessonBody;
     container.innerHTML = htmlContent;
     container.scrollTop = 0;
@@ -170,7 +165,7 @@ function renderQuestion() {
 }
 
 function startTimer() {
-    clearInterval(timerInterval);
+    if (timerInterval) clearInterval(timerInterval); // CRITICAL FIX: Clear old timer
     timeLeft = 60;
     
     elements.timerText.textContent = `00:${timeLeft}`;
