@@ -55,7 +55,8 @@ function loadSettings() {
 }
 
 function updateThemeUI(currentTheme) {
-    const indicator = document.querySelector('.segmented-control-indicator');
+    // FIX: Changed selector to match HTML class .theme-active-bg
+    const indicator = document.querySelector('.theme-active-bg');
     const lightBtn = document.getElementById('theme-light-btn');
     const darkBtn = document.getElementById('theme-dark-btn');
     
@@ -68,19 +69,19 @@ function updateThemeUI(currentTheme) {
         darkBtn.setAttribute('aria-pressed', 'true');
         lightBtn.setAttribute('aria-pressed', 'false');
         // Move indicator to the right
-        indicator.style.left = '50%';
-        indicator.style.width = '50%';
+        indicator.style.left = 'calc(50% + 1px)';
+        indicator.style.width = 'calc(50% - 4px)';
     } else {
         lightBtn.setAttribute('aria-pressed', 'true');
         darkBtn.setAttribute('aria-pressed', 'false');
         // Move indicator to the left
-        indicator.style.left = '4px'; // 4px padding in css
+        indicator.style.left = '3px';
         indicator.style.width = 'calc(50% - 4px)';
     }
 }
 
 function handleThemeChange(event) {
-    const btn = event.target.closest('.theme-btn');
+    const btn = event.target.closest('.theme-btn') || event.target.closest('.theme-switch-btn');
     if (!btn) return;
     
     const theme = btn.dataset.theme;
@@ -98,7 +99,7 @@ function handleAnimationChange() {
 }
 
 function handlePersonaSelect(event) {
-    const card = event.target.closest('.persona-card');
+    const card = event.target.closest('.persona-chip') || event.target.closest('.persona-card');
     if (!card) return;
     
     const persona = card.dataset.persona;
@@ -361,7 +362,7 @@ export function init() {
         animationSlider: document.getElementById('animation-slider'),
         clearDataBtn: document.getElementById('clear-data-btn'),
         changeInterestBtn: document.getElementById('change-interest-btn'),
-        personaCards: document.querySelectorAll('.persona-card'),
+        personaCards: document.querySelectorAll('.persona-chip'), // FIX: Selector to match HTML
         installSection: document.getElementById('install-app-section'),
         installBtn: document.getElementById('install-app-btn'),
         emailDisplay: document.getElementById('account-email-display'),
@@ -413,9 +414,11 @@ export function init() {
     if (elements.testConnectionBtn) elements.testConnectionBtn.addEventListener('click', handleTestConnection);
     
     // Persona Selection
-    elements.personaCards.forEach(card => {
-        card.addEventListener('click', handlePersonaSelect);
-    });
+    if (elements.personaCards) {
+        elements.personaCards.forEach(card => {
+            card.addEventListener('click', handlePersonaSelect);
+        });
+    }
 
     if (window.deferredInstallPrompt && elements.installSection) {
         elements.installSection.style.display = 'block';
