@@ -31,7 +31,11 @@
             <div class="profile-info">
                 <div class="name-row">
                     <h2 id="user-name-display">User Profile</h2>
-                    <button class="btn-icon-tiny" id="edit-profile-btn">
+                    <!-- Settings Button (Critical for Mobile) -->
+                    <a href="#/settings" class="btn-icon-tiny" title="Settings" style="margin-left:8px; opacity:0.8;">
+                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#settings"/></svg>
+                    </a>
+                    <button class="btn-icon-tiny" id="edit-profile-btn" title="Edit Name">
                         <svg class="icon"><use href="assets/icons/feather-sprite.svg#edit-2"/></svg>
                     </button>
                 </div>
