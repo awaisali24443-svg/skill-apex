@@ -114,7 +114,8 @@ function showTranscript(item) {
     } else {
         transcriptBody.innerHTML = '<p style="text-align:center; color:var(--color-text-secondary);">No transcript available for this session.</p>';
     }
-    transcriptModal.style.display = 'block';
+    // IMPORTANT: Use FLEX to ensure centering via CSS
+    transcriptModal.style.display = 'flex';
 }
 
 function handleGridClick(event) {

@@ -246,7 +246,8 @@ async function handleLinkGoogle() {
 }
 
 function openLinkEmailModal() {
-    elements.linkEmailModal.style.display = 'block';
+    // IMPORTANT: Use FLEX to ensure centering via CSS
+    elements.linkEmailModal.style.display = 'flex';
     elements.linkEmailInput.focus();
 }
 
@@ -296,7 +297,8 @@ async function handleConfirmLinkEmail() {
 // --- Password Update Logic ---
 
 function openUpdatePassModal() {
-    elements.updatePassModal.style.display = 'block';
+    // IMPORTANT: Use FLEX to ensure centering via CSS
+    elements.updatePassModal.style.display = 'flex';
     elements.currentPassInput.value = '';
     elements.newPassInput.value = '';
     elements.updatePassError.style.display = 'none';

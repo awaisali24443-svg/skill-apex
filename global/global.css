@@ -541,7 +541,10 @@ html, body {
     animation: fadeInBackdrop 0.3s forwards;
 }
 
-/* Force flex even if JS sets display: block */
+/* 
+   Force flex even if JS sets display: block.
+   This fixes issues where legacy JS calls might break centering.
+*/
 .modal-backdrop[style*="display: block"] {
     display: flex !important;
 }
@@ -588,6 +591,45 @@ html, body {
     gap: 1rem;
     margin-top: auto;
     padding-top: 1rem;
+}
+
+/* --- TOAST NOTIFICATIONS (POPUP FIX) --- */
+#toast-container {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none; /* Allow clicks through empty space */
+}
+
+.toast {
+    pointer-events: auto;
+    background: var(--color-surface);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    padding: 12px 24px;
+    border-radius: 50px;
+    box-shadow: var(--shadow-float);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideDownToast 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.toast-success { border-color: var(--color-success); color: var(--color-success); background: var(--color-success-bg); }
+.toast-error { border-color: var(--color-error); color: var(--color-error); background: var(--color-error-bg); }
+.toast-info { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-surface); }
+
+@keyframes slideDownToast {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* Mobile Modal Adjustments */
