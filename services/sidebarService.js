@@ -60,7 +60,7 @@ function createNavLink(route, extraClass = '') {
 }
 
 /**
- * Renders the Floating Glass Sidebar.
+ * Renders the Side Navigation.
  */
 export function renderSidebar(container) {
     if (!container) return;
@@ -82,48 +82,49 @@ export function renderSidebar(container) {
     const avatarHTML = generateAvatarHTML(photoURL, displayName);
 
     const html = `
-        <!-- Top: Brand Logo (Left Aligned on Expand) -->
-        <a href="#/" class="sidebar-brand-section" aria-label="Skill Apex Home">
-            <div class="logo-container-sidebar">
-                <!-- Simple "F" style letter or Icon -->
-                <span>SA</span>
+        <div class="sidebar-inner">
+            <!-- 1. Brand Header -->
+            <div class="sidebar-brand-section">
+                <h1 class="brand-text-sidebar">Skill Apex</h1>
             </div>
-            <span class="brand-text-sidebar">Skill Apex</span>
-        </a>
 
-        <!-- Profile Card (Glass Style) -->
-        <div class="sidebar-profile-header">
-            <div class="profile-avatar-container">
-                ${avatarHTML}
-            </div>
-            <div class="profile-info-text">
-                <span class="profile-name">${displayName}</span>
-                <span class="profile-role">My Account</span>
-            </div>
-            <svg class="icon profile-chevron"><use href="assets/icons/feather-sprite.svg#chevron-down"/></svg>
-        </div>
-
-        <!-- Menu Label -->
-        <div class="sidebar-menu-label">MENU</div>
-        
-        <!-- Combined Navigation Links Container -->
-        <nav class="sidebar-links">
-            ${filteredMainLinks.map(link => createNavLink(link)).join('')}
-            
-            <!-- Adaptive Spacer: Grows on Desktop, Hides on Mobile -->
-            <div class="sidebar-spacer adaptive-spacer"></div>
-            
-            <!-- Settings Link: Part of flow on Mobile, Pushed down on Desktop -->
-            ${settingsLink ? createNavLink(settingsLink, 'settings-link') : ''}
-            
-            <!-- Logout: Desktop Only Button (Mobile uses Settings page) -->
-            <button id="sidebar-logout-btn" class="sidebar-link logout-link desktop-only">
-                <div class="link-icon-wrapper">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#power"/></svg>
+            <!-- 2. Profile Section -->
+            <div class="sidebar-profile-header">
+                <div class="profile-avatar-container">
+                    ${avatarHTML}
                 </div>
-                <span class="text">Log Out</span>
-            </button>
-        </nav>
+                <div class="profile-info-text">
+                    <span class="profile-name">${displayName}</span>
+                    <span class="profile-role">My Account</span>
+                </div>
+                <svg class="icon profile-chevron"><use href="assets/icons/feather-sprite.svg#chevron-down"/></svg>
+            </div>
+
+            <!-- 3. Divider line -->
+            <div class="sidebar-divider"></div>
+
+            <!-- 4. Menu Label -->
+            <div class="sidebar-menu-label">MENU</div>
+            
+            <!-- 5. Navigation Links -->
+            <nav class="sidebar-links">
+                ${filteredMainLinks.map(link => createNavLink(link)).join('')}
+            </nav>
+
+            <!-- 6. Footer Area (Settings/Logout) -->
+            <div class="sidebar-footer">
+                <div class="sidebar-divider"></div>
+                
+                ${settingsLink ? createNavLink(settingsLink, 'settings-link') : ''}
+                
+                <button id="sidebar-logout-btn" class="sidebar-link logout-link desktop-only">
+                    <div class="link-icon-wrapper">
+                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#power"/></svg>
+                    </div>
+                    <span class="text">Log Out</span>
+                </button>
+            </div>
+        </div>
     `;
     
     container.innerHTML = html;
