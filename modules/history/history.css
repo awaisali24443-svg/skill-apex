@@ -70,7 +70,6 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-md);
-    /* FIX: Use surface-to-hover gradient instead of surface-to-dark for light mode compatibility */
     background: linear-gradient(to right, var(--color-surface), var(--color-surface-hover));
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius);
@@ -94,9 +93,7 @@
     gap: var(--space-lg);
 }
 
-.history-info {
-    flex-grow: 1;
-}
+.history-info { flex-grow: 1; }
 
 .history-date {
     font-family: var(--font-family-mono);
@@ -107,55 +104,30 @@
 }
 
 .history-topic {
-    font-size: 1.2rem;
-    margin: 0 0 8px 0;
-    color: var(--color-text);
+    font-size: 1.2rem; margin: 0 0 8px 0; color: var(--color-text); font-weight: 700;
 }
 
 .history-meta {
-    font-size: 0.9rem;
-    color: var(--color-text-secondary);
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    font-size: 0.9rem; color: var(--color-text-secondary); display: flex; align-items: center; gap: 8px;
 }
 
 /* Visual Badges (Circles/Icons) */
 .history-score-badge {
-    position: relative;
-    width: 60px;
-    height: 60px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: relative; width: 60px; height: 60px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
 }
 
-/* Fix for Quiz Circle Colors */
-.circular-chart {
-    display: block;
-    max-width: 100%;
-    max-height: 100%;
-}
-.circle-bg {
-    fill: none;
-    stroke: var(--color-surface-hover);
-    stroke-width: 3.8;
-}
+.circular-chart { display: block; max-width: 100%; max-height: 100%; }
+.circle-bg { fill: none; stroke: var(--color-surface-hover); stroke-width: 3.8; }
 .circle {
-    fill: none;
-    stroke-width: 2.8;
-    stroke-linecap: round;
-    transition: stroke-dasharray 1s ease-out;
-    /* Explicit fallback if theme vars fail, but variables are preferred */
-    stroke: var(--color-primary); 
+    fill: none; stroke-width: 2.8; stroke-linecap: round;
+    transition: stroke-dasharray 1s ease-out; stroke: var(--color-primary); 
 }
 .history-entry.passed .circle { stroke: var(--color-success); }
 .history-entry.failed .circle { stroke: var(--color-error); }
 
 .percentage {
-    position: absolute;
-    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
     font-family: var(--font-family-mono); font-size: 0.85rem; font-weight: bold; color: var(--color-text);
 }
 
@@ -163,7 +135,6 @@
 .aural-icon-badge {
     width: 50px; height: 50px; border-radius: 50%;
     background: var(--color-surface-active);
-    /* FIX: Ensure icon is colorful, not black */
     color: var(--color-secondary); 
     display: flex; align-items: center; justify-content: center;
     border: 1px solid var(--color-border);
@@ -172,97 +143,57 @@
 .aural-icon-badge svg { width: 24px; height: 24px; }
 
 .history-footer {
-    display: flex;
-    justify-content: flex-end;
-    border-top: 1px solid var(--color-border);
-    padding-top: var(--space-sm);
+    display: flex; justify-content: flex-end;
+    border-top: 1px solid var(--color-border); padding-top: var(--space-sm);
 }
 
 .btn-small {
-    background: transparent;
-    border: 1px solid var(--color-border);
-    color: var(--color-text-secondary);
-    /* Accessibility: Increase touch target padding */
-    padding: 8px 16px;
-    font-size: 0.85rem;
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex; align-items: center; gap: 6px;
-    transition: all 0.2s ease;
+    background: transparent; border: 1px solid var(--color-border);
+    color: var(--color-text-secondary); padding: 8px 16px;
+    font-size: 0.85rem; border-radius: 8px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px; transition: all 0.2s ease;
 }
 .btn-small:hover {
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-    background: var(--color-surface-hover);
+    border-color: var(--color-primary); color: var(--color-primary); background: var(--color-surface-hover);
 }
-/* FIX: Ensure button icons inherit specific hover color or default text color */
 .btn-small .icon { width: 14px; height: 14px; stroke: currentColor; }
 
 /* Empty State - Centered and Refined */
 .empty-state {
-    text-align: center;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-xl);
-    min-height: 50vh;
+    text-align: center; flex-grow: 1; display: flex;
+    flex-direction: column; align-items: center; justify-content: center;
+    padding: var(--space-xl); min-height: 50vh;
 }
 
 .empty-state-icon {
-    width: 80px; height: 80px;
-    background: var(--color-surface-hover);
-    border-radius: 50%;
+    width: 90px; height: 90px;
+    background: var(--color-surface-hover); border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     margin-bottom: var(--space-lg);
-    color: var(--color-text-secondary);
+    color: var(--color-primary); 
     border: 1px solid var(--color-border);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
 }
-.empty-state-icon svg { width: 40px; height: 40px; stroke: currentColor; opacity: 0.7; }
+.empty-state-icon svg { width: 48px; height: 48px; stroke: currentColor; opacity: 0.8; }
 
-.empty-state h2 { margin-bottom: 0.5rem; font-size: 1.5rem; color: var(--color-text); }
+.empty-state h2 { margin-bottom: 0.5rem; font-size: 1.6rem; color: var(--color-text); font-weight: 800; }
 .empty-state p { max-width: 400px; margin-bottom: 2rem; color: var(--color-text-secondary); line-height: 1.6; }
 
 /* Transcript Modal */
-.transcript-content {
-    max-height: 80vh;
-    display: flex;
-    flex-direction: column;
-}
-.transcript-body {
-    overflow-y: auto;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-.transcript-line {
-    padding: 0.8rem;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    line-height: 1.5;
-}
+.transcript-content { max-height: 80vh; display: flex; flex-direction: column; }
+.transcript-body { overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 1rem; }
+.transcript-line { padding: 1rem; border-radius: 12px; font-size: 0.95rem; line-height: 1.5; }
 .transcript-line.user {
-    background-color: var(--color-surface-active);
-    align-self: flex-end;
-    border-bottom-right-radius: 0;
-    max-width: 80%;
+    background-color: var(--color-surface-active); align-self: flex-end;
+    border-bottom-right-radius: 0; max-width: 85%;
 }
 .transcript-line.model {
-    background-color: var(--color-surface-hover);
-    align-self: flex-start;
-    border-bottom-left-radius: 0;
-    border: 1px solid var(--color-border);
-    max-width: 80%;
+    background-color: var(--color-surface-hover); align-self: flex-start;
+    border-bottom-left-radius: 0; border: 1px solid var(--color-border); max-width: 85%;
 }
 .transcript-label {
-    display: block;
-    font-size: 0.75rem;
-    color: var(--color-text-secondary);
-    margin-bottom: 4px;
-    font-weight: bold;
-    text-transform: uppercase;
+    display: block; font-size: 0.75rem; color: var(--color-text-secondary);
+    margin-bottom: 4px; font-weight: bold; text-transform: uppercase;
 }
 
 @media (max-width: 600px) {

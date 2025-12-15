@@ -21,16 +21,29 @@ const __dirname = path.dirname(__filename);
 const rawKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
 const API_KEY = rawKey ? rawKey.trim() : "";
 
+const rawHfKey = process.env.HUGGING_FACE_API_KEY;
+const HF_API_KEY = rawHfKey ? rawHfKey.trim() : "";
+
 console.log("--- SYSTEM STARTUP DIAGNOSTICS ---");
 console.log(`Node Version: ${process.version}`);
+
+// Check Gemini Key
 if (API_KEY) {
     // Show first 4 chars for verification, hide the rest
     const masked = API_KEY.substring(0, 4) + "...";
-    console.log(`✅ API Key Detected: ${masked} (Length: ${API_KEY.length})`);
-    console.log(`   Mode: ONLINE (AI Connected)`);
+    console.log(`✅ Gemini API Key Detected: ${masked} (Length: ${API_KEY.length})`);
+    console.log(`   Mode: ONLINE (Primary AI Connected)`);
 } else {
-    console.error("❌ FATAL: API_KEY is missing in environment variables!");
+    console.error("❌ FATAL: API_KEY (Gemini) is missing in environment variables!");
     console.log(`   Mode: OFFLINE (Fallback Data Only)`);
+}
+
+// Check Hugging Face Key
+if (HF_API_KEY) {
+    const maskedHf = HF_API_KEY.substring(0, 4) + "...";
+    console.log(`✅ Hugging Face API Key Detected: ${maskedHf}`);
+} else {
+    console.log(`⚠️ Hugging Face API Key Missing (Optional/Fallback)`);
 }
 console.log("----------------------------------");
 

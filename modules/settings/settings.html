@@ -1,129 +1,119 @@
 
 <div class="page-container settings-container">
-    <header class="page-header">
+    <header class="page-header settings-header">
         <h1>Settings</h1>
         <p>Customize your application experience.</p>
     </header>
 
-    <!-- Upgrade Section (Visible only to Guests) -->
-    <section id="upgrade-account-section" class="settings-group card" style="display: none; border-color: var(--color-accent);">
-        <div class="setting-item">
-            <div class="setting-info">
-                <h3 style="color: var(--color-accent);">Save Your Progress</h3>
+    <!-- 1. Save Progress (Guest Only) -->
+    <section id="upgrade-account-section" class="card settings-card accent-border-blue" style="display: none;">
+        <div class="settings-split-row">
+            <div class="settings-info">
+                <h3 class="text-blue">Save Your Progress</h3>
                 <p>You are currently a Guest. Link an account to save your data permanently and access it on other devices.</p>
             </div>
-            <div class="setting-control actions-stack">
-                <button id="link-google-btn" class="btn btn-google">
-                    <svg class="google-icon" viewBox="0 0 24 24" style="width: 18px; height: 18px;">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                    Link Google
-                </button>
-                <button id="link-email-btn" class="btn">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#mail"/></svg> Link Email
-                </button>
+            <div class="settings-action-area">
+                <!-- Stacked Buttons for Auth -->
+                <div class="auth-buttons-stack">
+                    <button id="link-google-btn" class="btn btn-google-link">
+                        <svg class="google-icon" viewBox="0 0 24 24" style="width:18px;height:18px;margin-right:8px;">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Link Google
+                    </button>
+                    <button id="link-email-btn" class="big-icon-btn">
+                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#mail"/></svg>
+                        <span>Link Email</span>
+                    </button>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Account Section -->
-    <section class="settings-group card" style="border-color: var(--color-secondary);">
-        <h2 style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--color-secondary);">Account</h2>
-        <div class="setting-item">
-            <div class="setting-info">
-                <label>Logged in as</label>
-                <p id="account-email-display" style="font-family: var(--font-family-mono);">Loading...</p>
-                <p id="guest-warning" style="display: none; color: var(--color-accent); font-size: 0.8rem; margin-top: 4px;">
-                    <svg class="icon" style="width: 12px; height: 12px;"><use href="assets/icons/feather-sprite.svg#shield"/></svg>
-                    Guest Mode: Data is saved to this device only.
+    <!-- 2. Account -->
+    <section class="card settings-card accent-border-purple">
+        <div class="card-header-text">
+            <h2 class="text-purple">Account</h2>
+        </div>
+        <div class="settings-split-row">
+            <div class="settings-info">
+                <span class="label-tiny">Logged in as</span>
+                <p id="account-email-display" class="account-email">Loading...</p>
+                <p id="guest-warning" class="status-warning" style="display: none;">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#shield"/></svg>
+                    Guest Mode (Offline)
                 </p>
             </div>
-            <div class="setting-control">
-                <button id="logout-btn" class="btn">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-left"/></svg> <span id="logout-btn-text">Logout</span>
+            <div class="settings-action-area">
+                <button id="logout-btn" class="big-action-btn">
+                    <svg class="icon big-arrow"><use href="assets/icons/feather-sprite.svg#arrow-left"/></svg>
+                    <span id="logout-btn-text">Logout</span>
                 </button>
             </div>
         </div>
-    </section>
-
-    <!-- Security Section (Only for Password Users) -->
-    <section id="security-section" class="settings-group card" style="display: none; border-color: var(--color-text-secondary);">
-        <h2 style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--color-text);">Security</h2>
-        <div class="setting-item">
-            <div class="setting-info">
-                <label>Password</label>
-                <p>Update your account password. You will need to re-enter your current password.</p>
-            </div>
-            <div class="setting-control">
-                <button id="change-password-btn" class="btn">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#lock"/></svg> Update
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <section id="install-app-section" class="settings-group card" style="display: none; border-color: var(--color-primary);">
-        <div class="setting-item">
-            <div class="setting-info">
-                <h3 style="color: var(--color-primary);">Install Application</h3>
-                <p>Install Skill Apex on your device for the best full-screen experience.</p>
-            </div>
-            <div class="setting-control">
-                <button id="install-app-btn" class="btn btn-primary">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-down"/></svg> Install
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <section class="settings-group card" aria-labelledby="personalization-heading">
-        <h2 id="personalization-heading" class="sr-only">Personalization</h2>
         
-        <div class="setting-item">
-            <div class="setting-info">
-                <label>Learning Interest</label>
-                <p>Change your core field of study (e.g., Computer Science, History). This resets your recommended topics.</p>
+        <!-- Optional Security Section -->
+        <div id="security-section" class="settings-row-bordered" style="display: none;">
+            <div class="settings-info">
+                <strong>Password</strong>
+                <p class="desc-text">Update your security credentials.</p>
             </div>
-            <div class="setting-control">
-                <button id="change-interest-btn" class="btn">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#target"/></svg> Change Field
+            <button id="change-password-btn" class="btn btn-small">Update</button>
+        </div>
+    </section>
+
+    <!-- 3. Personalization -->
+    <section class="card settings-card">
+        <div class="card-header-text">
+            <h2>Personalization</h2>
+        </div>
+        <div class="settings-split-row">
+            <div class="settings-info">
+                <strong>Learning Interest</strong>
+                <p class="desc-text">Change your core field of study (e.g., Computer Science, History). This resets your recommended topics.</p>
+            </div>
+            <div class="settings-action-area">
+                <button id="change-interest-btn" class="big-action-btn centered-icon">
+                    <svg class="icon big-target"><use href="assets/icons/feather-sprite.svg#target"/></svg>
+                    <span>Change Field</span>
                 </button>
             </div>
         </div>
     </section>
 
-    <!-- Neural Personality Selection -->
-    <section class="settings-group card" aria-labelledby="persona-heading">
-        <h2 style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--color-primary);">Neural Personality</h2>
-        <p style="margin-bottom: 1.5rem; font-size: 0.95rem; color: var(--color-text-secondary);">Select the AI personality that guides your learning journey.</p>
-        
+    <!-- 4. Neural Personality -->
+    <section class="card settings-card">
+        <div class="card-header-text">
+            <h2 class="text-primary">Neural Personality</h2>
+            <p class="desc-text">Select the AI personality that guides your learning journey.</p>
+        </div>
         <div class="persona-grid">
             <button class="persona-card selected" data-persona="apex">
-                <div class="persona-icon" style="color: var(--color-primary); border-color: var(--color-primary);">
+                <div class="persona-icon-ring blue">
                     <svg class="icon"><use href="assets/icons/feather-sprite.svg#cpu"/></svg>
                 </div>
                 <h3>Apex</h3>
                 <p>Balanced & Gamified.</p>
             </button>
             <button class="persona-card" data-persona="sage">
-                <div class="persona-icon" style="color: #9c27b0; border-color: #9c27b0;">
+                <div class="persona-icon-ring purple">
                     <svg class="icon"><use href="assets/icons/feather-sprite.svg#book-open"/></svg>
                 </div>
                 <h3>Sage</h3>
                 <p>Socratic & Deep.</p>
             </button>
             <button class="persona-card" data-persona="commander">
-                <div class="persona-icon" style="color: #f44336; border-color: #f44336;">
+                <div class="persona-icon-ring red">
                     <svg class="icon"><use href="assets/icons/feather-sprite.svg#shield"/></svg>
                 </div>
                 <h3>Commander</h3>
                 <p>Strict & Disciplined.</p>
             </button>
             <button class="persona-card" data-persona="eli5">
-                <div class="persona-icon" style="color: #ff9800; border-color: #ff9800;">
+                <div class="persona-icon-ring orange">
                     <svg class="icon"><use href="assets/icons/feather-sprite.svg#star"/></svg>
                 </div>
                 <h3>ELI5</h3>
@@ -132,43 +122,47 @@
         </div>
     </section>
 
-    <section class="settings-group card" aria-labelledby="general-settings-heading">
-        <h2 id="general-settings-heading" class="sr-only">General Settings</h2>
-
-        <!-- Visual Interface (Theme) Switcher -->
-        <div class="setting-item">
-            <div class="setting-info">
-                <label>Visual Interface</label>
-                <p>Optimize display for lighting conditions. <strong>Daylight Mode</strong> recommended for Expo.</p>
+    <!-- 5. General Settings -->
+    <section class="card settings-card">
+        <div class="card-header-text">
+            <h2>General Settings</h2>
+        </div>
+        
+        <div class="settings-row">
+            <div class="settings-info">
+                <strong>Visual Interface</strong>
+                <p class="desc-text">Optimize display for lighting conditions.</p>
             </div>
-            <div class="setting-control segmented-control">
-                <button type="button" class="theme-btn" data-theme="light-cyber" id="theme-light-btn">Daylight</button>
-                <button type="button" class="theme-btn" data-theme="dark-cyber" id="theme-dark-btn">Midnight</button>
-                <div class="segmented-control-indicator"></div>
+            <div class="control-wrapper">
+                <div class="segmented-control">
+                    <button type="button" class="theme-btn" data-theme="light-cyber" id="theme-light-btn">Daylight</button>
+                    <button type="button" class="theme-btn" data-theme="dark-cyber" id="theme-dark-btn">Midnight</button>
+                    <div class="segmented-control-indicator"></div>
+                </div>
             </div>
         </div>
 
-        <div class="setting-item">
-            <div class="setting-info">
-                <label for="sound-toggle">Sound Effects</label>
-                <p id="sound-description">Enable or disable UI sound effects for actions like answering questions.</p>
+        <div class="settings-row">
+            <div class="settings-info">
+                <strong>Sound Effects</strong>
+                <p class="desc-text">Enable UI sound effects.</p>
             </div>
-            <div class="setting-control">
+            <div class="control-wrapper">
                 <label class="switch">
-                    <input type="checkbox" id="sound-toggle" role="switch" aria-describedby="sound-description">
+                    <input type="checkbox" id="sound-toggle">
                     <span class="slider round"></span>
                 </label>
             </div>
         </div>
 
-        <div class="setting-item">
-            <div class="setting-info">
-                <label for="animation-slider">Animation Intensity</label>
-                <p id="animation-description">Control the level of UI animations and transitions.</p>
+        <div class="settings-row">
+            <div class="settings-info">
+                <strong>Animation Intensity</strong>
+                <p class="desc-text">Control UI transitions.</p>
             </div>
-            <div class="setting-control range-slider-control">
-                <input type="range" id="animation-slider" min="0" max="2" step="1" aria-describedby="animation-description">
-                <div class="range-slider-labels" aria-hidden="true">
+            <div class="control-wrapper slider-wrapper">
+                <input type="range" id="animation-slider" min="0" max="2" step="1">
+                <div class="slider-labels">
                     <span>Off</span>
                     <span>Subtle</span>
                     <span>Full</span>
@@ -177,47 +171,54 @@
         </div>
     </section>
 
-    <!-- Diagnostics Section -->
-    <section class="settings-group card" aria-labelledby="diagnostics-heading" style="border-color: var(--color-success-border);">
-        <h2 id="diagnostics-heading" style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--color-success);">System Diagnostics</h2>
-        <div class="setting-item">
-            <div class="setting-info">
-                <label>Neural Connection</label>
-                <p>Verify connectivity with the central AI Core.</p>
+    <!-- 6. System Diagnostics -->
+    <section class="card settings-card accent-border-green">
+        <div class="card-header-text">
+            <h2 class="text-green">System Diagnostics</h2>
+        </div>
+        <div class="diagnostics-grid">
+            <div class="settings-split-row" style="grid-column: 1 / -1; margin-bottom: 1rem;">
+                <div class="settings-info">
+                    <strong>Neural Connection</strong>
+                    <p class="desc-text">Verify connectivity with the central AI Core.</p>
+                </div>
             </div>
-            <div class="setting-control actions-stack">
-                <button id="test-connection-btn" class="btn">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#activity"/></svg>
-                    <span>Test Neural Link</span>
-                </button>
-                <button class="btn" onclick="window.location.reload()">
-                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#rotate-ccw"/></svg>
-                    <span>System Reboot</span>
+            
+            <button id="test-connection-btn" class="big-diag-btn">
+                <svg class="icon diag-icon"><use href="assets/icons/feather-sprite.svg#activity"/></svg>
+                <span>Test Neural Link</span>
+            </button>
+            
+            <button class="big-diag-btn" onclick="window.location.reload()">
+                <svg class="icon diag-icon"><use href="assets/icons/feather-sprite.svg#rotate-ccw"/></svg>
+                <span>System Reboot</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- 7. Danger Zone -->
+    <section class="card settings-card accent-border-red">
+        <div class="card-header-text">
+            <h2 class="text-red">Danger Zone</h2>
+        </div>
+        <div class="settings-split-row">
+            <div class="settings-info">
+                <strong class="text-red">Clear Local Cache</strong>
+                <p class="desc-text">Troubleshoot syncing issues by clearing local data.</p>
+            </div>
+            <div class="settings-action-area">
+                <button id="clear-data-btn" class="btn btn-outline-red">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#trash-2"/></svg>
+                    Clear Cache
                 </button>
             </div>
         </div>
     </section>
 
-    <section class="settings-group card danger-zone" aria-labelledby="danger-zone-heading">
-        <h2 id="danger-zone-heading" class="sr-only">Danger Zone</h2>
-        <div class="setting-item">
-            <div class="setting-info">
-                <h3>Clear Local Cache</h3>
-                <p>Troubleshoot syncing issues by clearing local data. Cloud data will remain safe.</p>
-            </div>
-            <div class="setting-control">
-                <button id="clear-data-btn" class="btn btn-danger">
-                    <svg class="icon" width="18" height="18" viewBox="0 0 24 24"><use href="assets/icons/feather-sprite.svg#trash-2"/></svg>
-                    <span>Clear Cache</span>
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <p class="app-version">
-        Version 7.0.0 (Expo Daylight)<br>
-        <span style="font-size: 0.9em; opacity: 0.8;">Created by <strong style="color:var(--color-primary)">Awais Ali</strong></span>
-    </p>
+    <div class="settings-footer">
+        <p>Version 7.0.0 (Expo Daylight)</p>
+        <p class="credit">Created by <strong class="text-primary">Awais Ali</strong></p>
+    </div>
 </div>
 
 <!-- Modal Markup Preserved -->
@@ -254,23 +255,3 @@
         </div>
     </div>
 </div>
-
-<style>
-.persona-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-md); margin-top: var(--space-md);
-}
-.persona-card {
-    background: var(--color-surface-hover); border: 1px solid var(--color-border); border-radius: 12px;
-    padding: var(--space-lg); text-align: center; cursor: pointer; transition: all 0.2s ease;
-    display: flex; flex-direction: column; align-items: center; color: var(--color-text);
-}
-.persona-card:hover { transform: translateY(-3px); border-color: var(--color-text-secondary); }
-.persona-card.selected { border-color: var(--color-primary); background: var(--color-primary-transparent); box-shadow: 0 0 15px var(--color-primary-transparent); }
-.persona-icon {
-    width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    border: 2px solid; margin-bottom: var(--space-md); background: rgba(0,0,0,0.1);
-}
-.persona-icon svg { width: 24px; height: 24px; stroke: currentColor; }
-.persona-card h3 { margin: 0 0 4px 0; font-size: 1rem; }
-.persona-card p { font-size: 0.8rem; color: var(--color-text-secondary); margin: 0; }
-</style>
