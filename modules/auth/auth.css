@@ -54,8 +54,9 @@
     position: relative;
     z-index: 10;
     
-    /* Theme Aware Glassmorphism */
-    background: var(--color-surface);
+    /* Theme Aware Glassmorphism with Fallback */
+    background-color: var(--color-surface, #ffffff); /* Fallback required */
+    background: rgba(var(--color-surface-rgb, 255,255,255), 0.8);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid var(--glass-border);
@@ -299,5 +300,7 @@
         max-width: 100%;
         margin: 16px;
         padding: 2rem 1.5rem;
+        /* Ensure spacing from bottom if using virtual keyboard */
+        margin-bottom: env(safe-area-inset-bottom);
     }
 }

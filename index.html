@@ -3,13 +3,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Skill Apex | Neural Knowledge Interface</title>
     <meta name="description" content="AI-Powered Technical Mastery System.">
     
     <!-- Full Screen Mode for Kiosk/Expo -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <!-- Updated Theme Color for Daylight Mode -->
     <meta name="theme-color" id="theme-color-meta" content="#F1F5F9">
     
@@ -132,13 +133,13 @@
                 <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <linearGradient id="logoGradWelcome" x1="0%" y1="100%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="var(--color-primary)"/>
-                            <stop offset="100%" stop-color="var(--color-secondary)"/>
+                            <stop offset="0%" stop-color="#4338CA"/>
+                            <stop offset="100%" stop-color="#7C3AED"/>
                         </linearGradient>
                     </defs>
                     <path d="M50 5 L95 27.5 V72.5 L50 95 L5 72.5 V27.5 Z" stroke="url(#logoGradWelcome)" stroke-width="4" stroke-linecap="round" fill="none" />
                     <path d="M50 25 L75 80 H65 L50 45 L35 80 H25 Z" fill="url(#logoGradWelcome)" />
-                    <circle cx="50" cy="55" r="4" fill="var(--color-background)" stroke="var(--color-primary)" stroke-width="2"/>
+                    <circle cx="50" cy="55" r="4" fill="#F1F5F9" stroke="#4338CA" stroke-width="2"/>
                 </svg>
             </div>
             <h1>Skill Apex</h1>
@@ -179,7 +180,6 @@
 
     <script>
         // --- EMERGENCY ERROR HANDLER & TIMEOUT ---
-        // This script runs before modules to catch loading failures (e.g., bad imports)
         (function() {
             const loadTimeout = setTimeout(() => {
                 const splash = document.getElementById('splash-screen');
@@ -189,7 +189,7 @@
                     document.getElementById('splash-reload-btn').style.display = 'inline-flex';
                     document.getElementById('splash-error-log').innerText = "The server is taking too long to respond. Check internet connection or modules.";
                 }
-            }, 45000); // 45 Seconds timeout (Increased for network latency)
+            }, 45000); 
 
             window.addEventListener('error', function(event) {
                 const splashLog = document.getElementById('splash-error-log');
@@ -199,12 +199,10 @@
                     document.getElementById('splash-status-text').style.color = "#ef4444";
                     document.getElementById('splash-reload-btn').style.display = 'inline-flex';
                 }
-                // Stop spinning if error
                 clearTimeout(loadTimeout);
             });
 
             document.getElementById('splash-reload-btn').addEventListener('click', function() {
-                // Clear Service Worker cache attempt before reload
                 if(navigator.serviceWorker) {
                     navigator.serviceWorker.getRegistrations().then(function(registrations) {
                         for(let registration of registrations) { registration.unregister(); }

@@ -120,7 +120,8 @@
 /* --- 2. GRID LAYOUTS --- */
 .topic-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    /* Adjusted minmax to fit smaller mobile screens (down to 260px or full width) */
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: var(--space-lg);
 }
 
@@ -224,6 +225,6 @@
     .creator-form { flex-direction: column; }
     .input-group { max-width: 100%; }
     .generate-action { width: 100%; }
-    .journey-creator-card { flex-direction: column; text-align: center; }
+    .journey-creator-card { flex-direction: column; text-align: center; padding: 1.5rem; }
     .uplink-visual { margin-bottom: 1rem; }
 }

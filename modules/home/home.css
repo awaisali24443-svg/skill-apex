@@ -240,8 +240,8 @@
 .divider { opacity: 0.5; }
 
 /* Mobile Optimizations */
-@media (max-width: 1024px) {
-    .home-hero { flex-direction: column; text-align: center; gap: 2rem; padding: 1.5rem; }
+@media (max-width: 768px) {
+    .home-hero { flex-direction: column-reverse; text-align: center; gap: 2rem; padding: 1.5rem; }
     .hero-content { max-width: 100%; }
     .resume-card { flex-direction: column; text-align: center; gap: 1rem; }
     .btn-resume { width: 100%; }
@@ -254,4 +254,7 @@
     
     .command-input { padding-left: 20px; font-size: 1rem; }
     .command-icon { display: none; } /* Hide search icon on mobile to save space */
+    
+    /* Hero graphic adjustment */
+    .globe-container { width: 120px; height: 120px; margin-bottom: 1rem; }
 }
