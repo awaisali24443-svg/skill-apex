@@ -1,12 +1,12 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 7.6.0 (High Quality Icons)
+ * @version 7.7.0 (Visual Upgrade & Command Center)
  *
  * This service worker implements a robust offline-first caching strategy.
  */
 
-const CACHE_NAME = 'skill-apex-v7.6.0-hq-icons';
+const CACHE_NAME = 'skill-apex-v7.7.0-visual-upgrade';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [

@@ -1,41 +1,54 @@
+
 :root {
-    /* --- Color Palette: Arcane --- */
+    /* --- ARCANE (Luxury Dark) --- */
 
     /* Primary Colors */
-    --color-primary: #d4af37;   /* Muted Gold */
-    --color-secondary: #00b8d4; /* Electric Teal */
-    --color-accent: #9c27b0;    /* Vibrant Violet */
+    --color-primary: #A855F7;   /* Purple 500 */
+    --color-secondary: #EAB308; /* Yellow 500 - Gold */
+    --color-accent: #EC4899;    /* Pink 500 */
 
     /* Background & Surface Colors */
-    --color-background: #1a143b; /* Deep Plum */
-    --color-surface: #2c244d;
-    --color-card-background: rgba(44, 36, 77, 0.7);
-    --color-surface-hover: #3a3163;
-    --color-surface-active: #483d7a;
+    --color-background: #1E1B4B; /* Indigo 950 - Deep Space Purple */
+    --color-surface: #2E1065;    /* Violet 950 - Richer surface */
+    --color-card-background: rgba(46, 16, 101, 0.8);
+    --color-surface-hover: #4C1D95; /* Violet 900 */
+    --color-surface-active: #5B21B6; /* Violet 800 */
 
     /* Text Colors */
-    --color-text: #e0e0f0;       /* Lavender White */
-    --color-text-secondary: #a0a0c0;
+    --color-text: #FAF5FF;       /* Purple 50 */
+    --color-text-secondary: #C084FC; /* Purple 400 */
 
     /* Border & Accent Colors */
-    --color-border: #4a407c;
+    --color-border: #4C1D95;
 
-    /* Transparent Variants for Glows & Gradients */
-    --color-primary-transparent: rgba(212, 175, 55, 0.15);
-    --color-primary-transparent-heavy: rgba(212, 175, 55, 0.3);
-    --color-secondary-transparent: rgba(0, 184, 212, 0.15);
-    --color-secondary-transparent-heavy: rgba(0, 184, 212, 0.3);
-    --color-accent-transparent: rgba(156, 39, 176, 0.2);
-    --color-surface-transparent: rgba(74, 64, 124, 0.3);
+    /* Glassmorphism */
+    --glass-bg: rgba(30, 27, 75, 0.85);
+    --glass-border: rgba(168, 85, 247, 0.3);
+
+    /* Transparencies */
+    --color-primary-transparent: rgba(168, 85, 247, 0.2);
+    --color-primary-transparent-heavy: rgba(168, 85, 247, 0.4);
+    --color-secondary-transparent: rgba(234, 179, 8, 0.2);
+    --color-secondary-transparent-heavy: rgba(234, 179, 8, 0.4);
+    --color-surface-transparent: rgba(46, 16, 101, 0.5);
+
+    /* Shadows - Magical Glow */
+    --shadow-card: 0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(168, 85, 247, 0.2);
+    --shadow-float: 0 10px 40px rgba(168, 85, 247, 0.3);
+    --shadow-hover: 0 0 25px rgba(168, 85, 247, 0.4);
+
+    /* Gradients */
+    --brand-gradient: linear-gradient(135deg, #A855F7, #EC4899);
+    --bg-tech: radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.2) 0%, transparent 70%);
 
     /* Feedback Colors */
-    --color-success: #4caf50;
-    --color-error: #f44336;
-    --color-success-bg: rgba(76, 175, 80, 0.1);
-    --color-error-bg: rgba(244, 67, 54, 0.1);
-    --color-success-border: rgba(76, 175, 80, 0.5);
-    --color-error-border: rgba(244, 67, 54, 0.5);
+    --color-success: #4ADE80;
+    --color-error: #F43F5E;
+    --color-success-bg: rgba(74, 222, 128, 0.15);
+    --color-error-bg: rgba(244, 63, 94, 0.15);
+    --color-success-border: rgba(74, 222, 128, 0.4);
+    --color-error-border: rgba(244, 63, 94, 0.4);
     
-    /* Brand Gradient */
-    --brand-gradient: linear-gradient(45deg, var(--color-primary), var(--color-secondary), var(--color-accent));
+    --scrollbar-thumb: #6B21A8;
+    --scrollbar-track: transparent;
 }

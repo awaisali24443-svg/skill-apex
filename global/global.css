@@ -11,7 +11,7 @@
     /* Layout & Sizing */
     --sidebar-width-collapsed: 88px; 
     --sidebar-width-expanded: 280px;
-    --bottom-nav-height: 80px; /* Height of mobile nav */
+    --bottom-nav-height: 80px;
     
     --page-padding: clamp(1rem, 5vw, 2rem);
     --container-max-width: 1400px;
@@ -44,14 +44,64 @@ html, body {
     width: 100%;
     margin: 0;
     padding: 0;
-    background-color: var(--color-background, #F1F5F9);
-    color: var(--color-text, #020617);
+    background-color: var(--color-background);
+    color: var(--color-text);
     font-family: var(--font-family-body);
     font-size: var(--fs-base);
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow: hidden;
+}
+
+/* --- MODERN BACKGROUND MESH --- */
+#global-background {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1;
+    overflow: hidden;
+    background: var(--color-background);
+}
+
+.bg-grid-overlay {
+    position: absolute; inset: 0;
+    background-image: 
+        linear-gradient(var(--color-border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0.05; /* Very subtle texture */
+    mask-image: radial-gradient(circle at 50% 50%, black, transparent 80%);
+    -webkit-mask-image: radial-gradient(circle at 50% 50%, black, transparent 80%);
+}
+
+.blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.4;
+    animation: blob-float 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Vibrant Blobs for modern look */
+.blob-1 {
+    top: -10%; left: -10%; width: 50vw; height: 50vw;
+    background: radial-gradient(circle, var(--color-primary) 0%, transparent 70%);
+}
+.blob-2 {
+    bottom: -10%; right: -10%; width: 60vw; height: 60vw;
+    background: radial-gradient(circle, var(--color-secondary) 0%, transparent 70%);
+    animation-delay: -5s;
+}
+.blob-3 {
+    top: 40%; left: 30%; width: 40vw; height: 40vw;
+    background: radial-gradient(circle, var(--color-accent) 0%, transparent 70%);
+    opacity: 0.2;
+    animation-delay: -10s;
+}
+
+@keyframes blob-float {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(30px, 50px) scale(1.1); }
 }
 
 /* --- APP SHELL LAYOUT --- */
@@ -73,7 +123,7 @@ html, body {
     overflow-y: auto; 
     overflow-x: hidden;
     position: relative; 
-    padding: 2rem var(--page-padding) 8rem var(--page-padding); /* Bottom padding for mobile nav */
+    padding: 2rem var(--page-padding) 8rem var(--page-padding);
     scroll-behavior: smooth;
 }
 
@@ -125,10 +175,10 @@ html, body {
     min-width: var(--sidebar-width-collapsed); 
     flex: 0 0 var(--sidebar-width-collapsed);
     height: 100%; 
-    background: var(--glass-bg, rgba(30, 41, 59, 0.7)); 
+    background: var(--glass-bg); 
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-right: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
+    border-right: 1px solid var(--glass-border);
     display: flex; 
     flex-direction: column;
     padding: 24px 16px;
@@ -203,8 +253,7 @@ html, body {
         height: var(--bottom-nav-height); 
         min-height: auto;
         
-        /* Traditional App Bar Styling */
-        background: var(--color-surface, #ffffff);
+        background: var(--color-surface);
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
         border-top: 1px solid var(--color-border);
@@ -213,14 +262,13 @@ html, body {
         box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
         
         flex-direction: row; 
-        justify-content: flex-start; /* Start for scrollable, or space-between if fit */
+        justify-content: flex-start;
         padding: 0;
         z-index: 9999;
         transition: transform 0.3s ease;
         overflow-x: auto;
         overflow-y: hidden;
         -webkit-overflow-scrolling: touch;
-        /* Hide scrollbar */
         scrollbar-width: none;
     }
     #sidebar::-webkit-scrollbar { display: none; }
@@ -236,18 +284,13 @@ html, body {
         margin: 0; 
         gap: 0;
         height: 100%;
-        justify-content: space-evenly; /* Try to fit all */
-        min-width: 100%; /* Ensure it fills width */
+        justify-content: space-evenly;
+        min-width: 100%;
     }
 
-    /* Fallback for many items on very small screens: ensure they don't squish */
     @media (max-width: 600px) {
-        .sidebar-links {
-            justify-content: flex-start;
-        }
-        .sidebar-link {
-            min-width: 70px; /* Enforce minimum click target size */
-        }
+        .sidebar-links { justify-content: flex-start; }
+        .sidebar-link { min-width: 70px; }
     }
 
     .sidebar-link {
@@ -260,7 +303,7 @@ html, body {
         flex: 1; 
         height: 100%;
         color: var(--color-text-secondary);
-        background: transparent !important; /* No background on mobile active state */
+        background: transparent !important;
         gap: 4px;
     }
     
@@ -271,44 +314,32 @@ html, body {
         position: relative;
     }
     
-    /* Top border indicator for active state instead of dot */
     .sidebar-link.active::after { 
         content: ''; position: absolute; top: 0; 
         width: 24px; height: 3px; background: var(--color-primary); 
         border-radius: 0 0 4px 4px; box-shadow: 0 2px 5px var(--color-primary-transparent);
     }
 
-    /* Adjust Icon Size */
-    .sidebar-link .icon { 
-        width: 22px; height: 22px; margin-bottom: 0; 
-        stroke-width: 2;
-    }
+    .sidebar-link .icon { width: 22px; height: 22px; margin-bottom: 0; stroke-width: 2; }
     
-    /* Wrap icon for alignment */
     .link-icon-wrapper {
         display: flex; align-items: center; justify-content: center;
-        height: 28px; width: 28px;
-        margin-bottom: 2px;
+        height: 28px; width: 28px; margin-bottom: 2px;
     }
 
     .sidebar-link .text { 
-        display: block !important; /* Force show text */
-        margin-left: 0; 
-        opacity: 1 !important; 
-        font-size: 10px;
-        font-weight: 600;
-        letter-spacing: 0.2px;
+        display: block !important; 
+        margin-left: 0; opacity: 1 !important; 
+        font-size: 10px; font-weight: 600; letter-spacing: 0.2px;
     }
     
     .settings-link { display: flex; } 
-    
-    /* Spacer is redundant in flex row */
     .sidebar-spacer { display: none; }
 }
 
 /* --- UI COMPONENTS --- */
 .card {
-    background: var(--color-surface, #fff); 
+    background: var(--color-surface); 
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius); 
@@ -338,7 +369,7 @@ html, body {
 /* --- VOICE UI OVERLAY --- */
 .voice-fab {
     position: fixed;
-    bottom: calc(var(--bottom-nav-height) + 20px); /* Adjusted for nav bar */
+    bottom: calc(var(--bottom-nav-height) + 20px);
     right: 20px;
     width: 64px; height: 64px;
     border-radius: 50%;
@@ -353,9 +384,7 @@ html, body {
 .voice-fab:hover { transform: scale(1.1); color: #fff; background: var(--color-primary); }
 
 @media (max-width: 1024px) {
-    .voice-fab {
-        width: 56px; height: 56px;
-    }
+    .voice-fab { width: 56px; height: 56px; }
 }
 
 /* --- MODAL SYSTEM --- */

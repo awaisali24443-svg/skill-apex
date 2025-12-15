@@ -1,55 +1,54 @@
 
 :root {
-    /* --- Color Palette: Solar --- */
+    /* --- SOLAR (Warm & Productive) --- */
 
     /* Primary Colors */
-    --color-primary: #ff9800;   /* Warm Orange */
-    --color-secondary: #e91e63; /* Energetic Pink */
-    --color-accent: #20c997;    /* Bright Teal */
+    --color-primary: #F59E0B;   /* Amber 500 - Warm Gold */
+    --color-secondary: #EA580C; /* Orange 600 - Deep Sunset */
+    --color-accent: #14B8A6;    /* Teal 500 - Fresh Contrast */
 
     /* Background & Surface Colors */
-    --color-background: #fffbf5; /* Creamy Off-White */
-    --color-surface: #ffffff;
-    --color-card-background: rgba(255, 255, 255, 0.7);
-    --color-surface-hover: #fff8f0;
-    --color-surface-active: #fff2e6;
+    --color-background: #FFFBEB; /* Amber 50 - Very soft cream */
+    --color-surface: #FFFFFF;    /* Pure White */
+    --color-card-background: rgba(255, 255, 255, 0.9);
+    --color-surface-hover: #FFF7ED; /* Orange 50 */
+    --color-surface-active: #FFEDD5; /* Orange 100 */
 
     /* Text Colors */
-    --color-text: #495057; /* Warm Dark Gray */
-    --color-text-secondary: #868e96;
+    --color-text: #451a03;       /* Deep Brown/Black */
+    --color-text-secondary: #92400e; /* Muted Bronze */
 
     /* Border & Accent Colors */
-    --color-border: #ced4da;
+    --color-border: #FED7AA;     /* Soft Orange border */
 
-    /* Glassmorphism Vars - NEW */
-    --glass-bg: rgba(255, 255, 255, 0.8);
-    --glass-border: #ced4da;
+    /* Glassmorphism */
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(251, 191, 36, 0.3);
 
-    /* Transparent Variants for Glows & Gradients */
-    --color-primary-transparent: rgba(255, 152, 0, 0.1);
-    --color-primary-transparent-heavy: rgba(255, 152, 0, 0.2);
-    --color-secondary-transparent: rgba(233, 30, 99, 0.1);
-    --color-secondary-transparent-heavy: rgba(233, 30, 99, 0.2);
-    --color-accent-transparent: rgba(32, 201, 151, 0.1);
-    --color-surface-transparent: rgba(206, 212, 218, 0.5);
+    /* Transparencies */
+    --color-primary-transparent: rgba(245, 158, 11, 0.15);
+    --color-primary-transparent-heavy: rgba(245, 158, 11, 0.3);
+    --color-secondary-transparent: rgba(234, 88, 12, 0.1);
+    --color-secondary-transparent-heavy: rgba(234, 88, 12, 0.2);
+    --color-surface-transparent: rgba(255, 251, 235, 0.5);
+
+    /* Shadows - Warm glow */
+    --shadow-card: 0 4px 12px rgba(245, 158, 11, 0.08), 0 0 0 1px rgba(245, 158, 11, 0.05);
+    --shadow-float: 0 10px 25px rgba(245, 158, 11, 0.15);
+    --shadow-hover: 0 15px 30px rgba(245, 158, 11, 0.2);
+
+    /* Gradients */
+    --brand-gradient: linear-gradient(135deg, #F59E0B, #EA580C);
+    --bg-tech: radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.15) 0%, transparent 60%);
 
     /* Feedback Colors */
-    --color-success: #198754;
-    --color-error: #dc3545;
-    --color-success-bg: rgba(25, 135, 84, 0.1);
-    --color-error-bg: rgba(220, 53, 69, 0.1);
-    --color-success-border: rgba(25, 135, 84, 0.5);
-    --color-error-border: rgba(220, 53, 69, 0.5);
+    --color-success: #16A34A;
+    --color-error: #DC2626;
+    --color-success-bg: #DCFCE7;
+    --color-error-bg: #FEE2E2;
+    --color-success-border: #86EFAC;
+    --color-error-border: #FCA5A5;
     
-    /* Brand Gradient */
-    --brand-gradient: linear-gradient(45deg, var(--color-primary), var(--color-secondary), var(--color-accent));
-
-    /* Shadows - NEW */
-    --shadow-card: 0 4px 12px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.05);
-    --shadow-float: 0 10px 25px rgba(0,0,0,0.1);
-    --shadow-hover: 0 10px 30px rgba(255, 152, 0, 0.2);
-
-    /* Scrollbars - NEW */
-    --scrollbar-thumb: #adb5bd;
+    --scrollbar-thumb: #FCD34D;
     --scrollbar-track: transparent;
 }

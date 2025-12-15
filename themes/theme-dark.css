@@ -1,56 +1,54 @@
 
 :root {
-    /* --- Color Palette: Bio (High Definition) --- */
+    /* --- BIOHAZARD (High Contrast Dark) --- */
 
     /* Primary Colors */
-    --color-primary: #84CC16;   /* Lime 500 - Sharp, organic green */
-    --color-secondary: #14B8A6; /* Teal 500 - Deep aquatic */
-    --color-accent: #EAB308;    /* Yellow 500 - Warning Amber */
+    --color-primary: #84CC16;   /* Lime 500 */
+    --color-secondary: #10B981; /* Emerald 500 */
+    --color-accent: #EAB308;    /* Yellow 500 */
 
     /* Background & Surface Colors */
-    --color-background: #020617; /* Deepest Forest Black */
-    --color-surface: #111827;    /* Gray 900 */
-    --color-card-background: rgba(17, 24, 39, 0.8);
-    --color-surface-hover: #1F2937; /* Gray 800 */
-    --color-surface-active: #374151; /* Gray 700 */
-
-    /* Glassmorphism Vars */
-    --glass-bg: rgba(17, 24, 39, 0.8);
-    --glass-border: rgba(132, 204, 22, 0.2);
+    --color-background: #050a05; /* Deepest Green-Black */
+    --color-surface: #111811;    /* Very Dark Green-Grey */
+    --color-card-background: rgba(17, 24, 17, 0.9);
+    --color-surface-hover: #1a231a; 
+    --color-surface-active: #253325;
 
     /* Text Colors */
-    --color-text: #ECFCCB;       /* Lime 100 - Pale green-white */
-    --color-text-secondary: #94A3B8;
+    --color-text: #ECFCCB;       /* Lime 100 - Very Pale Green */
+    --color-text-secondary: #94A3B8; /* Slate Blue-Grey */
 
     /* Border & Accent Colors */
-    --color-border: #1F2937;
+    --color-border: #365314;     /* Dark Lime Border */
 
-    /* Transparent Variants for Glows & Gradients */
+    /* Glassmorphism */
+    --glass-bg: rgba(5, 10, 5, 0.9);
+    --glass-border: rgba(132, 204, 22, 0.3);
+
+    /* Transparencies */
     --color-primary-transparent: rgba(132, 204, 22, 0.15);
     --color-primary-transparent-heavy: rgba(132, 204, 22, 0.3);
-    --color-secondary-transparent: rgba(20, 184, 166, 0.15);
-    --color-secondary-transparent-heavy: rgba(20, 184, 166, 0.3);
-    --color-accent-transparent: rgba(234, 179, 8, 0.15);
-    --color-surface-transparent: rgba(31, 41, 55, 0.4);
-
-    /* Feedback Colors */
-    --color-success: #22C55E;
-    --color-error: #EF4444;
-    --color-success-bg: rgba(34, 197, 94, 0.15);
-    --color-error-bg: rgba(239, 68, 68, 0.15);
-    --color-success-border: rgba(34, 197, 94, 0.4);
-    --color-error-border: rgba(239, 68, 68, 0.4);
-    
-    /* Brand Gradient */
-    --brand-gradient: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-    --bg-tech: radial-gradient(circle at 50% 0%, rgba(132, 204, 22, 0.1) 0%, transparent 60%);
+    --color-secondary-transparent: rgba(16, 185, 129, 0.15);
+    --color-secondary-transparent-heavy: rgba(16, 185, 129, 0.3);
+    --color-surface-transparent: rgba(17, 24, 17, 0.6);
 
     /* Shadows */
-    --shadow-card: 0 4px 15px rgba(0,0,0,0.5);
-    --shadow-float: 0 10px 30px rgba(0,0,0,0.6);
-    --shadow-hover: 0 10px 30px rgba(132, 204, 22, 0.15);
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(132, 204, 22, 0.1);
+    --shadow-float: 0 10px 15px -3px rgba(0, 0, 0, 0.7), 0 0 15px rgba(132, 204, 22, 0.1);
+    --shadow-hover: 0 0 20px rgba(132, 204, 22, 0.2);
 
-    /* Scrollbars */
-    --scrollbar-thumb: #374151;
+    /* Gradients */
+    --brand-gradient: linear-gradient(135deg, #84CC16, #10B981);
+    --bg-tech: radial-gradient(circle at 50% 0%, rgba(132, 204, 22, 0.1) 0%, transparent 60%);
+
+    /* Feedback Colors */
+    --color-success: #4ADE80;
+    --color-error: #EF4444;
+    --color-success-bg: rgba(74, 222, 128, 0.1);
+    --color-error-bg: rgba(239, 68, 68, 0.1);
+    --color-success-border: rgba(74, 222, 128, 0.3);
+    --color-error-border: rgba(239, 68, 68, 0.3);
+    
+    --scrollbar-thumb: #365314;
     --scrollbar-track: transparent;
 }

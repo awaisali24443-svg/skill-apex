@@ -1,62 +1,61 @@
 
 :root {
-    /* --- DAYLIGHT EXPO PALETTE (High Visibility) --- */
+    /* --- MODERN DAYLIGHT (Crisp, High Contrast, Energetic) --- */
 
-    /* Core Brand - Deep & Vivid for White Backgrounds */
-    --color-primary: #4338CA;   /* Indigo 700 - High contrast */
-    --color-secondary: #7C3AED; /* Violet 600 - Keeps vibrancy */
-    --color-accent: #0284C7;    /* Sky 600 - Readable Cyan */
+    /* Brand Colors - Deep & Vibrant */
+    --color-primary: #4338CA;   /* Indigo 700 - Much richer than before */
+    --color-secondary: #7C3AED; /* Violet 600 */
+    --color-accent: #0284C7;    /* Sky 600 */
 
-    /* Backgrounds - Distinct layering for depth */
-    --color-background: #F1F5F9; /* Slate 100 - Not blinding white, creates depth */
-    --color-surface: rgba(255, 255, 255, 0.98); /* Opaque glass for clarity */
-    --color-surface-hover: #FFFFFF;
-    --color-surface-active: #E0E7FF; /* Indigo 50 */
-    --color-card-background: #FFFFFF;
+    /* Backgrounds - No more boring flat white */
+    --color-background: #F1F5F9; /* Slate 100 - Cool grey-blue tint, not yellow-white */
+    --color-surface: #FFFFFF;    /* Pure White for cards */
+    --color-surface-hover: #F8FAFC; /* Slate 50 */
+    --color-surface-active: #E2E8F0; /* Slate 200 */
+    --color-card-background: rgba(255, 255, 255, 0.95);
     
-    /* Text - Maximum Contrast */
-    --color-text: #020617;       /* Slate 950 */
-    --color-text-secondary: #475569; /* Slate 600 */
+    /* Text - FIXED CONTRAST */
+    --color-text: #0F172A;       /* Slate 900 - Almost black, sharp and crisp */
+    --color-text-secondary: #475569; /* Slate 600 - Darker grey, readable on white */
 
     /* UI Elements */
-    --color-border: #CBD5E1;     /* Slate 300 - Stronger borders for daylight */
+    --color-border: #CBD5E1;     /* Slate 300 - Distinct borders, not faint */
     
-    /* Glassmorphism */
-    --glass-bg: rgba(255, 255, 255, 0.9);
-    --glass-border: rgba(255, 255, 255, 1);
+    /* Glassmorphism - Frosty */
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.5);
 
-    /* --- DAYLIGHT SHADOWS (Crisp & Defined) --- */
-    /* Stronger Y-offset and darker alpha to combat screen glare */
+    /* Shadows - Deep and Soft (Modern) */
     --shadow-card: 
-        0 4px 6px -1px rgba(0, 0, 0, 0.1), 
-        0 2px 4px -1px rgba(0, 0, 0, 0.06),
-        0 0 0 1px rgba(0,0,0,0.06); /* Border definition */
+        0 4px 6px -1px rgba(15, 23, 42, 0.05), 
+        0 10px 15px -3px rgba(15, 23, 42, 0.05),
+        0 0 0 1px rgba(15, 23, 42, 0.05); /* Subtle ring for definition */
         
     --shadow-float: 
-        0 20px 25px -5px rgba(0, 0, 0, 0.1), 
-        0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        0 20px 25px -5px rgba(15, 23, 42, 0.1), 
+        0 10px 10px -5px rgba(15, 23, 42, 0.04);
         
     --shadow-hover: 
-        0 25px 50px -12px rgba(67, 56, 202, 0.25); /* Indigo glow */
+        0 20px 25px -5px rgba(67, 56, 202, 0.15), 
+        0 0 0 1px rgba(67, 56, 202, 0.1);
 
     /* Gradients */
     --brand-gradient: linear-gradient(135deg, #4338CA 0%, #7C3AED 100%);
     --bg-tech: radial-gradient(circle at 50% 0%, rgba(67, 56, 202, 0.1) 0%, transparent 70%);
 
-    /* Transparencies - Darker for visibility on white */
-    --color-primary-transparent: rgba(67, 56, 202, 0.15);
-    --color-primary-transparent-heavy: rgba(67, 56, 202, 0.3);
-    --color-secondary-transparent: rgba(124, 58, 237, 0.15);
-    --color-secondary-transparent-heavy: rgba(124, 58, 237, 0.3);
-    
-    /* Status - High Contrast */
-    --color-success: #15803D; /* Green 700 */
-    --color-error: #B91C1C;   /* Red 700 */
-    --color-success-bg: #DCFCE7;
+    /* Status Colors */
+    --color-success: #059669; /* Emerald 600 */
+    --color-error: #DC2626;   /* Red 600 */
+    --color-success-bg: #D1FAE5;
     --color-error-bg: #FEE2E2;
-    --color-success-border: #86EFAC;
-    --color-error-border: #FCA5A5;
+    --color-success-border: #34D399;
+    --color-error-border: #F87171;
+    
+    /* Transparencies */
+    --color-primary-transparent: rgba(67, 56, 202, 0.12);
+    --color-primary-transparent-heavy: rgba(67, 56, 202, 0.25);
+    --color-secondary-transparent: rgba(124, 58, 237, 0.12);
     
     --scrollbar-thumb: #94A3B8;
-    --scrollbar-track: #E2E8F0;
+    --scrollbar-track: transparent;
 }
