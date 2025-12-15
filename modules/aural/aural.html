@@ -1,15 +1,16 @@
 
 <div class="aural-container">
-    <div id="aural-header-controls" class="aural-header-controls"></div>
+    <div class="aural-top-bar">
+        <div id="aural-header-controls" class="aural-header-controls"></div>
+        <!-- Context Badge -->
+        <div id="aural-context-badge" class="aural-context-badge" style="display: none;">
+            <span class="context-label">ACTIVE PROTOCOL</span>
+            <span id="aural-context-text" class="context-value">General</span>
+        </div>
+    </div>
     
     <!-- Canvas Visualizer Layer -->
     <canvas id="aural-visualizer" class="aural-visualizer"></canvas>
-
-    <!-- Context Badge -->
-    <div id="aural-context-badge" class="aural-context-badge" style="display: none;">
-        <span class="context-label">ACTIVE PROTOCOL</span>
-        <span id="aural-context-text" class="context-value">General</span>
-    </div>
 
     <!-- Content Overlay -->
     <div id="transcription-log" class="transcription-log">

@@ -5,6 +5,7 @@ import * as stateService from '../../services/stateService.js';
 
 let container;
 let clearBtn;
+let actionsContainer;
 let emptyMessage;
 let template;
 let gridClickHandler;
@@ -21,13 +22,13 @@ function renderHistory() {
     const cleanTopic = (topic) => topic.replace(/ - Level \d+$/, '').trim();
 
     if (history.length === 0) {
-        emptyMessage.style.display = 'block';
-        clearBtn.disabled = true;
+        emptyMessage.style.display = 'flex'; // Flex for centering
+        actionsContainer.style.display = 'none';
         container.style.display = 'none';
     } else {
         emptyMessage.style.display = 'none';
         container.style.display = 'block';
-        clearBtn.disabled = false;
+        actionsContainer.style.display = 'flex';
         
         history.forEach((item, index) => {
             const clone = template.content.cloneNode(true);
@@ -143,6 +144,7 @@ function handleGridClick(event) {
 
 export function init() {
     container = document.getElementById('history-timeline');
+    actionsContainer = document.getElementById('history-actions-container');
     clearBtn = document.getElementById('clear-history-btn');
     emptyMessage = document.getElementById('empty-history-message');
     template = document.getElementById('history-item-template');

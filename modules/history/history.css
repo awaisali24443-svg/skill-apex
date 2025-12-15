@@ -1,7 +1,20 @@
 
+.history-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
 .history-header {
     margin-bottom: var(--space-xl);
     text-align: center;
+    flex-shrink: 0;
+}
+
+.history-actions {
+    margin-top: var(--space-md);
+    display: flex;
+    justify-content: center;
 }
 
 .history-timeline {
@@ -9,6 +22,7 @@
     max-width: 800px;
     margin: 0 auto;
     padding-left: 30px; /* Space for the line */
+    width: 100%;
 }
 
 /* The Vertical Line */
@@ -183,6 +197,32 @@
 }
 /* FIX: Ensure button icons inherit specific hover color or default text color */
 .btn-small .icon { width: 14px; height: 14px; stroke: currentColor; }
+
+/* Empty State - Centered and Refined */
+.empty-state {
+    text-align: center;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xl);
+    min-height: 50vh;
+}
+
+.empty-state-icon {
+    width: 80px; height: 80px;
+    background: var(--color-surface-hover);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: var(--space-lg);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+}
+.empty-state-icon svg { width: 40px; height: 40px; stroke: currentColor; opacity: 0.7; }
+
+.empty-state h2 { margin-bottom: 0.5rem; font-size: 1.5rem; color: var(--color-text); }
+.empty-state p { max-width: 400px; margin-bottom: 2rem; color: var(--color-text-secondary); line-height: 1.6; }
 
 /* Transcript Modal */
 .transcript-content {

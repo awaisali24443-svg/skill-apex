@@ -3,8 +3,9 @@
     <header class="page-header history-header">
         <h1>Learning History</h1>
         <p>Track your quiz performance and learning milestones over time.</p>
-        <div class="history-actions">
-            <button id="clear-history-btn" class="btn" disabled>
+        <!-- Button container will be hidden if empty -->
+        <div class="history-actions" id="history-actions-container" style="display:none;">
+            <button id="clear-history-btn" class="btn">
                  <svg class="icon"><use href="assets/icons/feather-sprite.svg#trash-2"/></svg>
                  <span>Clear History</span>
             </button>
@@ -21,7 +22,7 @@
         </div>
         <h2>No Activity Recorded</h2>
         <p>Complete your first quiz or interact with the AI Tutor to see your history here.</p>
-        <a href="#/topics" class="btn btn-primary">Start Learning</a>
+        <a href="#/topics" class="btn btn-primary" style="margin-top: 1rem;">Start Learning</a>
     </div>
 </div>
 
