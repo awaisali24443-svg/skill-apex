@@ -46,6 +46,19 @@
 
 @keyframes scale-up { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
+/* --- LOADING STATE --- */
+.mini-logo-pulse {
+    width: 64px;
+    height: 64px;
+    animation: pulse-logo 2s infinite ease-in-out;
+}
+
+@keyframes pulse-logo {
+    0% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.8; }
+}
+
 /* --- QUIZ STATE --- */
 #level-quiz-state {
     flex-direction: column; justify-content: flex-start; padding: 0; 
