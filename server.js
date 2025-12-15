@@ -39,12 +39,14 @@ const PORT = process.env.PORT || 3000;
 let topicsCache = null;
 let prebakedLevelsCache = {}; // IN-MEMORY DATABASE
 
-// --- MODEL CONFIGURATION ---
-// STRICT: Using Gemini 3 Pro Preview as requested.
-// Fallback to 2.5 Flash if Pro is rate-limited/unavailable.
+// --- MODEL CONFIGURATION WITH FALLBACK ---
+// We try models in this order to ensure stability. 
+// 1.5 Flash is currently the most stable/standard. 
+// 2.5 Flash is preview (better reasoning but might be rate limited).
 const MODELS_TO_TRY = [
-    'gemini-3-pro-preview',  // PRIMARY: Best reasoning & instruction following
-    'gemini-2.5-flash'       // FALLBACK: Fast & reliable
+    'gemini-1.5-flash',      // Stable: Safest for production
+    'gemini-2.5-flash',      // Preview: Better reasoning
+    'gemini-2.0-flash-exp'   // Experimental: Fallback
 ];
 
 // Load Prebaked Data on Start
@@ -63,13 +65,14 @@ const PERSONA_DEFINITIONS = {
     apex: `
     You are ApexCore, a high-energy, witty, and ultra-modern AI Tutor.
     
-    TONE: Enthusiastic, punchy, and fun. Think "Cool Tech Mentor" or "Podcast Host".
+    TONE: Enthusiastic, punchy, and fun. Think "Cool Tech Mentor" or "Podcast Host", not "Boring Professor".
     
     CRITICAL GUIDELINES:
-    1. **NO ACADEMIC JARGON**: Explain like you're at a cafe.
-    2. **ANALOGIES FIRST**: Always start with a real-world comparison.
-    3. **BREVITY IS KING**: Keep it short. No long paragraphs.
-    4. **STRICT JSON**: You are an API. Do not output markdown text outside the JSON block.
+    1. **NO ACADEMIC JARGON**: Explain things like you are talking to a smart friend at a cafe.
+    2. **ANALOGIES FIRST**: Always start with a real-world comparison (e.g., "RAM is like a kitchen counter").
+    3. **LOCAL FLAVOR (Pakistan)**: Use relatable references like Cricket, Chai, Traffic in Lahore/Karachi, or Biryani vs Pulao debates.
+    4. **BREVITY IS KING**: Keep it short. No long paragraphs. Bullet points are your best friend.
+    5. **HUMOR**: It is okay to be funny. Make the user smile.
     `,
     sage: `Persona: A Wise Grandmaster. Tone: Deep, metaphorical, concise.`,
     commander: `Persona: Tactical Mission Control. Tone: Urgent, military, precise.`,
@@ -78,7 +81,7 @@ const PERSONA_DEFINITIONS = {
 
 function getSystemInstruction(personaKey = 'apex') {
     return `${PERSONA_DEFINITIONS[personaKey] || PERSONA_DEFINITIONS.apex} 
-    CRITICAL: Output valid JSON only. Do not include markdown code fences (like \`\`\`json). Just the raw JSON string.`;
+    RULES: JSON output only. No markdown formatting outside the JSON string.`;
 }
 
 // --- FALLBACK DATA GENERATORS (Safety Net) ---
@@ -128,7 +131,6 @@ function cleanAndParseJSON(text) {
     try {
         return JSON.parse(text);
     } catch (e) {
-        // Aggressive cleanup for chatty models
         let clean = text.replace(/```json/g, '').replace(/```/g, '');
         const firstOpen = clean.search(/[\{\[]/);
         let lastClose = -1;
@@ -187,11 +189,12 @@ async function generateWithFallback(callFn) {
 // --- SERVICE FUNCTIONS ---
 
 async function generateJourneyPlan(topic, persona) {
+    // 1. Check Offline DB (Instant)
     if (prebakedLevelsCache[topic]) {
         console.log(`⚡ Serving Prebaked Journey for: ${topic}`);
         return {
             topicName: topic,
-            totalLevels: 50,
+            totalLevels: 50, // Standard size for prebaked
             description: "High-performance training module loaded from local archives. 100% Reliable.",
             isPrebaked: true
         };
@@ -221,6 +224,7 @@ async function generateJourneyPlan(topic, persona) {
         return cleanAndParseJSON(response.text) || FALLBACK_DATA.journey(topic);
     } catch (error) {
         console.error("Error in generateJourneyPlan:", error);
+        // Special case for debug tool - rethrow to see message
         if (topic === "PING_TEST_PROTOCOL_DEBUG") throw error;
         return FALLBACK_DATA.journey(topic);
     }
@@ -245,22 +249,25 @@ async function generateCurriculumOutline(topic, totalLevels, persona) {
 }
 
 async function generateLevelQuestions(topic, level, totalLevels, persona) {
+    // 1. Check Prebaked DB
     if (prebakedLevelsCache[topic]) {
         console.log(`⚡ Serving Prebaked Questions for: ${topic}`);
-        return { questions: prebakedLevelsCache[topic].questions };
+        const data = prebakedLevelsCache[topic];
+        return { questions: data.questions };
     }
 
     if (!ai) return FALLBACK_DATA.questions(topic);
     
     const ratio = level / totalLevels;
     let focusArea = "";
-    if (ratio < 0.2) focusArea = "Focus: Fundamental Definitions.";
-    else if (ratio < 0.6) focusArea = "Focus: Practical Application.";
-    else focusArea = "Focus: Complex Architecture.";
+    if (ratio < 0.2) focusArea = "Focus: Fundamental Definitions & Vocabulary.";
+    else if (ratio < 0.6) focusArea = "Focus: Practical Application & Usage.";
+    else focusArea = "Focus: Complex Architecture & Strategy.";
 
     const prompt = `
     Topic: ${topic}. Level: ${level}/${totalLevels}. ${focusArea}
     Generate 3 engaging multiple choice questions.
+    Make the scenarios realistic but fun.
     `;
 
     try {
@@ -305,6 +312,7 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
 }
 
 async function generateLevelLesson(topic, level, totalLevels, questions, persona) {
+    // 1. Check Prebaked DB
     if (prebakedLevelsCache[topic]) {
         console.log(`⚡ Serving Prebaked Lesson for: ${topic}`);
         return { lesson: prebakedLevelsCache[topic].lesson };
@@ -313,11 +321,21 @@ async function generateLevelLesson(topic, level, totalLevels, questions, persona
     if (!ai) return FALLBACK_DATA.lesson(topic);
     
     try {
+        // Optimized prompt for speed and engagement
         const prompt = `
         Topic: ${topic}. Level: ${level}/${totalLevels}.
         Goal: Explain the ONE most critical concept for this level.
-        Constraints: MAX 80 WORDS. Fun analogy. No academic intro.
-        Format: ⚡ **The Hook**: ... 🧠 **The Logic**: ... 🚀 **Real World**: ...
+        
+        Constraints:
+        1. MAX 80 WORDS. Keep it punchy.
+        2. START with a fun analogy (e.g. "Think of X like a Pizza...").
+        3. NO academic intros like "In this lesson...".
+        4. Make it sound like a cool tech blog post.
+        
+        Format:
+        - ⚡ **The Hook**: The analogy.
+        - 🧠 **The Logic**: What it actually is.
+        - 🚀 **Real World**: Why it matters.
         `;
 
         const response = await generateWithFallback((model) => ai.models.generateContent({
@@ -342,6 +360,7 @@ async function generateLevelLesson(topic, level, totalLevels, questions, persona
     }
 }
 
+// --- NEW MULTIMODAL SERVICE ---
 async function generateJourneyFromFile(fileData, mimeType, persona) {
     if (!ai) return FALLBACK_DATA.journey("Document Analysis");
 
@@ -395,10 +414,13 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
+// FIX: REQUIRED FOR DEPLOYMENT (Render/Heroku/etc)
 app.set('trust proxy', 1);
-app.use(express.json({ limit: '10mb' }));
+
+app.use(express.json({ limit: '10mb' })); // Limit increased for file uploads
 app.use(express.static(path.join(__dirname)));
 
+// Robust Rate Limiting
 const apiLimiter = rateLimit({ 
     windowMs: 15 * 60 * 1000, 
     max: 300, 
@@ -416,17 +438,28 @@ app.get('/api/client-config', (req, res) => {
     res.json({ apiKey: API_KEY });
 });
 
+// --- DEBUG ENDPOINT FOR CLIENT ---
 app.post('/api/debug-status', async (req, res) => {
-    if (!API_KEY) return res.json({ status: 'error', message: 'Env Var API_KEY is missing on Server' });
-    if (!ai) return res.json({ status: 'error', message: 'AI Client failed to initialize' });
+    if (!API_KEY) {
+        return res.json({ status: 'error', message: 'Env Var API_KEY is missing on Server' });
+    }
+    if (!ai) {
+        return res.json({ status: 'error', message: 'AI Client failed to initialize' });
+    }
     try {
+        // Try a very simple generation to test the key validity
         await generateJourneyPlan("PING_TEST_PROTOCOL_DEBUG", "apex");
         res.json({ status: 'online', message: 'AI Responded Successfully' });
     } catch (e) {
-        res.json({ status: 'error', message: e.message || 'Unknown API Error', code: e.status || e.code });
+        res.json({ 
+            status: 'error', 
+            message: e.message || 'Unknown API Error',
+            code: e.status || e.code
+        });
     }
 });
 
+// Helper for safe route handling
 const safeHandler = (fn) => async (req, res) => {
     try {
         const result = await fn(req.body);
@@ -444,8 +477,11 @@ app.post('/api/generate-journey-plan', safeHandler((body) => generateJourneyPlan
 app.post('/api/generate-curriculum-outline', safeHandler((body) => generateCurriculumOutline(body.topic, body.totalLevels, body.persona)));
 app.post('/api/generate-level-questions', safeHandler((body) => generateLevelQuestions(body.topic, body.level, body.totalLevels, body.persona)));
 app.post('/api/generate-level-lesson', safeHandler((body) => generateLevelLesson(body.topic, body.level, body.totalLevels, body.questions, body.persona)));
+
+// New Endpoint for Files
 app.post('/api/generate-journey-from-file', safeHandler((body) => generateJourneyFromFile(body.fileData, body.mimeType, body.persona)));
 
+// Utility Endpoints
 app.post('/api/generate-hint', (req, res) => res.json({ hint: "Review the core concepts mentioned in the briefing. Look for keywords." }));
 app.post('/api/explain-error', (req, res) => res.json({ explanation: "The selected answer contradicts standard best practices. Re-read the question carefully." }));
 
@@ -459,9 +495,12 @@ app.get('/api/topics', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Could not load topics data.' }); }
 });
 
+// --- WEBSOCKETS ---
 wss.on('connection', (ws) => {
     console.log('WS Connected');
-    if (!ai) ws.send(JSON.stringify({ type: 'error', message: 'AI Voice Unavailable (Server Offline Mode)' }));
+    if (!ai) {
+        ws.send(JSON.stringify({ type: 'error', message: 'AI Voice Unavailable (Server Offline Mode)' }));
+    }
     ws.on('close', () => console.log('WS Disconnected'));
 });
 

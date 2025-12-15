@@ -55,12 +55,23 @@ export function renderSidebar(container) {
     const isGuest = firebaseService.isGuest();
 
     const html = `
-        <!-- Top: Window Controls -->
-        <div class="window-controls">
-            <span class="dot red"></span>
-            <span class="dot yellow"></span>
-            <span class="dot green"></span>
-        </div>
+        <!-- Top: Brand Logo (Code Based) -->
+        <a href="#/" class="sidebar-brand-section" aria-label="Skill Apex Home">
+            <div class="logo-container-sidebar">
+                <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="logoGradSidebar" x1="0%" y1="100%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="var(--color-primary)"/>
+                            <stop offset="100%" stop-color="var(--color-secondary)"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M50 5 L95 27.5 V72.5 L50 95 L5 72.5 V27.5 Z" stroke="url(#logoGradSidebar)" stroke-width="4" stroke-linecap="round" fill="none" />
+                    <path d="M50 25 L75 80 H65 L50 45 L35 80 H25 Z" fill="url(#logoGradSidebar)" />
+                    <circle cx="50" cy="55" r="4" fill="var(--color-background)" stroke="var(--color-primary)" stroke-width="2"/>
+                </svg>
+            </div>
+            <span class="brand-text-sidebar">Skill Apex</span>
+        </a>
 
         <!-- Header: Facenote Style Profile -->
         <div class="sidebar-profile-header">

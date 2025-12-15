@@ -1,0 +1,78 @@
+
+<div class="page-container report-container">
+    <header class="page-header">
+        <h1>Performance Report</h1>
+        <p>Tactical analysis of your neural training progress.</p>
+    </header>
+
+    <!-- Overview Cards -->
+    <div class="report-grid-top">
+        <div class="card stat-card grade-card">
+            <h3>Combat Grade</h3>
+            <div class="grade-circle">
+                <span id="grade-letter">--</span>
+            </div>
+            <p id="grade-sub">Based on accuracy</p>
+        </div>
+        
+        <div class="card stat-card">
+            <h3>Total Focus Time</h3>
+            <div class="stat-value-large" id="total-time">0h</div>
+            <p class="stat-sub">Estimated training duration</p>
+        </div>
+
+        <div class="card stat-card">
+            <h3>Knowledge Index</h3>
+            <div class="stat-value-large" id="knowledge-index">0</div>
+            <p class="stat-sub">Topics engaged</p>
+        </div>
+    </div>
+
+    <!-- Accuracy Chart (CSS Conic Gradient) -->
+    <div class="card chart-section">
+        <div class="chart-header">
+            <h3>Accuracy Distribution</h3>
+            <div class="chart-legend">
+                <span class="legend-item"><span class="dot correct"></span> Correct</span>
+                <span class="legend-item"><span class="dot incorrect"></span> Incorrect</span>
+            </div>
+        </div>
+        <div class="chart-body">
+            <div class="donut-chart" id="accuracy-chart">
+                <div class="donut-hole">
+                    <span id="accuracy-percent">0%</span>
+                </div>
+            </div>
+            <div class="chart-details">
+                <div class="detail-row">
+                    <span>Questions Attempted</span>
+                    <strong id="total-questions">0</strong>
+                </div>
+                <div class="detail-row">
+                    <span>Correct Answers</span>
+                    <strong id="total-correct" class="text-success">0</strong>
+                </div>
+                <div class="detail-row">
+                    <span>Efficiency Rate</span>
+                    <strong id="efficiency-rate">0%</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Topic Breakdown (CSS Bar Chart) -->
+    <div class="card breakdown-section">
+        <h3>Topic Proficiency</h3>
+        <div id="topic-bars" class="topic-bars-container">
+            <!-- Bars injected by JS -->
+            <div class="empty-state-text">No data available yet.</div>
+        </div>
+    </div>
+
+    <div class="report-footer">
+        <button id="print-report-btn" class="btn">
+            <svg class="icon"><use href="assets/icons/feather-sprite.svg#copy"/></svg>
+            Export Data
+        </button>
+    </div>
+</div>

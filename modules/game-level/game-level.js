@@ -34,6 +34,9 @@ let currentCombo = 0;
 let typewriterInterval = null;
 let loadingTimeout = null;
 
+// Keyboard Listener
+let keydownHandler = null;
+
 function switchState(targetStateId) {
     document.querySelectorAll('.game-level-state').forEach(s => s.classList.remove('active'));
     document.getElementById(targetStateId)?.classList.add('active');
@@ -62,6 +65,7 @@ async function startLevel() {
     
     try {
         // PERFORMANCE BOOST: Parallel Fetching
+        // Fetch lesson AND questions simultaneously to cut wait time in half
         const [lessonData, questionsData] = await Promise.all([
             apiService.generateLevelLesson({ topic, level, totalLevels }),
             apiService.generateLevelQuestions({ topic, level, totalLevels })
@@ -77,6 +81,7 @@ async function startLevel() {
         currentQuestions = levelData.questions;
         renderLesson();
         
+        // Very delayed preloading to keep channel clear
         setTimeout(() => preloadNextLevel(), 8000);
 
     } catch (error) {
@@ -93,6 +98,7 @@ async function preloadNextLevel() {
     if (levelCacheService.getLevel(levelContext.topic, nextLevel)) return;
 
     try {
+        // Parallel preloading too
         const [lData, qData] = await Promise.all([
             apiService.generateLevelLesson({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels }),
             apiService.generateLevelQuestions({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels })
@@ -107,6 +113,8 @@ async function preloadNextLevel() {
 
 function renderLessonTypewriter(htmlContent) {
     if (typewriterInterval) clearInterval(typewriterInterval);
+    // Directly inject HTML for instant gratification in Expo mode
+    // Typewriter is cool but slows down the "fast" feel requested
     const container = elements.lessonBody;
     container.innerHTML = htmlContent;
     container.scrollTop = 0;
@@ -149,8 +157,16 @@ function renderQuestion() {
     question.options.forEach((optionText, index) => {
         const button = document.createElement('button');
         button.className = 'btn option-btn';
+        // Add number hint
+        const keyHint = document.createElement('span');
+        keyHint.className = 'key-hint';
+        keyHint.textContent = index + 1;
+        keyHint.style.cssText = 'margin-right: 10px; font-weight: bold; opacity: 0.5; border: 1px solid var(--color-border); border-radius: 4px; padding: 2px 6px; font-size: 0.8rem;';
+        
         const textSpan = document.createElement('span');
         textSpan.textContent = optionText;
+        
+        button.appendChild(keyHint);
         button.appendChild(textSpan);
         button.dataset.index = index;
         elements.quizOptionsContainer.appendChild(button);
@@ -165,7 +181,7 @@ function renderQuestion() {
 }
 
 function startTimer() {
-    if (timerInterval) clearInterval(timerInterval); // CRITICAL FIX: Clear old timer
+    clearInterval(timerInterval);
     timeLeft = 60;
     
     elements.timerText.textContent = `00:${timeLeft}`;
@@ -200,11 +216,19 @@ function handleOptionClick(event) {
     const button = event.target.closest('.option-btn');
     if (answered || !button) return;
     
-    soundService.playSound('click');
+    selectOption(parseInt(button.dataset.index, 10));
+}
 
+function selectOption(index) {
+    if (answered) return;
+    soundService.playSound('click');
+    
     elements.quizOptionsContainer.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
-    button.classList.add('selected');
-    selectedAnswerIndex = parseInt(button.dataset.index, 10);
+    
+    const targetBtn = elements.quizOptionsContainer.querySelector(`.option-btn[data-index="${index}"]`);
+    if(targetBtn) targetBtn.classList.add('selected');
+    
+    selectedAnswerIndex = index;
     elements.submitAnswerBtn.disabled = false;
 }
 
@@ -240,6 +264,10 @@ function handleSubmitAnswer() {
         handleNextQuestion();
         return;
     }
+    
+    // Safety check: Don't submit if nothing selected
+    if (selectedAnswerIndex === null) return;
+
     clearInterval(timerInterval);
     answered = true;
     userAnswers[currentQuestionIndex] = selectedAnswerIndex;
@@ -267,7 +295,8 @@ function handleSubmitAnswer() {
         }
         
         xpGainedThisLevel += xp;
-        soundService.playSound('correct');
+        // Pass combo count for dynamic pitch
+        soundService.playSound('correct', currentCombo);
         updateComboDisplay();
         
         const selectedBtn = elements.quizOptionsContainer.querySelector('.option-btn.selected');
@@ -295,6 +324,9 @@ function handleSubmitAnswer() {
     elements.hintBtn.disabled = true;
     elements.submitAnswerBtn.textContent = currentQuestionIndex < currentQuestions.length - 1 ? 'Next' : 'Results';
     elements.submitAnswerBtn.disabled = false;
+    
+    // Auto-focus next button for Enter key usability
+    elements.submitAnswerBtn.focus();
 }
 
 function handleNextQuestion() {
@@ -417,6 +449,21 @@ async function handleHintClick() {
     }
 }
 
+// --- Keyboard Event Handler ---
+function handleKeyDown(e) {
+    // Only active in quiz state
+    if (!document.getElementById('level-quiz-state').classList.contains('active')) return;
+
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSubmitAnswer();
+    } else if (['1', '2', '3', '4'].includes(e.key)) {
+        e.preventDefault();
+        const index = parseInt(e.key) - 1;
+        selectOption(index);
+    }
+}
+
 export function init() {
     const { navigationContext } = stateService.getState();
     levelContext = navigationContext;
@@ -456,6 +503,10 @@ export function init() {
     elements.quitBtn.addEventListener('click', handleQuit);
     elements.hintBtn.addEventListener('click', handleHintClick);
 
+    // Attach Keyboard Listener
+    keydownHandler = handleKeyDown;
+    document.addEventListener('keydown', keydownHandler);
+
     startLevel();
 }
 
@@ -463,4 +514,6 @@ export function destroy() {
     clearInterval(timerInterval);
     clearTimeout(loadingTimeout);
     if (typewriterInterval) clearInterval(typewriterInterval);
+    // Remove Keyboard Listener
+    if (keydownHandler) document.removeEventListener('keydown', keydownHandler);
 }

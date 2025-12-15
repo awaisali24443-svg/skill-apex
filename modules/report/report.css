@@ -1,0 +1,143 @@
+
+.report-container {
+    animation: fadeSlideIn 0.5s ease-out;
+    padding-bottom: 4rem;
+}
+
+/* Overview Grid */
+.report-grid-top {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-lg);
+    margin-bottom: var(--space-lg);
+}
+
+.stat-card {
+    padding: var(--space-lg);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-card h3 {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: var(--space-md);
+}
+
+.grade-circle {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: var(--color-surface-hover);
+    border: 4px solid var(--color-primary);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: var(--space-sm);
+    box-shadow: 0 0 20px var(--color-primary-transparent);
+}
+
+#grade-letter {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--color-primary);
+    font-family: var(--font-family-heading);
+}
+
+.stat-value-large {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--color-text);
+    line-height: 1;
+    margin-bottom: var(--space-sm);
+}
+
+.stat-sub { font-size: 0.8rem; color: var(--color-text-secondary); }
+
+/* Accuracy Donut Chart */
+.chart-section {
+    padding: var(--space-xl);
+    margin-bottom: var(--space-lg);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--space-md);
+}
+
+.chart-body {
+    display: flex;
+    gap: var(--space-xl);
+    align-items: center;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.donut-chart {
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: conic-gradient(var(--color-primary) 0% 0%, var(--color-surface-hover) 0% 100%);
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 1s ease-out;
+}
+
+.donut-hole {
+    width: 140px; height: 140px;
+    background: var(--color-surface);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+}
+
+#accuracy-percent {
+    font-size: 2rem; font-weight: 800; color: var(--color-text);
+}
+
+.chart-details { flex-grow: 1; max-width: 300px; }
+
+.detail-row {
+    display: flex; justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--color-border);
+}
+.detail-row span { color: var(--color-text-secondary); }
+.detail-row strong { font-size: 1.1rem; }
+.text-success { color: var(--color-success); }
+
+/* Legend */
+.legend-item { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--color-text-secondary); margin-left: 10px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot.correct { background-color: var(--color-primary); }
+.dot.incorrect { background-color: var(--color-surface-hover); }
+
+/* Topic Bars */
+.breakdown-section { padding: var(--space-xl); }
+.topic-bars-container { margin-top: var(--space-lg); }
+
+.topic-bar-row { margin-bottom: 16px; }
+.topic-label-row {
+    display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.9rem;
+}
+.t-name { font-weight: 600; }
+.t-val { font-family: var(--font-family-mono); color: var(--color-text-secondary); }
+
+.bar-track {
+    height: 8px; background: var(--color-surface-hover); border-radius: 4px; overflow: hidden;
+}
+.bar-fill {
+    height: 100%; background: var(--brand-gradient);
+    width: 0; transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.report-footer { text-align: center; margin-top: var(--space-xl); }
+
+@media (max-width: 600px) {
+    .chart-body { flex-direction: column; }
+    .stat-value-large { font-size: 2rem; }
+}
