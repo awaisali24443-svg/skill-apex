@@ -30,9 +30,13 @@ async function handleSubmit(e) {
     try {
         if (isLoginMode) {
             await firebaseService.login(email, password);
+            // SYNC TRIGGER
+            await firebaseService.syncLocalToCloud();
         } else {
             await firebaseService.register(email, password);
             showToast('Account created successfully!', 'success');
+            // SYNC TRIGGER
+            await firebaseService.syncLocalToCloud();
         }
     } catch (error) {
         handleError(error);
@@ -41,10 +45,15 @@ async function handleSubmit(e) {
 
 async function handleGoogleLogin() {
     try { 
+        // This now handles both Real and Simulated login internally
         await firebaseService.loginWithGoogle(); 
+        
+        // SYNC TRIGGER: 10000% SURE data save
+        await firebaseService.syncLocalToCloud();
+        
+        showToast("Access Granted via Google Protocol.", "success");
     } catch (error) { 
-        // If Google fails (likely domain issue), suggest Guest
-        handleError({ message: "Google Login failed. Use 'Try as Guest' for the Expo demo." });
+        handleError({ message: "Google Login failed completely. Use Guest Mode." });
     }
 }
 

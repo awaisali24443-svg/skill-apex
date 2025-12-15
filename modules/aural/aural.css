@@ -106,6 +106,7 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    /* Fade out top for aesthetic */
     mask-image: linear-gradient(to bottom, transparent 0%, black 15%);
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%);
     scroll-behavior: smooth;
@@ -139,6 +140,8 @@
     line-height: 1.5;
     position: relative;
     word-wrap: break-word;
+    /* Ensure text shadow for readability over canvas */
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 
 /* User Bubble Style */
@@ -166,6 +169,7 @@
     border: 1px solid var(--color-border);
     border-bottom-left-radius: 4px;
     backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     box-shadow: var(--shadow-card);
 }
 
@@ -202,7 +206,7 @@
     flex-direction: column;
     align-items: center;
     padding-bottom: 3rem;
-    background: linear-gradient(to top, var(--color-background), transparent);
+    background: linear-gradient(to top, var(--color-background) 20%, transparent);
 }
 
 .aural-status {

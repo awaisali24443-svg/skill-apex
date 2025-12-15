@@ -1,12 +1,12 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 8.0.0 (iOS Glass UI)
+ * @version 8.1.0 (Expo Edition)
  *
  * This service worker implements a robust offline-first caching strategy.
  */
 
-const CACHE_NAME = 'skill-apex-v8.0.0-ios-glass';
+const CACHE_NAME = 'skill-apex-v8.1.0-expo-edition';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [
