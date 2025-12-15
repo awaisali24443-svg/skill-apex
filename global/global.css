@@ -103,18 +103,117 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 5px; border: 2px solid var(--scrollbar-track); }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-text-secondary); }
 
-/* --- LOADER --- */
-.orb-loader {
-    width: 60px; height: 60px; border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, #fff, transparent 20%),
-                radial-gradient(circle at 70% 70%, var(--color-primary), transparent 50%),
-                var(--color-surface);
-    box-shadow: 0 0 20px var(--color-primary-transparent-heavy);
-    animation: orb-spin 2s linear infinite;
-    position: relative;
-    border: 1px solid rgba(255,255,255,0.5);
+/* --- CINEMATIC LOADER (LOGO SHATTER) --- */
+#splash-screen {
+    background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); /* Deep Cinematic Slate */
+    position: fixed; inset: 0; z-index: 20000;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: opacity 0.5s ease-out, visibility 0.5s;
 }
-@keyframes orb-spin { to { transform: rotate(360deg); } }
+#splash-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+.cinematic-loader-container {
+    position: relative;
+    width: 200px; height: 200px;
+    display: flex; align-items: center; justify-content: center;
+}
+
+.cinematic-logo {
+    width: 140px; height: 140px;
+    overflow: visible;
+}
+
+.logo-part {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: all 0.3s;
+}
+
+/* Shatter Animation Keyframes */
+@keyframes shatter-assemble-left {
+    0% { transform: translate(0, 0) scale(0.9); opacity: 0; }
+    10% { transform: translate(-10px, 10px) rotate(-5deg) scale(0.9); opacity: 1; fill-opacity: 0; stroke: #fff; stroke-width: 3; }
+    30% { transform: translate(-40px, 20px) rotate(-15deg) scale(1.1); fill-opacity: 0; stroke: #0052CC; stroke-width: 1; }
+    50% { transform: translate(-30px, 15px) rotate(-10deg) scale(1.1); fill-opacity: 1; stroke-width: 0; filter: drop-shadow(0 0 15px #0052CC); }
+    70% { transform: translate(0, 0) rotate(0) scale(1); filter: drop-shadow(0 0 5px #0052CC); }
+    100% { transform: scale(1); }
+}
+
+@keyframes shatter-assemble-right {
+    0% { transform: translate(0, 0) scale(0.9); opacity: 0; }
+    10% { transform: translate(10px, 10px) rotate(5deg) scale(0.9); opacity: 1; fill-opacity: 0; stroke: #fff; stroke-width: 3; }
+    30% { transform: translate(40px, 20px) rotate(15deg) scale(1.1); fill-opacity: 0; stroke: #00E5FF; stroke-width: 1; }
+    50% { transform: translate(30px, 15px) rotate(10deg) scale(1.1); fill-opacity: 1; stroke-width: 0; filter: drop-shadow(0 0 15px #00E5FF); }
+    70% { transform: translate(0, 0) rotate(0) scale(1); filter: drop-shadow(0 0 5px #00E5FF); }
+    100% { transform: scale(1); }
+}
+
+@keyframes shatter-assemble-spark {
+    0% { transform: scale(0); opacity: 0; }
+    20% { transform: scale(0.5); opacity: 0; }
+    40% { transform: translateY(-40px) scale(1.5); opacity: 1; fill: #fff; filter: drop-shadow(0 0 10px #fff); }
+    70% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 20px #00C2FF); }
+    100% { transform: scale(1); filter: drop-shadow(0 0 5px #fff); }
+}
+
+/* Applying Animations */
+.logo-part.wing-left {
+    animation: shatter-assemble-left 3s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+.logo-part.wing-right {
+    animation: shatter-assemble-right 3s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+.logo-part.spark {
+    animation: shatter-assemble-spark 3s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+/* Particles */
+.particles {
+    position: absolute; inset: -50px;
+    pointer-events: none;
+}
+.particle {
+    position: absolute; width: 4px; height: 4px; border-radius: 50%;
+    background: white; opacity: 0;
+}
+.p1 { top: 50%; left: 50%; animation: particle-fly-1 3s ease-out infinite; }
+.p2 { top: 50%; left: 50%; animation: particle-fly-2 3s ease-out 0.2s infinite; }
+.p3 { top: 50%; left: 50%; animation: particle-fly-3 3s ease-out 0.4s infinite; }
+.p4 { top: 50%; left: 50%; animation: particle-fly-4 3s ease-out 0.6s infinite; }
+
+@keyframes particle-fly-1 {
+    0% { transform: translate(0,0) scale(0); opacity: 0; }
+    30% { opacity: 1; }
+    100% { transform: translate(-60px, -60px) scale(0); opacity: 0; }
+}
+@keyframes particle-fly-2 {
+    0% { transform: translate(0,0) scale(0); opacity: 0; }
+    30% { opacity: 1; }
+    100% { transform: translate(60px, -40px) scale(0); opacity: 0; }
+}
+@keyframes particle-fly-3 {
+    0% { transform: translate(0,0) scale(0); opacity: 0; }
+    30% { opacity: 1; }
+    100% { transform: translate(-30px, 70px) scale(0); opacity: 0; }
+}
+@keyframes particle-fly-4 {
+    0% { transform: translate(0,0) scale(0); opacity: 0; }
+    30% { opacity: 1; }
+    100% { transform: translate(50px, 50px) scale(0); opacity: 0; }
+}
+
+.cinematic-text {
+    margin-top: 1rem;
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 700;
+    letter-spacing: 4px;
+    font-size: 0.9rem;
+    color: #cbd5e1;
+    text-transform: uppercase;
+    animation: pulse-text 2s infinite;
+}
+@keyframes pulse-text { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; text-shadow: 0 0 10px rgba(255,255,255,0.3); } }
+
 
 /* --- APP SHELL --- */
 #app-wrapper { 

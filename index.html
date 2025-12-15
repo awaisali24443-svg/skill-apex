@@ -10,7 +10,8 @@
     <!-- Full Screen Mode for Kiosk/Expo -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" id="theme-color-meta" content="#F8F9FA">
+    <!-- Updated Theme Color for Daylight Mode -->
+    <meta name="theme-color" id="theme-color-meta" content="#F1F5F9">
     
     <!-- Open Graph -->
     <meta property="og:title" content="Skill Apex | Neural Knowledge Interface">
@@ -74,10 +75,52 @@
 
     <!-- Intro Splash -->
     <div id="splash-screen">
-        <img src="assets/icons/favicon.svg" alt="Skill Apex Logo" class="splash-logo">
-        <h2 id="splash-status-text" style="color:var(--color-primary); font-family: 'Exo 2'; letter-spacing: 2px; margin-top:10px;">INITIALIZING CORE...</h2>
-        <!-- UPDATED ORB LOADER -->
-        <div class="orb-loader" id="splash-loader" role="status"></div>
+        <div class="cinematic-loader-container">
+            <!-- Particle System (CSS) -->
+            <div class="particles">
+                <div class="particle p1"></div>
+                <div class="particle p2"></div>
+                <div class="particle p3"></div>
+                <div class="particle p4"></div>
+                <div class="particle p5"></div>
+            </div>
+
+            <!-- Inline SVG Logo for Animation Parts -->
+            <svg class="cinematic-logo" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="anim-grad-left" x1="100" y1="400" x2="256" y2="100" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#0033A0"/>
+                        <stop offset="100%" stop-color="#0052CC"/>
+                    </linearGradient>
+                    <linearGradient id="anim-grad-right" x1="412" y1="400" x2="256" y2="100" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#008DA6"/>
+                        <stop offset="100%" stop-color="#00E5FF"/>
+                    </linearGradient>
+                    <filter id="anim-glow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="10" result="coloredBlur"/>
+                        <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+                
+                <g class="logo-group">
+                    <!-- Left Wing -->
+                    <path class="logo-part wing-left" d="M96 416 L232 136 L256 180 L170 416 H96Z" 
+                          fill="url(#anim-grad-left)" stroke="white" stroke-width="2" />
+                    
+                    <!-- Right Wing -->
+                    <path class="logo-part wing-right" d="M416 416 L280 136 L256 180 L342 416 H416Z" 
+                          fill="url(#anim-grad-right)" stroke="white" stroke-width="2" />
+                    
+                    <!-- Center Spark -->
+                    <circle class="logo-part spark" cx="256" cy="100" r="32" fill="white" />
+                </g>
+            </svg>
+        </div>
+
+        <h2 id="splash-status-text" class="cinematic-text">INITIALIZING CORE...</h2>
         <div id="splash-error-log" style="color: #ef4444; margin-top: 20px; font-family: 'Roboto Mono', monospace; font-size: 0.8rem; max-width: 80%; text-align: center;"></div>
         <button id="splash-reload-btn" class="btn btn-primary" style="display: none; margin-top: 20px;">System Reboot</button>
     </div>
@@ -130,7 +173,6 @@
                 if (splash && !splash.classList.contains('hidden') && splash.style.display !== 'none') {
                     document.getElementById('splash-status-text').innerText = "SYSTEM INITIALIZATION TIMEOUT";
                     document.getElementById('splash-status-text').style.color = "#ef4444";
-                    document.getElementById('splash-loader').style.display = 'none';
                     document.getElementById('splash-reload-btn').style.display = 'inline-flex';
                     document.getElementById('splash-error-log').innerText = "The server is taking too long to respond. Check internet connection or modules.";
                 }
@@ -142,7 +184,6 @@
                     splashLog.innerText = "Error: " + (event.message || "Unknown Script Error");
                     document.getElementById('splash-status-text').innerText = "CRITICAL FAILURE";
                     document.getElementById('splash-status-text').style.color = "#ef4444";
-                    document.getElementById('splash-loader').style.display = 'none';
                     document.getElementById('splash-reload-btn').style.display = 'inline-flex';
                 }
                 // Stop spinning if error

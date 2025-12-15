@@ -1,12 +1,12 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 6.3.0 (Final Key Update)
+ * @version 7.0.0 (Expo Daylight Update)
  *
  * This service worker implements a robust offline-first caching strategy.
  */
 
-const CACHE_NAME = 'skill-apex-v6.3.0-final-fix';
+const CACHE_NAME = 'skill-apex-v7.0.0-expo-daylight';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [

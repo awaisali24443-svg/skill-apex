@@ -1,54 +1,56 @@
 
 :root {
-    /* --- Color Palette: Cyber Core --- */
+    /* --- Color Palette: Cyber Core (High Definition) --- */
 
-    /* Primary Colors */
-    --color-primary: #00b8d4;   /* Electric Teal */
-    --color-secondary: #9c27b0; /* Vibrant Violet */
-    --color-accent: #ff4081;    /* Hot Pink Accent */
+    /* Primary Colors - Neon & Glowing */
+    --color-primary: #22D3EE;   /* Cyan 400 - Electric Blue/Green */
+    --color-secondary: #C084FC; /* Purple 400 - Neon Lavender */
+    --color-accent: #F472B6;    /* Pink 400 - Hot Pink Glow */
 
-    /* Background & Surface Colors */
-    --color-background: #0c0e1a; /* Deep Indigo */
-    --color-surface: #161a2e;
-    --color-card-background: rgba(22, 26, 46, 0.7);
-    --color-surface-hover: #212642;
-    --color-surface-active: #2c3257;
+    /* Background & Surface Colors - Rich Navy instead of flat black */
+    --color-background: #0B1120; /* Very deep navy/black */
+    --color-surface: #1E293B;    /* Slate 800 */
+    --color-card-background: rgba(30, 41, 59, 0.7);
+    --color-surface-hover: #334155; /* Slate 700 */
+    --color-surface-active: #475569; /* Slate 600 */
     
     /* Glassmorphism Vars */
-    --glass-bg: rgba(22, 26, 46, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-bg: rgba(30, 41, 59, 0.75);
+    --glass-border: rgba(34, 211, 238, 0.15);
 
     /* Text Colors */
-    --color-text: #e0e0e0;
-    --color-text-secondary: #a0a0c0; /* Muted Lavender */
+    --color-text: #F1F5F9;       /* Slate 100 - High brightness white */
+    --color-text-secondary: #94A3B8; /* Slate 400 - Cool grey */
 
     /* Border & Accent Colors */
-    --color-border: #38426e;
+    --color-border: #334155;     /* Slate 700 */
 
-    /* Transparent Variants for Glows & Gradients */
-    --color-primary-transparent: rgba(0, 184, 212, 0.2);
-    --color-primary-transparent-heavy: rgba(0, 184, 212, 0.4);
-    --color-secondary-transparent: rgba(156, 39, 176, 0.2);
-    --color-secondary-transparent-heavy: rgba(156, 39, 176, 0.4);
-    --color-accent-transparent: rgba(255, 64, 129, 0.2);
-    --color-surface-transparent: rgba(56, 66, 110, 0.3);
+    /* Transparent Variants for Glows */
+    --color-primary-transparent: rgba(34, 211, 238, 0.15);
+    --color-primary-transparent-heavy: rgba(34, 211, 238, 0.3);
+    --color-secondary-transparent: rgba(192, 132, 252, 0.15);
+    --color-secondary-transparent-heavy: rgba(192, 132, 252, 0.3);
+    --color-accent-transparent: rgba(244, 114, 182, 0.2);
+    --color-surface-transparent: rgba(51, 65, 85, 0.4);
 
     /* Feedback Colors */
-    --color-success: #4caf50;
-    --color-error: #f44336;
-    --color-success-bg: rgba(76, 175, 80, 0.1);
-    --color-error-bg: rgba(244, 67, 54, 0.1);
-    --color-success-border: rgba(76, 175, 80, 0.5);
-    --color-error-border: rgba(244, 67, 54, 0.5);
+    --color-success: #4ADE80; /* Green 400 */
+    --color-error: #F87171;   /* Red 400 */
+    --color-success-bg: rgba(74, 222, 128, 0.15);
+    --color-error-bg: rgba(248, 113, 113, 0.15);
+    --color-success-border: rgba(74, 222, 128, 0.4);
+    --color-error-border: rgba(248, 113, 113, 0.4);
 
     /* Brand Gradient */
-    --brand-gradient: linear-gradient(45deg, var(--color-primary), var(--color-secondary), var(--color-accent));
+    --brand-gradient: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    --bg-tech: radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.1) 0%, transparent 60%);
     
-    /* Shadows */
-    --shadow-card: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-    --shadow-hover: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+    /* Shadows - Colored Glows */
+    --shadow-card: 0 8px 32px 0 rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.05);
+    --shadow-hover: 0 15px 40px -5px rgba(34, 211, 238, 0.15);
+    --shadow-float: 0 20px 50px -10px rgba(0, 0, 0, 0.5);
     
     /* Scrollbars */
-    --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+    --scrollbar-thumb: #475569;
     --scrollbar-track: transparent;
 }

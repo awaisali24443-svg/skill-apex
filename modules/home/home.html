@@ -5,41 +5,41 @@
     <header class="home-hero">
         <div class="hero-content">
             <h1 id="home-greeting">Welcome, Agent.</h1>
-            <p class="hero-sub">The network is active. Select an operation to begin neural training.</p>
+            <p class="hero-sub">The Infinite Knowledge Engine is online.</p>
             <div class="hero-status-badge">
                 <span class="status-dot"></span>
-                SYSTEM ONLINE
+                SYSTEM OPTIMAL
             </div>
         </div>
-        <!-- Decorative SVG Graphic -->
-        <div class="hero-graphic">
-            <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="100" cy="100" r="80" stroke="url(#paint0_linear)" stroke-width="2" stroke-dasharray="10 10" opacity="0.3"/>
-                <circle cx="100" cy="100" r="60" stroke="url(#paint0_linear)" stroke-width="4" opacity="0.6"/>
-                <circle cx="100" cy="100" r="40" fill="url(#paint0_linear)" opacity="0.1"/>
-                <path d="M100 60V140M60 100H140" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round"/>
-                <circle cx="100" cy="100" r="10" fill="var(--color-primary)"/>
-                <defs>
-                    <linearGradient id="paint0_linear" x1="20" y1="20" x2="180" y2="180" gradientUnits="userSpaceOnUse">
-                        <stop stop-color="var(--color-primary)"/>
-                        <stop offset="1" stop-color="var(--color-secondary)"/>
-                    </linearGradient>
-                </defs>
-            </svg>
+        <!-- Digital Globe Graphic -->
+        <div class="hero-graphic globe-container">
+            <div class="wireframe-globe">
+                <div class="globe-ring"></div>
+                <div class="globe-ring"></div>
+                <div class="globe-ring"></div>
+                <div class="globe-core"></div>
+            </div>
         </div>
     </header>
 
     <!-- 2. Active Mission (Resume) -->
     <div id="resume-section" class="resume-section" style="display: none;"></div>
 
-    <!-- 3. Command Input -->
+    <!-- 3. Command Input (Updated with Camera) -->
     <section class="command-section">
         <div class="command-bar-wrapper">
             <div class="command-icon">
                 <svg class="icon"><use href="assets/icons/feather-sprite.svg#search"/></svg>
             </div>
             <form id="command-form" class="command-form">
-                <input type="text" id="command-input" class="command-input" placeholder="What do you want to learn today?" autocomplete="off">
+                <input type="text" id="command-input" class="command-input" placeholder="Enter topic or upload image..." autocomplete="off">
+                
+                <!-- Camera Button -->
+                <button type="button" id="home-camera-btn" class="btn-input-action" aria-label="Upload Image">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#box"/></svg>
+                </button>
+                <input type="file" id="home-file-input" accept="image/*,application/pdf" style="display: none;">
+
                 <button type="submit" id="command-submit-btn" class="btn-command-go" aria-label="Go">
                     <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
                 </button>
@@ -102,4 +102,13 @@
         <h3 class="section-label">Recent Activity</h3>
         <div id="recent-history-container" class="recent-list"></div>
     </section>
+
+    <!-- Official Credits Footer (Matches Poster) -->
+    <footer class="official-footer">
+        <div class="credits-row">
+            <span>Supervisor: <strong style="color:var(--color-primary)">Dr. Abdul Wahid Afridi</strong></span>
+            <span class="divider">•</span>
+            <span>Developer: <strong style="color:var(--color-secondary)">Awais Ali</strong></span>
+        </div>
+    </footer>
 </div>
