@@ -134,16 +134,26 @@ export async function explainError(topic, question, userChoice, correctChoice) {
     return data || { explanation: "This option is incorrect based on standard principles." };
 }
 
-// Image analysis is heavy, we simulate it for now or implement a specific endpoint if needed.
-// For reliability in this version, we will return a mock response to prevent errors.
-export async function generateJourneyFromImage(imageBase64, mimeType) {
-    // In a real deployed version, you'd POST this to server.js
-    // For now, we return a safe default to keep the UI working.
-    return { 
-        topicName: "Visual Analysis", 
-        totalLevels: 10, 
-        description: "Topic identified from image scan. Proceeding with general analysis protocol." 
-    };
+/**
+ * Uploads a file (PDF or Image) to generate a journey based on its content.
+ * @param {string} fileBase64 - Base64 encoded file data (no data URL prefix).
+ * @param {string} mimeType - The MIME type of the file (e.g., 'application/pdf', 'image/png').
+ */
+export async function generateJourneyFromFile(fileBase64, mimeType) {
+    const data = await postToServer('/generate-journey-from-file', { 
+        fileData: fileBase64, 
+        mimeType: mimeType 
+    });
+    
+    if (!data) {
+        return { 
+            topicName: "Document Analysis", 
+            totalLevels: 10, 
+            description: "Offline fallback: Could not process file via AI.", 
+            isFallback: true 
+        };
+    }
+    return data;
 }
 
 // Helper to get client for Aural Mode (which must run in browser)

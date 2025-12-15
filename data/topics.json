@@ -1,43 +1,113 @@
 
 [
   {
-    "name": "AI & Machine Learning",
-    "description": "From neural networks to LLMs. Master Python, TensorFlow, and PyTorch to build intelligent systems of the future.",
+    "name": "Next.js & React Server Components",
+    "description": "The future of React. Master App Router, SSR, and Server Actions.",
     "styleClass": "topic-programming"
   },
   {
-    "name": "Cybersecurity & Ethical Hacking",
-    "description": "Become a digital defender. Learn penetration testing, network security, and cryptography to protect against modern threats.",
+    "name": "NestJS Fundamentals",
+    "description": "Scalable server-side Node.js applications with TypeScript and Decorators.",
+    "styleClass": "topic-robotics"
+  },
+  {
+    "name": "Docker & Kubernetes",
+    "description": "Containerization and Orchestration. DevOps essentials for modern scaling.",
     "styleClass": "topic-space"
   },
   {
-    "name": "Cloud Native & DevOps",
-    "description": "Architect scalable systems. Dive into AWS/GCP, Docker, Kubernetes, and CI/CD pipelines for modern infrastructure.",
+    "name": "TypeScript Mastery",
+    "description": "Strict syntactical superset of JavaScript. Interfaces, Generics, and Types.",
+    "styleClass": "topic-programming"
+  },
+  {
+    "name": "Rust Programming",
+    "description": "Memory safety without garbage collection. Blazing fast systems programming.",
     "styleClass": "topic-medicine"
   },
   {
-    "name": "Data Science & Analytics",
-    "description": "Turn raw data into actionable insights. Explore data analysis, visualization, statistical modeling, and big data technologies.",
-    "styleClass": "topic-biology"
+    "name": "Generative AI (LLMs)",
+    "description": "How GPT works. Tokens, Transformers, and Prompt Engineering.",
+    "styleClass": "topic-robotics"
   },
   {
-    "name": "Full-Stack Web Development",
-    "description": "Build complete web apps from server to screen. Master JavaScript, React, Node.js, and modern database technologies.",
+    "name": "AI & Machine Learning",
+    "description": "From neural networks to models. TensorFlow, PyTorch, and Data Science.",
+    "styleClass": "topic-programming"
+  },
+  {
+    "name": "Cybersecurity: Red Teaming",
+    "description": "Offensive security. Learn how attackers think to better defend systems.",
+    "styleClass": "topic-space"
+  },
+  {
+    "name": "Mobile App Dev (Flutter)",
+    "description": "Build native apps for mobile, web, and desktop from a single codebase.",
     "styleClass": "topic-arts"
   },
   {
-    "name": "Mobile App Development",
-    "description": "Create applications for billions of users. Learn Swift for iOS or Kotlin for Android and build the next big app.",
+    "name": "Cloud Computing (AWS)",
+    "description": "Architect scalable systems. EC2, S3, Lambda, and Serverless.",
+    "styleClass": "topic-medicine"
+  },
+  {
+    "name": "Blockchain Fundamentals",
+    "description": "Decentralized trust. Crypto, Smart Contracts, and Web3.",
     "styleClass": "topic-finance"
   },
   {
-    "name": "Game Development & Design",
-    "description": "Bring virtual worlds to life. Master game engines like Unity or Unreal, C#, and the principles of interactive design.",
+    "name": "Python for Beginners",
+    "description": "The most versatile language. Scripting, Automation, and Backends.",
+    "styleClass": "topic-programming"
+  },
+  {
+    "name": "Startups & Entrepreneurship",
+    "description": "From Idea to IPO. MVP, Pivot, Funding, and Growth Hacking.",
+    "styleClass": "topic-finance"
+  },
+  {
+    "name": "5G & Future Networks",
+    "description": "Connectivity revolution. Low latency, high bandwidth, and IoT.",
+    "styleClass": "topic-space"
+  },
+  {
+    "name": "UI/UX Design Principles",
+    "description": "Create beautiful interfaces. Hierarchy, Color Theory, and User Flows.",
+    "styleClass": "topic-arts"
+  },
+  {
+    "name": "Agile & Scrum",
+    "description": "Modern project management. Sprints, Stand-ups, and Kanban.",
     "styleClass": "topic-philosophy"
   },
   {
-    "name": "Blockchain & Web3",
-    "description": "Explore the decentralized future. Understand cryptocurrencies, smart contracts, and build DApps on the blockchain.",
-    "styleClass": "topic-robotics"
+    "name": "Data Structures & Algorithms",
+    "description": "CS Fundamentals. Trees, Graphs, Sorting, and Big O.",
+    "styleClass": "topic-biology"
+  },
+  {
+    "name": "SQL Database Mastery",
+    "description": "Relational data. Queries, Joins, Indexing, and Normalization.",
+    "styleClass": "topic-biology"
+  },
+  {
+    "name": "Git Version Control",
+    "description": "Collaboration standard. Branching, Merging, and Pull Requests.",
+    "styleClass": "topic-space"
+  },
+  {
+    "name": "Physics: Motion",
+    "description": "Newtonian mechanics. Gravity, Velocity, and Force.",
+    "styleClass": "topic-medicine"
+  },
+  {
+    "name": "Digital Photography",
+    "description": "Master the light. ISO, Aperture, and Shutter Speed.",
+    "styleClass": "topic-arts"
+  },
+  {
+    "name": "Public Speaking",
+    "description": "Command the stage. Persuasion, Tone, and Confidence.",
+    "styleClass": "topic-finance"
   }
 ]

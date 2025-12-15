@@ -42,7 +42,6 @@ function switchState(targetStateId) {
 async function startLevel() {
     const { topic, level, totalLevels } = levelContext;
     
-    // VALIDATION: Ensure we have a valid topic. If not (e.g. reload), go back to journeys.
     if (!topic) {
         showToast("Session restored. Redirecting to topics...", "info");
         window.location.hash = '#/topics';
@@ -51,17 +50,30 @@ async function startLevel() {
     
     switchState('level-loading-state');
     
-    // SAFETY: Increased timeout to 25s to allow server-side retries (429 handling)
+    const loadingTextEl = document.getElementById('loading-status-text');
+    if (loadingTextEl) loadingTextEl.textContent = "The AI is crafting your next challenge...";
+
+    // SAFETY: Increased timeout to 60s. The server might retry for ~30s if rate limited.
+    // We want to wait for the real data instead of giving up too early.
     loadingTimeout = setTimeout(() => {
-        const loadingText = document.getElementById('loading-status-text');
-        if (loadingText) loadingText.textContent = "Taking longer than expected... Retrying connection.";
-    }, 25000);
+        if (loadingTextEl) loadingTextEl.textContent = "Network traffic high. Rerouting neural link...";
+    }, 15000);
+    
+    // Extended timeout notification
+    setTimeout(() => {
+        if (loadingTextEl && document.getElementById('level-loading-state').classList.contains('active')) {
+            loadingTextEl.textContent = "Finalizing secure connection... almost there.";
+        }
+    }, 35000);
     
     try {
-        const [lessonData, questionsData] = await Promise.all([
-            apiService.generateLevelLesson({ topic, level, totalLevels }),
-            apiService.generateLevelQuestions({ topic, level, totalLevels })
-        ]);
+        // Sequential requests to minimize "burst" load on API key
+        const lessonData = await apiService.generateLevelLesson({ topic, level, totalLevels });
+        
+        // Small cool-down
+        await new Promise(r => setTimeout(r, 500)); 
+        
+        const questionsData = await apiService.generateLevelQuestions({ topic, level, totalLevels });
 
         clearTimeout(loadingTimeout);
 
@@ -72,7 +84,9 @@ async function startLevel() {
         
         currentQuestions = levelData.questions;
         renderLesson();
-        preloadNextLevel();
+        
+        // Very delayed preloading to keep channel clear
+        setTimeout(() => preloadNextLevel(), 10000);
 
     } catch (error) {
         clearTimeout(loadingTimeout);
@@ -88,10 +102,9 @@ async function preloadNextLevel() {
     if (levelCacheService.getLevel(levelContext.topic, nextLevel)) return;
 
     try {
-        const [lData, qData] = await Promise.all([
-            apiService.generateLevelLesson({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels }),
-            apiService.generateLevelQuestions({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels })
-        ]);
+        const lData = await apiService.generateLevelLesson({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels });
+        await new Promise(r => setTimeout(r, 2000)); // Generous cool down for background tasks
+        const qData = await apiService.generateLevelQuestions({ topic: levelContext.topic, level: nextLevel, totalLevels: levelContext.totalLevels });
         
         const nextLevelData = { lesson: lData.lesson, questions: qData.questions };
         levelCacheService.saveLevel(levelContext.topic, nextLevel, nextLevelData);

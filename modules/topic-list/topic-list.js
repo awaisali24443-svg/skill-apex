@@ -200,7 +200,7 @@ function setGeneratingState(isGenerating) {
 
     if (isGenerating) {
         generateBtn.disabled = true;
-        buttonText.textContent = 'Generating...';
+        buttonText.textContent = 'Analyzing...'; // Generic Loading Text
         buttonIcon.innerHTML = `<div class="spinner" style="width: 16px; height: 16px; border-width: 2px;"></div>`;
         cameraBtn.disabled = true;
         input.disabled = true;
@@ -261,7 +261,7 @@ async function confirmAndStartJourney(topic, plan) {
     }
 }
 
-// --- Image Handling ---
+// --- File Handling (PDF/Images) ---
 function handleCameraClick() {
     fileInput.click();
 }
@@ -275,15 +275,22 @@ async function handleFileSelect(event) {
 
     setGeneratingState(true);
     const btnText = generateBtn.querySelector('span');
-    btnText.textContent = 'Scanning Image...';
+    
+    // Customize text based on file type
+    if (file.type.includes('pdf')) {
+        btnText.textContent = 'Reading PDF...';
+    } else {
+        btnText.textContent = 'Scanning Image...';
+    }
 
     const reader = new FileReader();
     reader.onloadend = async () => {
-        const base64String = reader.result.split(',')[1]; // Remove data:image/png;base64,
+        const base64String = reader.result.split(',')[1]; // Remove metadata prefix
         const mimeType = file.type;
 
         try {
-            const plan = await apiService.generateJourneyFromImage(base64String, mimeType);
+            // New Generic Function handles both PDF and Images
+            const plan = await apiService.generateJourneyFromFile(base64String, mimeType);
             
             // Auto-fill the input with the detected topic so user sees what happened
             const input = document.getElementById('custom-topic-input');
@@ -291,8 +298,8 @@ async function handleFileSelect(event) {
             
             await confirmAndStartJourney(plan.topicName, plan);
         } catch (error) {
-            console.error("Image gen error", error);
-            showToast(`Could not analyze image: ${error.message}`, 'error');
+            console.error("File analysis error", error);
+            showToast(`Could not analyze file: ${error.message}`, 'error');
         } finally {
             setGeneratingState(false);
         }

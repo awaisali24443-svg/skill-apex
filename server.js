@@ -32,6 +32,18 @@ console.log("----------------------------------");
 // --- CONSTANTS & CONFIG ---
 const PORT = process.env.PORT || 3000;
 let topicsCache = null;
+let prebakedLevelsCache = {}; // IN-MEMORY DATABASE
+
+// Load Prebaked Data on Start
+(async () => {
+    try {
+        const data = await fs.readFile(path.join(__dirname, 'data', 'prebaked_levels.json'), 'utf-8');
+        prebakedLevelsCache = JSON.parse(data);
+        console.log(`✅ Loaded ${Object.keys(prebakedLevelsCache).length} prebaked topics into memory.`);
+    } catch (e) {
+        console.warn("⚠️ Could not load prebaked_levels.json:", e.message);
+    }
+})();
 
 // --- DYNAMIC PERSONA SYSTEM (LOCALIZED) ---
 const PERSONA_DEFINITIONS = {
@@ -59,7 +71,6 @@ function getSystemInstruction(personaKey = 'apex') {
 }
 
 // --- FALLBACK DATA GENERATORS (Safety Net) ---
-// This runs if the API fails, ensuring the app NEVER looks broken during a demo.
 const FALLBACK_DATA = {
     journey: (topic) => ({
         topicName: topic || "IT Mastery",
@@ -106,12 +117,9 @@ function cleanAndParseJSON(text) {
     try {
         return JSON.parse(text);
     } catch (e) {
-        // Clean markdown code blocks
         let clean = text.replace(/```json/g, '').replace(/```/g, '');
-        // Find first { or [
         const firstOpen = clean.search(/[\{\[]/);
         let lastClose = -1;
-        // Find last } or ]
         for (let i = clean.length - 1; i >= 0; i--) {
             if (clean[i] === '}' || clean[i] === ']') {
                 lastClose = i;
@@ -139,18 +147,18 @@ try {
     console.error(`❌ Failed to initialize AI: ${error.message}`);
 }
 
-// --- RETRY HELPER FOR 429 ERRORS ---
-async function callAIWithRetry(fn, retries = 2, delay = 2000) {
+// --- AGGRESSIVE RETRY HELPER ---
+async function callAIWithRetry(fn, retries = 5, delay = 2000) {
     try {
         return await fn();
     } catch (error) {
-        // Check for Quota Exceeded (429) or Service Unavailable (503)
-        const status = error.status || error.code; // Gemini SDK errors might have code
+        const status = error.status || error.code; 
         if (retries > 0 && (status === 429 || status === 503 || status === 'RESOURCE_EXHAUSTED')) {
-            console.warn(`⚠️ AI Busy (Status ${status}). Retrying in ${delay}ms...`);
+            console.warn(`⚠️ AI Busy (Status ${status}). Retrying in ${delay}ms... (${retries} attempts left)`);
             await new Promise(res => setTimeout(res, delay));
-            return callAIWithRetry(fn, retries - 1, delay * 2); // Exponential backoff
+            return callAIWithRetry(fn, retries - 1, Math.floor(delay * 1.5)); 
         }
+        console.error("❌ AI Call Failed Final:", error.message);
         throw error;
     }
 }
@@ -158,6 +166,17 @@ async function callAIWithRetry(fn, retries = 2, delay = 2000) {
 // --- SERVICE FUNCTIONS ---
 
 async function generateJourneyPlan(topic, persona) {
+    // 1. Check Offline DB (Instant)
+    if (prebakedLevelsCache[topic]) {
+        console.log(`⚡ Serving Prebaked Journey for: ${topic}`);
+        return {
+            topicName: topic,
+            totalLevels: 50, // Standard size for prebaked
+            description: "High-performance training module loaded from local archives. 100% Reliable.",
+            isPrebaked: true
+        };
+    }
+
     if (!ai) return FALLBACK_DATA.journey(topic);
     
     const prompt = `Analyze "${topic}". Output JSON: { topicName, totalLevels (10-50), description }`;
@@ -166,6 +185,7 @@ async function generateJourneyPlan(topic, persona) {
             model: 'gemini-2.5-flash', 
             contents: prompt,
             config: { 
+                thinkingConfig: { thinkingBudget: 0 },
                 responseMimeType: 'application/json',
                 systemInstruction: getSystemInstruction(persona),
                 responseSchema: {
@@ -181,7 +201,6 @@ async function generateJourneyPlan(topic, persona) {
         }));
         return cleanAndParseJSON(response.text) || FALLBACK_DATA.journey(topic);
     } catch (error) {
-        console.error("AI Error (Journey):", error.message);
         return FALLBACK_DATA.journey(topic);
     }
 }
@@ -193,48 +212,36 @@ async function generateCurriculumOutline(topic, totalLevels, persona) {
             model: 'gemini-2.5-flash',
             contents: `Topic: ${topic}. Break into 4 chapter titles. JSON: { chapters: [] }`,
             config: { 
+                thinkingConfig: { thinkingBudget: 0 },
                 responseMimeType: 'application/json',
                 systemInstruction: getSystemInstruction(persona)
             }
         }));
         return cleanAndParseJSON(response.text) || FALLBACK_DATA.curriculum(topic);
     } catch (error) {
-        console.error("AI Error (Curriculum):", error.message);
         return FALLBACK_DATA.curriculum(topic);
     }
 }
 
 async function generateLevelQuestions(topic, level, totalLevels, persona) {
-    if (!ai) return FALLBACK_DATA.questions(topic);
-    
-    // --- DYNAMIC DIFFICULTY & VARIETY LOGIC ---
-    // Calculate progress ratio (0.0 to 1.0)
-    const ratio = level / totalLevels;
-    let focusArea = "";
-    
-    if (ratio < 0.2) {
-        focusArea = "Focus: Fundamental Definitions, Vocabulary, and Identifying Tools.";
-    } else if (ratio < 0.4) {
-        focusArea = "Focus: Basic Syntax, Simple Practical Application, and 'How-To' scenarios.";
-    } else if (ratio < 0.6) {
-        focusArea = "Focus: Debugging common errors, Best Practices, and Comparison of methods.";
-    } else if (ratio < 0.8) {
-        focusArea = "Focus: Optimization, Security implications, and Efficiency.";
-    } else {
-        focusArea = "Focus: Complex Architecture, System Design, Edge Cases, and Strategic Trade-offs.";
+    // 1. Check Prebaked DB
+    if (prebakedLevelsCache[topic]) {
+        console.log(`⚡ Serving Prebaked Questions for: ${topic}`);
+        const data = prebakedLevelsCache[topic];
+        return { questions: data.questions };
     }
 
+    if (!ai) return FALLBACK_DATA.questions(topic);
+    
+    const ratio = level / totalLevels;
+    let focusArea = "";
+    if (ratio < 0.2) focusArea = "Focus: Fundamental Definitions & Vocabulary.";
+    else if (ratio < 0.6) focusArea = "Focus: Practical Application & Usage.";
+    else focusArea = "Focus: Complex Architecture & Strategy.";
+
     const prompt = `
-    Topic: ${topic}
-    Current Level: ${level} / ${totalLevels}
-    ${focusArea}
-
-    Generate 3 DISTINCT multiple choice questions:
-    1. Question 1 must be CONCEPTUAL (Theoretical understanding).
-    2. Question 2 must be PRACTICAL (A specific scenario or code snippet analysis).
-    3. Question 3 must be PROBLEM-SOLVING (Diagnosing an issue or choosing the best fix).
-
-    Do NOT repeat questions from previous levels. Make them challenging but fair.
+    Topic: ${topic}. Level: ${level}/${totalLevels}. ${focusArea}
+    Generate 3 multiple choice questions.
     `;
 
     try {
@@ -242,6 +249,7 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
             model: 'gemini-2.5-flash', 
             contents: prompt,
             config: { 
+                thinkingConfig: { thinkingBudget: 0 },
                 responseMimeType: 'application/json',
                 systemInstruction: getSystemInstruction(persona),
                 responseSchema: {
@@ -267,34 +275,31 @@ async function generateLevelQuestions(topic, level, totalLevels, persona) {
         }));
         
         const data = cleanAndParseJSON(response.text);
-        
-        // Robust check for data integrity
         if (data && data.questions && Array.isArray(data.questions)) {
             return data;
         } else {
-            console.warn("AI returned invalid structure:", response.text);
             return FALLBACK_DATA.questions(topic);
         }
     } catch (error) {
-        console.error("AI Error (Questions):", error.message);
         return FALLBACK_DATA.questions(topic);
     }
 }
 
 async function generateLevelLesson(topic, level, totalLevels, questions, persona) {
+    // 1. Check Prebaked DB
+    if (prebakedLevelsCache[topic]) {
+        console.log(`⚡ Serving Prebaked Lesson for: ${topic}`);
+        return { lesson: prebakedLevelsCache[topic].lesson };
+    }
+
     if (!ai) return FALLBACK_DATA.lesson(topic);
     
-    const ratio = level / totalLevels;
-    let lessonTone = "";
-    if (ratio < 0.2) lessonTone = "Tone: Introductory and welcoming. Explain 'What' and 'Why'.";
-    else if (ratio < 0.8) lessonTone = "Tone: Technical and hands-on. Explain 'How' and 'When'.";
-    else lessonTone = "Tone: Expert and strategic. Explain 'What if' and trade-offs.";
-
     try {
         const response = await callAIWithRetry(() => ai.models.generateContent({
             model: 'gemini-2.5-flash',
-            contents: `Write a short, exciting lesson briefing for ${topic}, Level ${level}. ${lessonTone}. Under 150 words. Use simple analogies where possible.`,
+            contents: `Write a short, exciting lesson briefing for ${topic}, Level ${level}. Under 150 words.`,
             config: { 
+                thinkingConfig: { thinkingBudget: 0 },
                 responseMimeType: 'application/json',
                 systemInstruction: getSystemInstruction(persona),
                 responseSchema: {
@@ -308,8 +313,57 @@ async function generateLevelLesson(topic, level, totalLevels, questions, persona
         }));
         return cleanAndParseJSON(response.text) || FALLBACK_DATA.lesson(topic);
     } catch (error) {
-        console.error("AI Error (Lesson):", error.message);
         return FALLBACK_DATA.lesson(topic);
+    }
+}
+
+// --- NEW MULTIMODAL SERVICE ---
+async function generateJourneyFromFile(fileData, mimeType, persona) {
+    if (!ai) return FALLBACK_DATA.journey("Document Analysis");
+
+    const prompt = `
+    Analyze the provided document or image.
+    1. Identify the CORE TOPIC (e.g. "Biology", "Financial Report Analysis", "History of Rome").
+    2. Create a catchy Topic Name.
+    3. Determine a suitable number of levels (10-30).
+    4. Write a brief description summarizing the content.
+    Output JSON: { topicName, totalLevels, description }
+    `;
+
+    try {
+        const response = await callAIWithRetry(() => ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: {
+                role: 'user',
+                parts: [
+                    {
+                        inlineData: {
+                            mimeType: mimeType,
+                            data: fileData
+                        }
+                    },
+                    { text: prompt }
+                ]
+            },
+            config: {
+                thinkingConfig: { thinkingBudget: 0 },
+                responseMimeType: 'application/json',
+                systemInstruction: getSystemInstruction(persona),
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        topicName: { type: Type.STRING },
+                        totalLevels: { type: Type.INTEGER },
+                        description: { type: Type.STRING }
+                    },
+                    required: ["topicName", "totalLevels", "description"]
+                }
+            }
+        }));
+        return cleanAndParseJSON(response.text) || FALLBACK_DATA.journey("Analyzed Content");
+    } catch (error) {
+        console.error("Multimodal Error:", error);
+        return FALLBACK_DATA.journey("Analyzed Content");
     }
 }
 
@@ -319,26 +373,22 @@ const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
 // FIX: REQUIRED FOR DEPLOYMENT (Render/Heroku/etc)
-// Solves: ValidationError: The 'X-Forwarded-For' header is set but the Express 'trust proxy' setting is false
 app.set('trust proxy', 1);
 
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '10mb' })); // Limit increased for file uploads
 app.use(express.static(path.join(__dirname)));
 
 // Robust Rate Limiting
 const apiLimiter = rateLimit({ 
     windowMs: 15 * 60 * 1000, 
-    max: 300, // Higher limit for Expo usage
+    max: 300, 
     standardHeaders: true,
     legacyHeaders: false,
-    // Add skip for known proxies if needed, but 'trust proxy' usually fixes it
 }); 
 app.use('/api', apiLimiter);
 
 app.get('/health', (req, res) => res.status(200).send('OK'));
 
-// --- CLIENT CONFIG ENDPOINT (CRITICAL FOR LIVE API) ---
-// This allows the frontend to get the key securely for client-side-only features (Aural)
 app.get('/api/client-config', (req, res) => {
     if (!API_KEY) {
         return res.status(503).json({ error: 'Server offline (Key missing)' });
@@ -353,7 +403,6 @@ const safeHandler = (fn) => async (req, res) => {
         res.json(result);
     } catch (e) {
         console.error("Route Error:", e);
-        // Return fallback data instead of 500 error to keep app running
         if (req.path.includes('questions')) res.json(FALLBACK_DATA.questions(req.body.topic));
         else if (req.path.includes('lesson')) res.json(FALLBACK_DATA.lesson(req.body.topic));
         else if (req.path.includes('journey')) res.json(FALLBACK_DATA.journey(req.body.topic));
@@ -365,6 +414,9 @@ app.post('/api/generate-journey-plan', safeHandler((body) => generateJourneyPlan
 app.post('/api/generate-curriculum-outline', safeHandler((body) => generateCurriculumOutline(body.topic, body.totalLevels, body.persona)));
 app.post('/api/generate-level-questions', safeHandler((body) => generateLevelQuestions(body.topic, body.level, body.totalLevels, body.persona)));
 app.post('/api/generate-level-lesson', safeHandler((body) => generateLevelLesson(body.topic, body.level, body.totalLevels, body.questions, body.persona)));
+
+// New Endpoint for Files
+app.post('/api/generate-journey-from-file', safeHandler((body) => generateJourneyFromFile(body.fileData, body.mimeType, body.persona)));
 
 // Utility Endpoints
 app.post('/api/generate-hint', (req, res) => res.json({ hint: "Review the core concepts mentioned in the briefing. Look for keywords." }));
