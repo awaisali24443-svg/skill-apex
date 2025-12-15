@@ -1,44 +1,239 @@
 
-/* --- SIDEBAR (Desktop & Tablet) --- */
-#sidebar {
-    position: fixed; /* Fixed to allow floating expansion */
-    top: 0; left: 0; bottom: 0;
-    z-index: 900;
+/* GLOBAL CSS RESTORATION */
+:root {
+    --sidebar-width-collapsed: 80px;
+    --sidebar-width-desktop: 280px;
+    --header-height: 70px;
+    --page-padding: 2rem;
     
-    /* Default: Collapsed Width */
-    width: var(--sidebar-width-collapsed);
+    --border-radius: 16px;
+    --transition-speed: 0.3s;
+    --font-family-body: 'Inter', sans-serif;
+    --font-family-heading: 'Exo 2', sans-serif;
+    --font-family-mono: 'Roboto Mono', monospace;
     
-    /* Glass Effect */
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(40px);
-    -webkit-backdrop-filter: blur(40px);
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-    
-    /* Physics */
-    transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), background 0.3s;
+    /* Spacing */
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2.5rem;
+    --space-xxl: 4rem;
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-family-body);
+    background-color: var(--color-background);
+    color: var(--color-text);
+    overflow-x: hidden;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* BACKGROUND LAYER */
+#global-background {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1;
     overflow: hidden;
-    
-    display: flex; 
+    background: var(--color-background); /* Fallback */
+}
+
+/* Mesh Gradient Blobs */
+.blob {
+    position: absolute;
+    filter: blur(80px);
+    border-radius: 50%;
+    opacity: 0.6;
+    animation: floatBlob 20s infinite alternate;
+}
+.blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: var(--color-primary); animation-delay: 0s; opacity: 0.2; }
+.blob-2 { bottom: -10%; right: -10%; width: 40vw; height: 40vw; background: var(--color-secondary); animation-delay: -5s; opacity: 0.2; }
+.blob-3 { top: 40%; left: 40%; width: 30vw; height: 30vw; background: var(--color-accent); animation-delay: -10s; opacity: 0.15; }
+
+@keyframes floatBlob {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(50px, 50px) scale(1.1); }
+}
+
+.bg-grid-overlay {
+    position: absolute; inset: 0;
+    background-image: linear-gradient(var(--color-border) 1px, transparent 1px), linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
+    background-size: 50px 50px;
+    opacity: 0.05;
+    mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+}
+
+/* APP WRAPPER */
+#app-wrapper {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+#app-container {
+    flex-grow: 1;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-left: var(--sidebar-width-collapsed); /* Space for sidebar */
+    transition: padding-left 0.4s ease;
+    scroll-behavior: smooth;
+}
+
+/* Adjust for Expanded Sidebar if needed via JS class on body, or rely on z-index overlap */
+/* Current design: Sidebar floats over or pushes content. Let's make it fixed float for glass feel. */
+
+#app {
+    min-height: 100%;
+    display: flex;
     flex-direction: column;
 }
 
-/* Expanded State */
-#sidebar.expanded {
+/* TYPOGRAPHY */
+h1, h2, h3, h4, h5, h6 { font-family: var(--font-family-heading); margin-top: 0; line-height: 1.2; }
+p { line-height: 1.6; margin-bottom: 1rem; }
+a { color: var(--color-primary); text-decoration: none; transition: color 0.2s; }
+a:hover { color: var(--color-secondary); }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-primary); }
+
+/* --- SIDEBAR --- */
+#sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    width: var(--sidebar-width-collapsed);
+    background: rgba(20, 20, 25, 0.4); /* Glassy Dark Default */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid var(--color-border);
+    transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#sidebar:hover, #sidebar.expanded {
     width: var(--sidebar-width-desktop);
-    /* FIXED: Use glass-surface variable instead of hardcoded dark grey */
-    background: var(--glass-surface); 
-    /* Enhanced blur for premium glass feel */
-    backdrop-filter: blur(50px);
-    -webkit-backdrop-filter: blur(50px);
-    box-shadow: 20px 0 80px rgba(0,0,0,0.15); /* Softer shadow */
-    border-right: 1px solid var(--glass-border);
+    background: var(--color-surface); /* More opaque when open */
+    box-shadow: 20px 0 50px rgba(0,0,0,0.3);
 }
 
 .sidebar-inner {
-    padding: 30px 0; /* Vertical padding only, horizontal handled by flex items */
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    height: 100%;
-    width: 100%;
+    width: var(--sidebar-width-desktop); /* Ensure inner content stays wide */
+    padding: 20px 0;
+    display: flex; flex-direction: column; height: 100%;
+}
+
+/* Sidebar Brand */
+.sidebar-brand-section {
+    height: 60px;
+    display: flex; align-items: center; padding: 0 24px;
+    margin-bottom: 20px; color: var(--color-text);
+}
+.brand-text-collapsed { font-weight: 800; font-size: 1.5rem; color: var(--color-primary); display: block; width: 32px; text-align: center; }
+.brand-text-expanded { font-weight: 800; font-size: 1.5rem; margin: 0 0 0 16px; opacity: 0; transition: opacity 0.2s; white-space: nowrap; }
+#sidebar:hover .brand-text-expanded, #sidebar.expanded .brand-text-expanded { opacity: 1; transition-delay: 0.1s; }
+
+/* Sidebar Profile */
+.sidebar-profile-header {
+    display: flex; align-items: center; padding: 10px 20px;
+    margin: 0 10px; border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    transition: background 0.2s; cursor: pointer;
+    overflow: hidden;
+}
+.sidebar-profile-header:hover { background: rgba(255,255,255,0.1); }
+
+.profile-avatar-container { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 2px solid var(--color-primary); }
+.profile-avatar-img { width: 100%; height: 100%; object-fit: cover; }
+.profile-info-text { margin-left: 12px; opacity: 0; transition: opacity 0.2s; white-space: nowrap; }
+#sidebar:hover .profile-info-text, #sidebar.expanded .profile-info-text { opacity: 1; }
+.profile-name { display: block; font-weight: 700; font-size: 0.9rem; }
+.profile-role { display: block; font-size: 0.75rem; color: var(--color-text-secondary); }
+
+.sidebar-divider { height: 1px; background: var(--color-border); margin: 16px 20px; opacity: 0.5; }
+.sidebar-menu-label { padding: 0 24px; font-size: 0.7rem; text-transform: uppercase; color: var(--color-text-secondary); letter-spacing: 1px; margin-bottom: 8px; opacity: 0; transition: opacity 0.2s; }
+#sidebar:hover .sidebar-menu-label, #sidebar.expanded .sidebar-menu-label { opacity: 1; }
+
+/* Links */
+.sidebar-links { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; padding: 0 10px; overflow-y: auto; overflow-x: hidden; }
+.sidebar-link {
+    display: flex; align-items: center; padding: 12px 14px;
+    border-radius: 12px; color: var(--color-text-secondary);
+    text-decoration: none; transition: all 0.2s;
+    white-space: nowrap;
+}
+.sidebar-link:hover { background: rgba(255,255,255,0.05); color: var(--color-text); }
+.sidebar-link.active { background: var(--color-primary-transparent); color: var(--color-primary); font-weight: 600; }
+.sidebar-link.active .icon { color: var(--color-primary); filter: drop-shadow(0 0 5px var(--color-primary)); }
+
+.link-icon-wrapper { width: 24px; display: flex; justify-content: center; flex-shrink: 0; }
+.sidebar-link .text { margin-left: 16px; opacity: 0; transition: opacity 0.2s; }
+#sidebar:hover .sidebar-link .text, #sidebar.expanded .sidebar-link .text { opacity: 1; }
+
+/* Footer */
+.sidebar-footer { padding: 10px; margin-top: auto; }
+
+/* COMMON COMPONENTS */
+.btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 10px 20px; border-radius: 12px;
+    font-weight: 600; font-family: var(--font-family-body);
+    cursor: pointer; transition: all 0.2s; border: 1px solid transparent;
+    background: var(--color-surface); color: var(--color-text);
+}
+.btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+.btn:active { transform: translateY(0); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+.btn-primary {
+    background: var(--brand-gradient); color: white; border: none;
+    box-shadow: 0 4px 15px var(--color-primary-transparent);
+}
+.btn-primary:hover { box-shadow: 0 8px 25px var(--color-primary-transparent); }
+
+.card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: var(--space-lg);
+    box-shadow: var(--shadow-card);
+    backdrop-filter: blur(10px);
+}
+
+.icon { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* UTILS */
+.hidden { display: none !important; }
+.full-bleed-container { padding-left: 0 !important; } /* For immersive modes */
+
+/* ANIMATIONS */
+@keyframes fadeSlideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 768px) {
+    #sidebar {
+        width: 0; bottom: 0; border-right: none;
+    }
+    #sidebar.expanded {
+        width: 80%; max-width: 300px;
+        box-shadow: 100vw 0 0 rgba(0,0,0,0.5); /* Backdrop dim hack */
+    }
+    #app-container { padding-left: 0; padding-bottom: 80px; /* Nav bar space */ }
+    
+    /* Mobile Bottom Nav is usually handled by media queries in sidebarService rendering or separate CSS, 
+       but for now we ensure sidebar behaves as drawer */
 }

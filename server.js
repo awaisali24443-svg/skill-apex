@@ -35,7 +35,7 @@ let prebakedLevelsCache = {};
     } catch (e) { /* Ignore */ }
 })();
 
-// --- JSON EXTRACTION ENGINE (The Fix) ---
+// --- JSON EXTRACTION ENGINE (ROBUST) ---
 function extractAndParseJSON(text) {
     if (!text) return null;
     let cleanText = text.trim();
@@ -43,11 +43,11 @@ function extractAndParseJSON(text) {
     // 1. Try direct parse
     try { return JSON.parse(cleanText); } catch (e) {}
 
-    // 2. Remove Markdown Code Blocks (```json ... ```)
-    cleanText = cleanText.replace(/```json/g, '').replace(/```/g, '');
+    // 2. Remove Markdown Code Blocks (```json ... ``` or just ``` ... ```)
+    cleanText = cleanText.replace(/```json/gi, '').replace(/```/g, '');
     try { return JSON.parse(cleanText); } catch (e) {}
 
-    // 3. Hunter-Seeker: Find the outermost { } or [ ]
+    // 3. Hunter-Seeker: Find the outermost { }
     const firstOpen = cleanText.indexOf('{');
     const lastClose = cleanText.lastIndexOf('}');
     
@@ -56,7 +56,7 @@ function extractAndParseJSON(text) {
         try { return JSON.parse(jsonCandidate); } catch (e) {}
     }
 
-    // 4. Try Array format
+    // 4. Try Array format [ ]
     const firstArr = cleanText.indexOf('[');
     const lastArr = cleanText.lastIndexOf(']');
     if (firstArr !== -1 && lastArr !== -1 && lastArr > firstArr) {
