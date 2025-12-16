@@ -2,12 +2,12 @@
 {
   "gamification": {
     "level": 24,
-    "xp": 24500,
+    "xp": 24800,
     "currentStreak": 21,
-    "totalQuizzesCompleted": 65,
-    "totalPerfectQuizzes": 42,
-    "questionsSaved": 28,
-    "fastAnswersCount": 150,
+    "totalQuizzesCompleted": 66,
+    "totalPerfectQuizzes": 43,
+    "questionsSaved": 29,
+    "fastAnswersCount": 155,
     "nightOwlSessions": 12,
     "totalAuralMinutes": 45
   },
@@ -19,6 +19,14 @@
       "currentLevel": 50,
       "totalLevels": 50,
       "styleClass": "topic-space"
+    },
+    {
+      "id": "journey_admin_4",
+      "goal": "Spanish Language Mastery",
+      "description": "Fluency in Español. Grammar, vocabulary, and conversation skills.",
+      "currentLevel": 5,
+      "totalLevels": 100,
+      "styleClass": "topic-arts"
     },
     {
       "id": "journey_admin_2",
@@ -40,6 +48,14 @@
   "history": [
     {
       "type": "quiz",
+      "topic": "Spanish Language Mastery - Level 4",
+      "score": 5,
+      "totalQuestions": 5,
+      "xpGained": 100,
+      "dayOffset": 0
+    },
+    {
+      "type": "quiz",
       "topic": "Cybersecurity: Red Teaming - Level 49",
       "score": 5,
       "totalQuestions": 5,
@@ -52,7 +68,7 @@
       "score": 4,
       "totalQuestions": 5,
       "xpGained": 80,
-      "dayOffset": 0
+      "dayOffset": 1
     },
     {
       "type": "aural",
@@ -110,6 +126,14 @@
         { "question": "What is the key innovation of the Transformer architecture?", "options": ["Recurrent Loops", "Self-Attention Mechanism", "Convolutions", "Vector Databases"], "correctAnswerIndex": 1, "explanation": "Self-attention allows the model to weigh the importance of different words in relation to one another." },
         { "question": "Unlike RNNs, Transformers process data...", "options": ["Sequentially (Left to Right)", "In Parallel (All at once)", "Randomly", "Backwards"], "correctAnswerIndex": 1, "explanation": "Parallel processing allows Transformers to train much faster on massive datasets." },
         { "question": "In the sentence 'Bank of the river', how does the model know 'Bank' isn't money?", "options": ["Contextual Embeddings", "It guesses", "Dictionary lookup", "It doesn't"], "correctAnswerIndex": 0, "explanation": "The context provided by 'river' shifts the vector embedding of 'Bank' towards the nature meaning." }
+      ]
+    },
+    "Spanish Language Mastery-5": {
+      "lesson": "### 🇪🇸 Ser vs. Estar: To Be or Not To Be?\n\nIn English, we just say 'I am'. In Spanish, you must choose between **Ser** and **Estar**.\n\n*   **Ser (Doctor):** Description, Occupation, Characteristics, Time, Origin, Relationship. (Permanent-ish)\n*   **Estar (Place):** Position, Location, Action, Condition, Emotion. (Temporary-ish)\n\n**Rhyme:** For how you feel and where you are, always use the verb **Estar**.",
+      "questions": [
+        { "question": "Which verb is used for physical location (e.g., 'I am in Madrid')?", "options": ["Ser", "Estar", "Tener", "Hacer"], "correctAnswerIndex": 1, "explanation": "Location always uses Estar, even if the building is permanent." },
+        { "question": "Translate: 'She is a doctor.'", "options": ["Ella está doctora", "Ella es doctora", "Ella tiene doctora", "Ella va doctora"], "correctAnswerIndex": 1, "explanation": "Occupation is considered a characteristic/identity, so we use Ser (Es)." },
+        { "question": "Translate: 'I am tired.'", "options": ["Soy cansado", "Estoy cansado", "Tengo cansado", "Hago cansado"], "correctAnswerIndex": 1, "explanation": "Tiredness is a temporary condition/emotion, so we use Estar (Estoy)." }
       ]
     }
   }
