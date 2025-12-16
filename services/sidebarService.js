@@ -83,14 +83,13 @@ export function renderSidebar(container) {
 
     const html = `
         <div class="sidebar-inner">
-            <!-- 1. Brand Header (Dual State) -->
-            <div class="sidebar-brand-section" id="sidebar-toggle-btn">
+            <!-- 1. Brand Header -->
+            <div class="sidebar-brand-section">
                 <span class="brand-text-collapsed">
-                    <svg class="icon" style="width:24px;height:24px;"><use href="assets/icons/feather-sprite.svg#layout"/></svg>
+                    <svg class="icon" style="width:28px;height:28px;"><use href="assets/icons/feather-sprite.svg#layout"/></svg>
                 </span>
                 <div style="display:flex; flex-direction:column; justify-content:center;">
                     <h1 class="brand-text-expanded" style="margin:0; font-size:1.4rem;">Skill Apex</h1>
-                    <span class="brand-text-expanded" style="font-size:0.7rem; color:var(--color-text-secondary); opacity:0.8;">Click to Dock</span>
                 </div>
             </div>
 
@@ -135,32 +134,33 @@ export function renderSidebar(container) {
     
     container.innerHTML = html;
 
-    // --- Interaction Handlers ---
+    // --- Interaction Handlers (Touch to Lock, Touch Outside to Unlock) ---
     
-    // Toggle expand on click of the Header/Toggle area
-    const toggleBtn = document.getElementById('sidebar-toggle-btn');
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            document.body.classList.toggle('sidebar-locked');
-        });
-    }
-
-    // Explicitly handle "Click Outside" to close on mobile
-    document.addEventListener('click', (e) => {
-        const isMobile = window.innerWidth <= 768;
-        const isLocked = document.body.classList.contains('sidebar-locked');
+    // 1. Sidebar Click: Lock (Expand)
+    container.addEventListener('click', (e) => {
+        // Prevent this click from bubbling to the document listener
+        e.stopPropagation();
         
-        // If clicking outside sidebar and sidebar is locked (open on mobile)
-        if (isLocked && !container.contains(e.target)) {
-            // Check if clicking the toggle button itself (handled above)
-            if (toggleBtn && toggleBtn.contains(e.target)) return;
-
-            if (isMobile) {
-                document.body.classList.remove('sidebar-locked');
-            }
+        // If not locked, lock it
+        if (!document.body.classList.contains('sidebar-locked')) {
+            document.body.classList.add('sidebar-locked');
         }
     });
+
+    // 2. Global Document Click: Unlock (Collapse)
+    // We remove any previous listener to avoid duplicates if re-rendered
+    document.removeEventListener('click', handleGlobalClick);
+    document.addEventListener('click', handleGlobalClick);
+
+    function handleGlobalClick(e) {
+        const sidebar = document.getElementById('sidebar');
+        const isLocked = document.body.classList.contains('sidebar-locked');
+        
+        // If locked and the click target is NOT inside the sidebar, unlock it.
+        if (isLocked && sidebar && !sidebar.contains(e.target)) {
+            document.body.classList.remove('sidebar-locked');
+        }
+    }
 
     // Attach Logout Listener
     const logoutBtn = document.getElementById('sidebar-logout-btn');
