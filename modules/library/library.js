@@ -13,6 +13,7 @@ function renderLibrary() {
     const emptyMessage = document.getElementById('empty-library-message');
     const template = document.getElementById('library-item-template');
     
+    // Force refresh data from storage in case it was just populated
     const questions = libraryService.getLibrary();
     container.innerHTML = '';
 
@@ -27,7 +28,6 @@ function renderLibrary() {
             const clone = template.content.cloneNode(true);
             const card = clone.querySelector('.library-item');
             
-            // Stagger animation
             card.style.animationDelay = `${index * 50}ms`;
             card.dataset.id = q.id;
             
@@ -49,7 +49,6 @@ export function init() {
             const card = document.querySelector(`.library-item[data-id="${questionId}"]`);
             if(card) {
                 card.classList.add('removing');
-                // Wait for animation to finish before removing from state
                 setTimeout(() => {
                     libraryService.removeQuestion(questionId);
                     renderLibrary();

@@ -13,16 +13,19 @@ let transcriptModal;
 let transcriptBody;
 let closeTranscriptBtn;
 
-function renderHistory() {
-    if (!container) return; // Safety check if module destroyed
+async function renderHistory() {
+    if (!container) return; 
 
+    // Force refresh from storage to catch new admin data
+    historyService.init(); 
     const history = historyService.getHistory();
+    
     container.innerHTML = '';
     
     const cleanTopic = (topic) => topic.replace(/ - Level \d+$/, '').trim();
 
     if (history.length === 0) {
-        emptyMessage.style.display = 'flex'; // Flex for centering
+        emptyMessage.style.display = 'flex';
         actionsContainer.style.display = 'none';
         container.style.display = 'none';
     } else {
@@ -38,27 +41,21 @@ function renderHistory() {
             
             entry.style.animationDelay = `${index * 50}ms`;
             
-            // Common Info
-            entry.querySelector('.history-date').textContent = new Date(item.date).toLocaleString(undefined, { 
+            const dateStr = new Date(item.date).toLocaleString(undefined, { 
                 weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
             });
+            entry.querySelector('.history-date').textContent = dateStr;
             entry.querySelector('.history-topic').textContent = item.topic;
 
             if (item.type === 'aural') {
-                // --- AURAL SESSION RENDER ---
                 entry.classList.add('aural');
                 entry.querySelector('.history-meta').textContent = `Audio Session • ${Math.floor(item.duration / 60)}m ${item.duration % 60}s • +${item.xpGained || 0} XP`;
+                badgeContainer.innerHTML = `<div class="aural-icon-badge"><svg class="icon"><use href="assets/icons/feather-sprite.svg#mic"/></svg></div>`;
+                footer.innerHTML = `<button class="btn-small transcript-btn"><svg class="icon"><use href="assets/icons/feather-sprite.svg#message-circle"/></svg> Transcript</button>`;
                 
-                badgeContainer.innerHTML = `<div class="aural-icon-badge"><svg class="icon"><use href="/assets/icons/feather-sprite.svg#mic"/></svg></div>`;
-                
-                footer.innerHTML = `<button class="btn-small transcript-btn" data-id="${item.id}"><svg class="icon"><use href="/assets/icons/feather-sprite.svg#message-circle"/></svg> Transcript</button>`;
-                
-                // Store transcript data on the button for easy access
                 const btn = footer.querySelector('.transcript-btn');
-                btn.itemData = item;
-
+                btn.itemData = item; // Attach data directly to button element
             } else {
-                // --- QUIZ RENDER ---
                 const topicName = cleanTopic(item.topic);
                 const scorePercent = item.totalQuestions > 0 ? Math.round((item.score / item.totalQuestions) * 100) : 0;
                 const passed = scorePercent >= 60;
@@ -80,7 +77,7 @@ function renderHistory() {
                     if (circle) circle.setAttribute('stroke-dasharray', `${scorePercent}, 100`);
                 }, 100 + (index * 50));
 
-                footer.innerHTML = `<button class="btn-small retry-btn"><svg class="icon"><use href="/assets/icons/feather-sprite.svg#rotate-ccw"/></svg> Retry</button>`;
+                footer.innerHTML = `<button class="btn-small retry-btn"><svg class="icon"><use href="assets/icons/feather-sprite.svg#rotate-ccw"/></svg> Retry</button>`;
             }
 
             container.appendChild(clone);
@@ -115,12 +112,10 @@ function showTranscript(item) {
     } else {
         transcriptBody.innerHTML = '<p style="text-align:center; color:var(--color-text-secondary);">No transcript available for this session.</p>';
     }
-    // IMPORTANT: Use FLEX to ensure centering via CSS
     transcriptModal.style.display = 'flex';
 }
 
 function handleGridClick(event) {
-    // Handle Retry
     const retryButton = event.target.closest('.retry-btn');
     if (retryButton) {
         const historyCard = retryButton.closest('.history-card');
@@ -134,7 +129,6 @@ function handleGridClick(event) {
         return;
     }
 
-    // Handle Transcript
     const transcriptBtn = event.target.closest('.transcript-btn');
     if (transcriptBtn) {
         const item = transcriptBtn.itemData;
@@ -153,21 +147,23 @@ export function init() {
     transcriptBody = document.getElementById('transcript-body');
     closeTranscriptBtn = document.getElementById('close-transcript-btn');
 
-    clearBtn.addEventListener('click', handleClearHistory);
+    if(clearBtn) clearBtn.addEventListener('click', handleClearHistory);
     
     gridClickHandler = handleGridClick;
-    container.addEventListener('click', gridClickHandler);
+    if(container) container.addEventListener('click', gridClickHandler);
     
-    closeTranscriptBtn.addEventListener('click', () => {
-        transcriptModal.style.display = 'none';
-    });
+    if(closeTranscriptBtn) {
+        closeTranscriptBtn.addEventListener('click', () => {
+            transcriptModal.style.display = 'none';
+        });
+    }
     
-    // Close modal on backdrop click
-    transcriptModal.addEventListener('click', (e) => {
-        if (e.target === transcriptModal) transcriptModal.style.display = 'none';
-    });
+    if(transcriptModal) {
+        transcriptModal.addEventListener('click', (e) => {
+            if (e.target === transcriptModal) transcriptModal.style.display = 'none';
+        });
+    }
     
-    // Listen for cloud updates
     window.addEventListener('history-updated', renderHistory);
     
     renderHistory();

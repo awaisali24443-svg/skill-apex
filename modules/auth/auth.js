@@ -1,5 +1,6 @@
 
 import * as firebaseService from '../../services/firebaseService.js';
+import { populateGuestData } from '../../services/firebaseService.js'; // Import centralized loader
 import { showToast } from '../../services/toastService.js';
 import { LOCAL_STORAGE_KEYS } from '../../constants.js';
 
@@ -30,12 +31,10 @@ async function handleSubmit(e) {
     try {
         if (isLoginMode) {
             await firebaseService.login(email, password);
-            // SYNC TRIGGER
             await firebaseService.syncLocalToCloud();
         } else {
             await firebaseService.register(email, password);
             showToast('Account created successfully!', 'success');
-            // SYNC TRIGGER
             await firebaseService.syncLocalToCloud();
         }
     } catch (error) {
@@ -90,7 +89,6 @@ function showFakeGooglePopup() {
 
         const target = document.getElementById('fg-target-account');
         target.addEventListener('click', () => {
-            // Swap content to Loading Spinner inside the same popup frame
             const popup = overlay.querySelector('.fake-google-popup');
             popup.classList.add('loading');
             popup.innerHTML = `
@@ -101,15 +99,12 @@ function showFakeGooglePopup() {
                 </div>
                 <p style="font-size:16px; color:#202124;">Signing in...</p>
             `;
-            
-            // Artificial Delay for realism (1.5s)
             setTimeout(() => {
                 document.body.removeChild(overlay);
                 resolve(true);
             }, 1500);
         });
         
-        // Background click cancellation
         overlay.addEventListener('click', (e) => {
             if(e.target === overlay) {
                 document.body.removeChild(overlay);
@@ -121,116 +116,19 @@ function showFakeGooglePopup() {
 
 async function handleGoogleLogin() {
     try { 
-        // 1. Show the "Fake" Google Popup (Theatre)
         await showFakeGooglePopup();
-
-        // 2. Populate the "Admin" data because we clicked the "Admin" user in the fake popup
-        // FORCE OVERWRITE to ensure demo data is visible
+        
+        // Use the centralized loader from firebaseService
         await populateGuestData(true); 
 
-        // 3. Perform the actual (mocked) login to set the user state in Firebase service
         await firebaseService.loginWithGoogle(); 
-        
-        // 4. Sync Data
         await firebaseService.syncLocalToCloud();
         
         showToast("Access Granted via Google Protocol.", "success");
     } catch (error) { 
-        // Ignore user cancellation, alert on real errors
         if (error.message !== "User cancelled Google Login") {
             handleError({ message: "Google Login failed. Please try again." });
         }
-    }
-}
-
-// Helper to inject specific level content so the "Resume" button works instantly
-function seedLevelCache(topic, level, data) {
-    const key = `kt-level-cache-${topic.toLowerCase()}-${level}`;
-    const cacheEntry = {
-        timestamp: Date.now(),
-        data: data
-    };
-    localStorage.setItem(key, JSON.stringify(cacheEntry));
-}
-
-/**
- * Loads demonstration data into localStorage.
- * @param {boolean} forceOverwrite - If true, replaces existing data with demo data (Admin Login).
- */
-async function populateGuestData(forceOverwrite = false) {
-    console.log(`Initializing Admin Simulation Protocol (Force: ${forceOverwrite})...`);
-
-    try {
-        // Fetch the hardcoded profile data
-        const response = await fetch('data/demo_profile.json');
-        if (!response.ok) throw new Error("Could not load demo profile");
-        
-        const demoData = await response.json();
-        const now = Date.now();
-        const dayMs = 86400000;
-
-        // 1. GAMIFICATION
-        if (forceOverwrite || !localStorage.getItem(LOCAL_STORAGE_KEYS.GAMIFICATION)) {
-            const stats = demoData.gamification;
-            // Shift lastQuizDate to TODAY to keep streak alive
-            stats.lastQuizDate = new Date().toISOString();
-            stats.dailyQuests = { date: new Date().toDateString(), quests: [] };
-            stats.dailyChallenge = { date: new Date().toDateString(), completed: false };
-            
-            localStorage.setItem(LOCAL_STORAGE_KEYS.GAMIFICATION, JSON.stringify(stats));
-        }
-
-        // 2. JOURNEYS
-        if (forceOverwrite || !localStorage.getItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS)) {
-            // Update createdAt timestamps to look recent
-            const journeys = demoData.journeys.map(j => ({
-                ...j,
-                createdAt: new Date(now - (Math.random() * dayMs * 5)).toISOString()
-            }));
-            localStorage.setItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS, JSON.stringify(journeys));
-        }
-
-        // 3. HISTORY
-        if (forceOverwrite || !localStorage.getItem(LOCAL_STORAGE_KEYS.HISTORY)) {
-            const history = demoData.history.map((h, index) => {
-                // Calculate date based on dayOffset (0 = today, 1 = yesterday)
-                const offset = h.dayOffset !== undefined ? h.dayOffset : index;
-                const date = new Date(now - (offset * dayMs));
-                return {
-                    id: `hist_admin_${index}`,
-                    ...h,
-                    date: date.toISOString()
-                };
-            });
-            // Sort Descending
-            history.sort((a, b) => new Date(b.date) - new Date(a.date));
-            localStorage.setItem(LOCAL_STORAGE_KEYS.HISTORY, JSON.stringify(history));
-        }
-
-        // 4. LIBRARY
-        if (forceOverwrite || !localStorage.getItem(LOCAL_STORAGE_KEYS.LIBRARY)) {
-            const library = demoData.library.map(q => ({
-                ...q,
-                srs: { interval: 0, repetitions: 0, easeFactor: 2.5, nextReviewDate: now, lastReviewed: null }
-            }));
-            localStorage.setItem(LOCAL_STORAGE_KEYS.LIBRARY, JSON.stringify(library));
-        }
-
-        // 5. PRE-CACHE LEVELS (Instant Load)
-        // Always seed level cache for smooth demo
-        if (demoData.level_cache) {
-            Object.entries(demoData.level_cache).forEach(([key, data]) => {
-                // key format in JSON: "TopicName-Level"
-                const [topic, level] = key.split('-');
-                seedLevelCache(topic, parseInt(level), data);
-            });
-        }
-
-        console.log("✅ Admin Data Injection Complete.");
-
-    } catch (e) {
-        console.error("Failed to load demo profile:", e);
-        // Fallback: Silent fail, let the app start empty or use internal defaults if any
     }
 }
 
@@ -241,10 +139,11 @@ async function handleGuestLogin() {
     btn.disabled = true;
 
     try {
-        await populateGuestData(true); // FORCE OVERWRITE for consistent demo experience
+        // Use the centralized loader
+        await populateGuestData(true); 
         await firebaseService.loginAsGuest();
         
-        // Force redirect if listener doesn't catch it
+        // Delay to allow local storage write to complete before nav
         setTimeout(() => {
             const container = document.getElementById('auth-container');
             if(container) container.style.display = 'none';

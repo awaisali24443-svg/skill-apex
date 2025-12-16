@@ -9,7 +9,7 @@ const STATE = {
   IDLE: 'IDLE',
   CONNECTING: 'CONNECTING',
   LISTENING: 'LISTENING',
-  PROCESSING: 'PROCESSING', // New State
+  PROCESSING: 'PROCESSING', 
   SPEAKING: 'SPEAKING',
   ERROR: 'ERROR',
 };
@@ -73,10 +73,10 @@ async function startSession() {
         // 3. GET MIC STREAM
         mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         
-        // 4. SETUP ANALYZER
+        // 4. SETUP ANALYZER FOR VISUALS
         analyser = inputAudioContext.createAnalyser();
-        analyser.fftSize = 256;
-        analyser.smoothingTimeConstant = 0.5;
+        analyser.fftSize = 512; // Higher resolution for better visuals
+        analyser.smoothingTimeConstant = 0.6; // Smoother transitions
         
         inputSource = inputAudioContext.createMediaStreamSource(mediaStream);
         scriptProcessor = inputAudioContext.createScriptProcessor(4096, 1, 1);
@@ -100,23 +100,22 @@ async function startSession() {
                     updateUI(STATE.LISTENING);
                 },
                 onmessage: (msg) => {
-                    // Logic: Audio coming in means model is speaking
+                    // Audio coming in means model is speaking
                     const audioData = msg.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
                     if (audioData) {
                         updateUI(STATE.SPEAKING);
                         playAudioChunk(audioData);
                     }
                     
-                    // Logic: Turn complete means user finished talking, model is thinking
+                    // Turn complete means user finished talking
                     if (msg.serverContent?.turnComplete) {
-                        // Switch to PROCESSING so user knows the mic is "off" logically
                         updateUI(STATE.PROCESSING, "Thinking...");
                     }
                 },
                 onclose: () => stopSession(),
                 onerror: (err) => {
                     console.error("Live API Error:", err);
-                    updateUI(STATE.ERROR, "Connection Error");
+                    updateUI(STATE.ERROR, "Connection Lost");
                 }
             }
         });
@@ -140,7 +139,7 @@ async function startSession() {
 
     } catch (e) {
         console.error("Failed to start session:", e);
-        updateUI(STATE.ERROR, "Mic Access Denied or API Error");
+        updateUI(STATE.ERROR, "Mic Error or API Key Invalid");
         stopSession();
     }
 }
@@ -159,9 +158,6 @@ function playAudioChunk(base64Data) {
         const source = outputAudioContext.createBufferSource();
         source.buffer = buffer;
         source.connect(outputAudioContext.destination);
-        source.onended = () => {
-            // Potential logic to switch back to listening, but API is streaming so relying on turnComplete is safer
-        };
         source.start(0);
     } catch (e) {
         console.error("Audio Playback Error:", e);
@@ -185,9 +181,15 @@ function stopSession() {
 
 function updateUI(newState, msg) {
     currentState = newState;
-    if (elements.status) elements.status.textContent = msg || newState;
+    if (elements.status) {
+        if (msg) elements.status.textContent = msg;
+        else if (newState === STATE.LISTENING) elements.status.textContent = "Listening...";
+        else if (newState === STATE.SPEAKING) elements.status.textContent = "AI Speaking";
+        else if (newState === STATE.CONNECTING) elements.status.textContent = "Establishing Uplink...";
+        else elements.status.textContent = "Ready";
+    }
     
-    // Mic Button State (Active means STOP button)
+    // Toggle active classes for CSS animations
     if (newState === STATE.IDLE || newState === STATE.ERROR) {
         elements.micBtn.classList.remove('active');
         elements.placeholder.style.display = 'block';
@@ -199,7 +201,7 @@ function updateUI(newState, msg) {
     }
 }
 
-// --- SIRI-STYLE VISUALIZER ---
+// --- REFINED VISUALIZER ---
 function initVisualizer() {
     const canvas = elements.canvas;
     const ctx = canvas.getContext('2d');
@@ -209,13 +211,14 @@ function initVisualizer() {
     window.addEventListener('resize', resize);
     resize();
 
-    const drawBlob = (x, y, radius, color, offset) => {
+    // Helper for soft glowing blobs
+    const drawBlob = (x, y, radius, color) => {
         ctx.beginPath();
         const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
         gradient.addColorStop(0, color);
         gradient.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = gradient;
-        ctx.globalCompositeOperation = 'screen'; // Additive blending for glow
+        ctx.globalCompositeOperation = 'screen'; 
         ctx.arc(x, y, radius, 0, Math.PI * 2);
         ctx.fill();
     };
@@ -224,44 +227,54 @@ function initVisualizer() {
         animationFrameId = requestAnimationFrame(draw);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        let audioLevel = 0;
+        let bass = 0, mid = 0, high = 0;
         
+        // Analyze Frequency Bands
         if (analyser && (currentState === STATE.LISTENING || currentState === STATE.SPEAKING)) {
             const dataArray = new Uint8Array(analyser.frequencyBinCount);
             analyser.getByteFrequencyData(dataArray);
-            let sum = 0;
-            // Focus on vocal range frequencies
-            for(let i=0; i<50; i++) sum += dataArray[i];
-            audioLevel = sum / 5000; // Normalize somewhat
+            
+            // Simple band splitting
+            const bassRange = dataArray.slice(0, 10);
+            const midRange = dataArray.slice(10, 50);
+            const highRange = dataArray.slice(50, 100);
+            
+            bass = bassRange.reduce((a,b)=>a+b,0) / bassRange.length / 255;
+            mid = midRange.reduce((a,b)=>a+b,0) / midRange.length / 255;
+            high = highRange.reduce((a,b)=>a+b,0) / highRange.length / 255;
         } else if (currentState === STATE.PROCESSING) {
-            audioLevel = 0.2 + Math.sin(time * 0.1) * 0.1; // Gentle pulse
+            // Simulated heartbeat when thinking
+            bass = 0.2 + Math.sin(time * 0.1) * 0.1;
+            mid = 0.1;
         } else {
-            audioLevel = 0.05; // Idle breather
+            // Idling
+            bass = 0.05 + Math.sin(time * 0.05) * 0.02;
         }
 
-        time += 0.05 + (audioLevel * 0.2); // Speed up with audio
+        // Time step dependent on audio energy for responsiveness
+        time += 0.05 + (bass * 0.1); 
 
         const cx = canvas.width / 2;
-        const cy = canvas.height * 0.7; // Lower center
-        const baseRadius = Math.min(canvas.width, canvas.height) * 0.2;
+        const cy = canvas.height * 0.75; 
+        const baseSize = Math.min(canvas.width, canvas.height) * 0.25;
 
-        // Blob 1: Cyan (Left shift)
-        const r1 = baseRadius * (1 + Math.sin(time) * 0.2 + audioLevel * 1.5);
-        const x1 = cx + Math.cos(time * 0.7) * 30;
-        const y1 = cy + Math.sin(time * 0.5) * 30;
-        drawBlob(x1, y1, r1, 'rgba(0, 229, 255, 0.6)', 0);
+        // Blob 1: Cyan (Reacts to Bass - Size pulse)
+        const r1 = baseSize * (1 + bass * 1.5);
+        const x1 = cx + Math.cos(time * 0.6) * 40;
+        const y1 = cy + Math.sin(time * 0.4) * 20;
+        drawBlob(x1, y1, r1, 'rgba(34, 211, 238, 0.5)'); 
 
-        // Blob 2: Purple (Right shift)
-        const r2 = baseRadius * (1 + Math.cos(time * 0.8) * 0.2 + audioLevel * 1.2);
-        const x2 = cx - Math.sin(time * 0.6) * 30;
-        const y2 = cy + Math.cos(time * 0.4) * 30;
-        drawBlob(x2, y2, r2, 'rgba(217, 70, 239, 0.6)', 2);
+        // Blob 2: Magenta (Reacts to Mids - Movement jitter)
+        const r2 = baseSize * (0.9 + mid * 1.2);
+        const x2 = cx - Math.sin(time * 0.5) * (40 + mid * 50);
+        const y2 = cy + Math.cos(time * 0.4) * (20 + mid * 30);
+        drawBlob(x2, y2, r2, 'rgba(232, 121, 249, 0.5)');
 
-        // Blob 3: Blue/White Core (Center)
-        const r3 = baseRadius * (0.8 + audioLevel * 2.0); // Most reactive
-        drawBlob(cx, cy, r3, 'rgba(59, 130, 246, 0.8)', 4);
+        // Blob 3: Blue Core (Reacts to Highs - Intense center)
+        const r3 = baseSize * (0.8 + high * 2.0); 
+        drawBlob(cx, cy, r3, 'rgba(99, 102, 241, 0.7)');
         
-        ctx.globalCompositeOperation = 'source-over'; // Reset
+        ctx.globalCompositeOperation = 'source-over';
     };
     draw();
 }

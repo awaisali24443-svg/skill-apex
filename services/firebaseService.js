@@ -66,15 +66,13 @@ let authStateCallback = null;
 let authInitialized = false;
 
 // --- MOCK DATA (Global Elite) ---
-// Ensures leaderboard is never empty. Used for Expo/Demo purposes.
 const MOCK_LEADERBOARD = [
     { id: 'm1', username: 'Arslan Ash', level: 99, xp: 98500, isMock: true }, 
     { id: 'm2', username: 'Sumail Hassan', level: 96, xp: 94200, isMock: true }, 
     { id: 'm3', username: 'Sarah Connor', level: 91, xp: 88000, isMock: true },
     { id: 'm4', username: 'Hamza Ali', level: 85, xp: 81500, isMock: true },
-    // Gap for Admin (approx 24k) to sit here comfortably in top 10
     { id: 'm5', username: 'Chen Wei', level: 30, xp: 32000, isMock: true },
-    { id: 'm6', username: 'Ayesha Khan', level: 22, xp: 22400, isMock: true }, // Admin will likely beat Ayesha
+    { id: 'm6', username: 'Ayesha Khan', level: 22, xp: 22400, isMock: true }, 
     { id: 'm7', username: 'John Wick', level: 18, xp: 18000, isMock: true },
     { id: 'm8', username: 'Bilal Ahmed', level: 15, xp: 15000, isMock: true },
     { id: 'm9', username: 'Zara Sheikh', level: 12, xp: 12500, isMock: true },
@@ -113,7 +111,7 @@ const mockAuth = {
         this.user = { 
             uid: 'guest_' + Date.now(), 
             isAnonymous: true, 
-            displayName: 'Admin', // CHANGED FROM 'Guest Agent' to 'Admin'
+            displayName: 'Admin',
             email: null,
             photoURL: null
         };
@@ -165,7 +163,7 @@ const mockAuth = {
     }
 };
 
-// Initialize mock auth state if Firebase failed OR just to have it ready
+// Initialize mock auth state
 mockAuth.init();
 
 
@@ -222,13 +220,10 @@ async function loginWithGoogle() {
         console.warn("Firebase inactive. Falling back to Expo Simulation.");
         return mockAuth.loginGoogleSimulated();
     }
-    
     try {
-        // Attempt Real Login
         return await signInWithPopup(auth, googleProvider);
     } catch (error) {
         console.warn("Real Google Login failed. Activating EXPO SIMULATION MODE.", error);
-        // Fallback to Simulation so the demo doesn't break
         return await mockAuth.loginGoogleSimulated();
     }
 }
@@ -263,30 +258,24 @@ function confirmReset(code, newPassword) {
 
 function onAuthChange(callback) {
     authStateCallback = callback;
-    
-    // Always listen to mock changes
     mockAuth.listeners.push(callback);
     
-    // If we have a mock user already, fire immediately (only if specifically logged in offline previously)
     if (mockAuth.user) {
         authInitialized = true;
         callback(mockAuth.user);
     }
     
     if (isFirebaseActive) {
-        // ONLINE MODE: Rely solely on Firebase Auth state.
         return onAuthStateChanged(auth, (user) => {
             authInitialized = true;
             currentUser = user;
             if (user) {
                 callback(user);
             } else if (!mockAuth.user) {
-                // No firebase user, no mock user -> null (Login Screen)
                 callback(null);
             }
         });
     } else {
-        // If firebase dead, just ensure we fired the mock state
         if (!mockAuth.user) {
             authInitialized = true;
             callback(null);
@@ -295,22 +284,18 @@ function onAuthChange(callback) {
     }
 }
 
-// --- SYNC UTILITY (10000% SURE DATA) ---
-// This function takes everything from LocalStorage and pushes it to the Cloud
-// Call this immediately after login.
+// --- SYNC UTILITY ---
 async function syncLocalToCloud() {
-    if (isGuest()) return; // Don't sync guest data to cloud
+    if (isGuest()) return; 
     
     const userId = getUserId();
     if (!userId) return;
-
-    console.log("☁️ STARTING CLOUD SYNC...");
 
     const collections = [
         { key: LOCAL_STORAGE_KEYS.GAME_PROGRESS, dbKey: 'journeys', wrapper: (d) => ({ items: d }) },
         { key: LOCAL_STORAGE_KEYS.HISTORY, dbKey: 'history', wrapper: (d) => ({ items: d, lastUpdated: new Date().toISOString() }) },
         { key: LOCAL_STORAGE_KEYS.LIBRARY, dbKey: 'library', wrapper: (d) => ({ items: d }) },
-        { key: LOCAL_STORAGE_KEYS.GAMIFICATION, dbKey: 'gamification', wrapper: (d) => d } // Gamification is already object
+        { key: LOCAL_STORAGE_KEYS.GAMIFICATION, dbKey: 'gamification', wrapper: (d) => d }
     ];
 
     for (const col of collections) {
@@ -318,12 +303,8 @@ async function syncLocalToCloud() {
             const localRaw = localStorage.getItem(col.key);
             if (localRaw) {
                 const localData = JSON.parse(localRaw);
-                // Simple logic: Overwrite cloud with local for the "Session Snapshot" effect requested
-                // Ideally we merge, but for this specific request of "save my fun", pushing local is safest.
                 if (isFirebaseActive) {
                     await setDoc(doc(db, "users", userId, "data", col.dbKey), col.wrapper(localData), { merge: true });
-                } else {
-                    console.log(`[Simulated Cloud] Synced ${col.dbKey}`);
                 }
             }
         } catch (e) {
@@ -331,11 +312,8 @@ async function syncLocalToCloud() {
         }
     }
     
-    // Force leaderboard update too
     const gamification = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.GAMIFICATION) || '{}');
     if (gamification.xp) updateLeaderboardScore(gamification);
-
-    console.log("☁️ CLOUD SYNC COMPLETE.");
 }
 
 // --- Account Management ---
@@ -372,7 +350,7 @@ function changePassword(newPassword) {
     return updatePassword(currentUser, newPassword);
 }
 
-// --- Database Wrappers (Firestore) ---
+// --- Database Wrappers ---
 
 const mockDoc = { exists: () => false, data: () => ({}) };
 
@@ -391,22 +369,17 @@ async function getDocsWrapper(queryRef) {
     return await getDocs(queryRef);
 }
 
-// Helpers to expose Firestore parts only if active
 function docWrapper(...args) { return isFirebaseActive ? doc(db, ...args) : null; }
 function collectionWrapper(...args) { return isFirebaseActive ? collection(db, ...args) : null; }
 
 // --- Leaderboard ---
 
 async function updateLeaderboardScore(stats) {
-    // Also works for simulated expo users!
     if (!isFirebaseActive && !mockAuth.user) return; 
     
-    // If mocking, update mock leaderboard in memory only (conceptually)
-    // For real firebase:
     if (isFirebaseActive && currentUser && !isGuest()) {
         const userRef = doc(db, "leaderboard", currentUser.uid);
         const name = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'ApexUser');
-        
         try {
             await setDoc(userRef, {
                 username: name,
@@ -422,12 +395,9 @@ async function updateLeaderboardScore(stats) {
 
 async function getLeaderboard(limitCount = 20) {
     let results = [];
-
-    // 1. Try fetching real data first
     if (isFirebaseActive) {
         const lbRef = collection(db, "leaderboard");
         const q = query(lbRef, orderBy("xp", "desc"), limit(limitCount));
-        
         try {
             const querySnapshot = await getDocs(q);
             querySnapshot.forEach((doc) => {
@@ -438,21 +408,85 @@ async function getLeaderboard(limitCount = 20) {
         }
     }
 
-    // 2. Fallback / Merge Strategy
-    // If real results are few, pad with mock data to make it look alive for everyone
     if (results.length < 10) {
-        // Filter out any mock users that might conflict (unlikely given IDs)
         const existingIds = new Set(results.map(r => r.id));
         const needed = limitCount - results.length;
-        
         const mockToAdd = MOCK_LEADERBOARD.filter(m => !existingIds.has(m.id)).slice(0, needed);
         results = [...results, ...mockToAdd];
-        
-        // Re-sort just in case
         results.sort((a, b) => b.xp - a.xp);
     }
-
     return results;
+}
+
+// --- HELPER: Resume/Start Level Content ---
+function seedLevelCache(topic, level, data) {
+    const key = `kt-level-cache-${topic.toLowerCase()}-${level}`;
+    const cacheEntry = { timestamp: Date.now(), data: data };
+    localStorage.setItem(key, JSON.stringify(cacheEntry));
+}
+
+// --- HELPER: Load Demo Data ---
+export async function populateGuestData(forceOverwrite = false) {
+    console.log(`Initializing Admin Simulation Protocol (Force: ${forceOverwrite})...`);
+
+    try {
+        const response = await fetch('data/demo_profile.json');
+        if (!response.ok) throw new Error("Could not load demo profile");
+        
+        const demoData = await response.json();
+        const now = Date.now();
+        const dayMs = 86400000;
+
+        if (forceOverwrite || !localStorage.getItem(LOCAL_STORAGE_KEYS.GAMIFICATION)) {
+            const stats = demoData.gamification;
+            stats.lastQuizDate = new Date().toISOString();
+            stats.dailyQuests = { date: new Date().toDateString(), quests: [] };
+            stats.dailyChallenge = { date: new Date().toDateString(), completed: false };
+            localStorage.setItem(LOCAL_STORAGE_KEYS.GAMIFICATION, JSON.stringify(stats));
+        }
+
+        if (forceOverwrite || !localStorage.getItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS)) {
+            const journeys = demoData.journeys.map(j => ({
+                ...j,
+                createdAt: new Date(now - (Math.random() * dayMs * 5)).toISOString()
+            }));
+            localStorage.setItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS, JSON.stringify(journeys));
+        }
+
+        if (forceOverwrite || !localStorage.getItem(LOCAL_STORAGE_KEYS.HISTORY)) {
+            const history = demoData.history.map((h, index) => {
+                const offset = h.dayOffset !== undefined ? h.dayOffset : index;
+                const date = new Date(now - (offset * dayMs));
+                return {
+                    id: `hist_admin_${index}`,
+                    ...h,
+                    date: date.toISOString()
+                };
+            });
+            history.sort((a, b) => new Date(b.date) - new Date(a.date));
+            localStorage.setItem(LOCAL_STORAGE_KEYS.HISTORY, JSON.stringify(history));
+        }
+
+        if (forceOverwrite || !localStorage.getItem(LOCAL_STORAGE_KEYS.LIBRARY)) {
+            const library = demoData.library.map(q => ({
+                ...q,
+                srs: { interval: 0, repetitions: 0, easeFactor: 2.5, nextReviewDate: now, lastReviewed: null }
+            }));
+            localStorage.setItem(LOCAL_STORAGE_KEYS.LIBRARY, JSON.stringify(library));
+        }
+
+        if (demoData.level_cache) {
+            Object.entries(demoData.level_cache).forEach(([key, data]) => {
+                const [topic, level] = key.split('-');
+                seedLevelCache(topic, parseInt(level), data);
+            });
+        }
+
+        console.log("✅ Admin Data Injection Complete. History and Library populated.");
+
+    } catch (e) {
+        console.error("Failed to load demo profile:", e);
+    }
 }
 
 export { 

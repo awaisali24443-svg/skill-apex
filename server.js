@@ -149,14 +149,24 @@ const FALLBACK = {
 
 // --- GENERATION HANDLERS ---
 
-async function generateWithFallback(callFn, fallbackFn) {
-    if (!ai) return fallbackFn();
+async function generateWithFallback(callFn, fallbackFn, label) {
+    if (!ai) {
+        console.warn(`[${label}] No API Key available. Using fallback.`);
+        return fallbackFn();
+    }
     try {
+        console.log(`[${label}] Calling Gemini API...`);
         const response = await callFn('gemini-2.5-flash'); // Use latest model for smarts
         const data = extractAndParseJSON(response.text);
-        return data || fallbackFn();
+        if (data) {
+            console.log(`[${label}] ✅ Success.`);
+            return data;
+        } else {
+            console.warn(`[${label}] ⚠️ Valid JSON not found in response.`);
+            return fallbackFn();
+        }
     } catch (error) {
-        console.error("AI Generation Error:", error.message);
+        console.error(`[${label}] ❌ AI Generation Error:`, error.message);
         return fallbackFn();
     }
 }
@@ -186,6 +196,8 @@ app.post('/api/debug-status', (req, res) => {
 
 app.post('/api/generate-journey-plan', async (req, res) => {
     const { topic } = req.body;
+    
+    // Journeys are always generated via API as they are dynamic
     const result = await generateWithFallback(
         (model) => ai.models.generateContent({
             model: model,
@@ -195,7 +207,8 @@ app.post('/api/generate-journey-plan', async (req, res) => {
                 systemInstruction: SYSTEM_INSTRUCTION
             }
         }),
-        () => FALLBACK.journey(topic)
+        () => FALLBACK.journey(topic),
+        "JOURNEY_PLAN"
     );
     res.json(result);
 });
@@ -203,12 +216,15 @@ app.post('/api/generate-journey-plan', async (req, res) => {
 app.post('/api/generate-level-questions', async (req, res) => {
     const { topic, level } = req.body;
     
-    // Check prebaked
+    // 1. CHECK JSON CACHE (Prebaked Data)
     if (prebakedLevelsCache[topic]) {
-        console.log(`Using prebaked data for: ${topic}`);
+        console.log(`[CACHE HIT] Found prebaked data for: ${topic}`);
         return res.json({ questions: prebakedLevelsCache[topic].questions });
     }
 
+    // 2. CACHE MISS -> CALL API KEY IMMEDIATELY
+    console.log(`[CACHE MISS] Generating fresh questions for: ${topic}`);
+    
     const result = await generateWithFallback(
         (model) => ai.models.generateContent({
             model: model,
@@ -218,7 +234,8 @@ app.post('/api/generate-level-questions', async (req, res) => {
                 systemInstruction: SYSTEM_INSTRUCTION
             }
         }),
-        () => FALLBACK.questions(topic)
+        () => FALLBACK.questions(topic),
+        "QUIZ_GEN"
     );
     res.json(result);
 });
@@ -226,7 +243,14 @@ app.post('/api/generate-level-questions', async (req, res) => {
 app.post('/api/generate-level-lesson', async (req, res) => {
     const { topic, level } = req.body;
     
-    if (prebakedLevelsCache[topic]) return res.json({ lesson: prebakedLevelsCache[topic].lesson });
+    // 1. CHECK JSON CACHE
+    if (prebakedLevelsCache[topic]) {
+        console.log(`[CACHE HIT] Found prebaked lesson for: ${topic}`);
+        return res.json({ lesson: prebakedLevelsCache[topic].lesson });
+    }
+
+    // 2. CACHE MISS -> CALL API KEY IMMEDIATELY
+    console.log(`[CACHE MISS] Generating fresh lesson for: ${topic}`);
 
     const result = await generateWithFallback(
         (model) => ai.models.generateContent({
@@ -237,7 +261,8 @@ app.post('/api/generate-level-lesson', async (req, res) => {
                 systemInstruction: SYSTEM_INSTRUCTION
             }
         }),
-        () => FALLBACK.lesson(topic)
+        () => FALLBACK.lesson(topic),
+        "LESSON_GEN"
     );
     res.json(result);
 });
@@ -267,7 +292,8 @@ app.post('/api/generate-journey-from-file', async (req, res) => {
                 systemInstruction: SYSTEM_INSTRUCTION
             }
         }),
-        () => FALLBACK.journey("Analyzed Content")
+        () => FALLBACK.journey("Analyzed Content"),
+        "FILE_ANALYSIS"
     );
     res.json(result);
 });

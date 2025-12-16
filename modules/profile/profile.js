@@ -36,11 +36,12 @@ function renderProfile() {
     const displayName = firebaseService.getUserName() || 'Agent';
     const photoURL = firebaseService.getUserPhoto();
     const userId = firebaseService.getUserId() || 'GUEST';
+    const email = firebaseService.getUserEmail();
 
     // 1. Identity
     if (elements.nameDisplay) elements.nameDisplay.textContent = displayName;
     if (elements.nameInput) elements.nameInput.value = displayName;
-    if (elements.emailText) elements.emailText.textContent = firebaseService.getUserEmail() || 'Guest Mode';
+    if (elements.emailText) elements.emailText.textContent = email || 'Guest Mode';
     
     // 2. Avatar (Code Based)
     if (elements.avatarContainer) {
@@ -68,7 +69,32 @@ function renderProfile() {
     if(elements.statXp) vfxService.animateNumber(elements.statXp, 0, stats.xp, 1500);
     if(elements.statQuizzes) vfxService.animateNumber(elements.statQuizzes, 0, stats.totalQuizzesCompleted, 1000);
 
+    // 6. Dynamic Badges
+    updateBadges(email);
+
     renderAchievements(stats);
+}
+
+function updateBadges(email) {
+    const badgeContainer = document.querySelector('.level-badge-row');
+    if (!badgeContainer) return;
+
+    let badgesHTML = '';
+
+    // Admin Check
+    if (email === 'admin.expo@skillapex.com') {
+        badgesHTML += `<div class="status-pill red">System Admin</div>`;
+        badgesHTML += `<div class="status-pill gold">Elite</div>`;
+    } else {
+        badgesHTML += `<div class="status-pill blue">Learner</div>`;
+        if (gamificationService.getStats().level > 10) {
+            badgesHTML += `<div class="status-pill purple">Advanced</div>`;
+        } else {
+            badgesHTML += `<div class="status-pill purple">Beta User</div>`;
+        }
+    }
+
+    badgeContainer.innerHTML = badgesHTML;
 }
 
 function renderAchievements(stats) {

@@ -63,6 +63,19 @@
       "dayOffset": 0
     },
     {
+      "type": "aural",
+      "topic": "Neural Network Fundamentals",
+      "duration": 340,
+      "xpGained": 50,
+      "transcript": [
+        { "sender": "user", "text": "Can you explain how backpropagation works in simple terms?" },
+        { "sender": "model", "text": "Think of it like tuning a radio. You turn the knob, hear static, and turn it back. Backpropagation measures the 'static' (error) at the output and goes backward through the network, tweaking the knobs (weights) slightly to get a clearer signal next time." },
+        { "sender": "user", "text": "That makes sense. What about the learning rate?" },
+        { "sender": "model", "text": "The learning rate is how much you turn the knob at once. Too high, and you skip the station. Too low, and it takes forever to find it." }
+      ],
+      "dayOffset": 0
+    },
+    {
       "type": "quiz",
       "topic": "Generative AI (LLMs) - Level 11",
       "score": 4,
@@ -72,10 +85,14 @@
     },
     {
       "type": "aural",
-      "topic": "Aural Tutor Session",
-      "duration": 340,
-      "xpGained": 50,
-      "transcript": [],
+      "topic": "Python Debugging Assistance",
+      "duration": 120,
+      "xpGained": 25,
+      "transcript": [
+        { "sender": "user", "text": "Why am I getting an IndexError in my list loop?" },
+        { "sender": "model", "text": "You are likely trying to access an index that doesn't exist. Remember, Python lists are 0-indexed. If a list has 5 items, the last index is 4, not 5." },
+        { "sender": "user", "text": "Ah, I was using the length as the index. Thanks." }
+      ],
       "dayOffset": 1
     },
     {
@@ -109,6 +126,20 @@
       "options": ["Weights become too large", "Gradients approach zero during backprop", "Data is missing", "GPU overheats"],
       "correctAnswerIndex": 1,
       "explanation": "In deep networks, gradients can shrink exponentially as they propagate back, stopping earlier layers from learning."
+    },
+    {
+      "id": "q_lib_admin_3",
+      "question": "What is the time complexity of searching a Hash Map?",
+      "options": ["O(n)", "O(log n)", "O(1)", "O(n^2)"],
+      "correctAnswerIndex": 2,
+      "explanation": "Hash Maps provide constant time O(1) average case lookup efficiency."
+    },
+    {
+      "id": "q_lib_admin_4",
+      "question": "In React, what triggers a re-render?",
+      "options": ["Changing a variable", "State or Props change", "User hover", "Console log"],
+      "correctAnswerIndex": 1,
+      "explanation": "React components only re-render when their internal state or passed props are updated."
     }
   ],
   "level_cache": {
