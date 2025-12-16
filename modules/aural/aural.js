@@ -1,8 +1,6 @@
 
 import * as stateService from '../../services/stateService.js';
 import * as apiService from '../../services/apiService.js';
-import * as historyService from '../../services/historyService.js';
-import { showToast } from '../../services/toastService.js';
 import { getAIClient } from '../../services/apiService.js';
 
 const STATE = {
@@ -14,6 +12,8 @@ const STATE = {
   ERROR: 'ERROR',
 };
 
+// NOTE: Gemini 3 Pro does NOT support Real-time Live API yet. 
+// We must use 2.5 Flash Native Audio for this specific feature.
 const MODEL_LIVE = 'gemini-2.5-flash-native-audio-preview-09-2025';
 
 let currentState = STATE.IDLE;
@@ -25,6 +25,7 @@ let scriptProcessor = null;
 let inputSource = null;
 let elements = {};
 let analyser = null;
+let outputAnalyser = null; // New analyser for AI voice
 let animationFrameId = null;
 
 // --- AUDIO HELPERS ---
@@ -58,25 +59,32 @@ async function startSession() {
     updateUI(STATE.CONNECTING);
 
     try {
-        // 1. INIT AUDIO CONTEXTS (Must happen on user click)
+        // 1. INIT AUDIO CONTEXTS
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         inputAudioContext = new AudioContext({ sampleRate: 16000 });
         outputAudioContext = new AudioContext({ sampleRate: 24000 });
         
+        // Browsers require resumption after creation in a click handler
         await inputAudioContext.resume();
         await outputAudioContext.resume();
 
         // 2. GET CLIENT
         const client = await getAIClient();
-        if (!client) throw new Error("Could not authenticate AI client");
+        if (!client) {
+            throw new Error("API Key configuration missing. Cannot connect to AI.");
+        }
 
         // 3. GET MIC STREAM
         mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         
-        // 4. SETUP ANALYZER FOR VISUALS
+        // 4. SETUP ANALYZERS (Input & Output)
         analyser = inputAudioContext.createAnalyser();
-        analyser.fftSize = 512; // Higher resolution for better visuals
-        analyser.smoothingTimeConstant = 0.6; // Smoother transitions
+        analyser.fftSize = 256; 
+        analyser.smoothingTimeConstant = 0.5;
+        
+        outputAnalyser = outputAudioContext.createAnalyser();
+        outputAnalyser.fftSize = 256;
+        outputAnalyser.smoothingTimeConstant = 0.5;
         
         inputSource = inputAudioContext.createMediaStreamSource(mediaStream);
         scriptProcessor = inputAudioContext.createScriptProcessor(4096, 1, 1);
@@ -96,26 +104,30 @@ async function startSession() {
             },
             callbacks: {
                 onopen: () => {
-                    console.log("Connected to Gemini Live");
+                    console.log("✅ Gemini Live Connected");
                     updateUI(STATE.LISTENING);
                 },
                 onmessage: (msg) => {
-                    // Audio coming in means model is speaking
-                    const audioData = msg.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
-                    if (audioData) {
-                        updateUI(STATE.SPEAKING);
-                        playAudioChunk(audioData);
-                    }
-                    
-                    // Turn complete means user finished talking
-                    if (msg.serverContent?.turnComplete) {
-                        updateUI(STATE.PROCESSING, "Thinking...");
+                    try {
+                        const audioData = msg.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
+                        if (audioData) {
+                            updateUI(STATE.SPEAKING);
+                            playAudioChunk(audioData);
+                        }
+                        if (msg.serverContent?.turnComplete) {
+                            updateUI(STATE.PROCESSING, "Processing...");
+                        }
+                    } catch (err) {
+                        console.error("Error processing message:", err);
                     }
                 },
-                onclose: () => stopSession(),
+                onclose: () => {
+                    console.log("Session closed");
+                    stopSession();
+                },
                 onerror: (err) => {
                     console.error("Live API Error:", err);
-                    updateUI(STATE.ERROR, "Connection Lost");
+                    updateUI(STATE.ERROR, "Connection Refused. Check API Key.");
                 }
             }
         });
@@ -134,12 +146,16 @@ async function startSession() {
                         data: base64Data
                     }
                 });
-            }).catch(() => {});
+            }).catch(e => {
+                console.warn("Failed to send audio chunk", e);
+            });
         };
 
     } catch (e) {
         console.error("Failed to start session:", e);
-        updateUI(STATE.ERROR, "Mic Error or API Key Invalid");
+        let errorMsg = "Microphone Error";
+        if (e.message.includes("API Key")) errorMsg = "API Key Invalid or Missing";
+        updateUI(STATE.ERROR, errorMsg);
         stopSession();
     }
 }
@@ -157,8 +173,22 @@ function playAudioChunk(base64Data) {
 
         const source = outputAudioContext.createBufferSource();
         source.buffer = buffer;
+        
+        // Connect to BOTH visualizer and speakers
+        if (outputAnalyser) {
+            source.connect(outputAnalyser);
+        }
         source.connect(outputAudioContext.destination);
+        
         source.start(0);
+        
+        // When audio ends, if nothing else is playing, go back to listening state visualization
+        source.onended = () => {
+             if (currentState === STATE.SPEAKING) {
+                 // Keep state speaking if more chunks are coming, otherwise logic elsewhere handles turn
+             }
+        };
+
     } catch (e) {
         console.error("Audio Playback Error:", e);
     }
@@ -169,14 +199,26 @@ function stopSession() {
         sessionPromise.then(s => s.close()).catch(() => {});
         sessionPromise = null;
     }
-    if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
-    if (inputAudioContext) inputAudioContext.close();
-    if (outputAudioContext) outputAudioContext.close();
+    if (mediaStream) {
+        mediaStream.getTracks().forEach(t => t.stop());
+        mediaStream = null;
+    }
+    if (inputAudioContext) {
+        inputAudioContext.close();
+        inputAudioContext = null;
+    }
+    if (outputAudioContext) {
+        outputAudioContext.close();
+        outputAudioContext = null;
+    }
     if (scriptProcessor) {
         scriptProcessor.disconnect();
-        scriptProcessor.onaudioprocess = null;
+        scriptProcessor = null;
     }
-    updateUI(STATE.IDLE);
+    // Only go to idle if not in error state to let user see error
+    if (currentState !== STATE.ERROR) {
+        updateUI(STATE.IDLE);
+    }
 }
 
 function updateUI(newState, msg) {
@@ -186,7 +228,8 @@ function updateUI(newState, msg) {
         else if (newState === STATE.LISTENING) elements.status.textContent = "Listening...";
         else if (newState === STATE.SPEAKING) elements.status.textContent = "AI Speaking";
         else if (newState === STATE.CONNECTING) elements.status.textContent = "Establishing Uplink...";
-        else elements.status.textContent = "Ready";
+        else if (newState === STATE.PROCESSING) elements.status.textContent = "Thinking...";
+        else elements.status.textContent = "Ready - Tap to Start";
     }
     
     // Toggle active classes for CSS animations
@@ -211,7 +254,6 @@ function initVisualizer() {
     window.addEventListener('resize', resize);
     resize();
 
-    // Helper for soft glowing blobs
     const drawBlob = (x, y, radius, color) => {
         ctx.beginPath();
         const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
@@ -227,52 +269,64 @@ function initVisualizer() {
         animationFrameId = requestAnimationFrame(draw);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        let bass = 0, mid = 0, high = 0;
+        let inputEnergy = 0;
+        let outputEnergy = 0;
         
-        // Analyze Frequency Bands
-        if (analyser && (currentState === STATE.LISTENING || currentState === STATE.SPEAKING)) {
+        // 1. Analyze Microphone Input
+        if (analyser && (currentState === STATE.LISTENING || currentState === STATE.CONNECTING)) {
             const dataArray = new Uint8Array(analyser.frequencyBinCount);
             analyser.getByteFrequencyData(dataArray);
-            
-            // Simple band splitting
-            const bassRange = dataArray.slice(0, 10);
-            const midRange = dataArray.slice(10, 50);
-            const highRange = dataArray.slice(50, 100);
-            
-            bass = bassRange.reduce((a,b)=>a+b,0) / bassRange.length / 255;
-            mid = midRange.reduce((a,b)=>a+b,0) / midRange.length / 255;
-            high = highRange.reduce((a,b)=>a+b,0) / highRange.length / 255;
-        } else if (currentState === STATE.PROCESSING) {
-            // Simulated heartbeat when thinking
-            bass = 0.2 + Math.sin(time * 0.1) * 0.1;
-            mid = 0.1;
-        } else {
-            // Idling
-            bass = 0.05 + Math.sin(time * 0.05) * 0.02;
+            inputEnergy = (dataArray.reduce((a,b)=>a+b,0) / dataArray.length) / 255;
         }
 
-        // Time step dependent on audio energy for responsiveness
-        time += 0.05 + (bass * 0.1); 
+        // 2. Analyze AI Output
+        if (outputAnalyser && currentState === STATE.SPEAKING) {
+            const dataArray = new Uint8Array(outputAnalyser.frequencyBinCount);
+            outputAnalyser.getByteFrequencyData(dataArray);
+            outputEnergy = (dataArray.reduce((a,b)=>a+b,0) / dataArray.length) / 255;
+        }
+
+        // Processing Heartbeat
+        if (currentState === STATE.PROCESSING) {
+            inputEnergy = 0.1 + Math.sin(time * 0.2) * 0.05; 
+        } else if (currentState === STATE.IDLE) {
+            inputEnergy = 0.05; 
+        }
+
+        const totalEnergy = inputEnergy + (outputEnergy * 1.5); // Boost output visual
+        time += 0.05 + (totalEnergy * 0.1); 
 
         const cx = canvas.width / 2;
         const cy = canvas.height * 0.75; 
-        const baseSize = Math.min(canvas.width, canvas.height) * 0.25;
+        const baseSize = Math.min(canvas.width, canvas.height) * 0.3;
 
-        // Blob 1: Cyan (Reacts to Bass - Size pulse)
-        const r1 = baseSize * (1 + bass * 1.5);
-        const x1 = cx + Math.cos(time * 0.6) * 40;
-        const y1 = cy + Math.sin(time * 0.4) * 20;
-        drawBlob(x1, y1, r1, 'rgba(34, 211, 238, 0.5)'); 
+        // Visual Logic:
+        // Blue/Cyan = Listening/Idle
+        // Pink/Purple = AI Speaking
+        
+        let color1 = 'rgba(34, 211, 238, 0.4)'; // Cyan
+        let color2 = 'rgba(232, 121, 249, 0.4)'; // Magenta
+        
+        if (currentState === STATE.SPEAKING) {
+            color1 = 'rgba(236, 72, 153, 0.6)'; // Pink
+            color2 = 'rgba(168, 85, 247, 0.6)'; // Purple
+        }
 
-        // Blob 2: Magenta (Reacts to Mids - Movement jitter)
-        const r2 = baseSize * (0.9 + mid * 1.2);
-        const x2 = cx - Math.sin(time * 0.5) * (40 + mid * 50);
-        const y2 = cy + Math.cos(time * 0.4) * (20 + mid * 30);
-        drawBlob(x2, y2, r2, 'rgba(232, 121, 249, 0.5)');
+        // Blob 1: Left
+        const r1 = baseSize * (0.8 + totalEnergy);
+        const x1 = cx + Math.cos(time * 0.7) * 30;
+        const y1 = cy + Math.sin(time * 0.5) * 30;
+        drawBlob(x1, y1, r1, color1); 
 
-        // Blob 3: Blue Core (Reacts to Highs - Intense center)
-        const r3 = baseSize * (0.8 + high * 2.0); 
-        drawBlob(cx, cy, r3, 'rgba(99, 102, 241, 0.7)');
+        // Blob 2: Right
+        const r2 = baseSize * (0.8 + totalEnergy * 0.8);
+        const x2 = cx - Math.sin(time * 0.6) * 30;
+        const y2 = cy + Math.cos(time * 0.8) * 30;
+        drawBlob(x2, y2, r2, color2);
+
+        // Blob 3: Core (White/Bright)
+        const r3 = baseSize * (0.5 + totalEnergy * 1.2); 
+        drawBlob(cx, cy, r3, 'rgba(255, 255, 255, 0.3)');
         
         ctx.globalCompositeOperation = 'source-over';
     };

@@ -13,12 +13,16 @@ import { WebSocketServer } from 'ws';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// --- API KEY ---
+// --- API KEY SETUP ---
+// Ensure we catch the key from multiple possible env vars and trim whitespace
 const API_KEY = (process.env.API_KEY || process.env.GEMINI_API_KEY || "").trim();
 
 console.log("--- SERVER DIAGNOSTICS ---");
 if (API_KEY) {
-    console.log(`✅ AI Key Detected: ${API_KEY.substring(0, 4)}...`);
+    console.log(`✅ AI Key Detected: ${API_KEY.substring(0, 4)}... (Length: ${API_KEY.length})`);
+    if (API_KEY.startsWith('hf_')) {
+        console.warn("⚠️ CRITICAL WARNING: The detected API Key appears to be a Hugging Face key (starts with 'hf_'). This application requires a Google Gemini API Key (usually starts with 'AIza'). The Aural module will likely fail.");
+    }
 } else {
     console.error("❌ CRITICAL: NO API KEY FOUND. Quizzes will not generate.");
 }
@@ -115,8 +119,10 @@ function extractAndParseJSON(text) {
 
 // --- AI CLIENT ---
 let ai;
-if (API_KEY) {
+if (API_KEY && !API_KEY.startsWith('hf_')) {
     ai = new GoogleGenAI({ apiKey: API_KEY });
+} else {
+    console.warn("Server running in Fallback/Offline mode due to missing or invalid Gemini Key.");
 }
 
 // --- FALLBACK DATA ---
@@ -144,7 +150,7 @@ const FALLBACK = {
         ]
     }),
     lesson: (topic) => ({ lesson: `### ${topic}\n\n**Status: Offline.**\nUnable to generate new lesson content at this time. Please check server logs.` }),
-    journey: (topic) => ({ topicName: topic, totalLevels: 10, description: "Generated offline." })
+    journey: (topic) => ({ topicName: topic, totalLevels: 10, description: "Generated offline due to connection issues." })
 };
 
 // --- GENERATION HANDLERS ---
@@ -156,7 +162,8 @@ async function generateWithFallback(callFn, fallbackFn, label) {
     }
     try {
         console.log(`[${label}] Calling Gemini API...`);
-        const response = await callFn('gemini-2.5-flash'); // Use latest model for smarts
+        // UPGRADED TO GEMINI 3 PRO PREVIEW FOR SUPERIOR REASONING
+        const response = await callFn('gemini-3-pro-preview'); 
         const data = extractAndParseJSON(response.text);
         if (data) {
             console.log(`[${label}] ✅ Success.`);
@@ -191,7 +198,7 @@ app.get('/api/client-config', (req, res) => {
 });
 
 app.post('/api/debug-status', (req, res) => {
-    res.json({ status: API_KEY ? 'online' : 'offline', message: API_KEY ? 'Connected' : 'No Key' });
+    res.json({ status: ai ? 'online' : 'offline', message: ai ? 'Connected' : 'Server Offline / Invalid Key' });
 });
 
 app.post('/api/generate-journey-plan', async (req, res) => {
