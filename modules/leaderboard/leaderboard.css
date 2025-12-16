@@ -25,7 +25,18 @@
     padding: 1.2rem 1.5rem; align-items: center;
     border-bottom: 1px solid var(--color-border);
     transition: background-color 0.2s;
+    opacity: 0; /* Hidden by default until animation runs */
 }
+
+.leaderboard-item.animate-entry {
+    animation: slideUpFade 0.4s ease-out forwards;
+}
+
+@keyframes slideUpFade {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 .leaderboard-item:hover { background-color: var(--color-surface-active); }
 
 /* Ranks */

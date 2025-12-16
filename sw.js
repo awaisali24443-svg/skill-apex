@@ -1,12 +1,12 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 8.1.1 (Expo Edition - Cache Bust)
+ * @version 9.0.0 (Data & AI Fix Edition)
  *
  * This service worker implements a robust offline-first caching strategy.
  */
 
-const CACHE_NAME = 'skill-apex-v8.1.1-expo-update';
+const CACHE_NAME = 'skill-apex-v9.0.0-update';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [
@@ -17,7 +17,7 @@ const APP_SHELL_URLS = [
     'manifest.json',
     'data/topics.json',
     'data/prebaked_levels.json',
-    'data/demo_profile.json', /* Ensure profile data is cached */
+    'data/demo_profile.json', 
     'global/global.css',
     'global/global.js',
     'themes/theme-dark-cyber.css',
