@@ -368,7 +368,7 @@ async function updateLeaderboardScore(stats) {
 async function getLeaderboard(limitCount = 20) {
     let results = [];
     
-    // 1. Try Fetching Real Data
+    // 1. Try Fetching Real Data if Online
     if (isFirebaseActive) {
         const lbRef = collection(db, "leaderboard");
         const q = query(lbRef, orderBy("xp", "desc"), limit(limitCount));
@@ -378,11 +378,12 @@ async function getLeaderboard(limitCount = 20) {
                 results.push({ id: doc.id, ...doc.data() });
             });
         } catch(e) {
-            console.warn("Failed to fetch leaderboard from Firebase.", e);
+            console.warn("Failed to fetch leaderboard from Firebase, falling back to mocks.", e);
         }
     }
 
     // 2. Force Populate with Mocks if needed (Offline or Empty DB)
+    // Always merge in mocks to ensure list is populated
     if (results.length < 15) {
         const existingIds = new Set(results.map(r => r.id));
         const needed = limitCount - results.length;
@@ -410,7 +411,15 @@ export async function populateGuestData(forceOverwrite = false) {
         if (forceOverwrite || !localStorage.getItem(LOCAL_STORAGE_KEYS.GAMIFICATION)) {
             localStorage.setItem(LOCAL_STORAGE_KEYS.GAMIFICATION, JSON.stringify(demoData.gamification));
         }
-        // ... (rest of function remains the same, assuming it was correctly implemented before)
+        
+        // Ensure other data is also populated if missing
+        if (forceOverwrite || !localStorage.getItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS)) {
+             localStorage.setItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS, JSON.stringify(demoData.journeys || []));
+        }
+        if (forceOverwrite || !localStorage.getItem(LOCAL_STORAGE_KEYS.HISTORY)) {
+             localStorage.setItem(LOCAL_STORAGE_KEYS.HISTORY, JSON.stringify(demoData.history || []));
+        }
+        
     } catch (e) {
         console.error("Failed to load demo profile:", e);
     }
