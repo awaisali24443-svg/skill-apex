@@ -43,143 +43,211 @@ async function handleSubmit(e) {
     }
 }
 
+// --- FAKE GOOGLE LOGIN THEATRE ---
+function showFakeGooglePopup() {
+    return new Promise((resolve, reject) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'fake-google-overlay';
+        overlay.innerHTML = `
+            <div class="fake-google-popup">
+                <div class="fg-bar">
+                    <div class="fg-logo">
+                        <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                        <span>Sign in with Google</span>
+                    </div>
+                </div>
+                <div class="fg-content">
+                    <div class="fg-header">
+                        <h2>Choose an account</h2>
+                        <p>to continue to <span style="color:#202124; font-weight:500;">Skill Apex</span></p>
+                    </div>
+                    
+                    <div class="fg-list">
+                        <div class="fg-item" id="fg-target-account">
+                            <div class="fg-avatar">A</div>
+                            <div class="fg-text">
+                                <div class="fg-name">Admin User</div>
+                                <div class="fg-email">admin.expo@skillapex.com</div>
+                            </div>
+                        </div>
+                        <div class="fg-item">
+                            <div class="fg-avatar icon">
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="#5f6368"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                            </div>
+                            <div class="fg-text">
+                                <div class="fg-name">Use another account</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="fg-info-text">
+                        To continue, Google will share your name, email address, and language preference with Skill Apex.
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        const target = document.getElementById('fg-target-account');
+        target.addEventListener('click', () => {
+            // Swap content to Loading Spinner inside the same popup frame
+            const popup = overlay.querySelector('.fake-google-popup');
+            popup.classList.add('loading');
+            popup.innerHTML = `
+                <div class="fg-spinner">
+                    <svg viewBox="0 0 66 66">
+                       <circle class="path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle>
+                    </svg>
+                </div>
+                <p style="font-size:16px; color:#202124;">Signing in...</p>
+            `;
+            
+            // Artificial Delay for realism (1.5s)
+            setTimeout(() => {
+                document.body.removeChild(overlay);
+                resolve(true);
+            }, 1500);
+        });
+        
+        // Background click cancellation
+        overlay.addEventListener('click', (e) => {
+            if(e.target === overlay) {
+                document.body.removeChild(overlay);
+                reject(new Error("User cancelled Google Login"));
+            }
+        });
+    });
+}
+
 async function handleGoogleLogin() {
     try { 
-        // This now handles both Real and Simulated login internally
+        // 1. Show the "Fake" Google Popup (Theatre)
+        await showFakeGooglePopup();
+
+        // 2. Populate the "Admin" data because we clicked the "Admin" user in the fake popup
+        await populateGuestData(); 
+
+        // 3. Perform the actual (mocked) login to set the user state in Firebase service
         await firebaseService.loginWithGoogle(); 
         
-        // SYNC TRIGGER: 10000% SURE data save
+        // 4. Sync Data
         await firebaseService.syncLocalToCloud();
         
         showToast("Access Granted via Google Protocol.", "success");
     } catch (error) { 
-        handleError({ message: "Google Login failed completely. Use Guest Mode." });
+        // Ignore user cancellation, alert on real errors
+        if (error.message !== "User cancelled Google Login") {
+            handleError({ message: "Google Login failed. Please try again." });
+        }
     }
 }
 
-function populateGuestData() {
-    console.log("Populating Local IT Expo Data...");
+// Helper to inject specific level content so the "Resume" button works instantly
+function seedLevelCache(topic, level, data) {
+    const key = `kt-level-cache-${topic.toLowerCase()}-${level}`;
+    const cacheEntry = {
+        timestamp: Date.now(),
+        data: data
+    };
+    localStorage.setItem(key, JSON.stringify(cacheEntry));
+}
 
-    // 1. GAMIFICATION STATS (Look impressive instantly)
-    if (!localStorage.getItem(LOCAL_STORAGE_KEYS.GAMIFICATION)) {
-        const sampleStats = {
-            level: 18,
-            xp: 18500,
-            currentStreak: 65,
-            lastQuizDate: new Date().toISOString(),
-            totalQuizzesCompleted: 92,
-            totalPerfectQuizzes: 35,
-            questionsSaved: 15,
-            dailyQuests: { date: new Date().toDateString(), quests: [] },
-            dailyChallenge: { date: new Date().toDateString(), completed: false }
-        };
-        localStorage.setItem(LOCAL_STORAGE_KEYS.GAMIFICATION, JSON.stringify(sampleStats));
-    }
+async function populateGuestData() {
+    console.log("Initializing Admin Simulation Protocol from JSON...");
 
-    // 2. ACTIVE JOURNEYS (Highly recognizable, "Cool" IT topics)
-    if (!localStorage.getItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS)) {
-        const sampleJourneys = [
-            {
-                id: "journey_expo_1",
-                goal: "Ethical Hacking & Security",
-                description: "Learn penetration testing, Kali Linux, and how to secure networks against cyber attacks.",
-                currentLevel: 15,
-                totalLevels: 50,
-                styleClass: "topic-space", // Purple/Dark look
-                createdAt: new Date(Date.now() - 86400000 * 2).toISOString()
-            },
-            {
-                id: "journey_expo_2",
-                goal: "Full-Stack Web Development",
-                description: "Master the MERN Stack (MongoDB, Express, React, Node) and build professional websites.",
-                currentLevel: 42,
-                totalLevels: 60,
-                styleClass: "topic-programming", // Blue/Tech look
-                createdAt: new Date(Date.now() - 86400000 * 10).toISOString()
-            },
-            {
-                id: "journey_expo_3",
-                goal: "Freelancing Mastery",
-                description: "How to rank on Upwork/Fiverr, communicate with clients, and build a digital career.",
-                currentLevel: 8,
-                totalLevels: 20,
-                styleClass: "topic-finance", // Gold/Money look
-                createdAt: new Date().toISOString()
-            }
-        ];
-        localStorage.setItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS, JSON.stringify(sampleJourneys));
-    }
-
-    // 3. EXTENSIVE HISTORY
-    if (!localStorage.getItem(LOCAL_STORAGE_KEYS.HISTORY)) {
-        const now = Date.now();
-        const day = 86400000;
-        const sampleHistory = [];
+    try {
+        // Fetch the hardcoded profile data
+        const response = await fetch('data/demo_profile.json');
+        if (!response.ok) throw new Error("Could not load demo profile");
         
-        for(let i=0; i<8; i++) {
-            const isPerfect = Math.random() > 0.6;
-            const score = isPerfect ? 5 : Math.floor(Math.random() * 4) + 1;
-            const topic = i % 2 === 0 ? "Ethical Hacking & Security" : "Full-Stack Web Development";
-            const level = (i % 2 === 0 ? 15 : 42) - Math.floor(i/2);
+        const demoData = await response.json();
+        const now = Date.now();
+        const dayMs = 86400000;
+
+        // 1. GAMIFICATION
+        if (!localStorage.getItem(LOCAL_STORAGE_KEYS.GAMIFICATION)) {
+            const stats = demoData.gamification;
+            // Shift lastQuizDate to TODAY to keep streak alive
+            stats.lastQuizDate = new Date().toISOString();
+            stats.dailyQuests = { date: new Date().toDateString(), quests: [] };
+            stats.dailyChallenge = { date: new Date().toDateString(), completed: false };
             
-            sampleHistory.push({
-                id: `quiz_hist_${i}`,
-                type: 'quiz',
-                topic: `${topic} - Level ${level}`,
-                score: score,
-                totalQuestions: 5,
-                date: new Date(now - (day * i * 0.5)).toISOString(),
-                xpGained: score * 10
+            localStorage.setItem(LOCAL_STORAGE_KEYS.GAMIFICATION, JSON.stringify(stats));
+        }
+
+        // 2. JOURNEYS
+        if (!localStorage.getItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS)) {
+            // Update createdAt timestamps to look recent
+            const journeys = demoData.journeys.map(j => ({
+                ...j,
+                createdAt: new Date(now - (Math.random() * dayMs * 5)).toISOString()
+            }));
+            localStorage.setItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS, JSON.stringify(journeys));
+        }
+
+        // 3. HISTORY
+        if (!localStorage.getItem(LOCAL_STORAGE_KEYS.HISTORY)) {
+            const history = demoData.history.map((h, index) => {
+                // Calculate date based on dayOffset (0 = today, 1 = yesterday)
+                const offset = h.dayOffset !== undefined ? h.dayOffset : index;
+                const date = new Date(now - (offset * dayMs));
+                return {
+                    id: `hist_admin_${index}`,
+                    ...h,
+                    date: date.toISOString()
+                };
+            });
+            // Sort Descending
+            history.sort((a, b) => new Date(b.date) - new Date(a.date));
+            localStorage.setItem(LOCAL_STORAGE_KEYS.HISTORY, JSON.stringify(history));
+        }
+
+        // 4. LIBRARY
+        if (!localStorage.getItem(LOCAL_STORAGE_KEYS.LIBRARY)) {
+            const library = demoData.library.map(q => ({
+                ...q,
+                srs: { interval: 0, repetitions: 0, easeFactor: 2.5, nextReviewDate: now, lastReviewed: null }
+            }));
+            localStorage.setItem(LOCAL_STORAGE_KEYS.LIBRARY, JSON.stringify(library));
+        }
+
+        // 5. PRE-CACHE LEVELS (Instant Load)
+        if (demoData.level_cache) {
+            Object.entries(demoData.level_cache).forEach(([key, data]) => {
+                // key format in JSON: "TopicName-Level"
+                const [topic, level] = key.split('-');
+                seedLevelCache(topic, parseInt(level), data);
             });
         }
-        
-        localStorage.setItem(LOCAL_STORAGE_KEYS.HISTORY, JSON.stringify(sampleHistory));
-    }
 
-    // 4. SMART LIBRARY (Questions judges will understand and find smart)
-    if (!localStorage.getItem(LOCAL_STORAGE_KEYS.LIBRARY)) {
-        const sampleLibrary = [
-            {
-                id: "q_lib_1",
-                question: "In Web Development, what does 'React' use to improve performance?",
-                options: ["Direct DOM manipulation", "Virtual DOM", "SQL Database", "Flash Player"],
-                correctAnswerIndex: 1,
-                explanation: "React uses a Virtual DOM to minimize slow updates to the real browser DOM.",
-                srs: { interval: 0, repetitions: 0, easeFactor: 2.5, nextReviewDate: Date.now(), lastReviewed: null }
-            },
-            {
-                id: "q_lib_2",
-                question: "Which tool is commonly used for 'Packet Sniffing' in Ethical Hacking?",
-                options: ["Photoshop", "Wireshark", "MS Word", "Notepad"],
-                correctAnswerIndex: 1,
-                explanation: "Wireshark is the industry standard for analyzing network traffic and packets.",
-                srs: { interval: 0, repetitions: 0, easeFactor: 2.5, nextReviewDate: Date.now(), lastReviewed: null }
-            },
-            {
-                id: "q_lib_3",
-                question: "What is the primary benefit of Freelancing?",
-                options: ["Fixed Salary", "Global Clients & Dollar Income", "Free Health Insurance", "9 to 5 Timing"],
-                correctAnswerIndex: 1,
-                explanation: "Freelancing allows access to international markets, often resulting in higher earnings in foreign currency.",
-                srs: { interval: 0, repetitions: 0, easeFactor: 2.5, nextReviewDate: Date.now(), lastReviewed: null }
-            }
-        ];
-        localStorage.setItem(LOCAL_STORAGE_KEYS.LIBRARY, JSON.stringify(sampleLibrary));
+        console.log("✅ Admin Data Injection Complete.");
+
+    } catch (e) {
+        console.error("Failed to load demo profile:", e);
+        // Fallback: Silent fail, let the app start empty or use internal defaults if any
     }
 }
 
 async function handleGuestLogin() {
+    const btn = document.getElementById('guest-login-btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = `<div class="spinner" style="width:16px;height:16px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;"></div> Loading Profile...`;
+    btn.disabled = true;
+
     try {
-        populateGuestData(); 
+        await populateGuestData(); 
         await firebaseService.loginAsGuest();
+        
         // Force redirect if listener doesn't catch it
         setTimeout(() => {
             const container = document.getElementById('auth-container');
             if(container) container.style.display = 'none';
             document.getElementById('app-wrapper').style.display = 'flex';
-        }, 1000);
+        }, 800);
     } catch (error) {
         handleError(error);
+        btn.innerHTML = originalText;
+        btn.disabled = false;
     }
 }
 

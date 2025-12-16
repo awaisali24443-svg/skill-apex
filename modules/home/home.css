@@ -163,6 +163,49 @@
 }
 .panel-link { font-size: 0.9rem; color: var(--color-primary); text-decoration: none; font-weight: 700; }
 
+/* NEW: STREAK CHALLENGE PANEL */
+.streak-panel {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, var(--color-surface), var(--color-surface-hover));
+    border: 1px solid var(--color-border);
+}
+
+.streak-fraction {
+    font-weight: 800; font-size: 1.2rem; color: var(--color-primary); font-family: var(--font-family-mono);
+}
+
+.streak-content { display: flex; flex-direction: column; gap: 10px; }
+
+.streak-bar-container {
+    width: 100%; height: 24px;
+    background: var(--color-surface-active);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+}
+
+.streak-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #F59E0B, #F43F5E); /* Fire gradient */
+    width: 0%;
+    transition: width 1s cubic-bezier(0.25, 1, 0.5, 1);
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+}
+
+.streak-markers {
+    position: absolute; inset: 0; pointer-events: none;
+}
+.streak-markers span {
+    position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.6rem; color: var(--color-text-secondary); padding-top: 2px;
+}
+
+.streak-message {
+    font-size: 0.9rem; color: var(--color-text); font-weight: 600; text-align: right; margin: 0;
+}
+
 /* A. Mission Panel (Featured) */
 .mission-panel {
     grid-column: 1 / -1;

@@ -3,23 +3,35 @@
     height: 100%;
     width: 100%;
     position: relative;
-    background: var(--color-background);
+    background: black; /* Deep black for siri effect */
     overflow: hidden;
     display: flex;
     flex-direction: column;
     color: var(--color-text);
 }
 
+/* THE SIRI BLOBS */
 .aural-visualizer {
     position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
+    bottom: 0; left: 0;
+    width: 100%; height: 60%; /* Bottom half */
     z-index: 0;
     pointer-events: none;
-    opacity: 0.6;
+    opacity: 1;
+    mix-blend-mode: screen; /* Additive blending for light effect */
 }
 
-/* Unified Header Bar for better layout control */
+/* Background Glow for Depth */
+.aural-container::before {
+    content: '';
+    position: absolute; bottom: -20%; left: 50%; transform: translateX(-50%);
+    width: 80vw; height: 50vh;
+    background: radial-gradient(ellipse at center, rgba(67, 56, 202, 0.3) 0%, transparent 70%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Unified Header Bar */
 .aural-top-bar {
     position: absolute;
     top: 0;
@@ -30,12 +42,10 @@
     justify-content: space-between;
     align-items: flex-start;
     z-index: 20;
-    pointer-events: none; /* Let clicks pass through empty space */
+    pointer-events: none;
 }
 
-.aural-header-controls {
-    pointer-events: auto;
-}
+.aural-header-controls { pointer-events: auto; }
 
 /* Sleek Disconnect Pill Button */
 .aural-header-controls .btn {
@@ -45,7 +55,7 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 30px;
     padding: 8px 16px;
-    color: var(--color-text);
+    color: white;
     font-size: 0.85rem;
     font-weight: 600;
     display: flex;
@@ -62,54 +72,20 @@
     transform: translateY(1px);
 }
 
-.aural-header-controls .btn svg {
-    width: 18px;
-    height: 18px;
-}
-
-/* Context Badge */
-.aural-context-badge {
-    pointer-events: auto;
-    background: rgba(30, 41, 59, 0.6); /* Semi-transparent dark */
-    border: 1px solid var(--color-primary-transparent);
-    padding: 8px 16px;
-    border-radius: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-}
-
-.context-label {
-    font-size: 0.65rem;
-    color: var(--color-text-secondary);
-    font-weight: 700;
-    letter-spacing: 1px;
-    margin-bottom: 2px;
-}
-
-.context-value {
-    font-size: 0.9rem;
-    color: var(--color-primary);
-    font-weight: 600;
-    font-family: var(--font-family-mono);
-}
-
 /* CHAT TRANSCRIPTION LOG */
 .transcription-log {
     flex-grow: 1;
     z-index: 10;
     overflow-y: auto;
-    padding: 6rem 1.5rem 1rem 1.5rem; /* More top padding for header */
+    padding: 6rem 1.5rem 1rem 1.5rem; 
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    /* Fade out top for aesthetic */
-    mask-image: linear-gradient(to bottom, transparent 0%, black 15%);
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%);
+    /* Fade out top */
+    mask-image: linear-gradient(to bottom, transparent 0%, black 10%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%);
     scroll-behavior: smooth;
+    padding-bottom: 120px; /* Space for footer */
 }
 
 .chat-bubble {
@@ -140,134 +116,107 @@
     line-height: 1.5;
     position: relative;
     word-wrap: break-word;
-    /* Ensure text shadow for readability over canvas */
-    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    color: white;
 }
 
 /* User Bubble Style */
-.user-bubble {
-    align-self: flex-end;
-    align-items: flex-end;
-}
+.user-bubble { align-self: flex-end; align-items: flex-end; }
 .user-bubble .bubble-label { color: var(--color-primary); }
 .user-bubble .bubble-content {
-    background: var(--color-primary);
-    color: white; /* Always white for readability on primary */
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255,255,255,0.1);
     border-bottom-right-radius: 4px;
-    box-shadow: 0 4px 15px rgba(var(--color-primary-rgb), 0.3);
 }
 
 /* AI Bubble Style */
-.ai-bubble {
-    align-self: flex-start;
-    align-items: flex-start;
-}
-.ai-bubble .bubble-label { color: var(--color-secondary); }
+.ai-bubble { align-self: flex-start; align-items: flex-start; }
+.ai-bubble .bubble-label { color: #D946EF; } /* Purple */
 .ai-bubble .bubble-content {
-    background: var(--color-surface);
-    color: var(--color-text);
-    border: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255,255,255,0.1);
     border-bottom-left-radius: 4px;
     backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow: var(--shadow-card);
 }
 
 .system-log-entry {
     align-self: center;
     font-family: var(--font-family-mono);
     font-size: 0.8rem;
-    color: var(--color-text-secondary);
-    background: rgba(0,0,0,0.2);
+    color: rgba(255,255,255,0.6);
+    background: rgba(255,255,255,0.1);
     padding: 4px 12px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     gap: 6px;
-    border: 1px solid var(--color-border);
+    border: 1px solid rgba(255,255,255,0.1);
     margin: 8px 0;
 }
-.system-log-entry svg { width: 12px; height: 12px; opacity: 0.7; }
 
 .aural-placeholder {
     margin: auto;
     text-align: center;
     opacity: 0.8;
     pointer-events: none;
+    color: white;
 }
-.aural-title { font-size: 2rem; letter-spacing: 4px; color: var(--color-primary); margin-bottom: 0.5rem; font-weight: 800; }
-.aural-subtitle { font-family: var(--font-family-mono); color: var(--color-text-secondary); }
+.aural-title { font-size: 2rem; letter-spacing: 4px; color: white; margin-bottom: 0.5rem; font-weight: 800; text-shadow: 0 0 20px var(--color-primary); }
+.aural-subtitle { font-family: var(--font-family-mono); color: rgba(255,255,255,0.7); }
 
 /* Footer Controls */
 .aural-footer {
-    position: relative;
+    position: absolute; bottom: 0; left: 0; width: 100%;
     z-index: 20;
     display: flex;
     flex-direction: column;
     align-items: center;
     padding-bottom: 3rem;
-    background: linear-gradient(to top, var(--color-background) 20%, transparent);
 }
 
 .aural-status {
     font-family: var(--font-family-mono);
-    color: var(--color-primary);
+    color: white;
     font-size: 0.9rem;
     letter-spacing: 2px;
     margin-bottom: 2rem;
     text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.3);
+    padding: 4px 12px;
+    border-radius: 20px;
+    transition: all 0.3s;
 }
 
 .btn-mic-large {
-    width: 90px; height: 90px;
+    width: 80px; height: 80px;
     border-radius: 50%;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.3);
     position: relative;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
     transition: all 0.3s;
-    color: var(--color-primary);
-    box-shadow: var(--shadow-float);
+    color: white;
+    backdrop-filter: blur(10px);
 }
 
 .btn-mic-large:hover {
-    background: var(--color-surface-hover);
+    background: rgba(255,255,255,0.2);
     transform: scale(1.1);
 }
 
 .btn-mic-large.active {
-    background: var(--color-error);
-    border-color: var(--color-error);
+    background: #ef4444; /* Stop Red */
+    border-color: #ef4444;
     color: white;
     box-shadow: 0 0 30px rgba(239, 68, 68, 0.4);
 }
 
-.mic-icon-wrapper svg { width: 40px; height: 40px; }
-
-.mic-ring {
-    position: absolute; inset: -10px;
-    border: 2px solid var(--color-primary);
-    border-radius: 50%;
-    opacity: 0;
-}
-.btn-mic-large.active .mic-ring {
-    border-color: var(--color-error);
-    animation: ping 2s infinite;
-}
-.btn-mic-large.active .mic-ring.delay {
-    animation-delay: 0.5s;
-}
-
-@keyframes ping {
-    0% { transform: scale(1); opacity: 0.8; }
-    100% { transform: scale(2); opacity: 0; }
-}
-
 .aural-error {
     position: absolute; top: 100px; left: 50%; transform: translateX(-50%);
-    background: var(--color-error-bg); 
-    border: 1px solid var(--color-error-border);
-    padding: 10px 20px; border-radius: 8px; color: var(--color-error);
+    background: rgba(239, 68, 68, 0.9); 
+    border: 1px solid #ffaaaa;
+    padding: 10px 20px; border-radius: 8px; color: white;
     z-index: 100;
 }

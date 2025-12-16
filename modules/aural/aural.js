@@ -9,6 +9,7 @@ const STATE = {
   IDLE: 'IDLE',
   CONNECTING: 'CONNECTING',
   LISTENING: 'LISTENING',
+  PROCESSING: 'PROCESSING', // New State
   SPEAKING: 'SPEAKING',
   ERROR: 'ERROR',
 };
@@ -62,7 +63,6 @@ async function startSession() {
         inputAudioContext = new AudioContext({ sampleRate: 16000 });
         outputAudioContext = new AudioContext({ sampleRate: 24000 });
         
-        // CRITICAL: Force Resume
         await inputAudioContext.resume();
         await outputAudioContext.resume();
 
@@ -75,6 +75,9 @@ async function startSession() {
         
         // 4. SETUP ANALYZER
         analyser = inputAudioContext.createAnalyser();
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.5;
+        
         inputSource = inputAudioContext.createMediaStreamSource(mediaStream);
         scriptProcessor = inputAudioContext.createScriptProcessor(4096, 1, 1);
         
@@ -97,13 +100,17 @@ async function startSession() {
                     updateUI(STATE.LISTENING);
                 },
                 onmessage: (msg) => {
+                    // Logic: Audio coming in means model is speaking
                     const audioData = msg.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
                     if (audioData) {
                         updateUI(STATE.SPEAKING);
                         playAudioChunk(audioData);
                     }
+                    
+                    // Logic: Turn complete means user finished talking, model is thinking
                     if (msg.serverContent?.turnComplete) {
-                        updateUI(STATE.LISTENING);
+                        // Switch to PROCESSING so user knows the mic is "off" logically
+                        updateUI(STATE.PROCESSING, "Thinking...");
                     }
                 },
                 onclose: () => stopSession(),
@@ -128,7 +135,7 @@ async function startSession() {
                         data: base64Data
                     }
                 });
-            }).catch(() => {}); // Ignore send errors if session closed
+            }).catch(() => {});
         };
 
     } catch (e) {
@@ -142,7 +149,6 @@ function playAudioChunk(base64Data) {
     if (!outputAudioContext) return;
     try {
         const bytes = base64ToBytes(base64Data);
-        // Convert PCM 16-bit to Float32
         const int16 = new Int16Array(bytes.buffer);
         const float32 = new Float32Array(int16.length);
         for(let i=0; i<int16.length; i++) float32[i] = int16[i] / 32768.0;
@@ -153,6 +159,9 @@ function playAudioChunk(base64Data) {
         const source = outputAudioContext.createBufferSource();
         source.buffer = buffer;
         source.connect(outputAudioContext.destination);
+        source.onended = () => {
+            // Potential logic to switch back to listening, but API is streaming so relying on turnComplete is safer
+        };
         source.start(0);
     } catch (e) {
         console.error("Audio Playback Error:", e);
@@ -171,7 +180,6 @@ function stopSession() {
         scriptProcessor.disconnect();
         scriptProcessor.onaudioprocess = null;
     }
-    
     updateUI(STATE.IDLE);
 }
 
@@ -179,45 +187,81 @@ function updateUI(newState, msg) {
     currentState = newState;
     if (elements.status) elements.status.textContent = msg || newState;
     
-    if (newState === STATE.CONNECTING || newState === STATE.LISTENING || newState === STATE.SPEAKING) {
-        elements.micBtn.classList.add('active');
-        elements.placeholder.style.display = 'none';
-    } else {
+    // Mic Button State (Active means STOP button)
+    if (newState === STATE.IDLE || newState === STATE.ERROR) {
         elements.micBtn.classList.remove('active');
         elements.placeholder.style.display = 'block';
+        elements.micBtn.innerHTML = `<div class="mic-icon-wrapper"><svg class="icon"><use href="assets/icons/feather-sprite.svg#mic"/></svg></div>`;
+    } else {
+        elements.micBtn.classList.add('active');
+        elements.placeholder.style.display = 'none';
+        elements.micBtn.innerHTML = `<div class="mic-icon-wrapper"><svg class="icon"><use href="assets/icons/feather-sprite.svg#x"/></svg></div>`;
     }
 }
 
+// --- SIRI-STYLE VISUALIZER ---
 function initVisualizer() {
     const canvas = elements.canvas;
     const ctx = canvas.getContext('2d');
+    let time = 0;
+
     const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
     window.addEventListener('resize', resize);
     resize();
+
+    const drawBlob = (x, y, radius, color, offset) => {
+        ctx.beginPath();
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+        gradient.addColorStop(0, color);
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = gradient;
+        ctx.globalCompositeOperation = 'screen'; // Additive blending for glow
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+    };
 
     const draw = () => {
         animationFrameId = requestAnimationFrame(draw);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        let barHeight = 0;
-        if (currentState === STATE.LISTENING || currentState === STATE.SPEAKING) {
-            if (analyser) {
-                const array = new Uint8Array(analyser.frequencyBinCount);
-                analyser.getByteFrequencyData(array);
-                let sum = 0;
-                for(let i=0; i<array.length; i++) sum += array[i];
-                barHeight = sum / array.length;
-            } else {
-                barHeight = Math.random() * 50; // Fake it for visual feedback if analyzer glitch
-            }
+        let audioLevel = 0;
+        
+        if (analyser && (currentState === STATE.LISTENING || currentState === STATE.SPEAKING)) {
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(dataArray);
+            let sum = 0;
+            // Focus on vocal range frequencies
+            for(let i=0; i<50; i++) sum += dataArray[i];
+            audioLevel = sum / 5000; // Normalize somewhat
+        } else if (currentState === STATE.PROCESSING) {
+            audioLevel = 0.2 + Math.sin(time * 0.1) * 0.1; // Gentle pulse
+        } else {
+            audioLevel = 0.05; // Idle breather
         }
 
-        const cy = canvas.height / 2;
-        ctx.beginPath();
-        ctx.arc(canvas.width/2, cy, 50 + barHeight, 0, 2*Math.PI);
-        ctx.strokeStyle = currentState === STATE.SPEAKING ? '#D946EF' : '#0052CC';
-        ctx.lineWidth = 2;
-        ctx.stroke();
+        time += 0.05 + (audioLevel * 0.2); // Speed up with audio
+
+        const cx = canvas.width / 2;
+        const cy = canvas.height * 0.7; // Lower center
+        const baseRadius = Math.min(canvas.width, canvas.height) * 0.2;
+
+        // Blob 1: Cyan (Left shift)
+        const r1 = baseRadius * (1 + Math.sin(time) * 0.2 + audioLevel * 1.5);
+        const x1 = cx + Math.cos(time * 0.7) * 30;
+        const y1 = cy + Math.sin(time * 0.5) * 30;
+        drawBlob(x1, y1, r1, 'rgba(0, 229, 255, 0.6)', 0);
+
+        // Blob 2: Purple (Right shift)
+        const r2 = baseRadius * (1 + Math.cos(time * 0.8) * 0.2 + audioLevel * 1.2);
+        const x2 = cx - Math.sin(time * 0.6) * 30;
+        const y2 = cy + Math.cos(time * 0.4) * 30;
+        drawBlob(x2, y2, r2, 'rgba(217, 70, 239, 0.6)', 2);
+
+        // Blob 3: Blue/White Core (Center)
+        const r3 = baseRadius * (0.8 + audioLevel * 2.0); // Most reactive
+        drawBlob(cx, cy, r3, 'rgba(59, 130, 246, 0.8)', 4);
+        
+        ctx.globalCompositeOperation = 'source-over'; // Reset
     };
     draw();
 }
@@ -231,10 +275,8 @@ export function init() {
         headerControls: document.getElementById('aural-header-controls')
     };
 
-    // Header Back Button
     elements.headerControls.innerHTML = `<button class="btn" onclick="window.history.back()">EXIT</button>`;
 
-    // Toggle Handler
     elements.micBtn.onclick = () => {
         if (currentState === STATE.IDLE || currentState === STATE.ERROR) {
             startSession();

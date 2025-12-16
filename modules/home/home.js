@@ -17,7 +17,9 @@ function updateGreeting() {
     if (hour >= 12 && hour < 17) timeGreeting = "Good Afternoon";
     else if (hour >= 17) timeGreeting = "Good Evening";
 
-    const userName = firebaseService.getUserName() || 'Agent';
+    // Use name directly from service. Auth service now sets 'Admin' correctly.
+    // If name is missing, fall back to 'Agent'.
+    let userName = firebaseService.getUserName() || 'Agent';
     
     if (elements.greeting) {
         elements.greeting.textContent = `${timeGreeting}, ${userName}`;
@@ -28,6 +30,27 @@ function updateHUD() {
     const stats = gamificationService.getStats();
     if(elements.levelDisplay) elements.levelDisplay.textContent = stats.level;
     if(elements.streakDisplay) elements.streakDisplay.textContent = stats.currentStreak;
+
+    // --- Update 21-Day Challenge UI ---
+    if (elements.streakBarFill && elements.streakFraction) {
+        const streak = stats.currentStreak || 0;
+        const target = 21;
+        const percent = Math.min(100, (streak / target) * 100);
+        
+        elements.streakBarFill.style.width = `${percent}%`;
+        elements.streakFraction.textContent = `${streak}/${target}`;
+        
+        if (streak >= 21) {
+            elements.streakBarFill.style.background = 'var(--color-success)';
+            elements.streakMessage.textContent = "Challenge Complete! Habit Formed.";
+        } else if (streak >= 14) {
+            elements.streakMessage.textContent = "Final stretch! Keep going.";
+        } else if (streak >= 7) {
+            elements.streakMessage.textContent = "Week 1 complete. Stay consistent.";
+        } else {
+            elements.streakMessage.textContent = "Build the habit. 21 days to go.";
+        }
+    }
 }
 
 function renderResumeCard() {
@@ -221,6 +244,9 @@ export function init() {
         greeting: document.getElementById('home-greeting'),
         levelDisplay: document.getElementById('home-level'),
         streakDisplay: document.getElementById('home-streak'),
+        streakBarFill: document.getElementById('streak-bar-fill'),
+        streakFraction: document.getElementById('streak-fraction'),
+        streakMessage: document.getElementById('streak-message'),
         resumeSection: document.getElementById('resume-section'),
         commandForm: document.getElementById('command-form'),
         commandInput: document.getElementById('command-input'),

@@ -8,7 +8,31 @@ import * as configService from './configService.js';
 // ==================================================================================
 const API_BASE_URL = '/api'; 
 
-// --- FALLBACK DATA (Offline Mode) ---
+// --- HELPER: Dynamic Fallback Generator ---
+function generateFallbackQuestions(topic, level) {
+    const t = topic || "Advanced Tech";
+    return [
+        {
+            question: `In the context of ${t}, what is the primary function of the core component?`,
+            options: ["To reduce latency", "To process data streams", "To create a visual output", "To store redundant logs"],
+            correctAnswerIndex: 1,
+            explanation: `Core components in ${t} are designed to handle data throughput efficiently.`
+        },
+        {
+            question: `When optimizing for scale in ${t}, which strategy is most effective?`,
+            options: ["Vertical Scaling", "Horizontal Scaling", "Deleting old data", "Ignoring errors"],
+            correctAnswerIndex: 1,
+            explanation: "Horizontal scaling (adding more nodes) is generally preferred for distributed systems."
+        },
+        {
+            question: `Scenario: A critical failure occurs in the ${t} subsystem. What is the first mitigation step?`,
+            options: ["Check the logs", "Reboot everything", "Call the CEO", "Panic"],
+            correctAnswerIndex: 0,
+            explanation: "Root cause analysis via logs is essential before taking remediation actions."
+        }
+    ];
+}
+
 const FALLBACK_DATA = {
     journey: (topic) => ({
         topicName: topic || "IT Mastery",
@@ -20,31 +44,12 @@ const FALLBACK_DATA = {
         chapters: ["Fundamentals", "Tools & Technologies", "Real-world Application", "Expert Mastery"],
         isFallback: true
     }),
-    questions: (topic) => ({
-        questions: [
-            {
-                question: `Scenario: You are optimizing a system for ${topic} and the system crashes. What is the first logical step?`,
-                options: ["Panic", "Check the logs/debug", "Restart everything immediately", "Call the client"],
-                correctAnswerIndex: 1,
-                explanation: "Debugging and log analysis is the professional first step in any IT crisis."
-            },
-            {
-                question: `In the context of ${topic}, which practice ensures long-term success?`,
-                options: ["Taking shortcuts", "Consistent Learning", "Copying code", "Using outdated tools"],
-                correctAnswerIndex: 1,
-                explanation: "Technology evolves rapidly; consistency is the only way to stay relevant."
-            },
-            {
-                question: `A client asks for a feature in ${topic} that is technically impossible. What do you do?`,
-                options: ["Say yes and fake it", "Ignore them", "Explain the limitation and offer an alternative", "Quit the project"],
-                correctAnswerIndex: 2,
-                explanation: "Professionalism involves managing expectations and finding viable technical solutions."
-            }
-        ],
+    questions: (topic, level) => ({
+        questions: generateFallbackQuestions(topic, level),
         isFallback: true
     }),
-    lesson: (topic) => ({
-        lesson: `### ⚡ System Briefing: ${topic}\n\n**Status:** Offline Mode (AI Nap Time).\n\nSince the neural network is snoozing, here's the raw deal:\n\n*   **The Hook:** Mastering ${topic} is like learning to ride a bike. Wobbly at first, then you fly.\n*   **The Core:** Focus on the fundamentals. Don't rush.\n*   **The Payoff:** This skill pays the bills.\n\n**Action:** Prove your skills in the quiz below!`,
+    lesson: (topic, level) => ({
+        lesson: `### ⚡ System Briefing: ${topic} (Level ${level})\n\n**Status:** Simulated Data Stream.\n\nWe are currently operating in a low-bandwidth environment. The neural core has generated a procedural briefing for this level.\n\n*   **Objective:** Master the fundamentals of ${topic}.\n*   **Focus:** Precision and consistency.\n\nProceed to the assessment phase to validate your knowledge.`,
         isFallback: true
     })
 };
@@ -113,14 +118,14 @@ export async function generateLevelQuestions({ topic, level, totalLevels }) {
     // Validate structure
     if (!data || !data.questions || !Array.isArray(data.questions)) {
         console.warn("Invalid questions data received, using fallback.");
-        return FALLBACK_DATA.questions(topic);
+        return FALLBACK_DATA.questions(topic, level);
     }
     return data;
 }
 
 export async function generateLevelLesson({ topic, level, totalLevels }) {
     const data = await postToServer('/generate-level-lesson', { topic, level, totalLevels });
-    if (!data || !data.lesson) return FALLBACK_DATA.lesson(topic);
+    if (!data || !data.lesson) return FALLBACK_DATA.lesson(topic, level);
     return data;
 }
 

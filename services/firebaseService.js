@@ -68,18 +68,17 @@ let authInitialized = false;
 // --- MOCK DATA (Global Elite) ---
 // Ensures leaderboard is never empty. Used for Expo/Demo purposes.
 const MOCK_LEADERBOARD = [
-    { id: 'm1', username: 'Arslan Ash', level: 99, xp: 98500, isMock: true }, // PK eSports Legend
-    { id: 'm2', username: 'Sumail Hassan', level: 96, xp: 94200, isMock: true }, // PK Dota Legend
+    { id: 'm1', username: 'Arslan Ash', level: 99, xp: 98500, isMock: true }, 
+    { id: 'm2', username: 'Sumail Hassan', level: 96, xp: 94200, isMock: true }, 
     { id: 'm3', username: 'Sarah Connor', level: 91, xp: 88000, isMock: true },
     { id: 'm4', username: 'Hamza Ali', level: 85, xp: 81500, isMock: true },
-    { id: 'm5', username: 'Chen Wei', level: 82, xp: 79200, isMock: true },
-    { id: 'm6', username: 'Ayesha Khan', level: 78, xp: 75400, isMock: true },
-    { id: 'm7', username: 'John Wick', level: 75, xp: 72000, isMock: true },
-    { id: 'm8', username: 'Bilal Ahmed', level: 70, xp: 68000, isMock: true },
-    { id: 'm9', username: 'Zara Sheikh', level: 65, xp: 63500, isMock: true },
-    { id: 'm10', username: 'Dev Patel', level: 60, xp: 59000, isMock: true },
-    { id: 'm11', username: 'Fatima Noor', level: 58, xp: 56000, isMock: true },
-    { id: 'm12', username: 'Usman Ghani', level: 55, xp: 53000, isMock: true }
+    // Gap for Admin (approx 24k) to sit here comfortably in top 10
+    { id: 'm5', username: 'Chen Wei', level: 30, xp: 32000, isMock: true },
+    { id: 'm6', username: 'Ayesha Khan', level: 22, xp: 22400, isMock: true }, // Admin will likely beat Ayesha
+    { id: 'm7', username: 'John Wick', level: 18, xp: 18000, isMock: true },
+    { id: 'm8', username: 'Bilal Ahmed', level: 15, xp: 15000, isMock: true },
+    { id: 'm9', username: 'Zara Sheikh', level: 12, xp: 12500, isMock: true },
+    { id: 'm10', username: 'Dev Patel', level: 10, xp: 10000, isMock: true }
 ];
 
 // --- Helper for Offline Mode (LocalStorage Persistence) ---
@@ -110,11 +109,11 @@ const mockAuth = {
     },
 
     loginGuest() {
-        console.log("🚀 FORCE GUEST LOGIN (Mock)");
+        console.log("🚀 FORCE ADMIN LOGIN (Mock)");
         this.user = { 
             uid: 'guest_' + Date.now(), 
             isAnonymous: true, 
-            displayName: 'Guest Agent',
+            displayName: 'Admin', // CHANGED FROM 'Guest Agent' to 'Admin'
             email: null,
             photoURL: null
         };
@@ -128,8 +127,8 @@ const mockAuth = {
         console.log("🚀 SIMULATING GOOGLE LOGIN (Expo Mode)");
         this.user = {
             uid: 'google_sim_' + Date.now(),
-            email: 'expo.visitor@gmail.com',
-            displayName: 'Expo Visitor',
+            email: 'admin.expo@skillapex.com',
+            displayName: 'Admin',
             isAnonymous: false,
             photoURL: 'https://lh3.googleusercontent.com/a/default-user',
             providerData: [{ providerId: 'google.com' }]

@@ -52,12 +52,30 @@
     <!-- 3. Dashboard Grid -->
     <div class="dashboard-grid">
         
-        <!-- A. Priority Mission (Resume) -->
+        <!-- A. Streak Challenge Card (NEW) -->
+        <div class="dashboard-panel streak-panel">
+            <div class="panel-header">
+                <h3><svg class="icon"><use href="assets/icons/feather-sprite.svg#target"/></svg> Habit Builder</h3>
+                <span class="streak-fraction" id="streak-fraction">0/21</span>
+            </div>
+            <div class="streak-content">
+                <div class="streak-bar-container">
+                    <div id="streak-bar-fill" class="streak-bar-fill" style="width: 0%;"></div>
+                    <div class="streak-markers">
+                        <span style="left: 33%">7</span>
+                        <span style="left: 66%">14</span>
+                    </div>
+                </div>
+                <p id="streak-message" class="streak-message">Start your 21-day consistency protocol.</p>
+            </div>
+        </div>
+
+        <!-- B. Priority Mission (Resume) -->
         <div id="resume-section" class="dashboard-panel mission-panel" style="display: none;">
             <!-- Injected by JS -->
         </div>
 
-        <!-- B. Featured Protocols -->
+        <!-- C. Featured Protocols -->
         <div class="dashboard-panel protocols-panel">
             <div class="panel-header">
                 <h3><svg class="icon"><use href="assets/icons/feather-sprite.svg#grid"/></svg> Quick Access</h3>
@@ -83,7 +101,7 @@
             </div>
         </div>
 
-        <!-- C. Recent Activity Logs -->
+        <!-- D. Recent Activity Logs -->
         <div class="dashboard-panel history-panel">
             <div class="panel-header">
                 <h3><svg class="icon"><use href="assets/icons/feather-sprite.svg#activity"/></svg> Recent Logs</h3>

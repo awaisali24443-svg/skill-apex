@@ -1,0 +1,116 @@
+
+{
+  "gamification": {
+    "level": 24,
+    "xp": 24500,
+    "currentStreak": 21,
+    "totalQuizzesCompleted": 65,
+    "totalPerfectQuizzes": 42,
+    "questionsSaved": 28,
+    "fastAnswersCount": 150,
+    "nightOwlSessions": 12,
+    "totalAuralMinutes": 45
+  },
+  "journeys": [
+    {
+      "id": "journey_admin_1",
+      "goal": "Cybersecurity: Red Teaming",
+      "description": "Advanced simulation. Penetration testing and red team operations. [BOSS LEVEL]",
+      "currentLevel": 50,
+      "totalLevels": 50,
+      "styleClass": "topic-space"
+    },
+    {
+      "id": "journey_admin_2",
+      "goal": "Generative AI (LLMs)",
+      "description": "Mastering Transformer architecture and Prompt Engineering.",
+      "currentLevel": 12,
+      "totalLevels": 40,
+      "styleClass": "topic-robotics"
+    },
+    {
+      "id": "journey_admin_3",
+      "goal": "Python Mastery",
+      "description": "Advanced scripting, automation, and data analysis.",
+      "currentLevel": 5,
+      "totalLevels": 30,
+      "styleClass": "topic-programming"
+    }
+  ],
+  "history": [
+    {
+      "type": "quiz",
+      "topic": "Cybersecurity: Red Teaming - Level 49",
+      "score": 5,
+      "totalQuestions": 5,
+      "xpGained": 100,
+      "dayOffset": 0
+    },
+    {
+      "type": "quiz",
+      "topic": "Generative AI (LLMs) - Level 11",
+      "score": 4,
+      "totalQuestions": 5,
+      "xpGained": 80,
+      "dayOffset": 0
+    },
+    {
+      "type": "aural",
+      "topic": "Aural Tutor Session",
+      "duration": 340,
+      "xpGained": 50,
+      "transcript": [],
+      "dayOffset": 1
+    },
+    {
+      "type": "quiz",
+      "topic": "Python Mastery - Level 4",
+      "score": 5,
+      "totalQuestions": 5,
+      "xpGained": 100,
+      "dayOffset": 2
+    },
+    {
+      "type": "quiz",
+      "topic": "Cybersecurity: Red Teaming - Level 48",
+      "score": 3,
+      "totalQuestions": 5,
+      "xpGained": 30,
+      "dayOffset": 3
+    }
+  ],
+  "library": [
+    {
+      "id": "q_lib_admin_1",
+      "question": "In Red Teaming, what distinguishes a 'Golden Ticket' attack?",
+      "options": ["It grants persistence indefinitely", "It cracks passwords", "It bypasses firewalls", "It mines crypto"],
+      "correctAnswerIndex": 0,
+      "explanation": "A Golden Ticket forges a Kerberos TGT, granting Domain Admin access for up to 10 years."
+    },
+    {
+      "id": "q_lib_admin_2",
+      "question": "Explain the 'Vanishing Gradient' problem in Deep Learning.",
+      "options": ["Weights become too large", "Gradients approach zero during backprop", "Data is missing", "GPU overheats"],
+      "correctAnswerIndex": 1,
+      "explanation": "In deep networks, gradients can shrink exponentially as they propagate back, stopping earlier layers from learning."
+    }
+  ],
+  "level_cache": {
+    "Cybersecurity: Red Teaming-50": {
+      "lesson": "### 💀 FINAL EXAM: The Domain Dominance\n\n**Status:** Red Team Operation Active.\n\nYou have breached the perimeter, escalated privileges, and established C2. Now, you must prove you can maintain **Domain Dominance** without detection.\n\n*   **Objective:** Execute a Golden Ticket attack.\n*   **Evasion:** Avoid tripping the SIEM logs.\n*   **Persistence:** Ensure access survives a server reboot.",
+      "questions": [
+        { "question": "What is the primary indicator of a Golden Ticket attack in logs?", "options": ["High CPU usage", "A TGT request with an unusually long lifetime (e.g. 10 years)", "Failed login attempts", "Network timeout"], "correctAnswerIndex": 1, "explanation": "Attackers set the ticket lifetime to the maximum to maintain access." },
+        { "question": "Which account's hash is required to forge a Golden Ticket?", "options": ["The CEO", "The KRBTGT account", "The Local Admin", "The Guest User"], "correctAnswerIndex": 1, "explanation": "The KRBTGT (Key Distribution Center Service Account) password hash is used to sign all Kerberos tickets." },
+        { "question": "How do you mitigate a Golden Ticket attack?", "options": ["Restart the server", "Reset the KRBTGT password twice", "Delete the user", "Update Windows"], "correctAnswerIndex": 1, "explanation": "Resetting it once invalidates current tickets; resetting it twice invalidates the history, stopping forged tickets." }
+      ]
+    },
+    "Generative AI (LLMs)-12": {
+      "lesson": "### 🧠 The Attention Mechanism\n\nThe breakthrough of the Transformer model (the 'T' in GPT) is **Self-Attention**. \n\nOld models read left-to-right. Transformers read the whole sentence at once and calculate how much 'attention' each word should pay to every other word.\n\nFor example, in 'The animal didn't cross the street because **it** was too tired', the model knows '**it**' refers to the animal, not the street, because of attention scores.",
+      "questions": [
+        { "question": "What is the key innovation of the Transformer architecture?", "options": ["Recurrent Loops", "Self-Attention Mechanism", "Convolutions", "Vector Databases"], "correctAnswerIndex": 1, "explanation": "Self-attention allows the model to weigh the importance of different words in relation to one another." },
+        { "question": "Unlike RNNs, Transformers process data...", "options": ["Sequentially (Left to Right)", "In Parallel (All at once)", "Randomly", "Backwards"], "correctAnswerIndex": 1, "explanation": "Parallel processing allows Transformers to train much faster on massive datasets." },
+        { "question": "In the sentence 'Bank of the river', how does the model know 'Bank' isn't money?", "options": ["Contextual Embeddings", "It guesses", "Dictionary lookup", "It doesn't"], "correctAnswerIndex": 0, "explanation": "The context provided by 'river' shifts the vector embedding of 'Bank' towards the nature meaning." }
+      ]
+    }
+  }
+}
