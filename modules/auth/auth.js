@@ -125,7 +125,8 @@ async function handleGoogleLogin() {
         await showFakeGooglePopup();
 
         // 2. Populate the "Admin" data because we clicked the "Admin" user in the fake popup
-        await populateGuestData(); 
+        // FORCE OVERWRITE to ensure demo data is visible
+        await populateGuestData(true); 
 
         // 3. Perform the actual (mocked) login to set the user state in Firebase service
         await firebaseService.loginWithGoogle(); 
@@ -152,8 +153,12 @@ function seedLevelCache(topic, level, data) {
     localStorage.setItem(key, JSON.stringify(cacheEntry));
 }
 
-async function populateGuestData() {
-    console.log("Initializing Admin Simulation Protocol from JSON...");
+/**
+ * Loads demonstration data into localStorage.
+ * @param {boolean} forceOverwrite - If true, replaces existing data with demo data (Admin Login).
+ */
+async function populateGuestData(forceOverwrite = false) {
+    console.log(`Initializing Admin Simulation Protocol (Force: ${forceOverwrite})...`);
 
     try {
         // Fetch the hardcoded profile data
@@ -165,7 +170,7 @@ async function populateGuestData() {
         const dayMs = 86400000;
 
         // 1. GAMIFICATION
-        if (!localStorage.getItem(LOCAL_STORAGE_KEYS.GAMIFICATION)) {
+        if (forceOverwrite || !localStorage.getItem(LOCAL_STORAGE_KEYS.GAMIFICATION)) {
             const stats = demoData.gamification;
             // Shift lastQuizDate to TODAY to keep streak alive
             stats.lastQuizDate = new Date().toISOString();
@@ -176,7 +181,7 @@ async function populateGuestData() {
         }
 
         // 2. JOURNEYS
-        if (!localStorage.getItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS)) {
+        if (forceOverwrite || !localStorage.getItem(LOCAL_STORAGE_KEYS.GAME_PROGRESS)) {
             // Update createdAt timestamps to look recent
             const journeys = demoData.journeys.map(j => ({
                 ...j,
@@ -186,7 +191,7 @@ async function populateGuestData() {
         }
 
         // 3. HISTORY
-        if (!localStorage.getItem(LOCAL_STORAGE_KEYS.HISTORY)) {
+        if (forceOverwrite || !localStorage.getItem(LOCAL_STORAGE_KEYS.HISTORY)) {
             const history = demoData.history.map((h, index) => {
                 // Calculate date based on dayOffset (0 = today, 1 = yesterday)
                 const offset = h.dayOffset !== undefined ? h.dayOffset : index;
@@ -203,7 +208,7 @@ async function populateGuestData() {
         }
 
         // 4. LIBRARY
-        if (!localStorage.getItem(LOCAL_STORAGE_KEYS.LIBRARY)) {
+        if (forceOverwrite || !localStorage.getItem(LOCAL_STORAGE_KEYS.LIBRARY)) {
             const library = demoData.library.map(q => ({
                 ...q,
                 srs: { interval: 0, repetitions: 0, easeFactor: 2.5, nextReviewDate: now, lastReviewed: null }
@@ -212,6 +217,7 @@ async function populateGuestData() {
         }
 
         // 5. PRE-CACHE LEVELS (Instant Load)
+        // Always seed level cache for smooth demo
         if (demoData.level_cache) {
             Object.entries(demoData.level_cache).forEach(([key, data]) => {
                 // key format in JSON: "TopicName-Level"
@@ -235,7 +241,7 @@ async function handleGuestLogin() {
     btn.disabled = true;
 
     try {
-        await populateGuestData(); 
+        await populateGuestData(true); // FORCE OVERWRITE for consistent demo experience
         await firebaseService.loginAsGuest();
         
         // Force redirect if listener doesn't catch it
