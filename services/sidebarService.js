@@ -84,9 +84,14 @@ export function renderSidebar(container) {
     const html = `
         <div class="sidebar-inner">
             <!-- 1. Brand Header (Dual State) -->
-            <div class="sidebar-brand-section">
-                <span class="brand-text-collapsed">SA</span>
-                <h1 class="brand-text-expanded">Skill Apex</h1>
+            <div class="sidebar-brand-section" id="sidebar-toggle-btn">
+                <span class="brand-text-collapsed">
+                    <svg class="icon" style="width:24px;height:24px;"><use href="assets/icons/feather-sprite.svg#layout"/></svg>
+                </span>
+                <div style="display:flex; flex-direction:column; justify-content:center;">
+                    <h1 class="brand-text-expanded" style="margin:0; font-size:1.4rem;">Skill Apex</h1>
+                    <span class="brand-text-expanded" style="font-size:0.7rem; color:var(--color-text-secondary); opacity:0.8;">Click to Dock</span>
+                </div>
             </div>
 
             <!-- 2. Profile Section -->
@@ -132,23 +137,25 @@ export function renderSidebar(container) {
 
     // --- Interaction Handlers ---
     
-    // Toggle expand on click anywhere on sidebar to lock it
-    container.addEventListener('click', (e) => {
-        e.stopPropagation();
-        document.body.classList.toggle('sidebar-locked');
-    });
+    // Toggle expand on click of the Header/Toggle area
+    const toggleBtn = document.getElementById('sidebar-toggle-btn');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.body.classList.toggle('sidebar-locked');
+        });
+    }
 
-    // Close when clicking outside IF locked (optional, usually lock means persistent)
-    // But for mobile, we definitely want to close on outside click
+    // Explicitly handle "Click Outside" to close on mobile
     document.addEventListener('click', (e) => {
         const isMobile = window.innerWidth <= 768;
         const isLocked = document.body.classList.contains('sidebar-locked');
         
+        // If clicking outside sidebar and sidebar is locked (open on mobile)
         if (isLocked && !container.contains(e.target)) {
-            // On desktop, user might want it to stay locked until they click toggle again.
-            // But let's assume if they click content, they want to focus on content.
-            // However, typical dashboard behavior is: Toggle locks it permanently.
-            // Only on mobile do we auto-close.
+            // Check if clicking the toggle button itself (handled above)
+            if (toggleBtn && toggleBtn.contains(e.target)) return;
+
             if (isMobile) {
                 document.body.classList.remove('sidebar-locked');
             }
