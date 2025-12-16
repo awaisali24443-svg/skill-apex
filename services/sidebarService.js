@@ -132,17 +132,26 @@ export function renderSidebar(container) {
 
     // --- Interaction Handlers ---
     
-    // Toggle expand on click anywhere on sidebar
+    // Toggle expand on click anywhere on sidebar to lock it
     container.addEventListener('click', (e) => {
-        // Stop propagation so document listener doesn't immediately close it
         e.stopPropagation();
-        container.classList.add('expanded');
+        document.body.classList.toggle('sidebar-locked');
     });
 
-    // Close when clicking outside
+    // Close when clicking outside IF locked (optional, usually lock means persistent)
+    // But for mobile, we definitely want to close on outside click
     document.addEventListener('click', (e) => {
-        if (container.classList.contains('expanded') && !container.contains(e.target)) {
-            container.classList.remove('expanded');
+        const isMobile = window.innerWidth <= 768;
+        const isLocked = document.body.classList.contains('sidebar-locked');
+        
+        if (isLocked && !container.contains(e.target)) {
+            // On desktop, user might want it to stay locked until they click toggle again.
+            // But let's assume if they click content, they want to focus on content.
+            // However, typical dashboard behavior is: Toggle locks it permanently.
+            // Only on mobile do we auto-close.
+            if (isMobile) {
+                document.body.classList.remove('sidebar-locked');
+            }
         }
     });
 
@@ -150,9 +159,7 @@ export function renderSidebar(container) {
     const logoutBtn = document.getElementById('sidebar-logout-btn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async (e) => {
-            e.stopPropagation(); // Keep sidebar open during modal interaction if desired, or let it close. 
-            // Better to let it stay open or standard behavior.
-            
+            e.stopPropagation(); 
             const { showConfirmationModal } = await import('./modalService.js');
             const confirmed = await showConfirmationModal({
                 title: 'Log Out',
