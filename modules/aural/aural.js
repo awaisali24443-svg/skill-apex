@@ -79,12 +79,12 @@ async function startSession() {
         
         // 4. SETUP ANALYZERS (Input & Output)
         analyser = inputAudioContext.createAnalyser();
-        analyser.fftSize = 256; 
-        analyser.smoothingTimeConstant = 0.5;
+        analyser.fftSize = 512; // Higher resolution for smoother visuals
+        analyser.smoothingTimeConstant = 0.7; // Smooth decay
         
         outputAnalyser = outputAudioContext.createAnalyser();
-        outputAnalyser.fftSize = 256;
-        outputAnalyser.smoothingTimeConstant = 0.5;
+        outputAnalyser.fftSize = 512;
+        outputAnalyser.smoothingTimeConstant = 0.7;
         
         inputSource = inputAudioContext.createMediaStreamSource(mediaStream);
         scriptProcessor = inputAudioContext.createScriptProcessor(4096, 1, 1);
@@ -115,7 +115,7 @@ async function startSession() {
                             playAudioChunk(audioData);
                         }
                         if (msg.serverContent?.turnComplete) {
-                            updateUI(STATE.PROCESSING, "Processing...");
+                            updateUI(STATE.PROCESSING, "Thinking...");
                         }
                     } catch (err) {
                         console.error("Error processing message:", err);
@@ -228,8 +228,8 @@ function updateUI(newState, msg) {
         else if (newState === STATE.LISTENING) elements.status.textContent = "Listening...";
         else if (newState === STATE.SPEAKING) elements.status.textContent = "AI Speaking";
         else if (newState === STATE.CONNECTING) elements.status.textContent = "Establishing Uplink...";
-        else if (newState === STATE.PROCESSING) elements.status.textContent = "Thinking...";
-        else elements.status.textContent = "Ready - Tap to Start";
+        else if (newState === STATE.PROCESSING) elements.status.textContent = "Analyzing Input...";
+        else elements.status.textContent = "System Ready - Tap to Engage";
     }
     
     // Toggle active classes for CSS animations
@@ -250,7 +250,10 @@ function initVisualizer() {
     const ctx = canvas.getContext('2d');
     let time = 0;
 
-    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    const resize = () => { 
+        canvas.width = window.innerWidth; 
+        canvas.height = window.innerHeight; 
+    };
     window.addEventListener('resize', resize);
     resize();
 
@@ -258,9 +261,9 @@ function initVisualizer() {
         ctx.beginPath();
         const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
         gradient.addColorStop(0, color);
-        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+        gradient.addColorStop(1, 'rgba(255,255,255,0)'); // Fade to transparent
         ctx.fillStyle = gradient;
-        ctx.globalCompositeOperation = 'screen'; 
+        // NOTE: 'multiply' blend mode in CSS handles the white background mix
         ctx.arc(x, y, radius, 0, Math.PI * 2);
         ctx.fill();
     };
@@ -276,59 +279,59 @@ function initVisualizer() {
         if (analyser && (currentState === STATE.LISTENING || currentState === STATE.CONNECTING)) {
             const dataArray = new Uint8Array(analyser.frequencyBinCount);
             analyser.getByteFrequencyData(dataArray);
-            inputEnergy = (dataArray.reduce((a,b)=>a+b,0) / dataArray.length) / 255;
+            // Focus on vocal range frequencies for better reactivity
+            const vocalRange = dataArray.slice(10, 100); 
+            inputEnergy = (vocalRange.reduce((a,b)=>a+b,0) / vocalRange.length) / 255;
         }
 
         // 2. Analyze AI Output
         if (outputAnalyser && currentState === STATE.SPEAKING) {
             const dataArray = new Uint8Array(outputAnalyser.frequencyBinCount);
             outputAnalyser.getByteFrequencyData(dataArray);
-            outputEnergy = (dataArray.reduce((a,b)=>a+b,0) / dataArray.length) / 255;
+            const vocalRange = dataArray.slice(10, 100);
+            outputEnergy = (vocalRange.reduce((a,b)=>a+b,0) / vocalRange.length) / 255;
         }
 
         // Processing Heartbeat
         if (currentState === STATE.PROCESSING) {
-            inputEnergy = 0.1 + Math.sin(time * 0.2) * 0.05; 
+            inputEnergy = 0.15 + Math.sin(time * 0.2) * 0.05; 
         } else if (currentState === STATE.IDLE) {
-            inputEnergy = 0.05; 
+            inputEnergy = 0.08 + Math.sin(time * 0.05) * 0.02; // Slow pulse
         }
 
-        const totalEnergy = inputEnergy + (outputEnergy * 1.5); // Boost output visual
-        time += 0.05 + (totalEnergy * 0.1); 
+        const totalEnergy = inputEnergy + (outputEnergy * 1.5); 
+        time += 0.05 + (totalEnergy * 0.2); 
 
         const cx = canvas.width / 2;
-        const cy = canvas.height * 0.75; 
-        const baseSize = Math.min(canvas.width, canvas.height) * 0.3;
+        const cy = canvas.height * 0.65; // Center slightly lower
+        // Dynamic sizing based on volume
+        const baseSize = Math.min(canvas.width, canvas.height) * (0.35 + (totalEnergy * 0.2));
 
-        // Visual Logic:
-        // Blue/Cyan = Listening/Idle
-        // Pink/Purple = AI Speaking
+        // Visual Logic Colors - UPDATED FOR WHITE BACKGROUND
+        // Darker blues/purples so they are visible on white
         
-        let color1 = 'rgba(34, 211, 238, 0.4)'; // Cyan
-        let color2 = 'rgba(232, 121, 249, 0.4)'; // Magenta
+        let color1 = 'rgba(37, 99, 235, 0.6)'; // Royal Blue
+        let color2 = 'rgba(124, 58, 237, 0.6)'; // Violet
         
         if (currentState === STATE.SPEAKING) {
-            color1 = 'rgba(236, 72, 153, 0.6)'; // Pink
-            color2 = 'rgba(168, 85, 247, 0.6)'; // Purple
+            color1 = 'rgba(219, 39, 119, 0.7)'; // Deep Pink
+            color2 = 'rgba(79, 70, 229, 0.7)'; // Indigo
         }
 
-        // Blob 1: Left
-        const r1 = baseSize * (0.8 + totalEnergy);
-        const x1 = cx + Math.cos(time * 0.7) * 30;
-        const y1 = cy + Math.sin(time * 0.5) * 30;
-        drawBlob(x1, y1, r1, color1); 
+        // Blob 1: Left Orbit
+        const x1 = cx + Math.cos(time * 0.5) * (50 + totalEnergy * 100);
+        const y1 = cy + Math.sin(time * 0.3) * (30 + totalEnergy * 50);
+        drawBlob(x1, y1, baseSize * 0.9, color1); 
 
-        // Blob 2: Right
-        const r2 = baseSize * (0.8 + totalEnergy * 0.8);
-        const x2 = cx - Math.sin(time * 0.6) * 30;
-        const y2 = cy + Math.cos(time * 0.8) * 30;
-        drawBlob(x2, y2, r2, color2);
+        // Blob 2: Right Orbit
+        const x2 = cx - Math.sin(time * 0.4) * (50 + totalEnergy * 100);
+        const y2 = cy + Math.cos(time * 0.6) * (30 + totalEnergy * 50);
+        drawBlob(x2, y2, baseSize * 0.8, color2);
 
-        // Blob 3: Core (White/Bright)
-        const r3 = baseSize * (0.5 + totalEnergy * 1.2); 
-        drawBlob(cx, cy, r3, 'rgba(255, 255, 255, 0.3)');
+        // Blob 3: Core (Solid Dark for Contrast)
+        const r3 = baseSize * (0.6 + totalEnergy * 0.8); 
+        drawBlob(cx, cy, r3, 'rgba(15, 23, 42, 0.1)'); // Slate shadow
         
-        ctx.globalCompositeOperation = 'source-over';
     };
     draw();
 }

@@ -45,7 +45,7 @@ body {
     background: var(--color-background);
 }
 
-/* Mesh Gradient Blobs */
+/* Mesh Gradient Blobs - Adjusted for White Background (Pastels) */
 .blob {
     position: absolute;
     filter: blur(80px);
@@ -53,9 +53,9 @@ body {
     opacity: 0.6;
     animation: floatBlob 20s infinite alternate;
 }
-.blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: var(--color-primary); animation-delay: 0s; opacity: 0.2; }
-.blob-2 { bottom: -10%; right: -10%; width: 40vw; height: 40vw; background: var(--color-secondary); animation-delay: -5s; opacity: 0.2; }
-.blob-3 { top: 40%; left: 40%; width: 30vw; height: 30vw; background: var(--color-accent); animation-delay: -10s; opacity: 0.15; }
+.blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #E0E7FF; animation-delay: 0s; opacity: 0.8; }
+.blob-2 { bottom: -10%; right: -10%; width: 40vw; height: 40vw; background: #FAE8FF; animation-delay: -5s; opacity: 0.8; }
+.blob-3 { top: 40%; left: 40%; width: 30vw; height: 30vw; background: #E0F2FE; animation-delay: -10s; opacity: 0.8; }
 
 @keyframes floatBlob {
     0% { transform: translate(0, 0) scale(1); }
@@ -66,7 +66,7 @@ body {
     position: absolute; inset: 0;
     background-image: linear-gradient(var(--color-border) 1px, transparent 1px), linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
     background-size: 50px 50px;
-    opacity: 0.05;
+    opacity: 0.3; /* Increased visibility for white theme */
     mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
 }
 
@@ -75,7 +75,7 @@ body {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
     z-index: 99999;
-    background-color: #000; /* Deep black for cinematic feel */
+    background-color: #FFFFFF; /* White for Day Mode Splash */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -130,19 +130,18 @@ body {
 }
 
 @keyframes sparkPulse {
-    0%, 100% { filter: drop-shadow(0 0 5px rgba(255,255,255,0.8)); }
-    50% { filter: drop-shadow(0 0 20px rgba(0, 229, 255, 0.8)); }
+    0%, 100% { filter: drop-shadow(0 0 2px rgba(37, 99, 235, 0.3)); }
+    50% { filter: drop-shadow(0 0 10px rgba(37, 99, 235, 0.6)); }
 }
 
 .cinematic-text {
     font-family: var(--font-family-heading);
     font-size: 1.5rem;
     font-weight: 800;
-    color: white;
+    color: var(--color-text); /* Uses theme text color */
     letter-spacing: 4px;
     animation: textFadeIn 2s ease-out forwards 0.5s;
     opacity: 0;
-    text-shadow: 0 0 20px rgba(34, 211, 238, 0.5);
     text-align: center;
 }
 
@@ -151,13 +150,13 @@ body {
     to { opacity: 1; letter-spacing: 4px; }
 }
 
-/* Particles */
+/* Particles - Dark for White Background */
 .particles {
     position: absolute; inset: 0; pointer-events: none;
 }
 .particle {
     position: absolute;
-    background: white;
+    background: var(--color-primary); /* Blue particles */
     border-radius: 50%;
     opacity: 0;
     animation: floatUp 3s infinite ease-in-out;
@@ -220,7 +219,7 @@ body {
 @media (hover: hover) {
     body:not(.sidebar-locked) #sidebar:hover {
         width: var(--sidebar-width-desktop);
-        box-shadow: 20px 0 50px rgba(0,0,0,0.2);
+        box-shadow: 20px 0 50px rgba(0,0,0,0.1); /* Lighter shadow for white theme */
     }
     
     /* Content Expansion on Hover */
@@ -268,7 +267,7 @@ body.sidebar-locked .brand-text-expanded { opacity: 1; transition-delay: 0.1s; }
 .sidebar-profile-header {
     display: flex; align-items: center; padding: 10px 20px;
     margin: 0 10px; border-radius: 12px;
-    background: rgba(125,125,125,0.05);
+    background: rgba(0,0,0,0.03); /* Slight darkening for white theme */
     transition: background 0.2s; cursor: pointer;
     overflow: hidden;
     border: 1px solid transparent;
@@ -302,7 +301,7 @@ body.sidebar-locked .sidebar-menu-label { opacity: 1; }
 }
 .sidebar-link:hover { background: var(--color-surface-hover); color: var(--color-text); }
 .sidebar-link.active { background: var(--color-primary-transparent); color: var(--color-primary); font-weight: 600; }
-.sidebar-link.active .icon { color: var(--color-primary); filter: drop-shadow(0 0 5px var(--color-primary)); }
+.sidebar-link.active .icon { color: var(--color-primary); filter: drop-shadow(0 0 2px var(--color-primary-transparent)); }
 
 .link-icon-wrapper { width: 24px; display: flex; justify-content: center; flex-shrink: 0; }
 .sidebar-link .text { margin-left: 16px; opacity: 0; transition: opacity 0.2s; }
@@ -335,10 +334,11 @@ a:hover { color: var(--color-secondary); }
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     padding: 10px 20px; border-radius: 12px;
     font-weight: 600; font-family: var(--font-family-body);
-    cursor: pointer; transition: all 0.2s; border: 1px solid transparent;
+    cursor: pointer; transition: all 0.2s; border: 1px solid var(--color-border); /* Explicit border for white theme */
     background: var(--color-surface); color: var(--color-text);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
-.btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+.btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); border-color: var(--color-primary); }
 .btn:active { transform: translateY(0); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
 
@@ -357,7 +357,16 @@ a:hover { color: var(--color-secondary); }
     backdrop-filter: blur(10px);
 }
 
-.icon { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+/* --- CRITICAL VISUAL FIX: ICON COLOR --- */
+.icon { 
+    width: 20px; 
+    height: 20px; 
+    stroke: currentColor; 
+    fill: none; 
+    stroke-width: 2; 
+    stroke-linecap: round; 
+    stroke-linejoin: round; 
+}
 
 /* UTILS */
 .hidden { display: none !important; }
@@ -376,7 +385,7 @@ a:hover { color: var(--color-secondary); }
     position: fixed;
     inset: 0;
     z-index: 10001;
-    background-color: rgba(0, 0, 0, 0.75);
+    background-color: rgba(0, 0, 0, 0.5); /* Lighter backdrop for white theme */
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     
@@ -398,7 +407,7 @@ a:hover { color: var(--color-secondary); }
     background: var(--color-surface);
     border: 1px solid var(--glass-border);
     border-radius: 24px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); /* Softer shadow */
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -454,16 +463,15 @@ a:hover { color: var(--color-secondary); }
 
 .toast {
     pointer-events: auto;
-    background: var(--color-surface);
-    border: 1px solid var(--glass-border);
+    background: #FFFFFF; /* Force white background for toast */
+    border: 1px solid var(--color-border);
     padding: 14px 20px;
     border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    color: var(--color-text);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    color: #020617;
     font-weight: 600;
     display: flex; align-items: center; gap: 10px;
     animation: toastSlideIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-    backdrop-filter: blur(12px);
     max-width: 320px;
     border-left: 4px solid var(--color-primary);
 }
@@ -486,7 +494,7 @@ a:hover { color: var(--color-secondary); }
     
     body.sidebar-locked #sidebar {
         width: 85%; /* Drawer style */
-        box-shadow: 100vw 0 0 rgba(0,0,0,0.5); /* Dim backdrop */
+        box-shadow: 100vw 0 0 rgba(0,0,0,0.2); /* Dim backdrop */
     }
     
     body.sidebar-locked #app-container {

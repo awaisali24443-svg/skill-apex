@@ -1,61 +1,63 @@
 
 :root {
-    /* --- VIVID DAY (Hyper-Clean & Energetic) --- */
+    /* --- DAYLIGHT EXPO (High Visibility & Clean) --- */
 
-    /* Brand Colors - Tri-Color Gradient Source */
-    --color-primary: #6366F1;   /* Indigo 500 */
-    --color-secondary: #EC4899; /* Pink 500 */
-    --color-accent: #06B6D4;    /* Cyan 500 */
-    --color-primary-rgb: 99, 102, 241;
+    /* Brand Colors - Adjusted for Light Backgrounds */
+    --color-primary: #2563EB;   /* Royal Blue (High Contrast) */
+    --color-secondary: #DB2777; /* Deep Pink */
+    --color-accent: #0891B2;    /* Dark Cyan */
+    --color-primary-rgb: 37, 99, 235;
 
-    /* Backgrounds */
-    --color-background: #F0F4FF; /* Alice Blue Tint - Cool and Crisp */
+    /* Backgrounds - PURE WHITE for Day/Outdoor */
+    --color-background: #FFFFFF; 
     
-    /* iOS Light Mode Glass Variables */
-    /* Surface is highly transparent (65%) to let the 'blur' do the work */
-    --color-surface: rgba(255, 255, 255, 0.65); 
-    --color-surface-hover: rgba(255, 255, 255, 0.85);
-    --color-surface-active: #EEF2FF; /* Indigo 50 */
+    /* Surfaces */
+    --color-surface: #FFFFFF; 
+    --color-surface-hover: #F8FAFC; /* Slate 50 */
+    --color-surface-active: #EFF6FF; /* Blue 50 */
     
-    /* Specific Glass Props */
-    --glass-surface: rgba(255, 255, 255, 0.65);
-    --glass-border: rgba(255, 255, 255, 0.6); /* Shiny white rim */
+    /* Glass Props (Subtle Frost) */
+    --glass-surface: rgba(255, 255, 255, 0.85);
+    --glass-border: #E2E8F0; /* Slate 200 - Solid crisp border */
     
-    /* Text - Maximum Contrast */
-    --color-text: #0F172A;       /* Slate 900 - Deepest Navy */
-    --color-text-secondary: #475569; /* Slate 600 - Readable Grey */
+    /* Text - Maximum Contrast for Glare Reduction */
+    --color-text: #020617;       /* Slate 950 - Near Black */
+    --color-text-secondary: #475569; /* Slate 600 */
 
     /* UI Elements */
-    --color-border: rgba(0, 0, 0, 0.05); /* Very subtle internal borders */
+    --color-border: #E2E8F0; /* Crisp gray borders */
     
-    /* Shadows - Colored & Deep but Soft */
+    /* Shadows - Soft but Defined (Neumorphic-lite) */
     --shadow-card: 
-        0 4px 24px -1px rgba(0,0,0,0.05),
-        0 0 0 1px rgba(255, 255, 255, 0.4); /* Inner ring */
+        0 4px 6px -1px rgba(0, 0, 0, 0.05),
+        0 2px 4px -1px rgba(0, 0, 0, 0.03),
+        0 0 0 1px #E2E8F0; /* Ring for definition */
         
     --shadow-float: 
-        0 20px 40px -10px rgba(99, 102, 241, 0.15);
+        0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
         
     --shadow-hover: 
-        0 20px 40px -5px rgba(236, 72, 153, 0.15); /* Pink tint hover */
+        0 10px 15px -3px rgba(37, 99, 235, 0.15),
+        0 4px 6px -2px rgba(37, 99, 235, 0.1);
 
     /* Gradients */
-    --brand-gradient: linear-gradient(135deg, #6366F1 0%, #A855F7 50%, #EC4899 100%);
-    --bg-tech: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 60%);
+    --brand-gradient: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+    --bg-tech: radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.05) 0%, transparent 60%);
 
     /* Status Colors */
-    --color-success: #10B981; /* Emerald 500 */
-    --color-error: #EF4444;   /* Red 500 */
-    --color-success-bg: #D1FAE5;
+    --color-success: #16A34A; /* Emerald 600 */
+    --color-error: #DC2626;   /* Red 600 */
+    --color-success-bg: #DCFCE7;
     --color-error-bg: #FEE2E2;
-    --color-success-border: #34D399;
-    --color-error-border: #F87171;
+    --color-success-border: #86EFAC;
+    --color-error-border: #FCA5A5;
     
     /* Transparencies */
-    --color-primary-transparent: rgba(99, 102, 241, 0.12);
-    --color-primary-transparent-heavy: rgba(99, 102, 241, 0.25);
-    --color-secondary-transparent: rgba(236, 72, 153, 0.12);
+    --color-primary-transparent: rgba(37, 99, 235, 0.1);
+    --color-primary-transparent-heavy: rgba(37, 99, 235, 0.2);
+    --color-secondary-transparent: rgba(219, 39, 119, 0.1);
     
-    --scrollbar-thumb: #CBD5E1;
-    --scrollbar-track: transparent;
+    --scrollbar-thumb: #94A3B8;
+    --scrollbar-track: #F1F5F9;
 }
