@@ -1,22 +1,22 @@
 
 {
   "gamification": {
-    "level": 98,
-    "xp": 96500,
-    "currentStreak": 42,
-    "totalQuizzesCompleted": 340,
-    "totalPerfectQuizzes": 150,
-    "questionsSaved": 85,
-    "fastAnswersCount": 850,
-    "nightOwlSessions": 45,
-    "totalAuralMinutes": 120
+    "level": 21,
+    "xp": 24500,
+    "currentStreak": 21,
+    "totalQuizzesCompleted": 120,
+    "totalPerfectQuizzes": 45,
+    "questionsSaved": 32,
+    "fastAnswersCount": 450,
+    "nightOwlSessions": 12,
+    "totalAuralMinutes": 60
   },
   "journeys": [
     {
       "id": "journey_admin_1",
       "goal": "Cybersecurity: Red Teaming",
-      "description": "Advanced simulation. Penetration testing and red team operations. [BOSS LEVEL]",
-      "currentLevel": 50,
+      "description": "Advanced simulation. Penetration testing and red team operations.",
+      "currentLevel": 21,
       "totalLevels": 50,
       "styleClass": "topic-space"
     },
@@ -32,7 +32,7 @@
       "id": "journey_admin_2",
       "goal": "Generative AI (LLMs)",
       "description": "Mastering Transformer architecture and Prompt Engineering.",
-      "currentLevel": 12,
+      "currentLevel": 8,
       "totalLevels": 40,
       "styleClass": "topic-robotics"
     },
@@ -40,7 +40,7 @@
       "id": "journey_admin_3",
       "goal": "Python Mastery",
       "description": "Advanced scripting, automation, and data analysis.",
-      "currentLevel": 5,
+      "currentLevel": 3,
       "totalLevels": 30,
       "styleClass": "topic-programming"
     }
@@ -56,7 +56,7 @@
     },
     {
       "type": "quiz",
-      "topic": "Cybersecurity: Red Teaming - Level 49",
+      "topic": "Cybersecurity: Red Teaming - Level 20",
       "score": 5,
       "totalQuestions": 5,
       "xpGained": 100,
@@ -77,7 +77,7 @@
     },
     {
       "type": "quiz",
-      "topic": "Generative AI (LLMs) - Level 11",
+      "topic": "Generative AI (LLMs) - Level 7",
       "score": 4,
       "totalQuestions": 5,
       "xpGained": 80,
@@ -97,7 +97,7 @@
     },
     {
       "type": "quiz",
-      "topic": "Python Mastery - Level 4",
+      "topic": "Python Mastery - Level 2",
       "score": 5,
       "totalQuestions": 5,
       "xpGained": 100,
@@ -105,7 +105,7 @@
     },
     {
       "type": "quiz",
-      "topic": "Cybersecurity: Red Teaming - Level 48",
+      "topic": "Cybersecurity: Red Teaming - Level 19",
       "score": 3,
       "totalQuestions": 5,
       "xpGained": 30,
@@ -143,28 +143,12 @@
     }
   ],
   "level_cache": {
-    "Cybersecurity: Red Teaming-50": {
-      "lesson": "### 💀 FINAL EXAM: The Domain Dominance\n\n**Status:** Red Team Operation Active.\n\nYou have breached the perimeter, escalated privileges, and established C2. Now, you must prove you can maintain **Domain Dominance** without detection.\n\n*   **Objective:** Execute a Golden Ticket attack.\n*   **Evasion:** Avoid tripping the SIEM logs.\n*   **Persistence:** Ensure access survives a server reboot.",
+    "Cybersecurity: Red Teaming-21": {
+      "lesson": "### 🛡️ Post-Exploitation Fundamentals\n\n**Status:** Access Achieved.\n\nYou have successfully breached the perimeter. Now the real work begins: **Enumeration**.\n\n*   **Objective:** Map out the internal network.\n*   **Tools:** `net user`, `whoami /priv`, `arp -a`.\n*   **Goal:** Identify high-value targets and paths to Domain Admin.",
       "questions": [
-        { "question": "What is the primary indicator of a Golden Ticket attack in logs?", "options": ["High CPU usage", "A TGT request with an unusually long lifetime (e.g. 10 years)", "Failed login attempts", "Network timeout"], "correctAnswerIndex": 1, "explanation": "Attackers set the ticket lifetime to the maximum to maintain access." },
-        { "question": "Which account's hash is required to forge a Golden Ticket?", "options": ["The CEO", "The KRBTGT account", "The Local Admin", "The Guest User"], "correctAnswerIndex": 1, "explanation": "The KRBTGT (Key Distribution Center Service Account) password hash is used to sign all Kerberos tickets." },
-        { "question": "How do you mitigate a Golden Ticket attack?", "options": ["Restart the server", "Reset the KRBTGT password twice", "Delete the user", "Update Windows"], "correctAnswerIndex": 1, "explanation": "Resetting it once invalidates current tickets; resetting it twice invalidates the history, stopping forged tickets." }
-      ]
-    },
-    "Generative AI (LLMs)-12": {
-      "lesson": "### 🧠 The Attention Mechanism\n\nThe breakthrough of the Transformer model (the 'T' in GPT) is **Self-Attention**. \n\nOld models read left-to-right. Transformers read the whole sentence at once and calculate how much 'attention' each word should pay to every other word.\n\nFor example, in 'The animal didn't cross the street because **it** was too tired', the model knows '**it**' refers to the animal, not the street, because of attention scores.",
-      "questions": [
-        { "question": "What is the key innovation of the Transformer architecture?", "options": ["Recurrent Loops", "Self-Attention Mechanism", "Convolutions", "Vector Databases"], "correctAnswerIndex": 1, "explanation": "Self-attention allows the model to weigh the importance of different words in relation to one another." },
-        { "question": "Unlike RNNs, Transformers process data...", "options": ["Sequentially (Left to Right)", "In Parallel (All at once)", "Randomly", "Backwards"], "correctAnswerIndex": 1, "explanation": "Parallel processing allows Transformers to train much faster on massive datasets." },
-        { "question": "In the sentence 'Bank of the river', how does the model know 'Bank' isn't money?", "options": ["Contextual Embeddings", "It guesses", "Dictionary lookup", "It doesn't"], "correctAnswerIndex": 0, "explanation": "The context provided by 'river' shifts the vector embedding of 'Bank' towards the nature meaning." }
-      ]
-    },
-    "Spanish Language Mastery-5": {
-      "lesson": "### 🇪🇸 Ser vs. Estar: To Be or Not To Be?\n\nIn English, we just say 'I am'. In Spanish, you must choose between **Ser** and **Estar**.\n\n*   **Ser (Doctor):** Description, Occupation, Characteristics, Time, Origin, Relationship. (Permanent-ish)\n*   **Estar (Place):** Position, Location, Action, Condition, Emotion. (Temporary-ish)\n\n**Rhyme:** For how you feel and where you are, always use the verb **Estar**.",
-      "questions": [
-        { "question": "Which verb is used for physical location (e.g., 'I am in Madrid')?", "options": ["Ser", "Estar", "Tener", "Hacer"], "correctAnswerIndex": 1, "explanation": "Location always uses Estar, even if the building is permanent." },
-        { "question": "Translate: 'She is a doctor.'", "options": ["Ella está doctora", "Ella es doctora", "Ella tiene doctora", "Ella va doctora"], "correctAnswerIndex": 1, "explanation": "Occupation is considered a characteristic/identity, so we use Ser (Es)." },
-        { "question": "Translate: 'I am tired.'", "options": ["Soy cansado", "Estoy cansado", "Tengo cansado", "Hago cansado"], "correctAnswerIndex": 1, "explanation": "Tiredness is a temporary condition/emotion, so we use Estar (Estoy)." }
+        { "question": "Which command displays your current user privileges?", "options": ["whoami /all", "net user", "ipconfig", "systeminfo"], "correctAnswerIndex": 0, "explanation": "`whoami /all` or `/priv` lists security identifiers and privileges." },
+        { "question": "What is 'Lateral Movement'?", "options": ["Moving files", "Moving deeper into the network from a compromised host", "Exfiltrating data", "Deleting logs"], "correctAnswerIndex": 1, "explanation": "Using compromised credentials to access other machines in the network." },
+        { "question": "Why check the ARP table (`arp -a`)?", "options": ["To hack wifi", "To see other devices the current machine has talked to", "To check internet speed", "To find passwords"], "correctAnswerIndex": 1, "explanation": "The ARP cache reveals local IP addresses of recently contacted devices." }
       ]
     }
   }

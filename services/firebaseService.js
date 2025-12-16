@@ -65,24 +65,24 @@ let currentUser = null;
 let authStateCallback = null;
 let authInitialized = false;
 
-// --- MOCK DATA (Global Elite - Populated for Demo) ---
+// --- MOCK DATA (Rebalanced for Level 21 Dominance) ---
 const MOCK_LEADERBOARD = [
-    { id: 'm1', username: 'Arslan Ash', level: 99, xp: 98500, isMock: true }, 
-    { id: 'm2', username: 'Sarah Connor', level: 91, xp: 88000, isMock: true },
-    { id: 'm3', username: 'Zero Cool', level: 88, xp: 85400, isMock: true },
-    { id: 'm4', username: 'Hamza Ali', level: 85, xp: 81500, isMock: true },
-    { id: 'm5', username: 'DeepBlue', level: 76, xp: 72000, isMock: true },
-    { id: 'm6', username: 'Neo', level: 72, xp: 68500, isMock: true },
-    { id: 'm7', username: 'Trinity', level: 65, xp: 62000, isMock: true },
-    { id: 'm8', username: 'Chen Wei', level: 50, xp: 48000, isMock: true },
-    { id: 'm9', username: 'Ayesha Khan', level: 45, xp: 43200, isMock: true }, 
-    { id: 'm10', username: 'John Wick', level: 42, xp: 40500, isMock: true },
-    { id: 'm11', username: 'Maverick', level: 38, xp: 36000, isMock: true },
-    { id: 'm12', username: 'Ripley', level: 33, xp: 31000, isMock: true },
-    { id: 'm13', username: 'Bilal Ahmed', level: 25, xp: 24000, isMock: true },
-    { id: 'm14', username: 'Zara Sheikh', level: 18, xp: 17500, isMock: true },
-    { id: 'm15', username: 'Dev Patel', level: 10, xp: 9000, isMock: true },
-    { id: 'm16', username: 'Cyber Wolf', level: 5, xp: 4500, isMock: true }
+    { id: 'm1', username: 'Arslan Ash', level: 20, xp: 22500, isMock: true }, 
+    { id: 'm2', username: 'Sarah Connor', level: 19, xp: 21000, isMock: true },
+    { id: 'm3', username: 'Zero Cool', level: 18, xp: 19500, isMock: true },
+    { id: 'm4', username: 'Hamza Ali', level: 17, xp: 18200, isMock: true },
+    { id: 'm5', username: 'DeepBlue', level: 16, xp: 16800, isMock: true },
+    { id: 'm6', username: 'Neo', level: 15, xp: 15500, isMock: true },
+    { id: 'm7', username: 'Trinity', level: 14, xp: 14200, isMock: true },
+    { id: 'm8', username: 'Chen Wei', level: 12, xp: 11000, isMock: true },
+    { id: 'm9', username: 'Ayesha Khan', level: 10, xp: 9500, isMock: true }, 
+    { id: 'm10', username: 'John Wick', level: 9, xp: 8200, isMock: true },
+    { id: 'm11', username: 'Maverick', level: 8, xp: 7500, isMock: true },
+    { id: 'm12', username: 'Ripley', level: 7, xp: 6800, isMock: true },
+    { id: 'm13', username: 'Bilal Ahmed', level: 5, xp: 4500, isMock: true },
+    { id: 'm14', username: 'Zara Sheikh', level: 4, xp: 3200, isMock: true },
+    { id: 'm15', username: 'Dev Patel', level: 3, xp: 2100, isMock: true },
+    { id: 'm16', username: 'Cyber Wolf', level: 2, xp: 1200, isMock: true }
 ];
 
 // --- Helper for Offline Mode (LocalStorage Persistence) ---
@@ -383,7 +383,6 @@ async function getLeaderboard(limitCount = 20) {
     }
 
     // 2. Force Populate with Mocks if needed (Offline or Empty DB)
-    // Always merge in mocks to ensure list is populated
     if (results.length < 15) {
         const existingIds = new Set(results.map(r => r.id));
         const needed = limitCount - results.length;
