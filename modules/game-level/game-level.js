@@ -31,6 +31,7 @@ let currentCombo = 0;
 
 let loadingTimeout = null;
 let keydownHandler = null;
+let autoAdvanceTimer = null; // New timer for auto-navigation
 
 function switchState(targetStateId) {
     // 1. Hide all
@@ -205,6 +206,12 @@ function renderQuestion() {
     selectedAnswerIndex = null;
     hintUsedThisQuestion = false;
     
+    // Reset timer state
+    if (autoAdvanceTimer) {
+        clearTimeout(autoAdvanceTimer);
+        autoAdvanceTimer = null;
+    }
+    
     if (!currentQuestions || currentQuestions.length === 0) {
         showResults();
         return;
@@ -244,6 +251,7 @@ function renderQuestion() {
     if (elements.submitAnswerBtn) {
         elements.submitAnswerBtn.disabled = true;
         elements.submitAnswerBtn.textContent = 'Submit';
+        elements.submitAnswerBtn.className = 'btn btn-primary'; // Reset classes
     }
     if (elements.hintBtn) elements.hintBtn.disabled = false;
 
@@ -323,12 +331,8 @@ function updateComboDisplay() {
 }
 
 function handleSubmitAnswer() {
-    if (answered) {
-        handleNextQuestion();
-        return;
-    }
-    
-    if (selectedAnswerIndex === null) return;
+    if (answered) return; // Prevent double submit
+    if (selectedAnswerIndex === null && timeLeft > 0) return; // Allow submit if time ran out (selectedAnswerIndex might be -1)
 
     clearInterval(timerInterval);
     answered = true;
@@ -368,6 +372,7 @@ function handleSubmitAnswer() {
         vfxService.shake(document.getElementById('question-container'));
     }
 
+    // Update UI for Feedback
     if (elements.quizOptionsContainer) {
         elements.quizOptionsContainer.querySelectorAll('.option-btn').forEach(btn => {
             const index = parseInt(btn.dataset.index, 10);
@@ -378,11 +383,24 @@ function handleSubmitAnswer() {
     }
 
     if (elements.hintBtn) elements.hintBtn.disabled = true;
+    
+    // --- NEW: Button Feedback & Auto Advance ---
     if (elements.submitAnswerBtn) {
-        elements.submitAnswerBtn.textContent = currentQuestionIndex < currentQuestions.length - 1 ? 'Next' : 'Results';
-        elements.submitAnswerBtn.disabled = false;
-        elements.submitAnswerBtn.focus();
+        elements.submitAnswerBtn.disabled = true; // Prevent clicks
+        
+        if (isCorrect) {
+            elements.submitAnswerBtn.innerHTML = `<svg class="icon"><use href="assets/icons/feather-sprite.svg#check"/></svg> Correct!`;
+            elements.submitAnswerBtn.className = 'btn btn-success'; // Requires CSS
+        } else {
+            elements.submitAnswerBtn.innerHTML = `<svg class="icon"><use href="assets/icons/feather-sprite.svg#x"/></svg> Incorrect`;
+            elements.submitAnswerBtn.className = 'btn btn-danger'; // Requires CSS
+        }
     }
+
+    // Set Auto-Advance Timer (1.5 seconds)
+    autoAdvanceTimer = setTimeout(() => {
+        handleNextQuestion();
+    }, 1500);
 }
 
 function handleNextQuestion() {
@@ -441,6 +459,9 @@ function showResults() {
 }
 
 async function handleQuit() {
+    // Pause timer if quitting
+    if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
+    
     const confirmed = await showConfirmationModal({
         title: 'Abort Mission?',
         message: 'Progress will be lost.',
@@ -532,5 +553,6 @@ export function init() {
 export function destroy() {
     clearInterval(timerInterval);
     clearTimeout(loadingTimeout);
+    if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer); // Cleanup logic for auto-advance
     if (keydownHandler) document.removeEventListener('keydown', keydownHandler);
 }

@@ -103,6 +103,8 @@
 .new-quiz-content {
     flex-grow: 1; width: 100%; max-width: 900px; padding: 1.5rem;
     overflow-y: auto; margin: 0 auto; display: flex; flex-direction: column;
+    /* Ensure content scrolls behind footer */
+    padding-bottom: 100px;
 }
 
 /* Status Card */
@@ -173,14 +175,37 @@
 .option-btn.correct { background: var(--color-success-bg); border-color: var(--color-success); color: var(--color-success); }
 .option-btn.incorrect { background: var(--color-error-bg); border-color: var(--color-error); color: var(--color-error); }
 
+/* --- UPDATED FOOTER LAYOUT --- */
 .new-quiz-footer {
-    width: 100%; padding: 1rem 1.5rem; background: var(--color-surface);
-    border-top: 1px solid var(--color-border); display: flex; justify-content: space-between; gap: 1rem;
-    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+    width: 100%; 
+    padding: 1rem 1.5rem;
+    /* Lifted Bottom Padding to move buttons up */
+    padding-bottom: calc(2.5rem + env(safe-area-inset-bottom)); 
+    
+    background: var(--color-surface);
+    /* Fade/Glass Effect for floating feel */
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+    
+    display: flex; justify-content: space-between; gap: 1rem;
     flex-shrink: 0;
 }
 
 .footer-spacer { flex-grow: 1; }
+
+/* FEEDBACK BUTTON STATES */
+.btn-success {
+    background: var(--color-success);
+    border-color: var(--color-success);
+    color: white;
+}
+.btn-danger {
+    background: var(--color-error);
+    border-color: var(--color-error);
+    color: white;
+}
 
 /* Lesson Styles */
 .lesson-header h1 { font-size: 1.5rem; color: var(--color-primary); margin: 0; }
@@ -200,7 +225,7 @@
     /* Stack options vertically on mobile */
     .options-grid { grid-template-columns: 1fr; }
     
-    .new-quiz-content { padding: 1rem; }
+    .new-quiz-content { padding: 1rem; padding-bottom: 120px; }
     
     .quiz-status-card { 
         flex-direction: row; /* Keep row but wrap if needed */
