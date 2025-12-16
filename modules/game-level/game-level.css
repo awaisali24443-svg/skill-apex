@@ -103,8 +103,8 @@
 .new-quiz-content {
     flex-grow: 1; width: 100%; max-width: 900px; padding: 1.5rem;
     overflow-y: auto; margin: 0 auto; display: flex; flex-direction: column;
-    /* Ensure content scrolls behind footer */
-    padding-bottom: 100px;
+    /* Ensure content scrolls behind the taller footer */
+    padding-bottom: 180px; 
 }
 
 /* Status Card */
@@ -178,9 +178,9 @@
 /* --- UPDATED FOOTER LAYOUT --- */
 .new-quiz-footer {
     width: 100%; 
-    padding: 1rem 1.5rem;
-    /* Lifted Bottom Padding to move buttons up */
-    padding-bottom: calc(2.5rem + env(safe-area-inset-bottom)); 
+    padding: 1.2rem 1.5rem; /* Increased top/side padding */
+    /* Lifted Bottom Padding to move buttons significantly higher */
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom)); 
     
     background: var(--color-surface);
     /* Fade/Glass Effect for floating feel */
@@ -225,7 +225,7 @@
     /* Stack options vertically on mobile */
     .options-grid { grid-template-columns: 1fr; }
     
-    .new-quiz-content { padding: 1rem; padding-bottom: 120px; }
+    .new-quiz-content { padding: 1rem; padding-bottom: 180px; }
     
     .quiz-status-card { 
         flex-direction: row; /* Keep row but wrap if needed */
@@ -238,6 +238,12 @@
     #quiz-question-text { font-size: 1.1rem; margin-bottom: 1.5rem; }
     
     .new-quiz-footer { justify-content: space-between; }
+    
+    /* Make buttons slightly larger on mobile for easier reach */
+    .new-quiz-footer .btn {
+        padding: 1rem 1.5rem;
+    }
+    
     .footer-spacer { display: none; }
     
     .brand-text-header { display: none; } /* Hide brand text to save header space */

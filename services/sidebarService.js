@@ -83,15 +83,7 @@ export function renderSidebar(container) {
 
     const html = `
         <div class="sidebar-inner">
-            <!-- 1. Brand Header -->
-            <div class="sidebar-brand-section">
-                <span class="brand-text-collapsed">
-                    <svg class="icon" style="width:28px;height:28px;"><use href="assets/icons/feather-sprite.svg#layout"/></svg>
-                </span>
-                <div style="display:flex; flex-direction:column; justify-content:center;">
-                    <h1 class="brand-text-expanded" style="margin:0; font-size:1.4rem;">Skill Apex</h1>
-                </div>
-            </div>
+            <!-- Brand Header Removed -->
 
             <!-- 2. Profile Section -->
             <div class="sidebar-profile-header">

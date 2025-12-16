@@ -26,7 +26,7 @@ export function init(configService) {
 }
 
 /**
- * Plays a synthesized tone with an envelope.
+ * CORE SYNTH: Plays a tone with an envelope (Attack/Decay).
  */
 function playTone(freq, type, duration, startTime = 0, volume = 0.1) {
     const ctx = getContext();
@@ -37,10 +37,10 @@ function playTone(freq, type, duration, startTime = 0, volume = 0.1) {
     osc.type = type;
     osc.frequency.setValueAtTime(freq, now);
 
-    gain.gain.cancelScheduledValues(now);
+    // ADSR-like Envelope
     gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(volume, now + 0.01); // Fast attack
-    gain.gain.exponentialRampToValueAtTime(0.001, now + duration); // Smooth decay
+    gain.gain.linearRampToValueAtTime(volume, now + 0.01); // Fast Attack
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration); // Smooth Decay
 
     osc.connect(gain);
     gain.connect(ctx.destination);
@@ -50,108 +50,194 @@ function playTone(freq, type, duration, startTime = 0, volume = 0.1) {
 }
 
 /**
- * Plays a specific "Success Chime" (Duolingo-style two-tone ding).
- * Supports combo pitch shifting.
+ * UI CLICK: High-tech, crisp "Tick".
+ * Replaces the old low-fi pop.
  */
-function playSuccessChime(combo = 0) {
-    const ctx = getContext();
-    const now = ctx.currentTime;
-    
-    // Pitch shift calculation (Limit to max 2x speed for sanity)
-    const pitchMult = 1 + Math.min(combo * 0.1, 1.0); 
-    
-    // Tone 1: High C (C6) -> shifted
-    playTone(1046.50 * pitchMult, 'sine', 0.15, 0, 0.2); 
-    // Tone 2: High E (E6) -> shifted
-    playTone(1318.51 * pitchMult, 'sine', 0.3, 0.08, 0.2);
-    
-    // Add a subtle "sparkle" overtone
-    playTone(2093.00 * pitchMult, 'triangle', 0.1, 0.08, 0.05);
-}
-
-/**
- * Plays a "Soft Thud" for errors (Duolingo-style non-aggressive error).
- */
-function playErrorThud() {
-    const ctx = getContext();
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    
-    // Low frequency, dull sound
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(150, now);
-    osc.frequency.exponentialRampToValueAtTime(100, now + 0.3); // Pitch drop
-
-    gain.gain.setValueAtTime(0.2, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.35);
-}
-
-/**
- * Plays a "Pop" sound for clicks.
- */
-function playPop() {
+function playClick() {
     const ctx = getContext();
     const now = ctx.currentTime;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
     osc.type = 'sine';
+    // Very fast pitch drop for a percussive "click" feel
     osc.frequency.setValueAtTime(800, now);
-    osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+    osc.frequency.exponentialRampToValueAtTime(100, now + 0.05);
 
-    gain.gain.setValueAtTime(0.1, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+    // Short, snappy envelope
+    gain.gain.setValueAtTime(0.05, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
 
     osc.connect(gain);
     gain.connect(ctx.destination);
+    
     osc.start(now);
-    osc.stop(now + 0.15);
+    osc.stop(now + 0.06);
 }
 
 /**
- * Plays a fanfare for completing a level.
+ * SUCCESS: A rich "Glassy" Major Triad.
+ * Pitch shifts upwards with combo count.
+ */
+function playSuccessChime(combo = 0) {
+    const ctx = getContext();
+    const now = ctx.currentTime;
+    
+    // Pitch Logic: Root A (440) -> shifts up slightly with combo
+    // Cap pitch shift at ~1 octave (combo 10)
+    const shift = Math.min(combo, 12) * 100; 
+    const root = 880 + shift; 
+
+    // Chord Structure: Root, Major 3rd, Perfect 5th
+    const frequencies = [root, root * 1.25, root * 1.5];
+    
+    frequencies.forEach((f, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        // Sine for body, Triangle for sparkle on top note
+        osc.type = i === 2 ? 'triangle' : 'sine'; 
+        osc.frequency.setValueAtTime(f, now);
+        
+        gain.gain.setValueAtTime(0, now);
+        // Staggered attack for a strummed/arpeggiated feel
+        const attackTime = 0.02 + (i * 0.03);
+        gain.gain.linearRampToValueAtTime(0.08, now + attackTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6); // Long "ring" out
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.start(now);
+        osc.stop(now + 0.7);
+    });
+}
+
+/**
+ * ERROR: A soft, filtered "Thud".
+ * Less harsh than a buzzer, more like hitting a wall.
+ */
+function playErrorThud() {
+    const ctx = getContext();
+    const now = ctx.currentTime;
+    
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter(); // Filter for warmth
+    
+    // Sawtooth gives texture, Lowpass filter takes away the harsh buzz
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(150, now);
+    osc.frequency.exponentialRampToValueAtTime(50, now + 0.25); // Pitch dive
+
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(400, now); // Cut off highs
+
+    gain.gain.setValueAtTime(0.15, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.start(now);
+    osc.stop(now + 0.3);
+}
+
+/**
+ * LEVEL UP: A triumphant Major 7th Arpeggio.
+ * Fast, exciting, and rewarding.
  */
 function playFanfare() {
-    const now = 0;
-    // Fast Major Arpeggio
-    playTone(523.25, 'square', 0.2, now, 0.1);       // C5
-    playTone(659.25, 'square', 0.2, now + 0.1, 0.1); // E5
-    playTone(783.99, 'square', 0.2, now + 0.2, 0.1); // G5
-    playTone(1046.50, 'square', 0.4, now + 0.3, 0.15); // C6
+    // C Major 7 Arpeggio sequence (C5, E5, G5, B5, C6)
+    const notes = [523.25, 659.25, 783.99, 987.77, 1046.50];
+    
+    notes.forEach((freq, i) => {
+        // Fast sequence
+        playTone(freq, 'triangle', 0.4, i * 0.08, 0.1);
+    });
+    
+    // Final resolving chord swell
+    setTimeout(() => {
+        playTone(523.25, 'sine', 1.0, 0, 0.05); // Root
+        playTone(783.99, 'sine', 1.0, 0, 0.05); // 5th
+        playTone(1046.50, 'sine', 1.0, 0, 0.05); // Octave
+    }, 400);
 }
 
 /**
- * Plays a sound effect.
+ * START: A futuristic "Turbine Spool-up".
+ * Signals the system is online.
+ */
+function playStartSound() {
+    const ctx = getContext();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.type = 'sine';
+    // Frequency sweep up
+    osc.frequency.setValueAtTime(200, now);
+    osc.frequency.exponentialRampToValueAtTime(800, now + 0.3);
+    
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.1, now + 0.1);
+    gain.gain.linearRampToValueAtTime(0, now + 0.3);
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.start(now);
+    osc.stop(now + 0.35);
+}
+
+/**
+ * FLIP: A quick "Air Swish".
+ */
+function playFlipSound() {
+    const ctx = getContext();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(600, now);
+    osc.frequency.exponentialRampToValueAtTime(200, now + 0.15);
+    
+    gain.gain.setValueAtTime(0.05, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.2);
+}
+
+/**
+ * Main Public Interface
  * @param {'correct'|'incorrect'|'click'|'start'|'finish'|'hover'|'achievement'|'flip'} soundName
- * @param {number} [param=0] - Optional parameter (e.g. Combo count for 'correct')
+ * @param {number} [param=0] - Optional parameter (e.g. Combo count)
  */
 export function playSound(soundName, param = 0) {
-    // 1. Haptic Feedback (Always run if available)
+    // 1. Haptic Feedback (Always run if available and supported)
     if (navigator.vibrate) {
         try {
             switch (soundName) {
                 case 'click': navigator.vibrate(5); break; 
-                case 'correct': navigator.vibrate([50, 30, 50]); break; // Double bump
-                case 'incorrect': navigator.vibrate(100); break; // Single dull bump
+                case 'correct': navigator.vibrate([10, 30, 10]); break; // Crisp double tap
+                case 'incorrect': navigator.vibrate(50); break; // Heavy tap
                 case 'achievement': navigator.vibrate([50, 50, 50, 50, 100]); break;
-                case 'finish': navigator.vibrate([50, 50, 100]); break;
+                case 'finish': navigator.vibrate([30, 30, 50]); break;
             }
         } catch(e) {}
     }
 
-    // 2. Audio Feedback
+    // 2. Audio Feedback Logic
     if (!configSvc) return; // Safety check
     const { enableSound } = configSvc.getConfig();
     if (!enableSound) return;
 
     const ctx = getContext();
-    
     // Ensure context is running (browsers auto-suspend it until interaction)
     if (ctx.state === 'suspended') {
         ctx.resume().catch(() => {});
@@ -159,12 +245,12 @@ export function playSound(soundName, param = 0) {
 
     switch (soundName) {
         case 'click':
-            playPop();
+            playClick();
             break;
 
         case 'hover':
-            // Extremely subtle tick
-            playTone(1200, 'sine', 0.01, 0, 0.02);
+            // Extremely subtle high-pitch tick for hover
+            playTone(1800, 'sine', 0.02, 0, 0.015);
             break;
 
         case 'correct':
@@ -176,9 +262,7 @@ export function playSound(soundName, param = 0) {
             break;
 
         case 'start':
-            // 'Ready' swoosh
-            playTone(400, 'sine', 0.3, 0, 0.1);
-            playTone(600, 'sine', 0.3, 0.1, 0.1);
+            playStartSound();
             break;
 
         case 'finish':
@@ -187,18 +271,7 @@ export function playSound(soundName, param = 0) {
             break;
 
         case 'flip':
-            // Paper-like swish
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            const now = ctx.currentTime;
-            osc.frequency.setValueAtTime(300, now);
-            osc.frequency.linearRampToValueAtTime(600, now + 0.1);
-            gain.gain.setValueAtTime(0.05, now);
-            gain.gain.linearRampToValueAtTime(0, now + 0.1);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start(now);
-            osc.stop(now + 0.15);
+            playFlipSound();
             break;
     }
 }
