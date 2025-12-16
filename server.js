@@ -14,106 +14,58 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // --- API KEY SETUP ---
-// Ensure we catch the key from multiple possible env vars and trim whitespace
 const API_KEY = (process.env.API_KEY || process.env.GEMINI_API_KEY || "").trim();
 
 console.log("--- SERVER DIAGNOSTICS ---");
 if (API_KEY) {
     console.log(`✅ AI Key Detected: ${API_KEY.substring(0, 4)}... (Length: ${API_KEY.length})`);
     if (API_KEY.startsWith('hf_')) {
-        console.warn("⚠️ CRITICAL WARNING: The detected API Key appears to be a Hugging Face key (starts with 'hf_'). This application requires a Google Gemini API Key (usually starts with 'AIza'). The Aural module will likely fail.");
+        console.warn("⚠️ CRITICAL WARNING: Hugging Face key detected. This app requires Google Gemini.");
     }
 } else {
-    console.error("❌ CRITICAL: NO API KEY FOUND. Quizzes will not generate.");
+    console.error("❌ CRITICAL: NO API KEY FOUND. Server running in simulated mode.");
 }
 
 const PORT = process.env.PORT || 3000;
 let prebakedLevelsCache = {};
 
-// Load Prebaked Data (Robust)
+// Load Prebaked Data
 (async () => {
     try {
         const dataPath = path.join(__dirname, 'data', 'prebaked_levels.json');
-        console.log(`Loading prebaked data from: ${dataPath}`);
         const data = await fs.readFile(dataPath, 'utf-8');
         prebakedLevelsCache = JSON.parse(data);
-        console.log(`✅ Prebaked levels loaded. Keys: ${Object.keys(prebakedLevelsCache).length}`);
+        console.log(`✅ Prebaked levels loaded.`);
     } catch (e) { 
-        console.error("⚠️ Failed to load prebaked_levels.json:", e.message);
-        prebakedLevelsCache = {}; // Ensure defined
+        prebakedLevelsCache = {}; 
     }
 })();
 
-// --- SYSTEM INSTRUCTION (THE BRAIN) ---
+// --- SYSTEM INSTRUCTION ---
 const SYSTEM_INSTRUCTION = `
-ROLE & IDENTITY
-You are an elite educational intelligence engine designed for live demonstrations, public expos, and first-time users.
-Your behavior must always feel intelligent, calm, adaptive, and helpful.
-You are not a chatbot. You are a learning decision-maker.
-
-CORE PRINCIPLE (NON-NEGOTIABLE)
-Never generate content immediately. Always THINK FIRST.
-Before responding, silently perform:
-1. Topic analysis
-2. Feasibility evaluation
-3. Output mode decision
-4. Quality check
-
-STEP 1 — TOPIC FEASIBILITY ANALYSIS
-Determine if the topic is Learnable, Testable, Structured, or Informational only.
-
-STEP 2 — OUTPUT MODE RULES
-Classify into EXACTLY ONE mode, but handle the JSON output structure strictly as defined below:
-
-MODE 1: Full Learning Journey + Quiz
-- Use when: Topic has clear progression, concepts can be tested meaningfully.
-- Output JSON Key: "questions"
-
-MODE 2: Lesson / Concept Explanation
-- Use when: Topic is specific, no progression needed, user wants understanding not assessment.
-- Output JSON Key: "lesson"
-
-MODE 3: Graceful Redirection / Informational
-- Use when: Topic is unclear, not meaningful, or purely factual (time, weather).
-- Output JSON Key: "error" (Provide a helpful message in this field)
-
-STEP 3 — CONTENT QUALITY RULES
-- Be engaging, not textbook-like.
-- Be short and clear (Expo visitors have low patience).
-- Use examples and analogies.
-- Avoid unnecessary jargon.
-
-STEP 4 — QUIZ INTELLIGENCE RULES
-- Questions must match lesson content directly.
-- Be unambiguous.
-- Difficulty must match the level.
-
-TECHNICAL REQUIREMENT (CRITICAL)
-You must **ALWAYS** return valid JSON. Do not include markdown code blocks (like \`\`\`json). Just the raw JSON object.
+You are an elite educational intelligence engine.
+Your task is to generate structured learning content in strict JSON format.
+1. Analyze the user's topic.
+2. If the topic is valid, generate the requested JSON.
+3. If the topic is nonsense, generate a polite JSON error.
+4. IMPORTANT: Do not include markdown formatting (like \`\`\`json) in your response. Return ONLY the raw JSON string.
 `;
 
 // --- JSON EXTRACTION ENGINE (ROBUST) ---
 function extractAndParseJSON(text) {
     if (!text) return null;
     let cleanText = text.trim();
-
-    // 1. Try direct parse
-    try { return JSON.parse(cleanText); } catch (e) {}
-
-    // 2. Remove Markdown Code Blocks (```json ... ``` or just ``` ... ```)
-    cleanText = cleanText.replace(/```json/gi, '').replace(/```/g, '');
-    try { return JSON.parse(cleanText); } catch (e) {}
-
-    // 3. Hunter-Seeker: Find the outermost { }
-    const firstOpen = cleanText.indexOf('{');
-    const lastClose = cleanText.lastIndexOf('}');
+    // Remove Markdown Code Blocks
+    cleanText = cleanText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/, '');
     
-    if (firstOpen !== -1 && lastClose !== -1 && lastClose > firstOpen) {
-        const jsonCandidate = cleanText.substring(firstOpen, lastClose + 1);
-        try { return JSON.parse(jsonCandidate); } catch (e) {}
+    try { return JSON.parse(cleanText); } catch (e) {
+        // Hunter-Seeker: Find outermost brackets
+        const firstOpen = cleanText.indexOf('{');
+        const lastClose = cleanText.lastIndexOf('}');
+        if (firstOpen !== -1 && lastClose !== -1) {
+            try { return JSON.parse(cleanText.substring(firstOpen, lastClose + 1)); } catch (e2) {}
+        }
     }
-
-    console.error("❌ JSON PARSE FAILED. Raw Output:", text.substring(0, 100) + "...");
     return null;
 }
 
@@ -121,8 +73,6 @@ function extractAndParseJSON(text) {
 let ai;
 if (API_KEY && !API_KEY.startsWith('hf_')) {
     ai = new GoogleGenAI({ apiKey: API_KEY });
-} else {
-    console.warn("Server running in Fallback/Offline mode due to missing or invalid Gemini Key.");
 }
 
 // --- FALLBACK DATA ---
@@ -153,29 +103,47 @@ const FALLBACK = {
     journey: (topic) => ({ topicName: topic, totalLevels: 10, description: "Generated offline due to connection issues." })
 };
 
-// --- GENERATION HANDLERS ---
-
-async function generateWithFallback(callFn, fallbackFn, label) {
+// --- DUAL-ENGINE GENERATION HANDLER ---
+async function generateWithFallback(contents, config, fallbackFn, label) {
     if (!ai) {
-        console.warn(`[${label}] No API Key available. Using fallback.`);
+        console.warn(`[${label}] No API Key. Using fallback.`);
         return fallbackFn();
     }
+
+    // 1. Try Primary Model (Gemini 3 Pro - Smarter)
     try {
-        console.log(`[${label}] Calling Gemini API...`);
-        // UPGRADED TO GEMINI 3 PRO PREVIEW FOR SUPERIOR REASONING
-        const response = await callFn('gemini-3-pro-preview'); 
+        console.log(`[${label}] Trying Engine A (Gemini 3 Pro)...`);
+        const response = await ai.models.generateContent({
+            model: 'gemini-3-pro-preview',
+            contents: contents,
+            config: { ...config, responseMimeType: 'application/json' }
+        });
+        
         const data = extractAndParseJSON(response.text);
-        if (data) {
-            console.log(`[${label}] ✅ Success.`);
-            return data;
-        } else {
-            console.warn(`[${label}] ⚠️ Valid JSON not found in response.`);
-            return fallbackFn();
+        if (data) return data;
+        throw new Error("Invalid JSON from Pro");
+    } catch (errPro) {
+        console.warn(`[${label}] Engine A Failed: ${errPro.message}. Switching to Engine B...`);
+        
+        // 2. Try Secondary Model (Gemini 2.5 Flash - Faster/More Stable)
+        try {
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-flash',
+                contents: contents,
+                config: { ...config, responseMimeType: 'application/json' }
+            });
+            
+            const data = extractAndParseJSON(response.text);
+            if (data) {
+                console.log(`[${label}] ✅ Engine B Success.`);
+                return data;
+            }
+        } catch (errFlash) {
+            console.error(`[${label}] ❌ All Engines Failed.`, errFlash.message);
         }
-    } catch (error) {
-        console.error(`[${label}] ❌ AI Generation Error:`, error.message);
-        return fallbackFn();
     }
+
+    return fallbackFn();
 }
 
 // --- EXPRESS APP ---
@@ -203,17 +171,9 @@ app.post('/api/debug-status', (req, res) => {
 
 app.post('/api/generate-journey-plan', async (req, res) => {
     const { topic } = req.body;
-    
-    // Journeys are always generated via API as they are dynamic
     const result = await generateWithFallback(
-        (model) => ai.models.generateContent({
-            model: model,
-            contents: `Create a learning journey for "${topic}". JSON only: { "topicName": string, "totalLevels": number (10-50), "description": string }`,
-            config: { 
-                responseMimeType: 'application/json',
-                systemInstruction: SYSTEM_INSTRUCTION
-            }
-        }),
+        `Create a learning journey for "${topic}". JSON only: { "topicName": string, "totalLevels": number (between 10 and 50), "description": string }`,
+        { systemInstruction: SYSTEM_INSTRUCTION },
         () => FALLBACK.journey(topic),
         "JOURNEY_PLAN"
     );
@@ -222,25 +182,12 @@ app.post('/api/generate-journey-plan', async (req, res) => {
 
 app.post('/api/generate-level-questions', async (req, res) => {
     const { topic, level } = req.body;
-    
-    // 1. CHECK JSON CACHE (Prebaked Data)
     if (prebakedLevelsCache[topic]) {
-        console.log(`[CACHE HIT] Found prebaked data for: ${topic}`);
         return res.json({ questions: prebakedLevelsCache[topic].questions });
     }
-
-    // 2. CACHE MISS -> CALL API KEY IMMEDIATELY
-    console.log(`[CACHE MISS] Generating fresh questions for: ${topic}`);
-    
     const result = await generateWithFallback(
-        (model) => ai.models.generateContent({
-            model: model,
-            contents: `Generate 3 quiz questions for ${topic} (Level ${level}). JSON format: { "questions": [ { "question": string, "options": [string, string, string, string], "correctAnswerIndex": number, "explanation": string } ] }`,
-            config: { 
-                responseMimeType: 'application/json',
-                systemInstruction: SYSTEM_INSTRUCTION
-            }
-        }),
+        `Generate 3 quiz questions for ${topic} (Level ${level}). JSON format: { "questions": [ { "question": string, "options": [string, string, string, string], "correctAnswerIndex": number, "explanation": string } ] }`,
+        { systemInstruction: SYSTEM_INSTRUCTION },
         () => FALLBACK.questions(topic),
         "QUIZ_GEN"
     );
@@ -249,25 +196,12 @@ app.post('/api/generate-level-questions', async (req, res) => {
 
 app.post('/api/generate-level-lesson', async (req, res) => {
     const { topic, level } = req.body;
-    
-    // 1. CHECK JSON CACHE
     if (prebakedLevelsCache[topic]) {
-        console.log(`[CACHE HIT] Found prebaked lesson for: ${topic}`);
         return res.json({ lesson: prebakedLevelsCache[topic].lesson });
     }
-
-    // 2. CACHE MISS -> CALL API KEY IMMEDIATELY
-    console.log(`[CACHE MISS] Generating fresh lesson for: ${topic}`);
-
     const result = await generateWithFallback(
-        (model) => ai.models.generateContent({
-            model: model,
-            contents: `Write a short, fun lesson for ${topic} (Level ${level}). Max 100 words. JSON: { "lesson": "markdown text" }`,
-            config: { 
-                responseMimeType: 'application/json',
-                systemInstruction: SYSTEM_INSTRUCTION
-            }
-        }),
+        `Write a short, engaging lesson for ${topic} (Level ${level}). Max 100 words. JSON: { "lesson": "markdown text" }`,
+        { systemInstruction: SYSTEM_INSTRUCTION },
         () => FALLBACK.lesson(topic),
         "LESSON_GEN"
     );
@@ -283,22 +217,14 @@ app.get('/api/topics', async (req, res) => {
     } catch { res.json([]); }
 });
 
-// New Endpoint for Generic File/Image to Journey
 app.post('/api/generate-journey-from-file', async (req, res) => {
     const { fileData, mimeType } = req.body;
-    
     const result = await generateWithFallback(
-        (model) => ai.models.generateContent({
-            model: model,
-            contents: [
-                { text: `Analyze this image/document. Identify the main topic and create a learning journey. JSON only: { "topicName": string, "totalLevels": number (10-50), "description": string }` },
-                { inlineData: { mimeType: mimeType, data: fileData } }
-            ],
-            config: { 
-                responseMimeType: 'application/json',
-                systemInstruction: SYSTEM_INSTRUCTION
-            }
-        }),
+        [
+            { text: `Analyze this image/document. Identify the main topic and create a learning journey. JSON only: { "topicName": string, "totalLevels": number (10-50), "description": string }` },
+            { inlineData: { mimeType: mimeType, data: fileData } }
+        ],
+        { systemInstruction: SYSTEM_INSTRUCTION },
         () => FALLBACK.journey("Analyzed Content"),
         "FILE_ANALYSIS"
     );
