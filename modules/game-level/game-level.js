@@ -33,6 +33,38 @@ let loadingTimeout = null;
 let keydownHandler = null;
 let autoAdvanceTimer = null; // New timer for auto-navigation
 
+// --- AI THINKING VISUALIZATION ---
+let thinkingInterval = null;
+const THINKING_STEPS = [
+    "Analyzing Topic Matrix...",
+    "Evaluating Skill Level...",
+    "Synthesizing Challenge...",
+    "Verifying Knowledge Facts...",
+    "Calibrating Difficulty..."
+];
+
+function startThinkingAnimation() {
+    const loadingTextEl = document.getElementById('loading-status-text');
+    if (!loadingTextEl) return;
+    
+    let stepIndex = 0;
+    loadingTextEl.textContent = THINKING_STEPS[0];
+    
+    if (thinkingInterval) clearInterval(thinkingInterval);
+    
+    thinkingInterval = setInterval(() => {
+        stepIndex = (stepIndex + 1) % THINKING_STEPS.length;
+        loadingTextEl.textContent = THINKING_STEPS[stepIndex];
+    }, 1500);
+}
+
+function stopThinkingAnimation() {
+    if (thinkingInterval) {
+        clearInterval(thinkingInterval);
+        thinkingInterval = null;
+    }
+}
+
 function switchState(targetStateId) {
     // 1. Hide all
     document.querySelectorAll('.game-level-state').forEach(s => {
@@ -63,15 +95,13 @@ async function startLevel() {
     }
     
     switchState('level-loading-state');
+    startThinkingAnimation(); // Start the AI visualization
     
-    const loadingTextEl = document.getElementById('loading-status-text');
-    if (loadingTextEl) loadingTextEl.textContent = `Initializing Level ${level}...`;
-
-    // SAFETY NET: Force fallback if API takes > 6 seconds
+    // SAFETY NET: Force fallback if API takes > 8 seconds (Increased for "Thinking" time)
     loadingTimeout = setTimeout(() => {
         console.warn("Level load timed out. Forcing fallback.");
         useFallbackData("Connection slow. Switching to offline data.");
-    }, 6000);
+    }, 8000);
     
     try {
         // 1. Try Cache First
@@ -79,6 +109,7 @@ async function startLevel() {
         if (cachedLevel && cachedLevel.questions && cachedLevel.questions.length > 0) {
             console.log("Loaded level from cache");
             clearTimeout(loadingTimeout);
+            stopThinkingAnimation(); // Stop animation on cache hit
             levelData = cachedLevel;
             processLevelData();
             return;
@@ -92,6 +123,7 @@ async function startLevel() {
         ]);
 
         clearTimeout(loadingTimeout);
+        stopThinkingAnimation(); // Stop animation on success
 
         // 3. Validate Data
         if (!questionsData || !questionsData.questions || questionsData.questions.length === 0) {
@@ -115,12 +147,14 @@ async function startLevel() {
 
     } catch (error) {
         clearTimeout(loadingTimeout);
+        stopThinkingAnimation(); // Stop animation on error
         console.error("Level Start Critical Error:", error);
         useFallbackData();
     }
 }
 
 function useFallbackData(msg = "Offline Mode Active") {
+    stopThinkingAnimation();
     showToast(msg, "info");
     
     // Hardcoded Fallback to ensure UI NEVER stays blank
@@ -531,6 +565,7 @@ export function init() {
     if(elements.skipBtn) elements.skipBtn.addEventListener('click', startQuiz);
     if(elements.cancelBtn) elements.cancelBtn.addEventListener('click', () => {
         clearTimeout(loadingTimeout);
+        stopThinkingAnimation();
         window.history.back();
     });
     
@@ -553,6 +588,7 @@ export function init() {
 export function destroy() {
     clearInterval(timerInterval);
     clearTimeout(loadingTimeout);
+    stopThinkingAnimation();
     if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer); // Cleanup logic for auto-advance
     if (keydownHandler) document.removeEventListener('keydown', keydownHandler);
 }

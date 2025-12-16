@@ -14,6 +14,15 @@ let prefetchQueue = [];
 let isPrefetching = false;
 let prefetchTimeout = null;
 
+// AI Thinking Visualization for Journey Creation
+let thinkingInterval = null;
+const JOURNEY_THINKING_STEPS = [
+    "Analyzing Concept...",
+    "Determining Feasibility...",
+    "Designing Curriculum...",
+    "Structuring Journey..."
+];
+
 // Available styles defined in CSS
 const STYLE_CLASSES = [
     'topic-programming', 
@@ -228,14 +237,31 @@ function setGeneratingState(isGenerating) {
 
     if (isGenerating) {
         generateBtn.disabled = true;
-        buttonText.textContent = 'Analyzing...'; // Generic Loading Text
         buttonIcon.innerHTML = `<div class="spinner" style="width: 16px; height: 16px; border-width: 2px;"></div>`;
         cameraBtn.disabled = true;
         input.disabled = true;
+        
+        // Start Thinking Animation
+        let stepIndex = 0;
+        buttonText.textContent = JOURNEY_THINKING_STEPS[0];
+        
+        if (thinkingInterval) clearInterval(thinkingInterval);
+        
+        thinkingInterval = setInterval(() => {
+            stepIndex = (stepIndex + 1) % JOURNEY_THINKING_STEPS.length;
+            buttonText.textContent = JOURNEY_THINKING_STEPS[stepIndex];
+        }, 1200);
+
     } else {
+        // Stop Thinking Animation
+        if (thinkingInterval) {
+            clearInterval(thinkingInterval);
+            thinkingInterval = null;
+        }
+
         generateBtn.disabled = false;
         buttonText.textContent = 'Generate';
-        buttonIcon.innerHTML = `<svg class="icon"><use href="/assets/icons/feather-sprite.svg#zap"/></svg>`;
+        buttonIcon.innerHTML = `<svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>`; 
         cameraBtn.disabled = false;
         input.disabled = false;
     }
@@ -392,6 +418,10 @@ export async function init() {
 
 export function destroy() {
     window.removeEventListener('journeys-updated', renderActiveJourneys);
+    if (thinkingInterval) {
+        clearInterval(thinkingInterval);
+        thinkingInterval = null;
+    }
     if (prefetchTimeout) {
         clearTimeout(prefetchTimeout);
         prefetchTimeout = null;

@@ -4,7 +4,7 @@ import 'dotenv/config';
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { GoogleGenAI, Type } from '@google/genai';
+import { GoogleGenAI } from '@google/genai';
 import rateLimit from 'express-rate-limit';
 import fs from 'fs/promises';
 import http from 'http';
@@ -40,6 +40,54 @@ let prebakedLevelsCache = {};
     }
 })();
 
+// --- SYSTEM INSTRUCTION (THE BRAIN) ---
+const SYSTEM_INSTRUCTION = `
+ROLE & IDENTITY
+You are an elite educational intelligence engine designed for live demonstrations, public expos, and first-time users.
+Your behavior must always feel intelligent, calm, adaptive, and helpful.
+You are not a chatbot. You are a learning decision-maker.
+
+CORE PRINCIPLE (NON-NEGOTIABLE)
+Never generate content immediately. Always THINK FIRST.
+Before responding, silently perform:
+1. Topic analysis
+2. Feasibility evaluation
+3. Output mode decision
+4. Quality check
+
+STEP 1 — TOPIC FEASIBILITY ANALYSIS
+Determine if the topic is Learnable, Testable, Structured, or Informational only.
+
+STEP 2 — OUTPUT MODE RULES
+Classify into EXACTLY ONE mode, but handle the JSON output structure strictly as defined below:
+
+MODE 1: Full Learning Journey + Quiz
+- Use when: Topic has clear progression, concepts can be tested meaningfully.
+- Output JSON Key: "questions"
+
+MODE 2: Lesson / Concept Explanation
+- Use when: Topic is specific, no progression needed, user wants understanding not assessment.
+- Output JSON Key: "lesson"
+
+MODE 3: Graceful Redirection / Informational
+- Use when: Topic is unclear, not meaningful, or purely factual (time, weather).
+- Output JSON Key: "error" (Provide a helpful message in this field)
+
+STEP 3 — CONTENT QUALITY RULES
+- Be engaging, not textbook-like.
+- Be short and clear (Expo visitors have low patience).
+- Use examples and analogies.
+- Avoid unnecessary jargon.
+
+STEP 4 — QUIZ INTELLIGENCE RULES
+- Questions must match lesson content directly.
+- Be unambiguous.
+- Difficulty must match the level.
+
+TECHNICAL REQUIREMENT (CRITICAL)
+You must **ALWAYS** return valid JSON. Do not include markdown code blocks (like \`\`\`json). Just the raw JSON object.
+`;
+
 // --- JSON EXTRACTION ENGINE (ROBUST) ---
 function extractAndParseJSON(text) {
     if (!text) return null;
@@ -58,14 +106,6 @@ function extractAndParseJSON(text) {
     
     if (firstOpen !== -1 && lastClose !== -1 && lastClose > firstOpen) {
         const jsonCandidate = cleanText.substring(firstOpen, lastClose + 1);
-        try { return JSON.parse(jsonCandidate); } catch (e) {}
-    }
-
-    // 4. Try Array format [ ]
-    const firstArr = cleanText.indexOf('[');
-    const lastArr = cleanText.lastIndexOf(']');
-    if (firstArr !== -1 && lastArr !== -1 && lastArr > firstArr) {
-        const jsonCandidate = cleanText.substring(firstArr, lastArr + 1);
         try { return JSON.parse(jsonCandidate); } catch (e) {}
     }
 
@@ -112,7 +152,7 @@ const FALLBACK = {
 async function generateWithFallback(callFn, fallbackFn) {
     if (!ai) return fallbackFn();
     try {
-        const response = await callFn('gemini-1.5-flash'); // Use stable model
+        const response = await callFn('gemini-2.5-flash'); // Use latest model for smarts
         const data = extractAndParseJSON(response.text);
         return data || fallbackFn();
     } catch (error) {
@@ -150,7 +190,10 @@ app.post('/api/generate-journey-plan', async (req, res) => {
         (model) => ai.models.generateContent({
             model: model,
             contents: `Create a learning journey for "${topic}". JSON only: { "topicName": string, "totalLevels": number (10-50), "description": string }`,
-            config: { responseMimeType: 'application/json' }
+            config: { 
+                responseMimeType: 'application/json',
+                systemInstruction: SYSTEM_INSTRUCTION
+            }
         }),
         () => FALLBACK.journey(topic)
     );
@@ -170,7 +213,10 @@ app.post('/api/generate-level-questions', async (req, res) => {
         (model) => ai.models.generateContent({
             model: model,
             contents: `Generate 3 quiz questions for ${topic} (Level ${level}). JSON format: { "questions": [ { "question": string, "options": [string, string, string, string], "correctAnswerIndex": number, "explanation": string } ] }`,
-            config: { responseMimeType: 'application/json' }
+            config: { 
+                responseMimeType: 'application/json',
+                systemInstruction: SYSTEM_INSTRUCTION
+            }
         }),
         () => FALLBACK.questions(topic)
     );
@@ -186,14 +232,16 @@ app.post('/api/generate-level-lesson', async (req, res) => {
         (model) => ai.models.generateContent({
             model: model,
             contents: `Write a short, fun lesson for ${topic} (Level ${level}). Max 100 words. JSON: { "lesson": "markdown text" }`,
-            config: { responseMimeType: 'application/json' }
+            config: { 
+                responseMimeType: 'application/json',
+                systemInstruction: SYSTEM_INSTRUCTION
+            }
         }),
         () => FALLBACK.lesson(topic)
     );
     res.json(result);
 });
 
-// Mock other endpoints to prevent 404s
 app.post('/api/generate-curriculum-outline', (req, res) => res.json({ chapters: ["Basics", "Advanced", "Mastery"] }));
 app.post('/api/generate-hint', (req, res) => res.json({ hint: "Think about the core principles." }));
 app.get('/api/topics', async (req, res) => {
@@ -201,6 +249,27 @@ app.get('/api/topics', async (req, res) => {
         const data = await fs.readFile(path.join(__dirname, 'data', 'topics.json'), 'utf-8');
         res.json(JSON.parse(data));
     } catch { res.json([]); }
+});
+
+// New Endpoint for Generic File/Image to Journey
+app.post('/api/generate-journey-from-file', async (req, res) => {
+    const { fileData, mimeType } = req.body;
+    
+    const result = await generateWithFallback(
+        (model) => ai.models.generateContent({
+            model: model,
+            contents: [
+                { text: `Analyze this image/document. Identify the main topic and create a learning journey. JSON only: { "topicName": string, "totalLevels": number (10-50), "description": string }` },
+                { inlineData: { mimeType: mimeType, data: fileData } }
+            ],
+            config: { 
+                responseMimeType: 'application/json',
+                systemInstruction: SYSTEM_INSTRUCTION
+            }
+        }),
+        () => FALLBACK.journey("Analyzed Content")
+    );
+    res.json(result);
 });
 
 server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
