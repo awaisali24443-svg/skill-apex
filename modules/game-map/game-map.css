@@ -56,97 +56,157 @@
 .chapter-navigator .btn { padding: 0.6rem; }
 .chapter-navigator .btn .icon { width: 1.2rem; height: 1.2rem; }
 
-/* --- HEX GRID --- */
+/* --- CARD GRID LAYOUT --- */
 .map-grid {
     flex-grow: 1; overflow-y: auto;
     padding: var(--space-lg);
-    margin: 0 calc(-1 * var(--page-padding));
-    display: grid; gap: var(--space-lg);
-    /* Tighter packing for hexes */
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    /* Wider grid columns for card layout */
+    display: grid; 
+    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    align-content: start;
 }
 
-.map-grid .skeleton { background-color: var(--color-surface); opacity: 0.5; }
+/* Skeleton Loading State for Grid */
+.map-grid .skeleton { 
+    background-color: var(--color-surface); 
+    opacity: 0.5; 
+    border-radius: 16px; /* Match card radius */
+    aspect-ratio: 16/10; /* Match card ratio */
+}
 
-/* HEXAGON NODE */
+/* --- LEVEL CARD DESIGN --- */
 .level-card {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    aspect-ratio: 1 / 1; text-align: center; cursor: pointer;
-    transition: all var(--transition-speed-fast) ease;
-    animation: node-appear 0.5s ease-out forwards;
-    opacity: 0; padding: var(--space-sm);
-    will-change: transform, opacity;
+    /* Landscape aspect ratio for a professional card look */
+    min-height: 140px; 
+    text-align: center; cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    animation: fadeSlideIn 0.5s ease-out forwards;
+    opacity: 0; 
+    padding: 1.5rem;
+    will-change: transform, box-shadow;
     
-    /* Hexagon Shape */
-    clip-path: polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%);
+    /* Card Styling */
     background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-card);
     position: relative;
-    /* Shadow simulation since clip-path cuts box-shadow */
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+    overflow: hidden;
 }
 
-.level-card::before {
-    content: ''; position: absolute; inset: 2px;
-    clip-path: polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%);
-    background: var(--color-surface); z-index: -1;
-    border: 2px solid transparent; /* Placeholder for status border logic if achievable */
+/* Hover Effect */
+.level-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--color-primary-transparent);
 }
 
-@keyframes node-appear {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
+/* Level Number Typography */
 .level-number {
-    font-size: 1.8rem; font-weight: 700; font-family: var(--font-family-heading);
-    color: var(--color-text); line-height: 1.1; z-index: 2;
+    font-size: 2.5rem; 
+    font-weight: 800; 
+    font-family: var(--font-family-heading);
+    color: var(--color-text); 
+    line-height: 1; 
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 2;
 }
 
+/* Level Status Text */
 .level-status {
-    font-size: 0.7rem; color: var(--color-text-secondary); margin: 0; z-index: 2; font-family: var(--font-family-mono);
+    font-size: 0.75rem; 
+    text-transform: uppercase; 
+    letter-spacing: 2px;
+    font-weight: 600;
+    color: var(--color-text-secondary); 
+    margin: 0; 
+    z-index: 2; 
+    font-family: var(--font-family-mono);
 }
 
-/* --- Node States --- */
+/* --- STATES --- */
+
+/* 1. Locked State */
 .level-card.locked {
-    cursor: not-allowed; background-color: var(--color-surface-hover); opacity: 0.6;
-    filter: grayscale(1);
+    cursor: not-allowed; 
+    opacity: 0.5;
+    background: var(--color-background);
+    box-shadow: none;
+    border-color: var(--color-border);
 }
+.level-card.locked .level-number { color: var(--color-text-secondary); }
+.level-card.locked:hover { transform: none; }
 
+/* 2. Completed State */
 .level-card.completed {
-    background-color: var(--color-success-bg);
+    border-color: var(--color-success-border);
+    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-success-bg) 100%);
 }
 .level-card.completed .level-number { color: var(--color-success); }
+.level-card.completed .level-status { color: var(--color-success); }
 
+/* 3. Current (Available) State */
 .level-card.current {
-    background-color: var(--color-primary-transparent);
-    filter: drop-shadow(0 0 8px var(--color-primary));
+    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-primary-transparent) 100%);
+    border: 1px solid var(--color-primary);
+    box-shadow: 0 8px 25px var(--color-primary-transparent);
+    transform: scale(1.02);
 }
-.level-card.current .level-status { color: var(--color-primary); font-weight: 600; }
-.level-card.current:hover { transform: scale(1.1); }
+.level-card.current .level-number { color: var(--color-primary); }
+.level-card.current .level-status { color: var(--color-primary); opacity: 1; }
+.level-card.current:hover {
+    transform: scale(1.05) translateY(-5px);
+    box-shadow: 0 12px 35px var(--color-primary-transparent-heavy);
+}
 
-/* --- Boss Battle Card Styles --- */
+/* 4. Boss Level Styling */
 .level-card.boss {
-    background-color: var(--color-error-bg);
-    filter: drop-shadow(0 0 5px var(--color-error));
+    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-error-bg) 100%);
+    border-color: var(--color-error-border);
 }
-.level-card.current.boss {
-    animation: node-appear 0.5s ease-out forwards, boss-pulse 2s infinite;
+.level-card.boss .level-number { color: var(--color-error); }
+.level-card.boss .level-number .icon { width: 1.5em; height: 1.5em; stroke-width: 1.5; }
+.level-card.boss .level-status { color: var(--color-error); }
+
+.level-card.boss.current {
+    border: 2px solid var(--color-error);
+    box-shadow: 0 0 20px var(--color-error-bg);
+    animation: fadeSlideIn 0.5s ease-out forwards, boss-pulse 2s infinite;
 }
 
 @keyframes boss-pulse {
-    0% { filter: drop-shadow(0 0 5px var(--color-error)); }
-    50% { filter: drop-shadow(0 0 15px var(--color-error)); transform: scale(1.05); }
-    100% { filter: drop-shadow(0 0 5px var(--color-error)); }
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
 
-.level-card.boss .level-number { color: var(--color-error); }
-.level-card.boss .level-number .icon { width: 1.5em; height: 1.5em; }
-.level-card.boss .level-status { color: var(--color-error); }
-
+/* Footer Styling */
 .game-map-footer {
     display: flex; justify-content: space-between; align-items: center;
     flex-shrink: 0; padding-top: var(--space-lg); margin-top: var(--space-lg);
     border-top: 1px solid var(--color-border);
     background: var(--color-surface); /* Footer bg to cover scroll */
-    padding: 1rem; border-radius: var(--border-radius) var(--border-radius) 0 0;
+    padding: 1rem; 
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    backdrop-filter: blur(20px);
+}
+
+/* Mobile Adjustments */
+@media (max-width: 600px) {
+    .map-grid {
+        grid-template-columns: 1fr; /* Full width cards on mobile */
+        gap: 16px;
+    }
+    .level-card {
+        flex-direction: row; /* Horizontal layout on mobile */
+        justify-content: space-between;
+        min-height: 80px;
+        padding: 1rem 1.5rem;
+        text-align: left;
+    }
+    .level-number { margin-bottom: 0; margin-right: 1rem; font-size: 2rem; }
+    .level-status { text-align: right; }
 }
