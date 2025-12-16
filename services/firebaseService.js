@@ -65,18 +65,24 @@ let currentUser = null;
 let authStateCallback = null;
 let authInitialized = false;
 
-// --- MOCK DATA (Global Elite) ---
+// --- MOCK DATA (Global Elite - Populated for Demo) ---
 const MOCK_LEADERBOARD = [
     { id: 'm1', username: 'Arslan Ash', level: 99, xp: 98500, isMock: true }, 
-    { id: 'm2', username: 'Sumail Hassan', level: 96, xp: 94200, isMock: true }, 
-    { id: 'm3', username: 'Sarah Connor', level: 91, xp: 88000, isMock: true },
+    { id: 'm2', username: 'Sarah Connor', level: 91, xp: 88000, isMock: true },
+    { id: 'm3', username: 'Zero Cool', level: 88, xp: 85400, isMock: true },
     { id: 'm4', username: 'Hamza Ali', level: 85, xp: 81500, isMock: true },
-    { id: 'm5', username: 'Chen Wei', level: 30, xp: 32000, isMock: true },
-    { id: 'm6', username: 'Ayesha Khan', level: 22, xp: 22400, isMock: true }, 
-    { id: 'm7', username: 'John Wick', level: 18, xp: 18000, isMock: true },
-    { id: 'm8', username: 'Bilal Ahmed', level: 15, xp: 15000, isMock: true },
-    { id: 'm9', username: 'Zara Sheikh', level: 12, xp: 12500, isMock: true },
-    { id: 'm10', username: 'Dev Patel', level: 10, xp: 10000, isMock: true }
+    { id: 'm5', username: 'DeepBlue', level: 76, xp: 72000, isMock: true },
+    { id: 'm6', username: 'Neo', level: 72, xp: 68500, isMock: true },
+    { id: 'm7', username: 'Trinity', level: 65, xp: 62000, isMock: true },
+    { id: 'm8', username: 'Chen Wei', level: 50, xp: 48000, isMock: true },
+    { id: 'm9', username: 'Ayesha Khan', level: 45, xp: 43200, isMock: true }, 
+    { id: 'm10', username: 'John Wick', level: 42, xp: 40500, isMock: true },
+    { id: 'm11', username: 'Maverick', level: 38, xp: 36000, isMock: true },
+    { id: 'm12', username: 'Ripley', level: 33, xp: 31000, isMock: true },
+    { id: 'm13', username: 'Bilal Ahmed', level: 25, xp: 24000, isMock: true },
+    { id: 'm14', username: 'Zara Sheikh', level: 18, xp: 17500, isMock: true },
+    { id: 'm15', username: 'Dev Patel', level: 10, xp: 9000, isMock: true },
+    { id: 'm16', username: 'Cyber Wolf', level: 5, xp: 4500, isMock: true }
 ];
 
 // --- Helper for Offline Mode (LocalStorage Persistence) ---
@@ -408,7 +414,8 @@ async function getLeaderboard(limitCount = 20) {
         }
     }
 
-    if (results.length < 10) {
+    // Always merge in mocks to ensure list is populated, especially for guest/offline mode
+    if (results.length < 15) {
         const existingIds = new Set(results.map(r => r.id));
         const needed = limitCount - results.length;
         const mockToAdd = MOCK_LEADERBOARD.filter(m => !existingIds.has(m.id)).slice(0, needed);

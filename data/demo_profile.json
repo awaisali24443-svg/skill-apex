@@ -1,15 +1,15 @@
 
 {
   "gamification": {
-    "level": 24,
-    "xp": 24800,
-    "currentStreak": 21,
-    "totalQuizzesCompleted": 66,
-    "totalPerfectQuizzes": 43,
-    "questionsSaved": 29,
-    "fastAnswersCount": 155,
-    "nightOwlSessions": 12,
-    "totalAuralMinutes": 45
+    "level": 98,
+    "xp": 96500,
+    "currentStreak": 42,
+    "totalQuizzesCompleted": 340,
+    "totalPerfectQuizzes": 150,
+    "questionsSaved": 85,
+    "fastAnswersCount": 850,
+    "nightOwlSessions": 45,
+    "totalAuralMinutes": 120
   },
   "journeys": [
     {

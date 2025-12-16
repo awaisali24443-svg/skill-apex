@@ -1,12 +1,12 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 8.1.0 (Expo Edition)
+ * @version 8.1.1 (Expo Edition - Cache Bust)
  *
  * This service worker implements a robust offline-first caching strategy.
  */
 
-const CACHE_NAME = 'skill-apex-v8.1.0-expo-edition';
+const CACHE_NAME = 'skill-apex-v8.1.1-expo-update';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [
@@ -17,6 +17,7 @@ const APP_SHELL_URLS = [
     'manifest.json',
     'data/topics.json',
     'data/prebaked_levels.json',
+    'data/demo_profile.json', /* Ensure profile data is cached */
     'global/global.css',
     'global/global.js',
     'themes/theme-dark-cyber.css',
@@ -70,6 +71,7 @@ const APP_SHELL_URLS = [
     'modules/profile/profile.html', 'modules/profile/profile.css', 'modules/profile/profile.js',
     'modules/quiz-review/quiz-review.html', 'modules/quiz-review/quiz-review.css', 'modules/quiz-review/quiz-review.js',
     'modules/report/report.html', 'modules/report/report.css', 'modules/report/report.js',
+    'modules/leaderboard/leaderboard.html', 'modules/leaderboard/leaderboard.css', 'modules/leaderboard/leaderboard.js'
 ];
 
 const staleWhileRevalidate = async (cacheName, request) => {
