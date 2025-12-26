@@ -30,8 +30,8 @@ const ACHIEVEMENTS = {
         icon: "book",
         metric: (s) => s.totalQuizzesCompleted,
         tiers: [
-            { name: 'Bronze', target: 10, color: '#cd7f32' },
-            { name: 'Silver', target: 50, color: '#c0c0c0' },
+            { name: 'Bronze', target: 5, color: '#cd7f32' },
+            { name: 'Silver', target: 25, color: '#c0c0c0' },
             { name: 'Gold', target: 100, color: '#ffd700' },
             { name: 'Diamond', target: 500, color: '#b9f2ff' }
         ]
@@ -48,7 +48,50 @@ const ACHIEVEMENTS = {
             { name: 'Diamond', target: 100, color: '#b9f2ff' }
         ]
     },
-    // ... (Other achievements remain same)
+    speed_demon: {
+        name: "Speed Demon",
+        description: "Answer questions in under 5 seconds.",
+        icon: "clock",
+        metric: (s) => s.fastAnswersCount || 0,
+        tiers: [
+            { name: 'Bronze', target: 10, color: '#cd7f32' },
+            { name: 'Silver', target: 50, color: '#c0c0c0' },
+            { name: 'Gold', target: 200, color: '#ffd700' }
+        ]
+    },
+    night_owl: {
+        name: "Night Owl",
+        description: "Study during late hours (10PM - 4AM).",
+        icon: "moon",
+        metric: (s) => s.nightOwlSessions || 0,
+        tiers: [
+            { name: 'Bronze', target: 5, color: '#cd7f32' },
+            { name: 'Silver', target: 20, color: '#c0c0c0' },
+            { name: 'Gold', target: 50, color: '#ffd700' }
+        ]
+    },
+    audiophile: {
+        name: "Audiophile",
+        description: "Minutes spent in Aural Tutor mode.",
+        icon: "headphones",
+        metric: (s) => s.totalAuralMinutes || 0,
+        tiers: [
+            { name: 'Bronze', target: 15, color: '#cd7f32' },
+            { name: 'Silver', target: 60, color: '#c0c0c0' },
+            { name: 'Gold', target: 300, color: '#ffd700' }
+        ]
+    },
+    polymath: {
+        name: "Polymath",
+        description: "Unique topics explored.",
+        icon: "globe",
+        metric: (s) => s.uniqueTopicsPlayed?.length || 0,
+        tiers: [
+            { name: 'Bronze', target: 3, color: '#cd7f32' },
+            { name: 'Silver', target: 8, color: '#c0c0c0' },
+            { name: 'Gold', target: 20, color: '#ffd700' }
+        ]
+    }
 };
 
 const QUEST_TYPES = [
@@ -64,21 +107,8 @@ async function loadStats() {
     try {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.GAMIFICATION);
         const storedData = stored ? JSON.parse(stored) : {};
-        
-        // Merge
         stats = { ...defaultStats, ...storedData };
         
-        // --- MIGRATION: Fix Level 42 (Old Demo) to Level 21 (New Request) ---
-        // If user is at Level 42 with roughly 40k XP, reset them to Level 21.
-        if (stats.level === 42) {
-            console.log("Migrating outdated Level 42 profile to Level 21.");
-            stats.level = 21;
-            stats.xp = 24500;
-            stats.currentStreak = 21;
-            saveStatsLocal();
-        }
-        // -------------------------------------------------------------------
-
         checkDailyQuests();
 
         if (navigator.onLine && !isGuest()) {
@@ -86,7 +116,6 @@ async function loadStats() {
             if (userId) {
                 const docRef = doc(db, "users", userId, "data", "gamification");
                 const docSnap = await getDoc(docRef);
-                
                 if (docSnap.exists()) {
                     const remoteStats = docSnap.data();
                     if (remoteStats.xp > stats.xp) {
@@ -140,21 +169,6 @@ function checkDailyQuests() {
         stats.dailyChallenge = { date: today, completed: false };
         saveStats();
     }
-}
-
-export function isDailyChallengeCompleted() {
-    return stats.dailyChallenge && stats.dailyChallenge.completed;
-}
-
-export function completeDailyChallenge() {
-    if (!stats.dailyChallenge.completed) {
-        stats.dailyChallenge.completed = true;
-        stats.xp += 200; 
-        showToast("Daily Challenge Complete! +200 XP", "success");
-        saveStats();
-        return true;
-    }
-    return false;
 }
 
 export function checkQuestProgress(action) {
@@ -234,22 +248,17 @@ function isSameDay(date1, date2) {
 function updateStreak(today) {
     if (!stats.lastQuizDate) {
         stats.currentStreak = 1;
-        showToast(`Quiz streak started! Keep it up! 🔥`);
         return;
     }
-
     const lastDate = new Date(stats.lastQuizDate);
     if (isSameDay(today, lastDate)) return;
-    
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
-
     if (isSameDay(lastDate, yesterday)) {
         stats.currentStreak++;
         showToast(`Streak Extended: ${stats.currentStreak} Days! 🔥`);
     } else {
         stats.currentStreak = 1;
-        showToast(`Quiz streak started! Keep it up! 🔥`);
     }
 }
 
@@ -300,7 +309,6 @@ export function updateStatsOnQuizCompletion(quizAttempt) {
 export function getAchievementsProgress() {
     return Object.entries(ACHIEVEMENTS).map(([id, data]) => {
         const currentValue = data.metric(stats) || 0;
-        
         let currentTier = null;
         let nextTier = data.tiers[0];
         let progress = 0;
