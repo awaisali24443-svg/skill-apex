@@ -1,12 +1,13 @@
 
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 9.0.0 (Data & AI Fix Edition)
- *
- * This service worker implements a robust offline-first caching strategy.
+ * @version 10.0.0 (Strategic Empowerment Edition)
+ * 
+ * Optimized for high-reliability in low-bandwidth environments.
+ * Implements a robust offline-first caching strategy for educational continuity.
  */
 
-const CACHE_NAME = 'skill-apex-v9.0.0-update';
+const CACHE_NAME = 'skill-apex-v10.0.0-empower';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [
@@ -36,7 +37,7 @@ const APP_SHELL_URLS = [
     'assets/images/avatar-placeholder.png',
     'https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;800&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap',
     'https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js',
-    'https://aistudiocdn.com/dompurify@^3.0.5',
+    'https://aistudiocdn.com/dompurify@^3.3.0',
     // Core Services
     'services/apiService.js',
     'services/configService.js',
@@ -74,9 +75,13 @@ const APP_SHELL_URLS = [
     'modules/leaderboard/leaderboard.html', 'modules/leaderboard/leaderboard.css', 'modules/leaderboard/leaderboard.js'
 ];
 
+/**
+ * Stale-while-revalidate strategy for the App Shell.
+ */
 const staleWhileRevalidate = async (cacheName, request) => {
     const cache = await caches.open(cacheName);
     const cachedResponse = await cache.match(request);
+    
     const fetchPromise = fetch(request).then((networkResponse) => {
         if (networkResponse.ok) {
            cache.put(request, networkResponse.clone());
@@ -86,6 +91,7 @@ const staleWhileRevalidate = async (cacheName, request) => {
         if (cachedResponse) return cachedResponse;
         throw err;
     });
+    
     return cachedResponse || fetchPromise;
 };
 
@@ -103,6 +109,7 @@ self.addEventListener('activate', (event) => {
             return Promise.all(
                 cacheNames.map((cacheName) => {
                     if (cacheName !== CACHE_NAME && cacheName !== FONT_CACHE_NAME) {
+                        console.log('Purging legacy cache:', cacheName);
                         return caches.delete(cacheName);
                     }
                 })
@@ -114,20 +121,24 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
 
+    // 1. Google Fonts: Persistent Cache
     if (url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com') {
         event.respondWith(staleWhileRevalidate(FONT_CACHE_NAME, event.request));
         return;
     }
 
+    // 2. App Shell Assets: Revalidate for updates
     if (APP_SHELL_URLS.some(u => event.request.url.includes(u))) {
         event.respondWith(staleWhileRevalidate(CACHE_NAME, event.request));
         return;
     }
 
+    // 3. API Requests: Network Only
     if (url.pathname.startsWith('/api')) {
         return;
     }
 
+    // 4. Default: Cache falling back to network
     event.respondWith(
         fetch(event.request).catch(() => {
             return caches.match(event.request);
