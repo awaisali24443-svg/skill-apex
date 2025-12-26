@@ -1,13 +1,12 @@
-
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 10.0.0 (Strategic Empowerment Edition)
+ * @version 11.0.0 (Neural Update)
  * 
  * Optimized for high-reliability in low-bandwidth environments.
  * Implements a robust offline-first caching strategy for educational continuity.
  */
 
-const CACHE_NAME = 'skill-apex-v10.0.0-empower';
+const CACHE_NAME = 'skill-apex-v11.0.0-neural';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [
@@ -28,8 +27,6 @@ const APP_SHELL_URLS = [
     'themes/theme-dark-arcane.css',
     'themes/theme-dark-nebula.css',
     'assets/icons/favicon.svg',
-    'assets/icons/feather-sprite.svg',
-    'assets/icons/achievements.svg',
     'assets/images/apple-touch-icon.png',
     'assets/images/og-image.png',
     'assets/images/icon-192.png',
