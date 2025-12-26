@@ -1,12 +1,18 @@
 .aural-container {
-    height: 100%;
-    width: 100%;
-    position: relative;
-    background: #020617; /* Deep midnight */
+    position: absolute;
+    inset: 0;
+    z-index: 1000;
+    background: #020617; /* Deepest midnight to hide global blobs */
     overflow: hidden;
     display: flex;
     flex-direction: column;
     color: #F8FAFC;
+    animation: immersive-entry 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes immersive-entry {
+    from { opacity: 0; transform: scale(1.05); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 /* --- VISUAL EFFECTS LAYER --- */
@@ -15,7 +21,6 @@
     inset: 0;
     z-index: 1;
     pointer-events: none;
-    opacity: 0.9;
 }
 
 .aural-scanner-overlay {
@@ -23,9 +28,10 @@
     inset: 0;
     z-index: 2;
     pointer-events: none;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+                linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
     background-size: 100% 4px, 3px 100%;
-    opacity: 0.3;
+    opacity: 0.4;
 }
 
 .aural-vignette {
@@ -33,21 +39,21 @@
     inset: 0;
     z-index: 3;
     pointer-events: none;
-    box-shadow: inset 0 0 150px rgba(0,0,0,0.8);
-    background: radial-gradient(circle at center, transparent 40%, rgba(2, 6, 23, 0.9) 100%);
+    box-shadow: inset 0 0 200px rgba(0,0,0,0.9);
+    background: radial-gradient(circle at center, transparent 30%, rgba(2, 6, 23, 0.95) 100%);
 }
 
-/* Background Grid (Inverted for Dark) */
 .aural-container::before {
     content: '';
     position: absolute; inset: 0;
     background-image: 
-        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-    background-size: 50px 50px;
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 60px 60px;
     z-index: 0;
     pointer-events: none;
-    mask-image: radial-gradient(circle at center, black 30%, transparent 90%);
+    mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+    opacity: 0.2;
 }
 
 /* --- UI OVERLAY --- */
@@ -58,107 +64,121 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    z-index: 20;
+    z-index: 50;
 }
 
-.aural-header-controls .btn {
+#aural-header-controls .btn-disconnect {
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
-    padding: 10px 20px;
-    color: #94A3B8;
+    padding: 12px 24px;
+    color: #FFFFFF; /* High visibility white */
     font-size: 0.75rem;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
     transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
-.aural-header-controls .btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #FFF;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 20px var(--color-primary-transparent);
+#aural-header-controls .btn-disconnect:hover {
+    background: var(--color-error);
+    border-color: #FFF;
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
 }
 
 .aural-context-badge {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+    pointer-events: none;
 }
 
 .context-label {
-    font-size: 0.6rem;
+    font-size: 0.65rem;
     font-weight: 900;
     color: var(--color-primary);
     letter-spacing: 2px;
-    opacity: 0.8;
+    text-transform: uppercase;
 }
 
 .context-value {
     font-family: var(--font-family-mono);
     font-size: 0.9rem;
     color: #FFF;
-    font-weight: 500;
+    font-weight: 600;
+    letter-spacing: 1px;
 }
 
 /* --- CENTER CONTENT --- */
 .transcription-log {
-    flex-grow: 1;
+    position: absolute;
+    inset: 0;
     z-index: 10;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding-bottom: 150px;
+    pointer-events: none;
+}
+
+.aural-placeholder {
+    text-align: center;
+    max-width: 80%;
 }
 
 .glitch-title {
-    font-size: 4rem;
+    font-size: clamp(2rem, 8vw, 4.5rem);
     font-weight: 900;
     color: #FFF;
-    letter-spacing: 12px;
+    letter-spacing: 15px;
     position: relative;
     text-transform: uppercase;
-    animation: title-pulse 4s infinite alternate;
+    animation: title-float 6s ease-in-out infinite;
+    text-shadow: 0 0 30px var(--color-primary-transparent);
 }
 
-@keyframes title-pulse {
-    from { opacity: 0.7; transform: scale(0.98); }
-    to { opacity: 1; transform: scale(1); }
+@keyframes title-float {
+    0%, 100% { transform: translateY(0); opacity: 0.8; }
+    50% { transform: translateY(-15px); opacity: 1; }
 }
 
 .aural-subtitle {
     font-family: var(--font-family-mono);
-    color: #64748B;
-    font-size: 0.85rem;
+    color: #94A3B8;
+    font-size: 0.9rem;
     text-transform: uppercase;
-    letter-spacing: 4px;
-    line-height: 2;
-    margin-top: 1rem;
+    letter-spacing: 5px;
+    line-height: 1.8;
+    margin-top: 1.5rem;
 }
 
 /* --- FOOTER & MIC --- */
 .aural-footer {
-    position: absolute; bottom: 0; left: 0; width: 100%;
-    z-index: 20;
+    position: absolute; 
+    bottom: 0; 
+    left: 0; 
+    width: 100%;
+    z-index: 50;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-bottom: 5rem;
+    padding-bottom: 4rem;
 }
 
 .status-hud {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 2rem;
     margin-bottom: 2.5rem;
 }
 
 .hud-line {
-    width: 60px;
+    width: 80px;
     height: 1px;
     background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
 }
@@ -166,15 +186,15 @@
 .aural-status {
     font-family: var(--font-family-mono);
     color: var(--color-primary);
-    font-size: 0.7rem;
-    letter-spacing: 5px;
+    font-size: 0.75rem;
+    letter-spacing: 6px;
     font-weight: 900;
-    text-shadow: 0 0 10px var(--color-primary-transparent);
+    text-shadow: 0 0 15px var(--color-primary-transparent);
 }
 
 .btn-mic-hyper {
-    width: 100px;
-    height: 100px;
+    width: 110px;
+    height: 110px;
     position: relative;
     background: transparent;
     border: none;
@@ -182,14 +202,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .mic-core {
-    width: 64px;
-    height: 64px;
+    width: 72px;
+    height: 72px;
     background: #0F172A;
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
     border-radius: 50%;
     z-index: 5;
     display: flex;
@@ -197,19 +217,24 @@
     justify-content: center;
     color: #FFF;
     transition: all 0.3s ease;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+}
+
+.mic-core svg {
+    width: 32px;
+    height: 32px;
 }
 
 .mic-orbit-1, .mic-orbit-2 {
     position: absolute;
     border-radius: 50%;
     border: 1px solid var(--color-primary);
-    opacity: 0.2;
+    opacity: 0.3;
     pointer-events: none;
 }
 
-.mic-orbit-1 { inset: 0; animation: orbit-rotate 10s linear infinite; border-style: dashed; }
-.mic-orbit-2 { inset: 10px; animation: orbit-rotate 6s linear infinite reverse; border-style: dotted; }
+.mic-orbit-1 { inset: 0; animation: orbit-rotate 12s linear infinite; border-style: dashed; }
+.mic-orbit-2 { inset: 12px; animation: orbit-rotate 8s linear infinite reverse; border-style: dotted; }
 
 @keyframes orbit-rotate { from { transform: rotate(0); } to { transform: rotate(360deg); } }
 
@@ -217,9 +242,9 @@
     position: absolute; inset: 0;
     border-radius: 50%;
     background: var(--color-primary);
-    filter: blur(40px);
+    filter: blur(50px);
     opacity: 0;
-    transition: opacity 0.4s;
+    transition: opacity 0.5s ease;
     z-index: 1;
 }
 
@@ -227,18 +252,25 @@
 .btn-mic-hyper.active .mic-core {
     background: var(--color-primary);
     border-color: #FFF;
-    color: #FFF;
-    transform: scale(1.1);
-    box-shadow: 0 0 40px var(--color-primary-transparent);
+    transform: scale(1.15);
+    box-shadow: 0 0 50px var(--color-primary-transparent-heavy);
 }
 
 .btn-mic-hyper.active .mic-glow {
-    opacity: 0.3;
+    opacity: 0.4;
 }
 
 .btn-mic-hyper.active .mic-orbit-1, .btn-mic-hyper.active .mic-orbit-2 {
-    opacity: 0.6;
-    animation-duration: 2s;
+    opacity: 0.8;
+    animation-duration: 3s;
+    border-color: #FFF;
 }
 
-.btn-mic-hyper:hover { transform: scale(1.05); }
+.btn-mic-hyper:hover { transform: scale(1.1); }
+.btn-mic-hyper:active { transform: scale(0.95); }
+
+@media (max-width: 768px) {
+    .glitch-title { letter-spacing: 8px; }
+    .aural-top-bar { padding: 1.5rem; }
+    .aural-footer { padding-bottom: 2.5rem; }
+}

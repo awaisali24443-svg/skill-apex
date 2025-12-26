@@ -1,12 +1,12 @@
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 12.0.0 (Neural Visuals)
+ * @version 13.0.0 (Immersive Aural Update)
  * 
  * Optimized for high-reliability in low-bandwidth environments.
  * Implements a robust offline-first caching strategy for educational continuity.
  */
 
-const CACHE_NAME = 'skill-apex-v12.0.0-neural';
+const CACHE_NAME = 'skill-apex-v13.0.0-neural';
 const FONT_CACHE_NAME = 'google-fonts-cache-v1';
 
 const APP_SHELL_URLS = [

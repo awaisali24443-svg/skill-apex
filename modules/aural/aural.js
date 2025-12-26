@@ -177,7 +177,11 @@ function initVisualizer() {
     const ctx = canvas.getContext('2d');
     let time = 0;
 
-    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    const resize = () => {
+        const container = canvas.parentElement;
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+    };
     window.addEventListener('resize', resize);
     resize();
 
@@ -213,43 +217,43 @@ function initVisualizer() {
 
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
-        const baseRadius = Math.min(canvas.width, canvas.height) * 0.2;
+        const baseRadius = Math.min(canvas.width, canvas.height) * 0.15;
 
         // Draw Neural Filaments
-        const filaments = 12;
+        const filaments = 16;
         for (let i = 0; i < filaments; i++) {
-            const angle = (i / filaments) * Math.PI * 2 + time * 0.2;
-            const dist = baseRadius * (1 + energy * 2);
+            const angle = (i / filaments) * Math.PI * 2 + time * 0.3;
+            const dist = baseRadius * (1.2 + energy * 3);
             const x = cx + Math.cos(angle) * dist;
             const y = cy + Math.sin(angle) * dist;
             
-            const color = currentState === STATE.SPEAKING ? `rgba(244, 63, 94, ${0.1 + energy})` : `rgba(34, 211, 238, ${0.1 + energy})`;
-            drawLine(cx, cy, x, y, color, 1 + energy * 5);
+            const color = currentState === STATE.SPEAKING ? `rgba(244, 63, 94, ${0.15 + energy})` : `rgba(34, 211, 238, ${0.15 + energy})`;
+            drawLine(cx, cy, x, y, color, 1.5 + energy * 8);
             
             // End points
             ctx.beginPath();
             ctx.fillStyle = color;
-            ctx.arc(x, y, 2 + energy * 10, 0, Math.PI * 2);
+            ctx.arc(x, y, 3 + energy * 15, 0, Math.PI * 2);
             ctx.fill();
         }
 
-        // Draw Core
-        const coreGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, baseRadius * (1 + energy));
+        // Draw Core Swell
+        const coreGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, baseRadius * (1.5 + energy));
         const c1 = currentState === STATE.SPEAKING ? 'rgba(244, 63, 94, 0.4)' : 'rgba(34, 211, 238, 0.4)';
         coreGradient.addColorStop(0, c1);
         coreGradient.addColorStop(1, 'rgba(0,0,0,0)');
         
         ctx.beginPath();
         ctx.fillStyle = coreGradient;
-        ctx.arc(cx, cy, baseRadius * (1.5 + energy), 0, Math.PI * 2);
+        ctx.arc(cx, cy, baseRadius * (2.5 + energy * 2), 0, Math.PI * 2);
         ctx.fill();
         
-        // Inner Core Ring
+        // Dynamic Ring
         ctx.beginPath();
-        ctx.strokeStyle = '#FFF';
-        ctx.lineWidth = 0.5;
-        ctx.setLineDash([5, 15]);
-        ctx.arc(cx, cy, baseRadius * (0.8 + energy * 0.5), 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([10, 20]);
+        ctx.arc(cx, cy, baseRadius * (1.2 + energy * 0.8), 0, Math.PI * 2);
         ctx.stroke();
         ctx.setLineDash([]);
     };
@@ -265,11 +269,16 @@ export function init() {
         headerControls: document.getElementById('aural-header-controls')
     };
 
-    elements.headerControls.innerHTML = `<button class="btn" onclick="window.history.back()">DISCONNECT</button>`;
-    elements.micBtn.onclick = () => {
-        if (currentState === STATE.IDLE || currentState === STATE.ERROR) startSession();
-        else stopSession();
-    };
+    if (elements.headerControls) {
+        elements.headerControls.innerHTML = `<button class="btn-disconnect" onclick="window.history.back()">Disconnect</button>`;
+    }
+    
+    if (elements.micBtn) {
+        elements.micBtn.onclick = () => {
+            if (currentState === STATE.IDLE || currentState === STATE.ERROR) startSession();
+            else stopSession();
+        };
+    }
 
     initVisualizer();
     updateUI(STATE.IDLE);
