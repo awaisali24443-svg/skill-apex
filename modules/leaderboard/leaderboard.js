@@ -5,29 +5,6 @@ import * as gamificationService from '../../services/gamificationService.js';
 let listContainer;
 let template;
 
-/**
- * Generates HTML for the avatar with a unique color based on the username.
- */
-function generateAvatarHTML(name) {
-    const str = name || 'Agent';
-    // Generate a consistent color based on name
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        hash = str.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const hue = Math.abs(hash % 360);
-    const color1 = `hsl(${hue}, 70%, 60%)`;
-    const color2 = `hsl(${(hue + 40) % 360}, 70%, 40%)`;
-    
-    const initials = str.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-
-    return `
-        <div class="avatar-generated" style="background: linear-gradient(135deg, ${color1}, ${color2}); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; font-weight: 700; font-size: 0.8rem; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">
-            ${initials}
-        </div>
-    `;
-}
-
 async function loadLeaderboard() {
     if (!listContainer) return;
     
@@ -83,7 +60,7 @@ async function loadLeaderboard() {
             item.classList.add(`rank-${rank}`);
             if (user.isCurrentUser) item.classList.add('current-user');
             
-            // Add animation class
+            // Add animation class instead of inline style for reliability
             item.classList.add('animate-entry');
             item.style.animationDelay = `${index * 0.05}s`;
             
@@ -91,10 +68,6 @@ async function loadLeaderboard() {
             item.querySelector('.user-name').textContent = user.username + (user.isCurrentUser ? ' (You)' : '');
             item.querySelector('.level-num').textContent = user.level;
             item.querySelector('.xp-num').textContent = user.xp.toLocaleString();
-            
-            // Populate Avatar
-            const avatarContainer = item.querySelector('.user-avatar-small');
-            avatarContainer.innerHTML = generateAvatarHTML(user.username);
             
             fragment.appendChild(node);
         });

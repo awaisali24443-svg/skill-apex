@@ -1,241 +1,244 @@
-
 .aural-container {
     height: 100%;
     width: 100%;
     position: relative;
-    /* Clean Lab Gradient: White center, slight gray vignetting */
-    background: radial-gradient(circle at center, #FFFFFF 0%, #F1F5F9 100%);
+    background: #020617; /* Deep midnight */
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    color: #0F172A; /* Slate 900 Text */
+    color: #F8FAFC;
 }
 
-/* REFINED VISUALIZER LAYER */
+/* --- VISUAL EFFECTS LAYER --- */
 .aural-visualizer {
     position: absolute;
-    bottom: 0; left: 0;
-    width: 100%; height: 100%;
-    z-index: 0;
+    inset: 0;
+    z-index: 1;
     pointer-events: none;
-    opacity: 0.8;
-    /* Use Multiply for Ink-on-Paper effect in Light Mode */
-    mix-blend-mode: multiply; 
+    opacity: 0.9;
 }
 
-/* Background Grid - Dark Lines on White */
+.aural-scanner-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    background-size: 100% 4px, 3px 100%;
+    opacity: 0.3;
+}
+
+.aural-vignette {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    box-shadow: inset 0 0 150px rgba(0,0,0,0.8);
+    background: radial-gradient(circle at center, transparent 40%, rgba(2, 6, 23, 0.9) 100%);
+}
+
+/* Background Grid (Inverted for Dark) */
 .aural-container::before {
     content: '';
     position: absolute; inset: 0;
     background-image: 
-        linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
     z-index: 0;
     pointer-events: none;
-    mask-image: radial-gradient(circle at center, black 40%, transparent 80%);
+    mask-image: radial-gradient(circle at center, black 30%, transparent 90%);
 }
 
-/* Unified Header Bar */
+/* --- UI OVERLAY --- */
 .aural-top-bar {
     position: absolute;
-    top: 0; left: 0;
-    width: 100%;
-    padding: 1.5rem 2rem;
+    top: 0; left: 0; width: 100%;
+    padding: 2rem;
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     z-index: 20;
-    pointer-events: none;
 }
 
-.aural-header-controls { pointer-events: auto; }
-
 .aural-header-controls .btn {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 30px;
-    padding: 10px 24px;
-    color: #0F172A; /* Dark text */
-    font-size: 0.85rem;
-    font-weight: 700;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 10px 20px;
+    color: #94A3B8;
+    font-size: 0.75rem;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
 }
 
 .aural-header-controls .btn:hover {
-    background: #FFFFFF;
+    background: rgba(255, 255, 255, 0.1);
+    color: #FFF;
     border-color: var(--color-primary);
-    transform: translateY(1px);
+    box-shadow: 0 0 20px var(--color-primary-transparent);
 }
 
-/* MAIN CONTENT / PLACEHOLDER */
+.aural-context-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.context-label {
+    font-size: 0.6rem;
+    font-weight: 900;
+    color: var(--color-primary);
+    letter-spacing: 2px;
+    opacity: 0.8;
+}
+
+.context-value {
+    font-family: var(--font-family-mono);
+    font-size: 0.9rem;
+    color: #FFF;
+    font-weight: 500;
+}
+
+/* --- CENTER CONTENT --- */
 .transcription-log {
     flex-grow: 1;
     z-index: 10;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: center;
     align-items: center;
-    padding-bottom: 120px;
-    padding-top: 100px;
-    width: 100%;
+    padding-bottom: 150px;
 }
 
-.aural-placeholder {
-    margin: auto;
-    text-align: center;
-    pointer-events: none;
-    color: #0F172A;
-    animation: fadeIn 1s ease-out;
-}
-
-.aural-title { 
-    font-size: 3rem; 
-    letter-spacing: 8px; 
-    color: #0F172A; 
-    margin-bottom: 0.5rem; 
-    font-weight: 900; 
+.glitch-title {
+    font-size: 4rem;
+    font-weight: 900;
+    color: #FFF;
+    letter-spacing: 12px;
+    position: relative;
     text-transform: uppercase;
+    animation: title-pulse 4s infinite alternate;
 }
 
-.aural-subtitle { 
-    font-family: var(--font-family-mono); 
-    color: #475569; /* Slate 600 */
-    font-size: 1rem;
-    line-height: 1.6;
-    letter-spacing: 1px;
+@keyframes title-pulse {
+    from { opacity: 0.7; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1); }
 }
 
-/* --- CHAT LOG STYLES --- */
-.aural-chat-log {
-    width: 100%;
-    max-width: 600px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    overflow-y: auto;
-    padding: 20px;
-    scrollbar-width: none;
-}
-.aural-chat-log::-webkit-scrollbar { display: none; }
-
-.chat-bubble {
-    padding: 12px 18px;
-    border-radius: 18px;
-    font-size: 1rem;
-    line-height: 1.5;
-    max-width: 85%;
-    animation: bubble-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(0,0,0,0.05);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+.aural-subtitle {
+    font-family: var(--font-family-mono);
+    color: #64748B;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    line-height: 2;
+    margin-top: 1rem;
 }
 
-@keyframes bubble-in {
-    from { opacity: 0; transform: translateY(20px) scale(0.9); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.chat-bubble.user {
-    align-self: flex-end;
-    background: rgba(37, 99, 235, 0.1);
-    color: #2563EB;
-    border-bottom-right-radius: 4px;
-    border-color: rgba(37, 99, 235, 0.2);
-}
-
-.chat-bubble.ai {
-    align-self: flex-start;
-    background: rgba(255, 255, 255, 0.9);
-    color: #0F172A;
-    border-bottom-left-radius: 4px;
-    border-color: rgba(0,0,0,0.08);
-}
-
-/* Footer Controls */
+/* --- FOOTER & MIC --- */
 .aural-footer {
     position: absolute; bottom: 0; left: 0; width: 100%;
     z-index: 20;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-bottom: 4rem;
+    padding-bottom: 5rem;
+}
+
+.status-hud {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.hud-line {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+}
+
+.aural-status {
+    font-family: var(--font-family-mono);
+    color: var(--color-primary);
+    font-size: 0.7rem;
+    letter-spacing: 5px;
+    font-weight: 900;
+    text-shadow: 0 0 10px var(--color-primary-transparent);
+}
+
+.btn-mic-hyper {
+    width: 100px;
+    height: 100px;
+    position: relative;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.mic-core {
+    width: 64px;
+    height: 64px;
+    background: #0F172A;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFF;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.mic-orbit-1, .mic-orbit-2 {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid var(--color-primary);
+    opacity: 0.2;
     pointer-events: none;
 }
 
-/* Technical Status HUD - Inverted */
-.aural-status {
-    font-family: var(--font-family-mono);
-    color: var(--color-primary); /* Royal Blue */
-    font-size: 0.75rem;
-    letter-spacing: 3px;
-    margin-bottom: 2rem;
-    text-transform: uppercase;
-    background: rgba(255, 255, 255, 0.9);
-    padding: 8px 24px;
-    border-radius: 4px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(4px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    font-weight: 700;
-}
+.mic-orbit-1 { inset: 0; animation: orbit-rotate 10s linear infinite; border-style: dashed; }
+.mic-orbit-2 { inset: 10px; animation: orbit-rotate 6s linear infinite reverse; border-style: dotted; }
 
-/* Mic Button */
-.btn-mic-large {
-    pointer-events: auto;
-    width: 80px; height: 80px;
+@keyframes orbit-rotate { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+
+.mic-glow {
+    position: absolute; inset: 0;
     border-radius: 50%;
-    background: #FFFFFF;
-    border: 1px solid #E2E8F0;
-    position: relative;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    color: #0F172A;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    background: var(--color-primary);
+    filter: blur(40px);
+    opacity: 0;
+    transition: opacity 0.4s;
+    z-index: 1;
 }
 
-.btn-mic-large:hover {
-    background: #F8FAFC;
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-    transform: scale(1.05);
+/* Active State */
+.btn-mic-hyper.active .mic-core {
+    background: var(--color-primary);
+    border-color: #FFF;
+    color: #FFF;
+    transform: scale(1.1);
+    box-shadow: 0 0 40px var(--color-primary-transparent);
 }
 
-.btn-mic-large .icon { width: 32px; height: 32px; stroke-width: 1.5; }
-
-/* Active State (Red/Recording) */
-.btn-mic-large.active {
-    background: #FEF2F2;
-    border-color: #EF4444;
-    color: #EF4444;
-    box-shadow: 0 0 40px rgba(239, 68, 68, 0.2);
-    animation: mic-pulse 2s infinite;
+.btn-mic-hyper.active .mic-glow {
+    opacity: 0.3;
 }
 
-@keyframes mic-pulse {
-    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2); }
-    70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+.btn-mic-hyper.active .mic-orbit-1, .btn-mic-hyper.active .mic-orbit-2 {
+    opacity: 0.6;
+    animation-duration: 2s;
 }
 
-/* Error Toast */
-.aural-error {
-    position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
-    background: #FEE2E2; color: #DC2626;
-    border: 1px solid #FECACA;
-    padding: 10px 20px; border-radius: 8px; font-weight: 600;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    z-index: 50; pointer-events: none;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+.btn-mic-hyper:hover { transform: scale(1.05); }

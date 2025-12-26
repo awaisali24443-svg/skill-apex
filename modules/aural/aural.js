@@ -1,8 +1,6 @@
-
 import * as stateService from '../../services/stateService.js';
 import * as apiService from '../../services/apiService.js';
 import { getAIClient } from '../../services/apiService.js';
-import * as gamificationService from '../../services/gamificationService.js';
 
 const STATE = {
   IDLE: 'IDLE',
@@ -26,10 +24,6 @@ let elements = {};
 let analyser = null;
 let outputAnalyser = null;
 let animationFrameId = null;
-
-let currentInputTranscription = "";
-let currentOutputTranscription = "";
-let startTime = 0;
 
 // --- AUDIO HELPERS ---
 function base64ToBytes(base64) {
@@ -57,39 +51,13 @@ function bytesToBase64(bytes) {
     return btoa(binary);
 }
 
-// --- CHAT UI HELPERS ---
-function addChatBubble(text, sender) {
-    if (!text || !text.trim()) return;
-    
-    // Clear placeholder if first bubble
-    if (elements.placeholder.style.display !== 'none') {
-        elements.placeholder.style.display = 'none';
-    }
-
-    const bubble = document.createElement('div');
-    bubble.className = `chat-bubble ${sender}`;
-    bubble.textContent = text;
-    elements.chatLog.appendChild(bubble);
-    
-    // Scroll to bottom
-    elements.chatLog.scrollTop = elements.chatLog.scrollHeight;
-    
-    // Remove oldest if too many
-    if (elements.chatLog.children.length > 20) {
-        elements.chatLog.removeChild(elements.chatLog.firstChild);
-    }
-}
-
 // --- MAIN SESSION LOGIC ---
 async function startSession() {
     updateUI(STATE.CONNECTING);
-    startTime = Date.now();
-
     try {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         inputAudioContext = new AudioContext({ sampleRate: 16000 });
         outputAudioContext = new AudioContext({ sampleRate: 24000 });
-        
         await inputAudioContext.resume();
         await outputAudioContext.resume();
 
@@ -99,10 +67,12 @@ async function startSession() {
         mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         
         analyser = inputAudioContext.createAnalyser();
-        analyser.fftSize = 512;
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.8;
         
         outputAnalyser = outputAudioContext.createAnalyser();
-        outputAnalyser.fftSize = 512;
+        outputAnalyser.fftSize = 256;
+        outputAnalyser.smoothingTimeConstant = 0.8;
         
         inputSource = inputAudioContext.createMediaStreamSource(mediaStream);
         scriptProcessor = inputAudioContext.createScriptProcessor(4096, 1, 1);
@@ -117,48 +87,26 @@ async function startSession() {
                 responseModalities: ['AUDIO'],
                 speechConfig: {
                     voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } }
-                },
-                inputAudioTranscription: {},
-                outputAudioTranscription: {}
+                }
             },
             callbacks: {
                 onopen: () => {
                     updateUI(STATE.LISTENING);
                 },
                 onmessage: (msg) => {
-                    // Audio Data
-                    const audioData = msg.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
-                    if (audioData) {
-                        updateUI(STATE.SPEAKING);
-                        playAudioChunk(audioData);
-                    }
-
-                    // Transcription Logic
-                    if (msg.serverContent?.inputTranscription) {
-                        currentInputTranscription += msg.serverContent.inputTranscription.text;
-                    }
-                    if (msg.serverContent?.outputTranscription) {
-                        currentOutputTranscription += msg.serverContent.outputTranscription.text;
-                    }
-
-                    // Turn completion is the key for bubbles
-                    if (msg.serverContent?.turnComplete) {
-                        if (currentInputTranscription) {
-                            addChatBubble(currentInputTranscription, 'user');
-                            currentInputTranscription = "";
+                    try {
+                        const audioData = msg.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
+                        if (audioData) {
+                            updateUI(STATE.SPEAKING);
+                            playAudioChunk(audioData);
                         }
-                        if (currentOutputTranscription) {
-                            addChatBubble(currentOutputTranscription, 'ai');
-                            currentOutputTranscription = "";
+                        if (msg.serverContent?.turnComplete) {
+                            updateUI(STATE.PROCESSING, "SYNCING DATA...");
                         }
-                        updateUI(STATE.LISTENING);
-                    }
+                    } catch (err) { console.error(err); }
                 },
                 onclose: () => stopSession(),
-                onerror: (err) => {
-                    console.error("Live API Error:", err);
-                    updateUI(STATE.ERROR, "Link Severed.");
-                }
+                onerror: (err) => updateUI(STATE.ERROR, "LINK SEVERED")
             }
         });
 
@@ -167,17 +115,12 @@ async function startSession() {
             const inputData = e.inputBuffer.getChannelData(0);
             const int16Data = convertFloat32ToInt16(inputData);
             const base64Data = bytesToBase64(new Uint8Array(int16Data.buffer));
-            
             sessionPromise.then(session => {
-                session.sendRealtimeInput({
-                    media: { mimeType: "audio/pcm;rate=16000", data: base64Data }
-                });
+                session.sendRealtimeInput({ media: { mimeType: "audio/pcm;rate=16000", data: base64Data } });
             }).catch(() => {});
         };
-
     } catch (e) {
-        console.error("Session failed:", e);
-        updateUI(STATE.ERROR, "Mic Access Required.");
+        updateUI(STATE.ERROR, "HARDWARE FAILURE");
         stopSession();
     }
 }
@@ -189,57 +132,46 @@ function playAudioChunk(base64Data) {
         const int16 = new Int16Array(bytes.buffer);
         const float32 = new Float32Array(int16.length);
         for(let i=0; i<int16.length; i++) float32[i] = int16[i] / 32768.0;
-
         const buffer = outputAudioContext.createBuffer(1, float32.length, 24000);
         buffer.getChannelData(0).set(float32);
-
         const source = outputAudioContext.createBufferSource();
         source.buffer = buffer;
         if (outputAnalyser) source.connect(outputAnalyser);
         source.connect(outputAudioContext.destination);
         source.start(0);
-    } catch (e) {
-        console.error("Playback error", e);
-    }
+    } catch (e) { console.error(e); }
 }
 
 function stopSession() {
-    if (sessionPromise) {
-        sessionPromise.then(s => s.close()).catch(() => {});
-        sessionPromise = null;
-    }
-    if (mediaStream) {
-        mediaStream.getTracks().forEach(t => t.stop());
-        mediaStream = null;
-    }
-    if (inputAudioContext) inputAudioContext.close();
-    if (outputAudioContext) outputAudioContext.close();
-    
-    if (startTime > 0) {
-        const duration = Math.floor((Date.now() - startTime) / 1000);
-        if (duration > 10) gamificationService.checkQuestProgress({ type: 'aural_session', data: { duration } });
-        startTime = 0;
-    }
-    updateUI(STATE.IDLE);
+    if (sessionPromise) { sessionPromise.then(s => s.close()).catch(() => {}); sessionPromise = null; }
+    if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+    if (inputAudioContext) { inputAudioContext.close(); inputAudioContext = null; }
+    if (outputAudioContext) { outputAudioContext.close(); outputAudioContext = null; }
+    if (scriptProcessor) { scriptProcessor.disconnect(); scriptProcessor = null; }
+    if (currentState !== STATE.ERROR) updateUI(STATE.IDLE);
 }
 
 function updateUI(newState, msg) {
     currentState = newState;
     if (elements.status) {
-        elements.status.textContent = msg || (newState === STATE.LISTENING ? "Uplink Stable" : 
-                                      newState === STATE.SPEAKING ? "Receiving Signal" : 
-                                      newState === STATE.CONNECTING ? "Syncing Neural Core" : "Ready to Sync");
+        if (msg) elements.status.textContent = msg;
+        else if (newState === STATE.LISTENING) elements.status.textContent = "LISTENING...";
+        else if (newState === STATE.SPEAKING) elements.status.textContent = "TRANSMITTING...";
+        else if (newState === STATE.CONNECTING) elements.status.textContent = "ESTABLISHING UPLINK...";
+        else if (newState === STATE.PROCESSING) elements.status.textContent = "SYNTHESIZING...";
+        else elements.status.textContent = "READY FOR UPLINK";
     }
     
     if (newState === STATE.IDLE || newState === STATE.ERROR) {
         elements.micBtn.classList.remove('active');
-        elements.micBtn.innerHTML = `<div class="mic-icon-wrapper"><svg class="icon"><use href="assets/icons/feather-sprite.svg#mic"/></svg></div>`;
+        elements.placeholder.style.display = 'block';
     } else {
         elements.micBtn.classList.add('active');
-        elements.micBtn.innerHTML = `<div class="mic-icon-wrapper"><svg class="icon"><use href="assets/icons/feather-sprite.svg#x"/></svg></div>`;
+        elements.placeholder.style.display = 'none';
     }
 }
 
+// --- HIGH-FIDELITY NEURAL VISUALIZER ---
 function initVisualizer() {
     const canvas = elements.canvas;
     const ctx = canvas.getContext('2d');
@@ -249,14 +181,13 @@ function initVisualizer() {
     window.addEventListener('resize', resize);
     resize();
 
-    const drawBlob = (x, y, radius, color) => {
+    const drawLine = (x1, y1, x2, y2, color, width) => {
         ctx.beginPath();
-        const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
-        gradient.addColorStop(0, color);
-        gradient.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.fillStyle = gradient;
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
     };
 
     const draw = () => {
@@ -264,22 +195,63 @@ function initVisualizer() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
         let energy = 0;
-        if (analyser && currentState !== STATE.IDLE) {
+        if (analyser && (currentState === STATE.LISTENING || currentState === STATE.CONNECTING)) {
             const data = new Uint8Array(analyser.frequencyBinCount);
             analyser.getByteFrequencyData(data);
             energy = (data.reduce((a,b)=>a+b,0) / data.length) / 255;
         }
+        if (outputAnalyser && currentState === STATE.SPEAKING) {
+            const data = new Uint8Array(outputAnalyser.frequencyBinCount);
+            outputAnalyser.getByteFrequencyData(data);
+            energy = (data.reduce((a,b)=>a+b,0) / data.length) / 255;
+        }
 
-        time += 0.05 + (energy * 0.2); 
+        if (currentState === STATE.PROCESSING) energy = 0.2 + Math.sin(time * 5) * 0.1;
+        else if (currentState === STATE.IDLE) energy = 0.05 + Math.sin(time * 1) * 0.02;
+
+        time += 0.02 + energy * 0.1;
+
         const cx = canvas.width / 2;
-        const cy = canvas.height * 0.7;
-        const baseSize = Math.min(canvas.width, canvas.height) * (0.4 + (energy * 0.4));
+        const cy = canvas.height / 2;
+        const baseRadius = Math.min(canvas.width, canvas.height) * 0.2;
 
-        let color1 = 'rgba(37, 99, 235, 0.4)';
-        if (currentState === STATE.SPEAKING) color1 = 'rgba(219, 39, 119, 0.5)';
+        // Draw Neural Filaments
+        const filaments = 12;
+        for (let i = 0; i < filaments; i++) {
+            const angle = (i / filaments) * Math.PI * 2 + time * 0.2;
+            const dist = baseRadius * (1 + energy * 2);
+            const x = cx + Math.cos(angle) * dist;
+            const y = cy + Math.sin(angle) * dist;
+            
+            const color = currentState === STATE.SPEAKING ? `rgba(244, 63, 94, ${0.1 + energy})` : `rgba(34, 211, 238, ${0.1 + energy})`;
+            drawLine(cx, cy, x, y, color, 1 + energy * 5);
+            
+            // End points
+            ctx.beginPath();
+            ctx.fillStyle = color;
+            ctx.arc(x, y, 2 + energy * 10, 0, Math.PI * 2);
+            ctx.fill();
+        }
 
-        drawBlob(cx + Math.cos(time * 0.2) * 50, cy, baseSize, color1);
-        drawBlob(cx - Math.sin(time * 0.3) * 40, cy, baseSize * 0.8, 'rgba(124, 58, 237, 0.3)');
+        // Draw Core
+        const coreGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, baseRadius * (1 + energy));
+        const c1 = currentState === STATE.SPEAKING ? 'rgba(244, 63, 94, 0.4)' : 'rgba(34, 211, 238, 0.4)';
+        coreGradient.addColorStop(0, c1);
+        coreGradient.addColorStop(1, 'rgba(0,0,0,0)');
+        
+        ctx.beginPath();
+        ctx.fillStyle = coreGradient;
+        ctx.arc(cx, cy, baseRadius * (1.5 + energy), 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Inner Core Ring
+        ctx.beginPath();
+        ctx.strokeStyle = '#FFF';
+        ctx.lineWidth = 0.5;
+        ctx.setLineDash([5, 15]);
+        ctx.arc(cx, cy, baseRadius * (0.8 + energy * 0.5), 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
     };
     draw();
 }
@@ -290,12 +262,14 @@ export function init() {
         status: document.getElementById('aural-status'),
         micBtn: document.getElementById('aural-mic-btn'),
         placeholder: document.getElementById('aural-placeholder'),
-        chatLog: document.getElementById('aural-chat-log'),
         headerControls: document.getElementById('aural-header-controls')
     };
 
-    elements.headerControls.innerHTML = `<button class="btn" onclick="window.history.back()">ABORT LINK</button>`;
-    elements.micBtn.onclick = () => (currentState === STATE.IDLE || currentState === STATE.ERROR) ? startSession() : stopSession();
+    elements.headerControls.innerHTML = `<button class="btn" onclick="window.history.back()">DISCONNECT</button>`;
+    elements.micBtn.onclick = () => {
+        if (currentState === STATE.IDLE || currentState === STATE.ERROR) startSession();
+        else stopSession();
+    };
 
     initVisualizer();
     updateUI(STATE.IDLE);

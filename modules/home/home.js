@@ -17,6 +17,8 @@ function updateGreeting() {
     if (hour >= 12 && hour < 17) timeGreeting = "Good Afternoon";
     else if (hour >= 17) timeGreeting = "Good Evening";
 
+    // Use name directly from service. Auth service now sets 'Admin' correctly.
+    // If name is missing, fall back to 'Agent'.
     let userName = firebaseService.getUserName() || 'Agent';
     
     if (elements.greeting) {
@@ -29,6 +31,7 @@ function updateHUD() {
     if(elements.levelDisplay) elements.levelDisplay.textContent = stats.level;
     if(elements.streakDisplay) elements.streakDisplay.textContent = stats.currentStreak;
 
+    // --- Update 21-Day Challenge UI ---
     if (elements.streakBarFill && elements.streakFraction) {
         const streak = stats.currentStreak || 0;
         const target = 21;
@@ -40,6 +43,10 @@ function updateHUD() {
         if (streak >= 21) {
             elements.streakBarFill.style.background = 'var(--color-success)';
             elements.streakMessage.textContent = "Challenge Complete! Habit Formed.";
+        } else if (streak >= 14) {
+            elements.streakMessage.textContent = "Final stretch! Keep going.";
+        } else if (streak >= 7) {
+            elements.streakMessage.textContent = "Week 1 complete. Stay consistent.";
         } else {
             elements.streakMessage.textContent = "Build the habit. 21 days to go.";
         }
@@ -75,6 +82,7 @@ function renderResumeCard() {
                     RESUME
                 </button>
             </div>
+            <!-- Background Decoration -->
             <div style="position:absolute; right:-20px; bottom:-20px; opacity:0.05; transform:rotate(-15deg);">
                 <svg class="icon" style="width:150px; height:150px;"><use href="assets/icons/feather-sprite.svg#target"/></svg>
             </div>
@@ -100,12 +108,15 @@ function handleResume(journey) {
 }
 
 function renderRecentHistory() {
-    const history = historyService.getRecentHistory(4);
+    const history = historyService.getRecentHistory(4); // Show 4 items
     const container = document.getElementById('recent-history-container');
     if (!container) return;
     
     if (history.length === 0) {
-        container.innerHTML = `<div style="color:var(--color-text-secondary); font-size:0.85rem; padding:10px; font-style:italic;">No recent activity logged.</div>`;
+        container.innerHTML = `
+            <div style="color:var(--color-text-secondary); font-size:0.85rem; padding:10px; font-style:italic;">
+                No recent activity logged.
+            </div>`;
         return;
     }
     
@@ -127,9 +138,78 @@ function renderRecentHistory() {
     });
 }
 
+// --- FILE UPLOAD HANDLERS ---
+function handleCameraClick() {
+    elements.fileInput.click();
+}
+
+async function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    event.target.value = ''; // Reset
+
+    const submitBtn = document.getElementById('command-submit-btn');
+    const originalIcon = submitBtn.innerHTML;
+    submitBtn.innerHTML = `<div class="spinner" style="width:16px;height:16px;border:2px solid white;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;"></div>`;
+    submitBtn.disabled = true;
+    
+    elements.commandInput.value = "Scanning Data Stream...";
+    elements.commandInput.disabled = true;
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+        const base64String = reader.result.split(',')[1];
+        const mimeType = file.type;
+
+        try {
+            const plan = await apiService.generateJourneyFromFile(base64String, mimeType);
+            elements.commandInput.value = plan.topicName;
+            
+            // Preview Modal
+            const outline = await apiService.generateCurriculumOutline({ topic: plan.topicName, totalLevels: plan.totalLevels });
+            
+            const curriculumHtml = `
+                <p><strong>Detected Protocol:</strong> ${plan.topicName}</p>
+                <p>Generated ${plan.totalLevels}-Level Learning Path.</p>
+                <ul class="curriculum-list" style="max-height:150px;overflow-y:auto;background:var(--color-background);padding:10px;border-radius:8px;margin-top:10px;">
+                    ${outline.chapters.map(chapter => `<li>${chapter}</li>`).join('')}
+                </ul>
+            `;
+
+            const confirmed = await showConfirmationModal({
+                title: 'Scan Complete',
+                message: curriculumHtml,
+                confirmText: 'Execute',
+                cancelText: 'Discard'
+            });
+
+            if (confirmed) {
+                const journey = await learningPathService.startOrGetJourney(plan.topicName, {
+                    ...plan,
+                    styleClass: 'topic-robotics'
+                });
+                handleResume(journey);
+            }
+
+        } catch (error) {
+            console.error(error);
+            showToast(`Scan failed: ${error.message}`, 'error');
+        } finally {
+            elements.commandInput.value = '';
+            elements.commandInput.disabled = false;
+            submitBtn.innerHTML = originalIcon;
+            submitBtn.disabled = false;
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
 async function initiateQuizGeneration(topic) {
     if (!topic) return;
+
     const cmdBtn = document.getElementById('command-submit-btn');
+    const originalIcon = cmdBtn ? cmdBtn.innerHTML : '';
+    
     if (cmdBtn) {
         cmdBtn.innerHTML = `<div class="spinner" style="width:16px;height:16px;border:2px solid white;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;"></div>`;
         cmdBtn.disabled = true;
@@ -138,6 +218,7 @@ async function initiateQuizGeneration(topic) {
     try {
         const plan = await apiService.generateJourneyPlan(topic);
         const journey = await learningPathService.startOrGetJourney(topic, plan);
+
         stateService.setNavigationContext({
             topic: journey.goal,
             level: journey.currentLevel,
@@ -145,11 +226,14 @@ async function initiateQuizGeneration(topic) {
             isBoss: false,
             totalLevels: journey.totalLevels
         });
+        
         window.location.hash = '#/level';
+
     } catch (error) {
+        console.error(error);
         showToast("Error initializing protocol.", "error");
         if (cmdBtn) {
-            cmdBtn.innerHTML = `<svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>`;
+            cmdBtn.innerHTML = originalIcon;
             cmdBtn.disabled = false;
         }
     }
@@ -167,11 +251,7 @@ export function init() {
         commandForm: document.getElementById('command-form'),
         commandInput: document.getElementById('command-input'),
         cameraBtn: document.getElementById('home-camera-btn'),
-        fileInput: document.getElementById('home-file-input'),
-        // Briefing
-        briefingBtn: document.getElementById('trigger-briefing-btn'),
-        briefingModal: document.getElementById('briefing-modal'),
-        closeBriefingBtn: document.getElementById('close-briefing-btn')
+        fileInput: document.getElementById('home-file-input')
     };
 
     updateGreeting();
@@ -183,26 +263,24 @@ export function init() {
         elements.commandForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const topic = elements.commandInput.value.trim();
-            if (topic) initiateQuizGeneration(topic);
+            if (topic) {
+                initiateQuizGeneration(topic);
+            } else {
+                showToast("Please enter a directive.", "info");
+                elements.commandInput.focus();
+            }
         });
     }
 
-    if (elements.briefingBtn) {
-        elements.briefingBtn.addEventListener('click', () => {
-            elements.briefingModal.style.display = 'flex';
-        });
-    }
+    if (elements.cameraBtn) elements.cameraBtn.addEventListener('click', handleCameraClick);
+    if (elements.fileInput) elements.fileInput.addEventListener('change', handleFileSelect);
 
-    if (elements.closeBriefingBtn) {
-        elements.closeBriefingBtn.addEventListener('click', () => {
-            elements.briefingModal.style.display = 'none';
-        });
-    }
-
-    if (elements.cameraBtn) elements.cameraBtn.addEventListener('click', () => elements.fileInput.click());
-    
+    // Quick Access Protocol Cards
     document.querySelectorAll('.protocol-card').forEach(card => {
-        card.addEventListener('click', () => initiateQuizGeneration(card.dataset.topic));
+        card.addEventListener('click', () => {
+            const topic = card.dataset.topic;
+            initiateQuizGeneration(topic);
+        });
     });
 }
 

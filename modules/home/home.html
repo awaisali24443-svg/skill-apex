@@ -1,25 +1,22 @@
+
 <div class="page-container home-dashboard">
     
-    <!-- 1. Status HUD -->
+    <!-- 1. Status HUD (Heads-Up Display) -->
     <header class="dashboard-hud">
         <div class="hud-left">
             <h1 id="home-greeting">System Initializing...</h1>
             <p class="hud-subtitle">Neural Interface Active</p>
         </div>
         
+        <!-- Grouped Stats for Adaptive Layout -->
         <div class="hud-right">
-            <button id="trigger-briefing-btn" class="btn btn-briefing">
-                <svg class="icon"><use href="#play-circle"/></svg>
-                <span>Strategic Briefing</span>
-            </button>
-
             <div class="hud-stats-cluster">
                 <div class="stat-pill level-pill">
                     <span class="pill-label">LVL</span>
                     <span class="pill-value" id="home-level">--</span>
                 </div>
                 <div class="stat-pill streak-pill">
-                    <svg class="icon"><use href="#zap"/></svg>
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#zap"/></svg>
                     <span class="pill-value" id="home-streak">0</span>
                 </div>
             </div>
@@ -36,17 +33,17 @@
         <form id="command-form" class="cyber-input-form">
             <div class="input-wrapper">
                 <div class="input-icon-zone">
-                    <svg class="icon"><use href="#search"/></svg>
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#search"/></svg>
                 </div>
-                <input type="text" id="command-input" class="cyber-input" placeholder="Search topics, skills, or curriculum..." autocomplete="off">
+                <input type="text" id="command-input" class="cyber-input" placeholder="Input directive, topic, or query..." autocomplete="off">
                 <div class="input-actions">
                     <button type="button" id="home-camera-btn" class="action-btn" title="Scan Document/Image" aria-label="Upload Image">
-                        <svg class="icon"><use href="#camera"/></svg>
+                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#camera"/></svg>
                     </button>
                 </div>
             </div>
             <button type="submit" id="command-submit-btn" class="cyber-submit-btn" aria-label="Execute">
-                <svg class="icon"><use href="#arrow-right"/></svg>
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
             </button>
         </form>
         <input type="file" id="home-file-input" accept="image/*,application/pdf" style="display: none;">
@@ -54,75 +51,70 @@
 
     <!-- 3. Dashboard Grid -->
     <div class="dashboard-grid">
+        
+        <!-- A. Streak Challenge Card (NEW) -->
         <div class="dashboard-panel streak-panel">
             <div class="panel-header">
-                <h3><svg class="icon"><use href="#target"/></svg> Mastery Progress</h3>
+                <h3><svg class="icon"><use href="assets/icons/feather-sprite.svg#target"/></svg> Habit Builder</h3>
                 <span class="streak-fraction" id="streak-fraction">0/21</span>
             </div>
             <div class="streak-content">
                 <div class="streak-bar-container">
                     <div id="streak-bar-fill" class="streak-bar-fill" style="width: 0%;"></div>
+                    <div class="streak-markers">
+                        <span style="left: 33%">7</span>
+                        <span style="left: 66%">14</span>
+                    </div>
                 </div>
-                <p id="streak-message" class="streak-message">Building technical consistency in the province.</p>
+                <p id="streak-message" class="streak-message">Start your 21-day consistency protocol.</p>
             </div>
         </div>
 
-        <div id="resume-section" class="dashboard-panel mission-panel" style="display: none;"></div>
+        <!-- B. Priority Mission (Resume) -->
+        <div id="resume-section" class="dashboard-panel mission-panel" style="display: none;">
+            <!-- Injected by JS -->
+        </div>
 
+        <!-- C. Featured Protocols -->
         <div class="dashboard-panel protocols-panel">
             <div class="panel-header">
-                <h3><svg class="icon"><use href="#grid"/></svg> High-Impact Fields</h3>
+                <h3><svg class="icon"><use href="assets/icons/feather-sprite.svg#grid"/></svg> Quick Access</h3>
                 <a href="#/topics" class="panel-link">View All</a>
             </div>
             <div class="protocol-grid">
+                <button class="protocol-card" data-topic="Cybersecurity">
+                    <div class="protocol-icon red"><svg class="icon"><use href="assets/icons/feather-sprite.svg#shield"/></svg></div>
+                    <span>Security</span>
+                </button>
                 <button class="protocol-card" data-topic="Artificial Intelligence">
-                    <div class="protocol-icon blue"><svg class="icon"><use href="#cpu"/></svg></div>
-                    <span>AI & Tech</span>
+                    <div class="protocol-icon blue"><svg class="icon"><use href="assets/icons/feather-sprite.svg#cpu"/></svg></div>
+                    <span>AI Core</span>
                 </button>
-                <button class="protocol-card" data-topic="Modern Agriculture">
-                    <div class="protocol-icon green"><svg class="icon"><use href="#sun"/></svg></div>
-                    <span>Agri-Tech</span>
+                <button class="protocol-card" data-topic="Web Development">
+                    <div class="protocol-icon purple"><svg class="icon"><use href="assets/icons/feather-sprite.svg#layers"/></svg></div>
+                    <span>Web Dev</span>
                 </button>
-                <button class="protocol-card" data-topic="Public Administration">
-                    <div class="protocol-icon purple"><svg class="icon"><use href="#layers"/></svg></div>
-                    <span>Civics</span>
-                </button>
-                <button class="protocol-card" data-topic="Freelancing Mastery">
-                    <div class="protocol-icon gold"><svg class="icon"><use href="#trending-up"/></svg></div>
-                    <span>Economy</span>
+                <button class="protocol-card" data-topic="Crypto & Blockchain">
+                    <div class="protocol-icon gold"><svg class="icon"><use href="assets/icons/feather-sprite.svg#lock"/></svg></div>
+                    <span>Crypto</span>
                 </button>
             </div>
         </div>
 
+        <!-- D. Recent Activity Logs -->
         <div class="dashboard-panel history-panel">
             <div class="panel-header">
-                <h3><svg class="icon"><use href="#activity"/></svg> Learning Velocity</h3>
+                <h3><svg class="icon"><use href="assets/icons/feather-sprite.svg#activity"/></svg> Recent Logs</h3>
             </div>
-            <div id="recent-history-container" class="history-list"></div>
+            <div id="recent-history-container" class="history-list">
+                <!-- Injected by JS -->
+            </div>
         </div>
-    </div>
 
-    <div id="briefing-modal" class="modal-backdrop" style="display: none;">
-        <div class="modal-content briefing-content">
-            <div class="modal-header">
-                <h2>Skill Apex: Provincial Development Initiative</h2>
-                <button id="close-briefing-btn" class="btn-icon"><svg class="icon"><use href="#x"/></svg></button>
-            </div>
-            <div class="modal-body briefing-body">
-                <div class="brief-slide">
-                    <h3>The Educational Challenge</h3>
-                    <p>Static classrooms cannot keep up with the global 4th Industrial Revolution.</p>
-                </div>
-                <div class="brief-slide">
-                    <h3>The AI-Powered Solution</h3>
-                    <p><strong>Neural Knowledge Synthesis:</strong> Personalized coaching for every citizen.</p>
-                </div>
-            </div>
-        </div>
     </div>
     
     <footer class="home-footer">
-        <span class="footer-status">PROVINCIAL NODE: ONLINE</span>
-        <span class="footer-credit">PROJECT ARCHITECT: AWAIS ALI</span>
+        <span class="footer-status">SYSTEM NOMINAL</span>
+        <span class="footer-credit">ARCHITECT: AWAIS ALI</span>
     </footer>
 </div>

@@ -64,12 +64,10 @@
 .user-info { display: flex; align-items: center; gap: 16px; }
 
 .user-avatar-small {
-    width: 36px; height: 36px; border-radius: 50%;
-    overflow: hidden;
-    flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    background: var(--color-surface-hover);
-    border: 1px solid var(--color-border);
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--brand-gradient);
+    border: 2px solid white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .user-name { font-weight: 600; color: var(--color-text); font-size: 1rem; }
@@ -86,6 +84,4 @@
 @media (max-width: 600px) {
     .leaderboard-header, .leaderboard-item { grid-template-columns: 40px 1fr 60px; }
     .col-xp { display: none; }
-    .user-info { gap: 10px; }
-    .user-avatar-small { width: 30px; height: 30px; }
 }

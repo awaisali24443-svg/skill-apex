@@ -1,35 +1,39 @@
-
 <div class="aural-container">
     <div class="aural-top-bar">
         <div id="aural-header-controls" class="aural-header-controls"></div>
-        <!-- Context Badge -->
-        <div id="aural-context-badge" class="aural-context-badge" style="display: none;">
-            <span class="context-label">ACTIVE PROTOCOL</span>
-            <span id="aural-context-text" class="context-value">Youth Empowerment</span>
+        <div id="aural-context-badge" class="aural-context-badge">
+            <span class="context-label">NEURAL STREAM</span>
+            <span id="aural-context-text" class="context-value">ENCRYPTED</span>
         </div>
     </div>
     
-    <!-- Canvas Visualizer Layer -->
+    <!-- Sophisticated Background Effects -->
+    <div class="aural-scanner-overlay"></div>
+    <div class="aural-vignette"></div>
     <canvas id="aural-visualizer" class="aural-visualizer"></canvas>
 
-    <!-- Content Overlay -->
+    <!-- UI Overlay Layer -->
     <div id="transcription-log" class="transcription-log">
         <div id="aural-placeholder" class="aural-placeholder">
-            <h1 class="aural-title">VOICE CORE</h1>
-            <p class="aural-subtitle">Neural Tutor Ready.<br>Ask questions in plain English or Urdu.</p>
+            <div class="glitch-title" data-text="NEURAL LINK">NEURAL LINK</div>
+            <p class="aural-subtitle">Voice Interface Online.<br>Synthesizing Knowledge Stream...</p>
         </div>
-        <!-- Chat bubbles appear here -->
-        <div id="aural-chat-log" class="aural-chat-log"></div>
     </div>
     
     <div class="aural-footer">
-        <p id="aural-status" class="aural-status">SECURE CHANNEL ESTABLISHED</p>
-        <button id="aural-mic-btn" class="btn-mic-large" aria-label="Toggle Microphone">
-            <div class="mic-icon-wrapper">
-                <svg class="icon"><use href="assets/icons/feather-sprite.svg#mic"/></svg>
+        <div class="status-hud">
+            <div class="hud-line"></div>
+            <p id="aural-status" class="aural-status">INITIALIZING CORE...</p>
+            <div class="hud-line"></div>
+        </div>
+        
+        <button id="aural-mic-btn" class="btn-mic-hyper" aria-label="Toggle Microphone">
+            <div class="mic-core">
+                <svg class="icon"><use href="#mic"/></svg>
             </div>
-            <div class="mic-ring"></div>
-            <div class="mic-ring delay"></div>
+            <div class="mic-orbit-1"></div>
+            <div class="mic-orbit-2"></div>
+            <div class="mic-glow"></div>
         </button>
     </div>
     
