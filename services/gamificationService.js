@@ -22,115 +22,70 @@ const defaultStats = {
 
 let stats = { ...defaultStats };
 
-// --- TIERED ACHIEVEMENT DEFINITIONS ---
+// --- ACHIEVEMENTS: RE-ALIGNED FOR PUBLIC IMPACT ---
 const ACHIEVEMENTS = {
     scholar: { 
-        name: "Scholar", 
-        description: "Complete learning missions.", 
+        name: "Constituency Lead", 
+        description: "Complete educational missions for the community.", 
         icon: "book",
         metric: (s) => s.totalQuizzesCompleted,
-        tiers: [
-            { name: 'Bronze', target: 5, color: '#cd7f32' },
-            { name: 'Silver', target: 25, color: '#c0c0c0' },
-            { name: 'Gold', target: 100, color: '#ffd700' },
-            { name: 'Diamond', target: 500, color: '#b9f2ff' }
-        ]
+        tiers: [{ target: 5 }, { target: 25 }, { target: 100 }]
     },
     streak_master: { 
-        name: "Consistency", 
-        description: "Maintain a daily learning streak.", 
+        name: "Public Service", 
+        description: "Maintain daily consistency in training.", 
         icon: "zap", 
         metric: (s) => s.currentStreak,
-        tiers: [
-            { name: 'Bronze', target: 3, color: '#cd7f32' },
-            { name: 'Silver', target: 7, color: '#c0c0c0' },
-            { name: 'Gold', target: 30, color: '#ffd700' },
-            { name: 'Diamond', target: 100, color: '#b9f2ff' }
-        ]
-    },
-    speed_demon: {
-        name: "Speed Demon",
-        description: "Answer questions in under 5 seconds.",
-        icon: "clock",
-        metric: (s) => s.fastAnswersCount || 0,
-        tiers: [
-            { name: 'Bronze', target: 10, color: '#cd7f32' },
-            { name: 'Silver', target: 50, color: '#c0c0c0' },
-            { name: 'Gold', target: 200, color: '#ffd700' }
-        ]
-    },
-    night_owl: {
-        name: "Night Owl",
-        description: "Study during late hours (10PM - 4AM).",
-        icon: "moon",
-        metric: (s) => s.nightOwlSessions || 0,
-        tiers: [
-            { name: 'Bronze', target: 5, color: '#cd7f32' },
-            { name: 'Silver', target: 20, color: '#c0c0c0' },
-            { name: 'Gold', target: 50, color: '#ffd700' }
-        ]
+        tiers: [{ target: 3 }, { target: 7 }, { target: 30 }]
     },
     audiophile: {
-        name: "Audiophile",
-        description: "Minutes spent in Aural Tutor mode.",
+        name: "Voice Link",
+        description: "Mastery through verbal AI interaction.",
         icon: "headphones",
         metric: (s) => s.totalAuralMinutes || 0,
-        tiers: [
-            { name: 'Bronze', target: 15, color: '#cd7f32' },
-            { name: 'Silver', target: 60, color: '#c0c0c0' },
-            { name: 'Gold', target: 300, color: '#ffd700' }
-        ]
+        tiers: [{ target: 15 }, { target: 60 }, { target: 300 }]
     },
     polymath: {
-        name: "Polymath",
-        description: "Unique topics explored.",
+        name: "Sector Specialist",
+        description: "Excellence across multiple industrial domains.",
         icon: "globe",
         metric: (s) => s.uniqueTopicsPlayed?.length || 0,
-        tiers: [
-            { name: 'Bronze', target: 3, color: '#cd7f32' },
-            { name: 'Silver', target: 8, color: '#c0c0c0' },
-            { name: 'Gold', target: 20, color: '#ffd700' }
-        ]
+        tiers: [{ target: 3 }, { target: 8 }, { target: 20 }]
+    },
+    executive: {
+        name: "Patriot",
+        description: "View the Provincial Development Briefing.",
+        icon: "star",
+        metric: (s) => s.viewedBriefing ? 1 : 0,
+        tiers: [{ target: 1 }]
     }
 };
 
 const QUEST_TYPES = [
-    { id: 'complete_level', text: 'Complete 1 Level', xp: 50, check: (action) => action.type === 'complete_level' },
-    { id: 'perfect_score', text: 'Get 100% on a Quiz', xp: 100, check: (action) => action.type === 'complete_level' && action.data.scorePercent === 1 },
-    { id: 'use_hint', text: 'Use a Hint', xp: 20, check: (action) => action.type === 'use_hint' },
-    { id: 'save_question', text: 'Save a Question', xp: 30, check: (action) => action.type === 'save_question' },
-    { id: 'study_session', text: 'Review Flashcards', xp: 40, check: (action) => action.type === 'study_session' },
-    { id: 'speedy', text: '3 Fast Answers (<5s)', xp: 60, check: (action) => action.type === 'fast_answers' && action.data.count >= 3 },
+    { id: 'complete_level', text: 'Finish 1 Training Module', xp: 50, check: (action) => action.type === 'complete_level' },
+    { id: 'perfect_score', text: 'Achieve 100% Efficiency', xp: 100, check: (action) => action.type === 'complete_level' && action.data.scorePercent === 1 },
+    { id: 'use_hint', text: 'Optimize Knowledge Search', xp: 20, check: (action) => action.type === 'use_hint' },
+    { id: 'save_question', text: 'Archive Critical Data', xp: 30, check: (action) => action.type === 'save_question' },
+    { id: 'study_session', text: 'Review Community Archives', xp: 40, check: (action) => action.type === 'study_session' },
 ];
 
 async function loadStats() {
     try {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.GAMIFICATION);
-        const storedData = stored ? JSON.parse(stored) : {};
-        stats = { ...defaultStats, ...storedData };
-        
+        stats = { ...defaultStats, ...JSON.parse(stored || '{}') };
         checkDailyQuests();
-
         if (navigator.onLine && !isGuest()) {
             const userId = getUserId();
             if (userId) {
-                const docRef = doc(db, "users", userId, "data", "gamification");
-                const docSnap = await getDoc(docRef);
+                const docSnap = await getDoc(doc(db, "users", userId, "data", "gamification"));
                 if (docSnap.exists()) {
-                    const remoteStats = docSnap.data();
-                    if (remoteStats.xp > stats.xp) {
-                        stats = { ...stats, ...remoteStats };
-                        saveStatsLocal();
-                        window.dispatchEvent(new CustomEvent('gamification-updated'));
-                    }
+                    const remote = docSnap.data();
+                    if (remote.xp > stats.xp) { stats = { ...stats, ...remote }; saveStatsLocal(); }
                 }
                 updateLeaderboardScore(stats);
             }
         }
-    } catch (e) {
-        console.error("Failed to load gamification stats:", e);
-        stats = { ...defaultStats };
-    }
+    } catch (e) { console.error(e); }
 }
 
 function saveStats() {
@@ -139,24 +94,13 @@ function saveStats() {
     window.dispatchEvent(new CustomEvent('gamification-updated'));
 }
 
-function saveStatsLocal() {
-    try {
-        localStorage.setItem(LOCAL_STORAGE_KEYS.GAMIFICATION, JSON.stringify(stats));
-    } catch (e) {
-        console.error("Failed to save gamification stats locally:", e);
-    }
-}
-
+function saveStatsLocal() { localStorage.setItem(LOCAL_STORAGE_KEYS.GAMIFICATION, JSON.stringify(stats)); }
 async function saveStatsRemote() {
     if (!navigator.onLine || isGuest()) return;
-    try {
-        const userId = getUserId();
-        if (userId) {
-            await setDoc(doc(db, "users", userId, "data", "gamification"), stats);
-            updateLeaderboardScore(stats);
-        }
-    } catch (e) {
-        console.warn("Failed to save stats to cloud", e);
+    const userId = getUserId();
+    if (userId) {
+        await setDoc(doc(db, "users", userId, "data", "gamification"), stats);
+        updateLeaderboardScore(stats);
     }
 }
 
@@ -164,198 +108,60 @@ function checkDailyQuests() {
     const today = new Date().toDateString();
     if (stats.dailyQuests.date !== today) {
         const shuffled = [...QUEST_TYPES].sort(() => 0.5 - Math.random());
-        const newQuests = shuffled.slice(0, 3).map(q => ({ ...q, completed: false }));
-        stats.dailyQuests = { date: today, quests: newQuests };
+        stats.dailyQuests = { date: today, quests: shuffled.slice(0, 3).map(q => ({ ...q, completed: false })) };
         stats.dailyChallenge = { date: today, completed: false };
         saveStats();
     }
 }
 
 export function checkQuestProgress(action) {
-    let questUpdated = false;
-    
+    let updated = false;
     if (action.type === 'complete_level') {
         stats.totalQuizzesCompleted = (stats.totalQuizzesCompleted || 0) + 1;
-        if (action.data.scorePercent === 1) stats.totalPerfectQuizzes = (stats.totalPerfectQuizzes || 0) + 1;
-        
         if (action.data.topic) {
             const topicName = action.data.topic.split('-')[0].trim();
-            if (!stats.uniqueTopicsPlayed.includes(topicName)) {
-                stats.uniqueTopicsPlayed.push(topicName);
-            }
+            if (!stats.uniqueTopicsPlayed.includes(topicName)) stats.uniqueTopicsPlayed.push(topicName);
         }
-
-        const hour = new Date().getHours();
-        if (hour >= 22 || hour < 4) {
-            stats.nightOwlSessions = (stats.nightOwlSessions || 0) + 1;
-        }
-
-        questUpdated = true;
+        updated = true;
     }
+    if (action.type === 'view_briefing') { stats.viewedBriefing = true; updated = true; }
+    if (action.type === 'aural_session') { stats.totalAuralMinutes = (stats.totalAuralMinutes || 0) + Math.ceil(action.data.duration / 60); updated = true; }
     
-    if (action.type === 'save_question') {
-        stats.questionsSaved = (stats.questionsSaved || 0) + 1;
-        questUpdated = true;
-    }
-
-    if (action.type === 'fast_answers') {
-        stats.fastAnswersCount = (stats.fastAnswersCount || 0) + action.data.count;
-        questUpdated = true;
-    }
-
-    if (action.type === 'aural_session') {
-        stats.totalAuralMinutes = (stats.totalAuralMinutes || 0) + Math.ceil(action.data.duration / 60);
-        questUpdated = true;
-    }
-
-    stats.dailyQuests.quests.forEach(quest => {
-        if (!quest.completed) {
-            const definition = QUEST_TYPES.find(t => t.id === quest.id);
-            if (definition && definition.check(action)) {
-                quest.completed = true;
-                stats.xp += definition.xp;
-                showToast(`Quest Completed: ${definition.text} (+${definition.xp} XP)`, 'success');
-                questUpdated = true;
-            }
+    stats.dailyQuests.quests.forEach(q => {
+        if (!q.completed) {
+            const def = QUEST_TYPES.find(t => t.id === q.id);
+            if (def && def.check(action)) { q.completed = true; stats.xp += def.xp; showToast(`Metric Unlocked: ${def.text}`, 'success'); updated = true; }
         }
     });
-    
-    if (questUpdated) saveStats();
+    if (updated) saveStats();
 }
 
-export function init() {
-    loadStats();
-}
-
-export function getStats() {
-    return { ...stats };
-}
-
-export function getDailyQuests() {
-    return stats.dailyQuests.quests;
-}
-
-export function getXpForNextLevel(level) {
-    return level * 100;
-}
-
-function isSameDay(date1, date2) {
-    return date1.getFullYear() === date2.getFullYear() &&
-           date1.getMonth() === date2.getMonth() &&
-           date1.getDate() === date2.getDate();
-}
-
-function updateStreak(today) {
-    if (!stats.lastQuizDate) {
-        stats.currentStreak = 1;
-        return;
-    }
-    const lastDate = new Date(stats.lastQuizDate);
-    if (isSameDay(today, lastDate)) return;
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-    if (isSameDay(lastDate, yesterday)) {
-        stats.currentStreak++;
-        showToast(`Streak Extended: ${stats.currentStreak} Days! 🔥`);
-    } else {
-        stats.currentStreak = 1;
-    }
-}
+export function init() { loadStats(); }
+export function getStats() { return { ...stats }; }
+export function getDailyQuests() { return stats.dailyQuests.quests; }
+export function getXpForNextLevel(level) { return level * 100; }
 
 export function updateStatsOnQuizCompletion(quizAttempt) {
     const today = new Date();
-    updateStreak(today);
     stats.lastQuizDate = today.toISOString();
+    stats.xp += (quizAttempt.xpGained || 0);
+    checkQuestProgress({ type: 'complete_level', data: { scorePercent: quizAttempt.score/quizAttempt.totalQuestions, topic: quizAttempt.topic } });
     
-    const xpGained = quizAttempt.xpGained ?? (quizAttempt.score * 10);
-    if (xpGained > 0) {
-        stats.xp += xpGained;
-        showToast(`${xpGained} XP gained!`, 'info');
-    }
-
-    const scorePercent = quizAttempt.totalQuestions > 0 ? quizAttempt.score / quizAttempt.totalQuestions : 0;
-    
-    checkQuestProgress({ 
-        type: 'complete_level', 
-        data: { 
-            scorePercent,
-            topic: quizAttempt.topic
-        } 
-    });
-    
-    if (quizAttempt.fastAnswers > 0) {
-        checkQuestProgress({
-            type: 'fast_answers',
-            data: { count: quizAttempt.fastAnswers }
-        });
-    }
-
-    let xpForNextLevel = getXpForNextLevel(stats.level);
-    let didLevelUp = false;
-    while (stats.xp >= xpForNextLevel) {
-        stats.level++;
-        stats.xp -= xpForNextLevel;
-        didLevelUp = true;
-        xpForNextLevel = getXpForNextLevel(stats.level);
-    }
-
-    if (didLevelUp) {
-        window.dispatchEvent(new CustomEvent('level-up', { detail: { level: stats.level } }));
-    }
-
+    let xpNext = getXpForNextLevel(stats.level);
+    while (stats.xp >= xpNext) { stats.level++; stats.xp -= xpNext; xpNext = getXpForNextLevel(stats.level); window.dispatchEvent(new CustomEvent('level-up', { detail: { level: stats.level } })); }
     saveStats();
 }
 
 export function getAchievementsProgress() {
     return Object.entries(ACHIEVEMENTS).map(([id, data]) => {
-        const currentValue = data.metric(stats) || 0;
-        let currentTier = null;
-        let nextTier = data.tiers[0];
-        let progress = 0;
-        let target = data.tiers[0].target;
-        let isMaxed = false;
-
+        const val = data.metric(stats) || 0;
+        let tier = null, target = data.tiers[0].target, progress = 0;
         for (let i = 0; i < data.tiers.length; i++) {
-            const tier = data.tiers[i];
-            if (currentValue >= tier.target) {
-                currentTier = tier;
-                if (i < data.tiers.length - 1) {
-                    nextTier = data.tiers[i + 1];
-                    target = nextTier.target;
-                } else {
-                    isMaxed = true;
-                    nextTier = null;
-                    target = currentValue;
-                }
-            } else {
-                nextTier = tier;
-                target = tier.target;
-                break;
-            }
+            if (val >= data.tiers[i].target) { tier = data.tiers[i]; if (i < data.tiers.length - 1) target = data.tiers[i+1].target; else target = val; }
+            else { target = data.tiers[i].target; break; }
         }
-
-        if (isMaxed) {
-            progress = 100;
-        } else {
-            const prevTarget = currentTier ? currentTier.target : 0;
-            const bandTotal = target - prevTarget;
-            const bandCurrent = currentValue - prevTarget;
-            progress = Math.max(0, Math.min(100, (bandCurrent / bandTotal) * 100));
-        }
-
-        return {
-            id,
-            name: data.name,
-            description: data.description,
-            icon: data.icon,
-            currentValue,
-            target,
-            progressPercent: progress,
-            currentTierName: currentTier ? currentTier.name : 'Locked',
-            currentTierColor: currentTier ? currentTier.color : '#444',
-            nextTierName: nextTier ? nextTier.name : 'Max',
-            isUnlocked: !!currentTier,
-            isMaxed
-        };
+        if (val >= data.tiers[data.tiers.length-1].target) progress = 100;
+        else { const prev = tier ? tier.target : 0; progress = Math.max(0, Math.min(100, ((val - prev) / (target - prev)) * 100)); }
+        return { id, name: data.name, description: data.description, icon: data.icon, currentValue: val, target, progressPercent: progress, isUnlocked: !!tier, isMaxed: val >= data.tiers[data.tiers.length-1].target };
     });
 }

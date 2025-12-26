@@ -1,15 +1,20 @@
 
 <div class="page-container home-dashboard">
     
-    <!-- 1. Status HUD (Heads-Up Display) -->
+    <!-- 1. Status HUD -->
     <header class="dashboard-hud">
         <div class="hud-left">
             <h1 id="home-greeting">System Initializing...</h1>
             <p class="hud-subtitle">Neural Interface Active</p>
         </div>
         
-        <!-- Grouped Stats for Adaptive Layout -->
         <div class="hud-right">
+            <!-- PRESENTATION TRIGGER -->
+            <button id="trigger-briefing-btn" class="btn btn-briefing">
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#play-circle"/></svg>
+                <span>Strategic Briefing</span>
+            </button>
+
             <div class="hud-stats-cluster">
                 <div class="stat-pill level-pill">
                     <span class="pill-label">LVL</span>
@@ -35,7 +40,7 @@
                 <div class="input-icon-zone">
                     <svg class="icon"><use href="assets/icons/feather-sprite.svg#search"/></svg>
                 </div>
-                <input type="text" id="command-input" class="cyber-input" placeholder="Input directive, topic, or query..." autocomplete="off">
+                <input type="text" id="command-input" class="cyber-input" placeholder="Search topics, skills, or curriculum..." autocomplete="off">
                 <div class="input-actions">
                     <button type="button" id="home-camera-btn" class="action-btn" title="Scan Document/Image" aria-label="Upload Image">
                         <svg class="icon"><use href="assets/icons/feather-sprite.svg#camera"/></svg>
@@ -52,10 +57,10 @@
     <!-- 3. Dashboard Grid -->
     <div class="dashboard-grid">
         
-        <!-- A. Streak Challenge Card (NEW) -->
+        <!-- Habit Builder -->
         <div class="dashboard-panel streak-panel">
             <div class="panel-header">
-                <h3><svg class="icon"><use href="assets/icons/feather-sprite.svg#target"/></svg> Habit Builder</h3>
+                <h3><svg class="icon"><use href="assets/icons/feather-sprite.svg#target"/></svg> Mastery Progress</h3>
                 <span class="streak-fraction" id="streak-fraction">0/21</span>
             </div>
             <div class="streak-content">
@@ -66,55 +71,82 @@
                         <span style="left: 66%">14</span>
                     </div>
                 </div>
-                <p id="streak-message" class="streak-message">Start your 21-day consistency protocol.</p>
+                <p id="streak-message" class="streak-message">Building technical consistency in the province.</p>
             </div>
         </div>
 
-        <!-- B. Priority Mission (Resume) -->
-        <div id="resume-section" class="dashboard-panel mission-panel" style="display: none;">
-            <!-- Injected by JS -->
-        </div>
+        <!-- Priority Mission -->
+        <div id="resume-section" class="dashboard-panel mission-panel" style="display: none;"></div>
 
-        <!-- C. Featured Protocols -->
+        <!-- Quick Access -->
         <div class="dashboard-panel protocols-panel">
             <div class="panel-header">
-                <h3><svg class="icon"><use href="assets/icons/feather-sprite.svg#grid"/></svg> Quick Access</h3>
+                <h3><svg class="icon"><use href="assets/icons/feather-sprite.svg#grid"/></svg> High-Impact Fields</h3>
                 <a href="#/topics" class="panel-link">View All</a>
             </div>
             <div class="protocol-grid">
-                <button class="protocol-card" data-topic="Cybersecurity">
-                    <div class="protocol-icon red"><svg class="icon"><use href="assets/icons/feather-sprite.svg#shield"/></svg></div>
-                    <span>Security</span>
-                </button>
                 <button class="protocol-card" data-topic="Artificial Intelligence">
                     <div class="protocol-icon blue"><svg class="icon"><use href="assets/icons/feather-sprite.svg#cpu"/></svg></div>
-                    <span>AI Core</span>
+                    <span>AI & Tech</span>
                 </button>
-                <button class="protocol-card" data-topic="Web Development">
+                <button class="protocol-card" data-topic="Modern Agriculture">
+                    <div class="protocol-icon green"><svg class="icon"><use href="assets/icons/feather-sprite.svg#sun"/></svg></div>
+                    <span>Agri-Tech</span>
+                </button>
+                <button class="protocol-card" data-topic="Public Administration">
                     <div class="protocol-icon purple"><svg class="icon"><use href="assets/icons/feather-sprite.svg#layers"/></svg></div>
-                    <span>Web Dev</span>
+                    <span>Civics</span>
                 </button>
-                <button class="protocol-card" data-topic="Crypto & Blockchain">
-                    <div class="protocol-icon gold"><svg class="icon"><use href="assets/icons/feather-sprite.svg#lock"/></svg></div>
-                    <span>Crypto</span>
+                <button class="protocol-card" data-topic="Freelancing Mastery">
+                    <div class="protocol-icon gold"><svg class="icon"><use href="assets/icons/feather-sprite.svg#trending-up"/></svg></div>
+                    <span>Economy</span>
                 </button>
             </div>
         </div>
 
-        <!-- D. Recent Activity Logs -->
+        <!-- Recent Logs -->
         <div class="dashboard-panel history-panel">
             <div class="panel-header">
-                <h3><svg class="icon"><use href="assets/icons/feather-sprite.svg#activity"/></svg> Recent Logs</h3>
+                <h3><svg class="icon"><use href="assets/icons/feather-sprite.svg#activity"/></svg> Learning Velocity</h3>
             </div>
-            <div id="recent-history-container" class="history-list">
-                <!-- Injected by JS -->
-            </div>
+            <div id="recent-history-container" class="history-list"></div>
         </div>
 
     </div>
+
+    <!-- PRESENTATION MODAL: CUSTOMIZED FOR MPA -->
+    <div id="briefing-modal" class="modal-backdrop" style="display: none;">
+        <div class="modal-content briefing-content">
+            <div class="modal-header">
+                <h2>Skill Apex: Provincial Development Initiative</h2>
+                <button id="close-briefing-btn" class="btn-icon">
+                    <svg class="icon"><use href="assets/icons/feather-sprite.svg#x"/></svg>
+                </button>
+            </div>
+            <div class="modal-body briefing-body">
+                <div class="brief-slide">
+                    <h3>The Educational Challenge</h3>
+                    <p>Static classrooms cannot keep up with the global 4th Industrial Revolution. Our youth needs localized, elite-level tutoring that scales to millions.</p>
+                </div>
+                <div class="brief-slide">
+                    <h3>The AI-Powered Solution</h3>
+                    <p><strong>Neural Knowledge Synthesis:</strong> This platform uses Google's Gemini AI to provide 1-on-1 personalized coaching for every citizen.</p>
+                    <ul class="brief-list">
+                        <li><strong>Inclusivity:</strong> Voice-first learning for all literacy levels.</li>
+                        <li><strong>Rapid Employment:</strong> Targeted curriculums for high-paying remote work.</li>
+                        <li><strong>Scalability:</strong> Zero infrastructure cost—runs on any smartphone.</li>
+                    </ul>
+                </div>
+                <div class="brief-slide impact">
+                    <h3>The Result</h3>
+                    <p>A digital-ready workforce that drives provincial GDP growth through innovation and global competitiveness.</p>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <footer class="home-footer">
-        <span class="footer-status">SYSTEM NOMINAL</span>
-        <span class="footer-credit">ARCHITECT: AWAIS ALI</span>
+        <span class="footer-status">PROVINCIAL NODE: ONLINE</span>
+        <span class="footer-credit">PROJECT ARCHITECT: AWAIS ALI</span>
     </footer>
 </div>

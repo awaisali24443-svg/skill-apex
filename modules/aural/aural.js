@@ -59,7 +59,7 @@ function bytesToBase64(bytes) {
 
 // --- CHAT UI HELPERS ---
 function addChatBubble(text, sender) {
-    if (!text.trim()) return;
+    if (!text || !text.trim()) return;
     
     // Clear placeholder if first bubble
     if (elements.placeholder.style.display !== 'none') {
@@ -71,11 +71,11 @@ function addChatBubble(text, sender) {
     bubble.textContent = text;
     elements.chatLog.appendChild(bubble);
     
-    // Auto Scroll
+    // Scroll to bottom
     elements.chatLog.scrollTop = elements.chatLog.scrollHeight;
     
-    // Limit log size for performance
-    if (elements.chatLog.children.length > 10) {
+    // Remove oldest if too many
+    if (elements.chatLog.children.length > 20) {
         elements.chatLog.removeChild(elements.chatLog.firstChild);
     }
 }
@@ -100,11 +100,9 @@ async function startSession() {
         
         analyser = inputAudioContext.createAnalyser();
         analyser.fftSize = 512;
-        analyser.smoothingTimeConstant = 0.7;
         
         outputAnalyser = outputAudioContext.createAnalyser();
         outputAnalyser.fftSize = 512;
-        outputAnalyser.smoothingTimeConstant = 0.7;
         
         inputSource = inputAudioContext.createMediaStreamSource(mediaStream);
         scriptProcessor = inputAudioContext.createScriptProcessor(4096, 1, 1);
@@ -120,46 +118,40 @@ async function startSession() {
                 speechConfig: {
                     voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } }
                 },
-                // ENABLE TRANSCRIPTIONS
                 inputAudioTranscription: {},
                 outputAudioTranscription: {}
             },
             callbacks: {
                 onopen: () => {
-                    console.log("✅ Neural Link Established");
                     updateUI(STATE.LISTENING);
                 },
                 onmessage: (msg) => {
-                    try {
-                        // 1. Audio Processing
-                        const audioData = msg.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
-                        if (audioData) {
-                            updateUI(STATE.SPEAKING);
-                            playAudioChunk(audioData);
-                        }
+                    // Audio Data
+                    const audioData = msg.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
+                    if (audioData) {
+                        updateUI(STATE.SPEAKING);
+                        playAudioChunk(audioData);
+                    }
 
-                        // 2. Transcription Processing
-                        if (msg.serverContent?.inputTranscription) {
-                            currentInputTranscription += msg.serverContent.inputTranscription.text;
-                        }
-                        if (msg.serverContent?.outputTranscription) {
-                            currentOutputTranscription += msg.serverContent.outputTranscription.text;
-                        }
+                    // Transcription Logic
+                    if (msg.serverContent?.inputTranscription) {
+                        currentInputTranscription += msg.serverContent.inputTranscription.text;
+                    }
+                    if (msg.serverContent?.outputTranscription) {
+                        currentOutputTranscription += msg.serverContent.outputTranscription.text;
+                    }
 
-                        if (msg.serverContent?.turnComplete) {
-                            // Append bubbles when turn finishes
-                            if (currentInputTranscription) {
-                                addChatBubble(currentInputTranscription, 'user');
-                                currentInputTranscription = "";
-                            }
-                            if (currentOutputTranscription) {
-                                addChatBubble(currentOutputTranscription, 'ai');
-                                currentOutputTranscription = "";
-                            }
-                            updateUI(STATE.LISTENING);
+                    // Turn completion is the key for bubbles
+                    if (msg.serverContent?.turnComplete) {
+                        if (currentInputTranscription) {
+                            addChatBubble(currentInputTranscription, 'user');
+                            currentInputTranscription = "";
                         }
-                    } catch (err) {
-                        console.error("Error processing message:", err);
+                        if (currentOutputTranscription) {
+                            addChatBubble(currentOutputTranscription, 'ai');
+                            currentOutputTranscription = "";
+                        }
+                        updateUI(STATE.LISTENING);
                     }
                 },
                 onclose: () => stopSession(),
@@ -207,7 +199,7 @@ function playAudioChunk(base64Data) {
         source.connect(outputAudioContext.destination);
         source.start(0);
     } catch (e) {
-        console.error("Audio Playback Error:", e);
+        console.error("Playback error", e);
     }
 }
 
@@ -220,38 +212,23 @@ function stopSession() {
         mediaStream.getTracks().forEach(t => t.stop());
         mediaStream = null;
     }
-    if (inputAudioContext) {
-        inputAudioContext.close();
-        inputAudioContext = null;
-    }
-    if (outputAudioContext) {
-        outputAudioContext.close();
-        outputAudioContext = null;
-    }
+    if (inputAudioContext) inputAudioContext.close();
+    if (outputAudioContext) outputAudioContext.close();
     
-    // Gamification Tracking
     if (startTime > 0) {
-        const durationSeconds = Math.floor((Date.now() - startTime) / 1000);
-        if (durationSeconds > 10) {
-            gamificationService.checkQuestProgress({ 
-                type: 'aural_session', 
-                data: { duration: durationSeconds } 
-            });
-        }
+        const duration = Math.floor((Date.now() - startTime) / 1000);
+        if (duration > 10) gamificationService.checkQuestProgress({ type: 'aural_session', data: { duration } });
         startTime = 0;
     }
-
-    if (currentState !== STATE.ERROR) updateUI(STATE.IDLE);
+    updateUI(STATE.IDLE);
 }
 
 function updateUI(newState, msg) {
     currentState = newState;
     if (elements.status) {
-        if (msg) elements.status.textContent = msg;
-        else if (newState === STATE.LISTENING) elements.status.textContent = "Uplink Stable";
-        else if (newState === STATE.SPEAKING) elements.status.textContent = "Receiving Signal";
-        else if (newState === STATE.CONNECTING) elements.status.textContent = "Syncing Neural Core";
-        else elements.status.textContent = "Ready to Sync";
+        elements.status.textContent = msg || (newState === STATE.LISTENING ? "Uplink Stable" : 
+                                      newState === STATE.SPEAKING ? "Receiving Signal" : 
+                                      newState === STATE.CONNECTING ? "Syncing Neural Core" : "Ready to Sync");
     }
     
     if (newState === STATE.IDLE || newState === STATE.ERROR) {
@@ -263,16 +240,12 @@ function updateUI(newState, msg) {
     }
 }
 
-// --- ORGANIC BLOB VISUALIZER ---
 function initVisualizer() {
     const canvas = elements.canvas;
     const ctx = canvas.getContext('2d');
     let time = 0;
 
-    const resize = () => { 
-        canvas.width = window.innerWidth; 
-        canvas.height = window.innerHeight; 
-    };
+    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
     window.addEventListener('resize', resize);
     resize();
 
@@ -290,46 +263,23 @@ function initVisualizer() {
         animationFrameId = requestAnimationFrame(draw);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        let inputEnergy = 0;
-        let outputEnergy = 0;
-        
-        if (analyser && (currentState === STATE.LISTENING || currentState === STATE.CONNECTING)) {
-            const dataArray = new Uint8Array(analyser.frequencyBinCount);
-            analyser.getByteFrequencyData(dataArray);
-            inputEnergy = (dataArray.reduce((a,b)=>a+b,0) / dataArray.length) / 255;
+        let energy = 0;
+        if (analyser && currentState !== STATE.IDLE) {
+            const data = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(data);
+            energy = (data.reduce((a,b)=>a+b,0) / data.length) / 255;
         }
 
-        if (outputAnalyser && currentState === STATE.SPEAKING) {
-            const dataArray = new Uint8Array(outputAnalyser.frequencyBinCount);
-            outputAnalyser.getByteFrequencyData(dataArray);
-            outputEnergy = (dataArray.reduce((a,b)=>a+b,0) / dataArray.length) / 255;
-        }
-
-        const totalEnergy = inputEnergy + (outputEnergy * 1.5); 
-        time += 0.05 + (totalEnergy * 0.1); 
-
+        time += 0.05 + (energy * 0.2); 
         const cx = canvas.width / 2;
         const cy = canvas.height * 0.7;
-        const baseSize = Math.min(canvas.width, canvas.height) * (0.4 + (totalEnergy * 0.3));
+        const baseSize = Math.min(canvas.width, canvas.height) * (0.4 + (energy * 0.4));
 
-        let color1 = 'rgba(37, 99, 235, 0.4)'; // Blue
-        let color2 = 'rgba(124, 58, 237, 0.4)'; // Purple
-        
-        if (currentState === STATE.SPEAKING) {
-            color1 = 'rgba(219, 39, 119, 0.5)'; // Pink
-            color2 = 'rgba(79, 70, 229, 0.5)'; // Indigo
-        }
+        let color1 = 'rgba(37, 99, 235, 0.4)';
+        if (currentState === STATE.SPEAKING) color1 = 'rgba(219, 39, 119, 0.5)';
 
-        // Blob 1: Atmospheric Pulse
-        const r1 = baseSize * (1 + Math.sin(time * 0.3) * 0.1);
-        drawBlob(cx + Math.cos(time * 0.2) * 50, cy + Math.sin(time * 0.1) * 30, r1, color1);
-
-        // Blob 2: Core Reactivity
-        const r2 = baseSize * 0.8 * (1 + Math.cos(time * 0.4) * 0.15);
-        drawBlob(cx - Math.sin(time * 0.3) * 40, cy + Math.cos(time * 0.2) * 20, r2, color2);
-        
-        // Blob 3: Shadow Anchor
-        drawBlob(cx, cy, baseSize * 0.5, 'rgba(15, 23, 42, 0.05)');
+        drawBlob(cx + Math.cos(time * 0.2) * 50, cy, baseSize, color1);
+        drawBlob(cx - Math.sin(time * 0.3) * 40, cy, baseSize * 0.8, 'rgba(124, 58, 237, 0.3)');
     };
     draw();
 }
@@ -345,14 +295,7 @@ export function init() {
     };
 
     elements.headerControls.innerHTML = `<button class="btn" onclick="window.history.back()">ABORT LINK</button>`;
-
-    elements.micBtn.onclick = () => {
-        if (currentState === STATE.IDLE || currentState === STATE.ERROR) {
-            startSession();
-        } else {
-            stopSession();
-        }
-    };
+    elements.micBtn.onclick = () => (currentState === STATE.IDLE || currentState === STATE.ERROR) ? startSession() : stopSession();
 
     initVisualizer();
     updateUI(STATE.IDLE);
