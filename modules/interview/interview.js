@@ -95,27 +95,29 @@ async function handleCompletion(result) {
     elements.status.textContent = "Calibration Complete";
     soundService.playSound('achievement');
     
-    // Slight delay for reading
-    setTimeout(async () => {
-        const level = result.recommendedLevel || 1;
-        const topic = result.topic || currentTopic || "General Knowledge";
-        
-        showToast(`Skill Assessed: Level ${level}`, 'success');
-        
-        const journey = await learningPathService.startOrGetJourney(topic, {
-            totalLevels: 100, // Standard
-            description: "Custom path generated via Neural Calibration.",
-            currentLevel: level // JUMP START
-        });
-        
-        // Navigate
+    // Jump Start Logic
+    const level = result.recommendedLevel || 1;
+    const topic = result.topic || currentTopic || "General Knowledge";
+    
+    showToast(`Skill Assessed: Level ${level}`, 'success');
+    
+    // Generate the journey with the OVERRIDE level
+    const journey = await learningPathService.startOrGetJourney(topic, {
+        totalLevels: 100, // Standard scale
+        description: `Custom path generated via Neural Calibration. Based on initial assessment.`,
+        currentLevel: level, // KEY: This jumps the user ahead
+        styleClass: 'topic-programming' // Default style, or could inference from topic string
+    });
+    
+    // Wait a moment for the user to read the final message
+    setTimeout(() => {
+        // Navigate to the Level (Game)
         stateService.setNavigationContext({ 
             topic: journey.goal, 
-            level: level, 
+            level: journey.currentLevel, 
             journeyId: journey.id 
         });
         window.location.hash = '#/level';
-        
     }, 3000);
 }
 
