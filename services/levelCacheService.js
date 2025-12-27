@@ -1,14 +1,58 @@
 
 import { LOCAL_STORAGE_KEYS } from '../constants.js';
+import * as apiService from './apiService.js';
+import * as firebaseService from './firebaseService.js';
 
 const CACHE_PREFIX = 'kt-level-cache-';
 const MAX_CACHE_SIZE = 20; // Limit to 20 levels to prevent localStorage quota errors
 
 /**
+ * Orchestrates fetching level data: Local -> Cloud -> AI.
+ * This maximizes performance and minimizes cost.
+ */
+export async function fetchLevelData(topic, level) {
+    if (!topic || !level) return null;
+
+    // 1. Check Local Device Cache (Fastest, Free)
+    const localData = getLevel(topic, level);
+    if (localData) {
+        console.log("Serving Level from Local Cache");
+        return localData;
+    }
+
+    // 2. Check Global Cloud Cache (Fast, Cheap)
+    try {
+        const cloudData = await firebaseService.getGlobalLevelData(topic, level);
+        if (cloudData) {
+            console.log("Serving Level from Cloud Cache");
+            // Cache it locally so next time it's instant
+            saveLevel(topic, level, cloudData);
+            return cloudData;
+        }
+    } catch (e) {
+        console.warn("Cloud cache check failed, proceeding to AI", e);
+    }
+
+    // 3. Fallback to AI Generation (Slow, Costs Money)
+    console.log("Generating Level via AI Neural Core...");
+    try {
+        const apiData = await apiService.generateLevelQuestions({ topic, level });
+        
+        if (apiData && apiData.questions) {
+            // Save to Cloud for future users (Community Caching)
+            firebaseService.saveGlobalLevelData(topic, level, apiData);
+            // Save to Local
+            saveLevel(topic, level, apiData);
+        }
+        return apiData;
+    } catch (e) {
+        console.error("AI Generation failed", e);
+        return null;
+    }
+}
+
+/**
  * Saves generated level data to localStorage with LRU eviction policy.
- * @param {string} topic - The topic of the game.
- * @param {number} level - The level number.
- * @param {object} data - The level data (lesson and questions) to cache.
  */
 export function saveLevel(topic, level, data) {
     if (!topic || !level || !data) return;
@@ -26,16 +70,12 @@ export function saveLevel(topic, level, data) {
         localStorage.setItem(key, JSON.stringify(cacheEntry));
     } catch (e) {
         console.error("Failed to save level to cache. Storage might be full.", e);
-        // Emergency clear if quota is totally hit
         clearAllLevels();
     }
 }
 
 /**
  * Retrieves cached level data from localStorage.
- * @param {string} topic - The topic of the game.
- * @param {number} level - The level number.
- * @returns {object|null} The cached level data, or null if not found.
  */
 export function getLevel(topic, level) {
     if (!topic || !level) return null;
@@ -53,7 +93,6 @@ export function getLevel(topic, level) {
 
         return entry.data;
     } catch (e) {
-        console.error("Failed to retrieve level from cache.", e);
         return null;
     }
 }
@@ -64,7 +103,6 @@ export function getLevel(topic, level) {
 function manageCacheSize() {
     try {
         const keys = [];
-        // 1. Collect all level cache keys
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
             if (key && key.startsWith(CACHE_PREFIX)) {
@@ -72,7 +110,6 @@ function manageCacheSize() {
             }
         }
 
-        // 2. If we are over the limit, find the oldest
         if (keys.length >= MAX_CACHE_SIZE) {
             const entries = keys.map(key => {
                 try {
@@ -83,24 +120,16 @@ function manageCacheSize() {
                 }
             });
 
-            // Sort by timestamp ascending (oldest first)
             entries.sort((a, b) => a.timestamp - b.timestamp);
 
-            // Remove the oldest items until we have space (leave room for 1 new one)
             const itemsToRemove = entries.slice(0, (keys.length - MAX_CACHE_SIZE) + 1);
-            
-            itemsToRemove.forEach(item => {
-                localStorage.removeItem(item.key);
-            });
+            itemsToRemove.forEach(item => localStorage.removeItem(item.key));
         }
     } catch (e) {
         console.warn("Error managing cache size", e);
     }
 }
 
-/**
- * Clears all cached level data from localStorage.
- */
 export function clearAllLevels() {
     try {
         const keysToRemove = [];
@@ -111,7 +140,6 @@ export function clearAllLevels() {
             }
         }
         keysToRemove.forEach(key => localStorage.removeItem(key));
-        console.log('All cached levels cleared.');
     } catch (e) {
         console.error("Failed to clear level cache.", e);
     }

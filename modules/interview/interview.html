@@ -1,0 +1,35 @@
+
+<div class="page-container interview-container">
+    <header class="interview-header">
+        <div class="header-left">
+            <h1 class="glitch-text">NEURAL CALIBRATION</h1>
+            <p>Assessment Protocol: <span id="interview-status">Initializing...</span></p>
+        </div>
+        <button id="exit-interview-btn" class="btn btn-icon-only">
+            <svg class="icon"><use href="assets/icons/feather-sprite.svg#x"/></svg>
+        </button>
+    </header>
+
+    <main class="chat-viewport">
+        <div id="chat-history" class="chat-history">
+            <!-- Messages injected here -->
+            <div class="chat-msg ai">
+                <div class="msg-avatar"><svg class="icon"><use href="assets/icons/feather-sprite.svg#cpu"/></svg></div>
+                <div class="msg-content">
+                    <div class="typing-indicator">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="chat-input-area">
+        <form id="interview-form" class="chat-form">
+            <input type="text" id="user-response-input" class="chat-input" placeholder="Type your response..." autocomplete="off" disabled>
+            <button type="submit" id="send-response-btn" class="btn btn-primary btn-send" disabled>
+                <svg class="icon"><use href="assets/icons/feather-sprite.svg#send"/></svg>
+            </button>
+        </form>
+    </footer>
+</div>

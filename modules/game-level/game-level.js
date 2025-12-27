@@ -87,6 +87,7 @@ async function finishLevel() {
         learningPathService.completeLevel(levelContext.journeyId);
         await firebaseService.broadcastEcho('LEVEL_UP', levelContext.level);
         showToast(`Level Mastered! +${xpGained} XP`, 'success');
+        soundService.playSound('finish');
     } else {
         showToast(`Level Failed. Analysis required.`, 'error');
     }
@@ -107,8 +108,39 @@ async function finishLevel() {
     document.getElementById('results-details').textContent = `Precision: ${Math.round(passRate * 100)}% | Response Time: ${Math.round(avgLatency/1000)}s`;
     
     const actionContainer = document.getElementById('results-actions');
-    actionContainer.innerHTML = `<button class="btn btn-primary" id="finish-btn">Return to Map</button>`;
+    
+    // SPONSOR-READY FEATURE: Share Button to create viral loop
+    let shareButtonHtml = '';
+    if (navigator.share && passed) {
+        shareButtonHtml = `<button class="btn" id="share-victory-btn" style="background:var(--color-surface-hover); color:var(--color-primary); border:1px solid var(--color-primary);">
+            <svg class="icon"><use href="assets/icons/feather-sprite.svg#share-2"/></svg> Share
+        </button>`;
+    }
+
+    actionContainer.innerHTML = `
+        <div style="display:flex; gap:10px; width:100%; justify-content:center;">
+            ${shareButtonHtml}
+            <button class="btn btn-primary" id="finish-btn">Return to Map</button>
+        </div>
+    `;
+    
     document.getElementById('finish-btn').onclick = () => window.location.hash = '#/topics';
+    
+    const shareBtn = document.getElementById('share-victory-btn');
+    if (shareBtn) {
+        shareBtn.onclick = async () => {
+            try {
+                await navigator.share({
+                    title: 'Skill Apex Mastery',
+                    text: `I just mastered ${levelContext.topic} Level ${levelContext.level} on Skill Apex with ${Math.round(passRate * 100)}% precision! 🚀`,
+                    url: 'https://skill-apex.onrender.com'
+                });
+                showToast('Victory broadcasted!', 'success');
+            } catch (err) {
+                console.log('Share cancelled');
+            }
+        };
+    }
 }
 
 export function init() {

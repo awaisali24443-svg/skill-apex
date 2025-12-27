@@ -42,14 +42,42 @@ export async function initPageShell(options = { fullBleed: false }) {
         `);
     }
 
-    // 2. Auth & Connection Monitoring
+    // 2. Setup Sidebar Interaction (Expand/Collapse on Mobile)
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        // Expand on click
+        sidebar.addEventListener('click', (e) => {
+            // Only act if on mobile (checked via width or just always toggle class, CSS handles condition)
+            // Stop propagation so document click doesn't immediately close it
+            e.stopPropagation();
+            sidebar.classList.add('expanded');
+        });
+
+        // Close when clicking links inside (Better UX for navigation)
+        sidebar.addEventListener('click', (e) => {
+            if (e.target.closest('a') || e.target.closest('button')) {
+                // Remove class after small delay to allow visual feedback
+                setTimeout(() => sidebar.classList.remove('expanded'), 300);
+            }
+        });
+    }
+
+    // Collapse Sidebar on Outside Click
+    document.addEventListener('click', (e) => {
+        const sb = document.getElementById('sidebar');
+        if (sb && sb.classList.contains('expanded') && !sb.contains(e.target)) {
+            sb.classList.remove('expanded');
+        }
+    });
+
+    // 3. Auth & Connection Monitoring
     return new Promise((resolve) => {
         firebaseService.onAuthChange((user) => {
             const wrapper = document.getElementById('app-wrapper');
             const authContainer = document.getElementById('auth-container');
 
             if (user) {
-                if (wrapper) wrapper.style.display = 'flex';
+                if (wrapper) wrapper.style.display = 'block'; // Matches CSS Media Query default for wrapper
                 if (authContainer) authContainer.style.display = 'none';
                 
                 // Start Continuous Link Monitor

@@ -236,6 +236,7 @@ export function init() {
         progressPercent: document.getElementById('progress-percent'),
         progressCircle: document.getElementById('progress-circle-path'),
         copyBtn: document.getElementById('copy-ref-btn'),
+        shareProfileBtn: document.getElementById('share-profile-btn'),
         
         statStreak: document.getElementById('stat-streak'),
         statXp: document.getElementById('stat-xp'),
@@ -252,6 +253,24 @@ export function init() {
         navigator.clipboard.writeText(elements.recruiterInput.value);
         showToast('Link copied.', 'success');
     });
+
+    if (elements.shareProfileBtn) {
+        elements.shareProfileBtn.addEventListener('click', async () => {
+            if (navigator.share) {
+                try {
+                    const name = elements.nameDisplay.textContent;
+                    await navigator.share({
+                        title: `${name}'s Skill Apex Profile`,
+                        text: `Check out my stats on Skill Apex! I've completed ${elements.statQuizzes.textContent} quizzes.`,
+                        url: elements.recruiterInput.value
+                    });
+                } catch(e) { console.log("Share skipped"); }
+            } else {
+                navigator.clipboard.writeText(elements.recruiterInput.value);
+                showToast('Link copied to clipboard', 'success');
+            }
+        });
+    }
 }
 
 export function destroy() {}

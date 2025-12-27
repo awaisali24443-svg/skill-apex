@@ -186,9 +186,60 @@ app.post('/api/explain-error', async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// --- NEW INTERVIEW ENDPOINT ---
+app.post('/api/interview-step', async (req, res) => {
+    try {
+        const { history, topic } = req.body;
+        
+        // Construct the prompt context from history
+        let conversationLog = "Conversation History:\n";
+        history.forEach(h => {
+            conversationLog += `${h.role === 'model' ? 'Interviewer' : 'User'}: ${h.text}\n`;
+        });
+
+        const prompt = `
+        You are an adaptive learning assistant conducting a placement interview.
+        Topic: ${topic || "Not yet specified"}.
+        
+        GOAL: Determine the user's skill level (1-100) for this topic.
+        
+        INSTRUCTIONS:
+        1. If topic is unknown, ask for it.
+        2. Ask 3-5 targeted diagnostic questions, one by one.
+        3. Start basic. If they answer well, jump to intermediate/advanced questions instantly.
+        4. If they struggle, stay basic.
+        5. Keep tone friendly but professional. Use phrases like "No worries if you're new".
+        6. After ~4 questions or if you are confident, conclude.
+        
+        ${conversationLog}
+        
+        RESPONSE FORMAT (JSON ONLY):
+        If continuing: { "status": "continue", "message": "Next question text here" }
+        If concluding: { "status": "complete", "message": "Summary of assessment", "recommendedLevel": <integer 1-100>, "topic": "<confirmed topic>" }
+        `;
+
+        const result = await generateAIContent({
+            model: 'gemini-3-flash-preview', // Faster for chat
+            prompt: prompt,
+            schemaDescription: "JSON with status, message, and optional recommendedLevel/topic.",
+            schema: {
+                type: Type.OBJECT,
+                properties: {
+                    status: { type: Type.STRING, enum: ["continue", "complete"] },
+                    message: { type: Type.STRING },
+                    recommendedLevel: { type: Type.INTEGER },
+                    topic: { type: Type.STRING }
+                },
+                required: ["status", "message"]
+            }
+        });
+        res.json(result);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.post('/api/debug-status', (req, res) => res.json({ status: 'online' }));
 
-const pages = ['topics', 'library', 'history', 'leaderboard', 'profile', 'aural', 'settings', 'level', 'report', 'study', 'game'];
+const pages = ['topics', 'library', 'history', 'leaderboard', 'profile', 'aural', 'settings', 'level', 'report', 'study', 'game', 'interview'];
 pages.forEach(page => {
     app.get(`/${page}`, (req, res) => res.sendFile(path.join(__dirname, `pages/${page}.html`)));
 });

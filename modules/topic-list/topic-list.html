@@ -25,19 +25,25 @@
             </div>
             <div class="creator-content">
                 <h2>Initialize Custom Protocol</h2>
-                <p>Input a topic or upload a <strong>PDF / Image</strong> to generate a specialized training curriculum.</p>
+                <p>Input a topic to generate a training curriculum or use <strong>Neural Calibration</strong> to assess your skill level first.</p>
                 <form id="journey-creator-form" class="creator-form">
                     <div class="input-group">
                         <input type="text" id="custom-topic-input" class="form-input" placeholder="Enter topic or upload file..." required>
                         <button type="button" id="camera-btn" class="btn btn-icon-only scan-btn" title="Upload PDF or Image">
-                            <svg class="icon"><use href="assets/icons/feather-sprite.svg#box"/></svg> <!-- Changed icon to Box/File generic -->
+                            <svg class="icon"><use href="assets/icons/feather-sprite.svg#box"/></svg> 
                         </button>
                         <input type="file" id="image-upload-input" accept="image/*,application/pdf" style="display: none;">
                     </div>
-                    <button type="submit" id="generate-btn" class="btn btn-primary generate-action">
-                        <span>Generate</span>
-                        <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
-                    </button>
+                    <div class="action-buttons-row" style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <button type="submit" id="generate-btn" class="btn btn-primary generate-action">
+                            <span>Generate</span>
+                            <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
+                        </button>
+                        <button type="button" id="interview-btn" class="btn btn-outline-primary" style="flex-grow:1;">
+                            <svg class="icon"><use href="assets/icons/feather-sprite.svg#mic"/></svg>
+                            <span>Neural Calibration</span>
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>

@@ -68,13 +68,34 @@
     100% { transform: scale(1); opacity: 0.8; }
 }
 
+.loading-readout {
+    text-align: center;
+    margin-top: 20px;
+    width: 100%;
+}
+
 #loading-status-text {
     font-family: var(--font-family-mono);
     color: var(--color-primary);
-    font-size: 0.9rem;
-    letter-spacing: 1px;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    font-weight: 800;
     text-transform: uppercase;
-    transition: opacity 0.3s ease;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.loading-tip {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    min-height: 24px;
+    animation: fadeTip 0.5s ease-in-out;
+    margin: 0;
+}
+
+@keyframes fadeTip {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* --- QUIZ STATE --- */

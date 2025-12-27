@@ -62,7 +62,7 @@ body.low-perf .new-quiz-footer {
     display: flex;
     flex-direction: column;
     z-index: 100;
-    transition: width 0.3s ease;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
     flex-shrink: 0; /* Prevent shrinking */
 }
 
@@ -83,6 +83,7 @@ body.low-perf .new-quiz-footer {
 .sidebar-inner {
     display: flex; flex-direction: column; height: 100%;
     padding: 1rem;
+    overflow: hidden; /* Ensure content doesn't bleed during transition */
 }
 
 .sidebar-profile-header {
@@ -91,16 +92,17 @@ body.low-perf .new-quiz-footer {
     background: var(--color-surface-hover);
     border-radius: 12px; border: 1px solid var(--color-border);
     overflow: hidden; /* Hide overflow for collapsed state */
+    white-space: nowrap;
 }
 
 .profile-avatar-container { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
 .profile-avatar-img { width: 100%; height: 100%; object-fit: cover; }
-.profile-info-text { display: flex; flex-direction: column; overflow: hidden; white-space: nowrap; }
+.profile-info-text { display: flex; flex-direction: column; overflow: hidden; white-space: nowrap; transition: opacity 0.2s; }
 .profile-name { font-weight: 700; font-size: 0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
 .profile-role { font-size: 0.7rem; color: var(--color-primary); letter-spacing: 1px; text-transform: uppercase; }
 
 .sidebar-divider { height: 1px; background: var(--color-border); margin: 0 10px 20px 10px; }
-.sidebar-menu-label { font-size: 0.7rem; color: var(--color-text-secondary); margin: 0 0 10px 12px; font-weight: 700; letter-spacing: 1px; white-space: nowrap; }
+.sidebar-menu-label { font-size: 0.7rem; color: var(--color-text-secondary); margin: 0 0 10px 12px; font-weight: 700; letter-spacing: 1px; white-space: nowrap; transition: opacity 0.2s; }
 
 .sidebar-links {
     display: flex; flex-direction: column; gap: 4px; flex-grow: 1;
@@ -119,47 +121,81 @@ body.low-perf .new-quiz-footer {
 .sidebar-link:hover { background: var(--color-surface-hover); color: var(--color-text); }
 .sidebar-link.active { background: var(--color-surface-active); color: var(--color-primary); font-weight: 700; border: 1px solid var(--color-border); }
 .sidebar-link .icon { width: 20px; height: 20px; flex-shrink: 0; }
+.sidebar-link .text { transition: opacity 0.2s; }
 
 .sidebar-footer { margin-top: auto; padding-top: 20px; display: flex; flex-direction: column; gap: 4px; border-top: 1px solid var(--color-border); }
 
-/* --- MOBILE & TABLET LAYOUT (COLLAPSED VERTICAL SIDEBAR) --- */
+/* --- MOBILE & TABLET LAYOUT (EXPANDABLE RAIL) --- */
 @media (max-width: 900px) {
-    /* Shrink sidebar to icon width */
+    /* Layout Switch: Use Fixed/Absolute positioning for Sidebar on mobile */
+    #app-wrapper {
+        display: block; /* Disable flex to manage absolute positioning manually */
+    }
+
     #sidebar {
+        position: fixed;
+        top: 30px; /* Below neural link bar */
+        left: 0;
+        bottom: 0;
         width: var(--sidebar-width-collapsed);
+        z-index: 500;
     }
 
-    .sidebar-inner {
-        padding: 0.8rem 0.5rem; /* Reduced padding */
+    #app-container {
+        margin-left: var(--sidebar-width-collapsed);
+        width: calc(100vw - var(--sidebar-width-collapsed));
+        height: 100%;
     }
 
-    /* Hide text labels */
+    /* Collapsed State Styles */
+    .sidebar-inner { padding: 0.8rem 0.5rem; }
+    .sidebar-profile-header { padding: 8px; justify-content: center; background: transparent; border: none; }
+    .sidebar-divider { margin: 0 5px 20px 5px; }
+    .sidebar-link { justify-content: center; padding: 12px 0; }
+    .sidebar-link .link-icon-wrapper { margin: 0; }
+    .sidebar-footer { align-items: center; }
+
+    /* Hide Text Labels Initially */
     .profile-info-text,
     .sidebar-menu-label,
-    .sidebar-link .text,
-    .sidebar-profile-header .profile-info-text {
-        display: none !important;
+    .sidebar-link .text {
+        opacity: 0;
+        pointer-events: none;
+        display: none; /* Fully hide to prevent layout interference */
     }
 
-    /* Center icons */
-    .sidebar-profile-header {
-        padding: 8px; justify-content: center;
-        background: transparent; border: none;
+    /* EXPANDED STATE (Triggered via JS) */
+    #sidebar.expanded {
+        width: var(--sidebar-width-desktop);
+        box-shadow: 10px 0 40px rgba(0,0,0,0.5); /* Deep shadow to separate from content */
     }
-    
-    .sidebar-divider { margin: 0 5px 20px 5px; }
 
-    .sidebar-link {
-        justify-content: center;
-        padding: 12px 0;
+    /* Restore Styles when Expanded */
+    #sidebar.expanded .sidebar-inner { padding: 1rem; }
+    
+    #sidebar.expanded .profile-info-text,
+    #sidebar.expanded .sidebar-menu-label,
+    #sidebar.expanded .sidebar-link .text {
+        display: block;
+        opacity: 1;
+        pointer-events: auto;
+        animation: fadeInText 0.3s ease forwards;
     }
     
-    .sidebar-link .link-icon-wrapper {
-        margin: 0;
+    /* Revert Centering */
+    #sidebar.expanded .sidebar-profile-header {
+        padding: 12px; justify-content: flex-start;
+        background: var(--color-surface-hover); border: 1px solid var(--color-border);
     }
-    
-    /* Center Footer buttons too */
-    .sidebar-footer { align-items: center; }
+    #sidebar.expanded .sidebar-divider { margin: 0 10px 20px 10px; }
+    #sidebar.expanded .sidebar-link { justify-content: flex-start; padding: 12px 16px; }
+    #sidebar.expanded .sidebar-footer { align-items: stretch; }
+    #sidebar.expanded .sidebar-link .text { display: inline-block; }
+}
+
+@keyframes fadeInText {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
 }
 
 /* --- Top Bar (Neural Link) --- */

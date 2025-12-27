@@ -15,6 +15,7 @@ export const FEATURES = {
 export const ROUTES = [
     { path: '/', module: 'home', name: 'Home', icon: 'home', nav: true },
     { path: '/topics', module: 'topic-list', name: 'Journeys', icon: 'git-branch', nav: true },
+    { path: '/interview', module: 'interview', name: 'Calibration', icon: 'mic', nav: false }, /* Hidden from sidebar, accessed via flow */
     { path: '/report', module: 'report', name: 'Analytics', icon: 'activity', nav: true },
     { path: '/library', module: 'library', name: 'Library', icon: 'book', nav: true },
     { path: '/history', module: 'history', name: 'History', icon: 'archive', nav: true },

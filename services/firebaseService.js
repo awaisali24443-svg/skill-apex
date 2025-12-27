@@ -116,3 +116,32 @@ export async function getLeaderboard() {
 export async function syncLocalToCloud() {
     // Sync local storage items to cloud on login
 }
+
+// --- GLOBAL LEVEL CACHING (Saves API Costs) ---
+
+function sanitizeTopicId(topic) {
+    if(!topic) return 'unknown';
+    // Consistent ID: lowercase, alphanumeric + underscore
+    return topic.toLowerCase().trim().replace(/[^a-z0-9]/g, '_');
+}
+
+export async function getGlobalLevelData(topic, level) {
+    try {
+        const docId = `${sanitizeTopicId(topic)}_lvl_${level}`;
+        const docRef = doc(db, "global_levels", docId);
+        const snap = await getDoc(docRef);
+        return snap.exists() ? snap.data() : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+export async function saveGlobalLevelData(topic, level, data) {
+    try {
+        const docId = `${sanitizeTopicId(topic)}_lvl_${level}`;
+        const docRef = doc(db, "global_levels", docId);
+        await setDoc(docRef, { ...data, cachedAt: serverTimestamp() }, { merge: true });
+    } catch (e) {
+        console.warn("Failed to cache level globally", e);
+    }
+}

@@ -46,6 +46,10 @@ export async function explainError(topic, question, userSelection, correctOption
     return await postToServer('/explain-error', { topic, question, userSelection, correctOption });
 }
 
+export async function processInterviewStep(history, topic) {
+    return await postToServer('/interview-step', { history, topic });
+}
+
 export async function checkSystemStatus() {
     const start = Date.now();
     try {
