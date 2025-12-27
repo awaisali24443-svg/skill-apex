@@ -3,226 +3,52 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Skill Apex | Neural Knowledge Interface</title>
-    <meta name="description" content="AI-Powered Technical Mastery System.">
-    
-    <!-- Full Screen Mode for Kiosk/Expo -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <!-- Updated Theme Color for Daylight Mode -->
-    <meta name="theme-color" id="theme-color-meta" content="#F1F5F9">
-    
-    <!-- Open Graph -->
-    <meta property="og:title" content="Skill Apex | Neural Knowledge Interface">
-    <meta property="og:description" content="The future of rapid skill acquisition.">
-    <meta property="og:image" content="assets/images/og-image.png">
-
-    <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
-    <link rel="manifest" href="manifest.json">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;800&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-    
-    <!-- Mermaid.js -->
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-
-    <!-- Global Styles -->
-    <link rel="stylesheet" href="global/global.css">
-    
-    <!-- EXPO DEFAULT: Light Cyber (High Visibility for Day/Outdoor) -->
-    <link id="theme-stylesheet" rel="stylesheet" href="themes/theme-light-cyber.css">
-
-<script type="importmap">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Skill Apex | Dashboard</title>
+    <link rel="stylesheet" href="/global/global.css">
+    <link id="theme-stylesheet" rel="stylesheet" href="/themes/theme-light-cyber.css">
+    <script type="importmap">
 {
   "imports": {
-    "express": "https://aistudiocdn.com/express@^5.1.0",
-    "path": "https://aistudiocdn.com/path@^0.12.7",
-    "dotenv/": "https://aistudiocdn.com/dotenv@^17.2.3/",
     "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
-    "express-rate-limit": "https://aistudiocdn.com/express-rate-limit@^8.2.1",
-    "ws": "https://aistudiocdn.com/ws@^8.18.3",
-    "firebase/": "https://aistudiocdn.com/firebase@10.13.0/",
-    "url": "https://aistudiocdn.com/url@^0.11.4",
-    "fs/": "https://aistudiocdn.com/fs@^0.0.1-security/",
-    "http": "https://aistudiocdn.com/http@^0.0.1-security",
-    "dompurify": "https://aistudiocdn.com/dompurify@^3.3.0"
+    "dompurify": "https://aistudiocdn.com/dompurify@^3.3.0",
+    "path": "https://esm.sh/path@^0.12.7",
+    "express-rate-limit": "https://esm.sh/express-rate-limit@^8.2.1",
+    "dotenv/": "https://esm.sh/dotenv@^17.2.3/",
+    "express": "https://esm.sh/express@^5.2.1",
+    "http": "https://esm.sh/http@^0.0.1-security",
+    "url": "https://esm.sh/url@^0.11.4"
   }
 }
 </script>
 </head>
 <body>
-    <noscript>
-        <div style="padding: 20px; color: #fff; background: #000;">
-            <h1>SYSTEM ERROR: NEURAL LINK SEVERED</h1>
-            <p>JavaScript Execution Required.</p>
-        </div>
-    </noscript>
+    <script type="module">
+        import { initPageShell } from './services/layoutService.js';
+        import * as homeModule from './modules/home/home.js';
+        import * as authModule from './modules/auth/auth.js';
 
-    <!-- Background Layer -->
-    <div id="global-background">
-        <!-- Mesh Gradient Blobs -->
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
-        <div class="blob blob-3"></div>
-        <div class="blob blob-4"></div>
-        <div class="bg-grid-overlay"></div>
-    </div>
-    
-    <!-- Auth Container -->
-    <div id="auth-container"></div>
-
-    <!-- Intro Splash -->
-    <div id="splash-screen">
-        <div class="cinematic-loader-container">
-            <!-- Particle System (CSS) -->
-            <div class="particles">
-                <div class="particle p1"></div>
-                <div class="particle p2"></div>
-                <div class="particle p3"></div>
-                <div class="particle p4"></div>
-                <div class="particle p5"></div>
-            </div>
-
-            <!-- Inline SVG Logo for Animation Parts -->
-            <svg class="cinematic-logo" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <linearGradient id="anim-grad-left" x1="100" y1="400" x2="256" y2="100" gradientUnits="userSpaceOnUse">
-                        <stop offset="0%" stop-color="#0033A0"/>
-                        <stop offset="100%" stop-color="#0052CC"/>
-                    </linearGradient>
-                    <linearGradient id="anim-grad-right" x1="412" y1="400" x2="256" y2="100" gradientUnits="userSpaceOnUse">
-                        <stop offset="0%" stop-color="#008DA6"/>
-                        <stop offset="100%" stop-color="#00E5FF"/>
-                    </linearGradient>
-                    <filter id="anim-glow" x="-50%" y="-50%" width="200%" height="200%">
-                        <feGaussianBlur stdDeviation="10" result="coloredBlur"/>
-                        <feMerge>
-                            <feMergeNode in="coloredBlur"/>
-                            <feMergeNode in="SourceGraphic"/>
-                        </feMerge>
-                    </filter>
-                </defs>
+        async function init() {
+            const user = await initPageShell();
+            const pageContent = document.getElementById('page-content');
+            
+            if (user) {
+                // Load Home Content
+                const html = await fetch('./modules/home/home.html').then(res => res.text());
+                const css = await fetch('./modules/home/home.css').then(res => res.text());
                 
-                <g class="logo-group">
-                    <!-- Left Wing -->
-                    <path class="logo-part wing-left" d="M96 416 L232 136 L256 180 L170 416 H96Z" 
-                          fill="url(#anim-grad-left)" stroke="white" stroke-width="2" />
-                    
-                    <!-- Right Wing -->
-                    <path class="logo-part wing-right" d="M416 416 L280 136 L256 180 L342 416 H416Z" 
-                          fill="url(#anim-grad-right)" stroke="white" stroke-width="2" />
-                    
-                    <!-- Center Spark -->
-                    <circle class="logo-part spark" cx="256" cy="100" r="32" fill="white" />
-                </g>
-            </svg>
-        </div>
-
-        <h2 id="splash-status-text" class="cinematic-text">INITIALIZING CORE...</h2>
-        <div id="splash-error-log" style="color: #ef4444; margin-top: 20px; font-family: 'Roboto Mono', monospace; font-size: 0.8rem; max-width: 80%; text-align: center;"></div>
-        <button id="splash-reload-btn" class="btn btn-primary" style="display: none; margin-top: 20px;">System Reboot</button>
-    </div>
-
-    <div id="welcome-screen" style="display: none;">
-        <div class="welcome-content card hud-corners">
-            <!-- REPAIRED: Replaced IMG with Vector SVG Logo -->
-            <div class="logo-container-welcome">
-                <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="logoGradWelcome" x1="0%" y1="100%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#4338CA"/>
-                            <stop offset="100%" stop-color="#7C3AED"/>
-                        </linearGradient>
-                    </defs>
-                    <path d="M50 5 L95 27.5 V72.5 L50 95 L5 72.5 V27.5 Z" stroke="url(#logoGradWelcome)" stroke-width="4" stroke-linecap="round" fill="none" />
-                    <path d="M50 25 L75 80 H65 L50 45 L35 80 H25 Z" fill="url(#logoGradWelcome)" />
-                    <circle cx="50" cy="55" r="4" fill="#F1F5F9" stroke="#4338CA" stroke-width="2"/>
-                </svg>
-            </div>
-            <h1>Skill Apex</h1>
-            <p>Neural Training Interface for Modern Engineers.</p>
-            <ul class="features-list">
-                <li><div class="icon-badge"><svg class="icon"><use href="assets/icons/feather-sprite.svg#cpu"/></svg></div><span>Adaptive Curriculum</span></li>
-                <li><div class="icon-badge"><svg class="icon"><use href="assets/icons/feather-sprite.svg#zap"/></svg></div><span>Rapid Mastery</span></li>
-            </ul>
-            <button id="welcome-get-started-btn" class="btn btn-primary">Initialize System</button>
-        </div>
-    </div>
-
-    <!-- Voice Indicator -->
-    <div id="voice-indicator" class="voice-indicator" style="display: none;">
-        <div class="voice-wave"></div>
-        <div class="voice-wave"></div>
-        <span>Listening...</span>
-    </div>
-
-    <button id="voice-mic-btn" class="voice-fab" aria-label="Toggle Voice Control">
-        <svg class="icon"><use href="assets/icons/feather-sprite.svg#mic"/></svg>
-    </button>
-
-    <div id="app-wrapper">
-        <nav id="sidebar"></nav>
-        <main id="app-container" role="main">
-            <div id="app"></div>
-        </main>
-    </div>
-    
-    <div id="modal-container"></div>
-    <div id="toast-container"></div>
-    
-    <div id="offline-indicator" class="offline-indicator" style="display: none;">
-        <svg class="icon" style="width:16px;height:16px;margin-right:8px;"><use href="assets/icons/feather-sprite.svg#shield"/></svg>
-        OFFLINE SIMULATION MODE
-    </div>
-
-    <script>
-        // --- EMERGENCY ERROR HANDLER & TIMEOUT ---
-        (function() {
-            const loadTimeout = setTimeout(() => {
-                const splash = document.getElementById('splash-screen');
-                if (splash && !splash.classList.contains('hidden') && splash.style.display !== 'none') {
-                    document.getElementById('splash-status-text').innerText = "SYSTEM INITIALIZATION TIMEOUT";
-                    document.getElementById('splash-status-text').style.color = "#ef4444";
-                    document.getElementById('splash-reload-btn').style.display = 'inline-flex';
-                    document.getElementById('splash-error-log').innerText = "The server is taking too long to respond. Check internet connection or modules.";
-                }
-            }, 45000); 
-
-            window.addEventListener('error', function(event) {
-                const splashLog = document.getElementById('splash-error-log');
-                if (splashLog) {
-                    splashLog.innerText = "Error: " + (event.message || "Unknown Script Error");
-                    document.getElementById('splash-status-text').innerText = "CRITICAL FAILURE";
-                    document.getElementById('splash-status-text').style.color = "#ef4444";
-                    document.getElementById('splash-reload-btn').style.display = 'inline-flex';
-                }
-                clearTimeout(loadTimeout);
-            });
-
-            document.getElementById('splash-reload-btn').addEventListener('click', function() {
-                if(navigator.serviceWorker) {
-                    navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                        for(let registration of registrations) { registration.unregister(); }
-                        window.location.reload();
-                    });
-                } else {
-                    window.location.reload();
-                }
-            });
-        })();
-    </script>
-
-    <script src="global/global.js"></script>
-    <script type="module" src="index.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            if (typeof mermaid !== 'undefined') {
-                mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose', fontFamily: 'Exo 2' });
+                const style = document.createElement('style');
+                style.textContent = css;
+                document.head.appendChild(style);
+                
+                pageContent.innerHTML = html;
+                homeModule.init();
+            } else {
+                authModule.init();
             }
-        });
+        }
+        init();
     </script>
+    <script src="/global/global.js"></script>
 </body>
 </html>

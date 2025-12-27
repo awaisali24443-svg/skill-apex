@@ -1,14 +1,20 @@
 
 <div class="page-container home-dashboard">
     
-    <!-- 1. Status HUD (Heads-Up Display) -->
+    <!-- GLOBAL NEURAL ECHOES TICKER -->
+    <div class="neural-echoes-bar">
+        <div class="echo-label">LIVE PULSE</div>
+        <div id="echoes-ticker" class="echoes-ticker">
+            <span class="echo-item">Syncing with Pakistan Node...</span>
+        </div>
+    </div>
+
     <header class="dashboard-hud">
         <div class="hud-left">
             <h1 id="home-greeting">System Initializing...</h1>
-            <p class="hud-subtitle">Neural Interface Active</p>
+            <p class="hud-subtitle">Pakistan Regional Node 01 | Active</p>
         </div>
         
-        <!-- Grouped Stats for Adaptive Layout -->
         <div class="hud-right">
             <div class="hud-stats-cluster">
                 <div class="stat-pill level-pill">
@@ -21,14 +27,21 @@
                 </div>
             </div>
             
-            <div class="system-status-indicator" title="System Online">
-                <div class="status-ring"></div>
-                <div class="status-core"></div>
+            <div class="dual-status-hud">
+                <div id="ai-status-indicator" class="system-status-indicator" title="AI Neural Core">
+                    <div class="status-ring"></div>
+                    <div class="status-core"></div>
+                    <span class="status-label">AI</span>
+                </div>
+                <div id="db-status-indicator" class="system-status-indicator" title="Firebase Cloud Link">
+                    <div class="status-ring"></div>
+                    <div class="status-core"></div>
+                    <span class="status-label">DB</span>
+                </div>
             </div>
         </div>
     </header>
 
-    <!-- 2. Command Interface -->
     <section class="command-interface">
         <form id="command-form" class="cyber-input-form">
             <div class="input-wrapper">
@@ -37,49 +50,23 @@
                 </div>
                 <input type="text" id="command-input" class="cyber-input" placeholder="Input directive, topic, or query..." autocomplete="off">
                 <div class="input-actions">
-                    <button type="button" id="home-camera-btn" class="action-btn" title="Scan Document/Image" aria-label="Upload Image">
+                    <button type="button" id="home-camera-btn" class="action-btn" title="Scan Document">
                         <svg class="icon"><use href="assets/icons/feather-sprite.svg#camera"/></svg>
                     </button>
                 </div>
             </div>
-            <button type="submit" id="command-submit-btn" class="cyber-submit-btn" aria-label="Execute">
+            <button type="submit" id="command-submit-btn" class="cyber-submit-btn">
                 <svg class="icon"><use href="assets/icons/feather-sprite.svg#arrow-right"/></svg>
             </button>
         </form>
-        <input type="file" id="home-file-input" accept="image/*,application/pdf" style="display: none;">
     </section>
 
-    <!-- 3. Dashboard Grid -->
     <div class="dashboard-grid">
-        
-        <!-- A. Streak Challenge Card (NEW) -->
-        <div class="dashboard-panel streak-panel">
-            <div class="panel-header">
-                <h3><svg class="icon"><use href="assets/icons/feather-sprite.svg#target"/></svg> Habit Builder</h3>
-                <span class="streak-fraction" id="streak-fraction">0/21</span>
-            </div>
-            <div class="streak-content">
-                <div class="streak-bar-container">
-                    <div id="streak-bar-fill" class="streak-bar-fill" style="width: 0%;"></div>
-                    <div class="streak-markers">
-                        <span style="left: 33%">7</span>
-                        <span style="left: 66%">14</span>
-                    </div>
-                </div>
-                <p id="streak-message" class="streak-message">Start your 21-day consistency protocol.</p>
-            </div>
-        </div>
+        <div id="resume-section" class="dashboard-panel mission-panel" style="display: none;"></div>
 
-        <!-- B. Priority Mission (Resume) -->
-        <div id="resume-section" class="dashboard-panel mission-panel" style="display: none;">
-            <!-- Injected by JS -->
-        </div>
-
-        <!-- C. Featured Protocols -->
         <div class="dashboard-panel protocols-panel">
             <div class="panel-header">
-                <h3><svg class="icon"><use href="assets/icons/feather-sprite.svg#grid"/></svg> Quick Access</h3>
-                <a href="#/topics" class="panel-link">View All</a>
+                <h3>Quick Access</h3>
             </div>
             <div class="protocol-grid">
                 <button class="protocol-card" data-topic="Cybersecurity">
@@ -90,31 +77,18 @@
                     <div class="protocol-icon blue"><svg class="icon"><use href="assets/icons/feather-sprite.svg#cpu"/></svg></div>
                     <span>AI Core</span>
                 </button>
-                <button class="protocol-card" data-topic="Web Development">
+                <button class="protocol-card" data-topic="Cloud Architecture">
                     <div class="protocol-icon purple"><svg class="icon"><use href="assets/icons/feather-sprite.svg#layers"/></svg></div>
-                    <span>Web Dev</span>
-                </button>
-                <button class="protocol-card" data-topic="Crypto & Blockchain">
-                    <div class="protocol-icon gold"><svg class="icon"><use href="assets/icons/feather-sprite.svg#lock"/></svg></div>
-                    <span>Crypto</span>
+                    <span>DevOps</span>
                 </button>
             </div>
         </div>
 
-        <!-- D. Recent Activity Logs -->
         <div class="dashboard-panel history-panel">
             <div class="panel-header">
-                <h3><svg class="icon"><use href="assets/icons/feather-sprite.svg#activity"/></svg> Recent Logs</h3>
+                <h3>Recent Activity</h3>
             </div>
-            <div id="recent-history-container" class="history-list">
-                <!-- Injected by JS -->
-            </div>
+            <div id="recent-history-container" class="history-list"></div>
         </div>
-
     </div>
-    
-    <footer class="home-footer">
-        <span class="footer-status">SYSTEM NOMINAL</span>
-        <span class="footer-credit">ARCHITECT: AWAIS ALI</span>
-    </footer>
 </div>

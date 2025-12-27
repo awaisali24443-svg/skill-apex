@@ -1,221 +1,181 @@
 
-// --- IMPORTS & SETUP ---
 import 'dotenv/config'; 
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI, Type } from '@google/genai';
 import rateLimit from 'express-rate-limit';
-import fs from 'fs/promises';
 import http from 'http';
-import { WebSocketServer } from 'ws';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// --- API KEY SETUP ---
-const API_KEY = (process.env.API_KEY || process.env.GEMINI_API_KEY || "").trim();
-
-console.log("--- SERVER DIAGNOSTICS ---");
-if (API_KEY) {
-    console.log(`✅ AI Key Detected: ${API_KEY.substring(0, 4)}...`);
-} else {
-    console.error("❌ CRITICAL: NO API KEY FOUND. Server running in simulated mode.");
-}
-
+const API_KEY = (process.env.API_KEY || "").trim();
+const HF_API_KEY = (process.env.HF_API_KEY || "").trim(); // Assuming user added this to env
 const PORT = process.env.PORT || 3000;
-let prebakedLevelsCache = {};
 
-// Load Prebaked Data
-(async () => {
-    try {
-        const dataPath = path.join(__dirname, 'data', 'prebaked_levels.json');
-        const data = await fs.readFile(dataPath, 'utf-8');
-        prebakedLevelsCache = JSON.parse(data);
-    } catch (e) { prebakedLevelsCache = {}; }
-})();
+const ai = new GoogleGenAI({ apiKey: API_KEY });
 
-// --- AI CLIENT ---
-let ai;
-if (API_KEY && !API_KEY.startsWith('hf_')) {
-    ai = new GoogleGenAI({ apiKey: API_KEY });
+const BASE_SYSTEM_INSTRUCTION = `You are the Skill Apex Neural Core, a world-class technical mentor. 
+Your goal is to forge elite engineers. Your tone is professional, futuristic, and encouraging. 
+Ensure technical accuracy is 100%. If a topic is complex, break it down using first-principles thinking.
+IMPORTANT: Your response must be strictly valid JSON according to the requested schema. No conversational filler.`;
+
+const QUIZ_SCHEMA = { 
+    type: Type.OBJECT, 
+    properties: { 
+        questions: { 
+            type: Type.ARRAY, 
+            items: { 
+                type: Type.OBJECT, 
+                properties: { 
+                    question: { type: Type.STRING }, 
+                    options: { type: Type.ARRAY, items: { type: Type.STRING } }, 
+                    correctAnswerIndex: { type: Type.INTEGER }, 
+                    explanation: { type: Type.STRING },
+                    technicalInsight: { type: Type.STRING, description: "An advanced tip related to this question." }
+                } 
+            } 
+        } 
+    } 
+};
+
+/**
+ * FALLBACK ENGINE: Hugging Face Inference
+ * Used when Gemini is unavailable.
+ */
+async function callHuggingFace(prompt, schemaDescription) {
+    if (!HF_API_KEY) throw new Error("Hugging Face API Key missing.");
+    
+    // Using a powerful instruction-following model
+    const model = "meta-llama/Llama-3-8B-Instruct";
+    const hfUrl = `https://api-inference.huggingface.co/models/${model}`;
+    
+    const fullPrompt = `${BASE_SYSTEM_INSTRUCTION}\n\nTask: ${prompt}\n\nJSON Schema Requirement: ${schemaDescription}\n\nReturn ONLY the JSON object.`;
+
+    const response = await fetch(hfUrl, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${HF_API_KEY}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            inputs: fullPrompt,
+            parameters: { max_new_tokens: 1000, return_full_text: false }
+        })
+    });
+
+    if (!response.ok) throw new Error(`HF Error: ${response.statusText}`);
+    
+    const result = await response.json();
+    let text = result[0]?.generated_text || "";
+    
+    // Clean up possible markdown artifacts from HF models
+    text = text.replace(/```json/g, "").replace(/```/g, "").trim();
+    return JSON.parse(text);
 }
 
-// --- SCHEMAS ---
-const QUIZ_SCHEMA = {
-    type: Type.OBJECT,
-    properties: {
-        questions: {
-            type: Type.ARRAY,
-            items: {
-                type: Type.OBJECT,
-                properties: {
-                    question: { type: Type.STRING },
-                    options: { type: Type.ARRAY, items: { type: Type.STRING } },
-                    correctAnswerIndex: { type: Type.INTEGER },
-                    explanation: { type: Type.STRING }
-                }
-            }
-        }
-    }
-};
-
-const LESSON_SCHEMA = {
-    type: Type.OBJECT,
-    properties: {
-        lesson: { type: Type.STRING }
-    }
-};
-
-const JOURNEY_SCHEMA = {
-    type: Type.OBJECT,
-    properties: {
-        topicName: { type: Type.STRING },
-        totalLevels: { type: Type.INTEGER },
-        description: { type: Type.STRING }
-    }
-};
-
-// --- DUAL-ENGINE GENERATION HANDLER ---
-async function generateWithFallback(contents, config, fallbackFn, label, schema = null) {
-    if (!ai) {
-        console.warn(`[${label}] No API Key. Using fallback.`);
-        return fallbackFn();
-    }
-
-    // 1. Try Primary Model (Gemini 3 Pro)
+/**
+ * NEURAL CONTROLLER: Orchestrates Gemini with HF Fallback
+ */
+async function generateAIContent({ model, prompt, schema, schemaDescription }) {
     try {
-        console.log(`[${label}] Asking Gemini 3 Pro...`);
+        // Attempt Primary Engine: Gemini
         const response = await ai.models.generateContent({
-            model: 'gemini-3-pro-preview',
-            contents: contents,
+            model: model || 'gemini-3-flash-preview',
+            contents: prompt,
             config: { 
-                ...config, 
+                systemInstruction: BASE_SYSTEM_INSTRUCTION,
                 responseMimeType: 'application/json',
-                responseSchema: schema // Force Structured Output
+                responseSchema: schema
             }
         });
-        
-        // Direct object return due to schema enforcement
-        if (response.text) {
-            return JSON.parse(response.text);
-        }
-        throw new Error("Empty response");
-    } catch (errPro) {
-        console.warn(`[${label}] Pro Failed: ${errPro.message}. Switching to Flash...`);
-        
-        // 2. Try Secondary Model (Gemini 2.5 Flash)
+        return JSON.parse(response.text);
+    } catch (geminiError) {
+        console.warn("Gemini Engine Offline or Throttled. Activating Hugging Face Fallback...", geminiError.message);
         try {
-            const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: contents,
-                config: { 
-                    ...config, 
-                    responseMimeType: 'application/json',
-                    responseSchema: schema 
-                }
-            });
-            if (response.text) {
-                return JSON.parse(response.text);
-            }
-        } catch (errFlash) {
-            console.error(`[${label}] All Engines Failed.`, errFlash.message);
+            return await callHuggingFace(prompt, schemaDescription);
+        } catch (hfError) {
+            console.error("Critical Failure: Both AI Engines Unreachable.", hfError.message);
+            throw new Error("Neural Core connection lost. Please verify API keys.");
         }
     }
-
-    return fallbackFn();
 }
 
-// --- EXPRESS APP ---
 const app = express();
 const server = http.createServer(app);
-
-app.set('trust proxy', 1);
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '20mb' }));
 app.use(express.static(path.join(__dirname)));
 
-const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 300 });
-app.use('/api', apiLimiter);
-
-// --- ENDPOINTS ---
-
-app.get('/api/client-config', (req, res) => {
-    if (!API_KEY) return res.status(503).json({ error: 'No API Key' });
-    res.json({ apiKey: API_KEY });
-});
-
-app.post('/api/debug-status', (req, res) => {
-    res.json({ status: ai ? 'online' : 'offline', message: ai ? 'Connected' : 'Server Offline / Invalid Key' });
-});
-
 app.post('/api/generate-journey-plan', async (req, res) => {
-    const { topic } = req.body;
-    const result = await generateWithFallback(
-        `Create a learning journey for "${topic}".`,
-        { systemInstruction: "You are an educational architect." },
-        () => ({ topicName: topic, totalLevels: 10, description: "Generated offline." }),
-        "JOURNEY_PLAN",
-        JOURNEY_SCHEMA
-    );
-    res.json(result);
+    try {
+        const { topic } = req.body;
+        const result = await generateAIContent({
+            model: 'gemini-3-pro-preview',
+            prompt: `Architect a 100-level learning journey for "${topic}". Focus on professional mastery.`,
+            schemaDescription: "{ topicName: string, totalLevels: number, description: string, difficulty: 'Beginner'|'Intermediate'|'Advanced' }",
+            schema: {
+                type: Type.OBJECT,
+                properties: {
+                    topicName: { type: Type.STRING },
+                    totalLevels: { type: Type.INTEGER },
+                    description: { type: Type.STRING },
+                    difficulty: { type: Type.STRING }
+                }
+            }
+        });
+        res.json(result);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/generate-curriculum-outline', async (req, res) => {
+    try {
+        const { topic, totalLevels } = req.body;
+        const result = await generateAIContent({
+            model: 'gemini-3-flash-preview',
+            prompt: `Create a high-level 5-chapter curriculum outline for a ${totalLevels}-level course on "${topic}".`,
+            schemaDescription: "{ chapters: string[] }",
+            schema: {
+                type: Type.OBJECT,
+                properties: { chapters: { type: Type.ARRAY, items: { type: Type.STRING } } }
+            }
+        });
+        res.json(result);
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.post('/api/generate-level-questions', async (req, res) => {
-    const { topic, level } = req.body;
-    // Check Prebaked first
-    if (prebakedLevelsCache[topic]) {
-        return res.json({ questions: prebakedLevelsCache[topic].questions });
-    }
-    
-    const result = await generateWithFallback(
-        `Generate 3 quiz questions for ${topic} (Level ${level}).`,
-        { systemInstruction: "Generate tough but fair technical questions." },
-        () => ({ questions: [] }), // Frontend handles empty array as fallback trigger
-        "QUIZ_GEN",
-        QUIZ_SCHEMA
-    );
-    res.json(result);
-});
-
-app.post('/api/generate-level-lesson', async (req, res) => {
-    const { topic, level } = req.body;
-    if (prebakedLevelsCache[topic]) {
-        return res.json({ lesson: prebakedLevelsCache[topic].lesson });
-    }
-    const result = await generateWithFallback(
-        `Write a short, engaging lesson for ${topic} (Level ${level}). Use Markdown.`,
-        { systemInstruction: "You are an expert tutor." },
-        () => ({ lesson: "Offline lesson unavailable." }),
-        "LESSON_GEN",
-        LESSON_SCHEMA
-    );
-    res.json(result);
-});
-
-app.post('/api/generate-curriculum-outline', (req, res) => res.json({ chapters: ["Basics", "Advanced", "Mastery"] }));
-app.post('/api/generate-hint', (req, res) => res.json({ hint: "Think about the core principles." }));
-app.post('/api/explain-error', (req, res) => res.json({ explanation: "This answer is incorrect because of fundamental principles." }));
-
-app.get('/api/topics', async (req, res) => {
     try {
-        const data = await fs.readFile(path.join(__dirname, 'data', 'topics.json'), 'utf-8');
-        res.json(JSON.parse(data));
-    } catch { res.json([]); }
+        const { topic, level } = req.body;
+        const result = await generateAIContent({
+            model: 'gemini-3-pro-preview',
+            prompt: `Generate 5 elite-level questions for "${topic}" at Level ${level}. Focus on edge cases and architectural principles.`,
+            schemaDescription: "An object with a 'questions' array. Each question has 'question', 'options' (array), 'correctAnswerIndex', 'explanation', and 'technicalInsight'.",
+            schema: QUIZ_SCHEMA
+        });
+        res.json(result);
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/api/generate-journey-from-file', async (req, res) => {
-    const { fileData, mimeType } = req.body;
-    const result = await generateWithFallback(
-        [
-            { text: `Analyze this document. Identify the main topic and create a learning journey.` },
-            { inlineData: { mimeType: mimeType, data: fileData } }
-        ],
-        { systemInstruction: "Analyze content deeply." },
-        () => ({ topicName: "Analyzed Content", totalLevels: 10, description: "Offline Analysis" }),
-        "FILE_ANALYSIS",
-        JOURNEY_SCHEMA
-    );
-    res.json(result);
+app.post('/api/explain-error', async (req, res) => {
+    try {
+        const { topic, question, userSelection, correctOption } = req.body;
+        const result = await generateAIContent({
+            model: 'gemini-3-flash-preview',
+            prompt: `The student is learning ${topic}. Question: "${question}". They chose "${userSelection}" but the correct answer is "${correctOption}". Explain the logical fallacy in their choice briefly and technically.`,
+            schemaDescription: "{ explanation: string }",
+            schema: { type: Type.OBJECT, properties: { explanation: { type: Type.STRING } } }
+        });
+        res.json(result);
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.post('/api/debug-status', (req, res) => res.json({ status: 'online' }));
+
+const pages = ['topics', 'library', 'history', 'leaderboard', 'profile', 'aural', 'settings', 'level', 'report', 'study', 'game'];
+pages.forEach(page => {
+    app.get(`/${page}`, (req, res) => res.sendFile(path.join(__dirname, `pages/${page}.html`)));
+});
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+
+server.listen(PORT, () => console.log(`Neural Core Online on port ${PORT} (Dual-AI Resilience Enabled)`));

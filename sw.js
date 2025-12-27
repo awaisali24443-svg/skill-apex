@@ -1,144 +1,52 @@
 /**
  * @file Service Worker for Skill Apex PWA
- * @version 13.0.0 (Immersive Aural Update)
- * 
- * Optimized for high-reliability in low-bandwidth environments.
- * Implements a robust offline-first caching strategy for educational continuity.
+ * @version 16.0.0 (Cloud Connected & Immersive Visuals)
  */
 
-const CACHE_NAME = 'skill-apex-v13.0.0-neural';
-const FONT_CACHE_NAME = 'google-fonts-cache-v1';
+const CACHE_NAME = 'skill-apex-v16.0.0-final';
+const FONT_CACHE_NAME = 'google-fonts-v2';
 
-const APP_SHELL_URLS = [
+const ESSENTIAL_ASSETS = [
     '/',
-    'index.html',
-    'index.js',
-    'constants.js',
-    'manifest.json',
-    'data/topics.json',
-    'data/prebaked_levels.json',
-    'data/demo_profile.json', 
-    'global/global.css',
-    'global/global.js',
-    'themes/theme-dark-cyber.css',
-    'themes/theme-light-cyber.css',
-    'themes/theme-light-solar.css',
-    'themes/theme-dark.css',
-    'themes/theme-dark-arcane.css',
-    'themes/theme-dark-nebula.css',
-    'assets/icons/favicon.svg',
-    'assets/images/apple-touch-icon.png',
-    'assets/images/og-image.png',
-    'assets/images/icon-192.png',
-    'assets/images/icon-512.png',
-    'assets/images/avatar-placeholder.png',
-    'https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;800&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap',
-    'https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js',
-    'https://aistudiocdn.com/dompurify@^3.3.0',
-    // Core Services
-    'services/apiService.js',
-    'services/configService.js',
-    'services/errorService.js',
-    'services/gamificationService.js',
-    'services/historyService.js',
-    'services/learningPathService.js',
-    'services/levelCacheService.js',
-    'services/libraryService.js',
-    'services/markdownService.js',
-    'services/modalService.js',
-    'services/sidebarService.js',
-    'services/soundService.js',
-    'services/stateService.js',
-    'services/themeService.js',
-    'services/toastService.js',
-    'services/voiceCommandService.js',
-    'services/firebaseService.js',
-    'services/vfxService.js',
-    'services/backgroundService.js',
-    // App Modules
-    'modules/auth/auth.html', 'modules/auth/auth.css', 'modules/auth/auth.js',
-    'modules/home/home.html', 'modules/home/home.css', 'modules/home/home.js',
-    'modules/topic-list/topic-list.html', 'modules/topic-list/topic-list.css', 'modules/topic-list/topic-list.js',
-    'modules/library/library.html', 'modules/library/library.css', 'modules/library/library.js',
-    'modules/history/history.html', 'modules/history/history.css', 'modules/history/history.js',
-    'modules/study/study.html', 'modules/study/study.css', 'modules/study/study.js',
-    'modules/aural/aural.html', 'modules/aural/aural.css', 'modules/aural/aural.js',
-    'modules/settings/settings.html', 'modules/settings/settings.css', 'modules/settings/settings.js',
-    'modules/game-map/game-map.html', 'modules/game-map/game-map.css', 'modules/game-map/game-map.js',
-    'modules/game-level/game-level.html', 'modules/game-level/game-level.css', 'modules/game-level/game-level.js',
-    'modules/profile/profile.html', 'modules/profile/profile.css', 'modules/profile/profile.js',
-    'modules/quiz-review/quiz-review.html', 'modules/quiz-review/quiz-review.css', 'modules/quiz-review/quiz-review.js',
-    'modules/report/report.html', 'modules/report/report.css', 'modules/report/report.js',
-    'modules/leaderboard/leaderboard.html', 'modules/leaderboard/leaderboard.css', 'modules/leaderboard/leaderboard.js'
+    '/index.html',
+    '/index.js',
+    '/constants.js',
+    '/manifest.json',
+    '/global/global.css',
+    '/global/global.js',
+    '/themes/theme-light-cyber.css',
+    '/themes/theme-dark-cyber.css',
+    '/assets/icons/feather-sprite.svg',
+    '/assets/icons/favicon.svg'
 ];
 
-/**
- * Stale-while-revalidate strategy for the App Shell.
- */
-const staleWhileRevalidate = async (cacheName, request) => {
-    const cache = await caches.open(cacheName);
-    const cachedResponse = await cache.match(request);
-    
-    const fetchPromise = fetch(request).then((networkResponse) => {
-        if (networkResponse.ok) {
-           cache.put(request, networkResponse.clone());
-        }
-        return networkResponse;
-    }).catch(err => {
-        if (cachedResponse) return cachedResponse;
-        throw err;
-    });
-    
-    return cachedResponse || fetchPromise;
-};
-
 self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(APP_SHELL_URLS);
-        }).then(() => self.skipWaiting())
-    );
+    event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ESSENTIAL_ASSETS)));
 });
 
 self.addEventListener('activate', (event) => {
     event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
-                    if (cacheName !== CACHE_NAME && cacheName !== FONT_CACHE_NAME) {
-                        console.log('Purging legacy cache:', cacheName);
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
-        }).then(() => self.clients.claim())
+        caches.keys().then((keys) => Promise.all(
+            keys.map((k) => {
+                if (k !== CACHE_NAME && k !== FONT_CACHE_NAME) return caches.delete(k);
+            })
+        ))
     );
 });
 
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
+    if (url.pathname.startsWith('/api') || url.host.includes('firebase')) return;
 
-    // 1. Google Fonts: Persistent Cache
-    if (url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com') {
-        event.respondWith(staleWhileRevalidate(FONT_CACHE_NAME, event.request));
-        return;
-    }
-
-    // 2. App Shell Assets: Revalidate for updates
-    if (APP_SHELL_URLS.some(u => event.request.url.includes(u))) {
-        event.respondWith(staleWhileRevalidate(CACHE_NAME, event.request));
-        return;
-    }
-
-    // 3. API Requests: Network Only
-    if (url.pathname.startsWith('/api')) {
-        return;
-    }
-
-    // 4. Default: Cache falling back to network
     event.respondWith(
-        fetch(event.request).catch(() => {
-            return caches.match(event.request);
+        caches.match(event.request).then((res) => {
+            return res || fetch(event.request).then((networkRes) => {
+                if (networkRes.ok && ESSENTIAL_ASSETS.includes(url.pathname)) {
+                    const cacheCopy = networkRes.clone();
+                    caches.open(CACHE_NAME).then(cache => cache.put(event.request, cacheCopy));
+                }
+                return networkRes;
+            });
         })
     );
 });

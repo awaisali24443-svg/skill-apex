@@ -1,0 +1,42 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skill Apex | Neural Link</title>
+    <link rel="stylesheet" href="/global/global.css">
+    <link id="theme-stylesheet" rel="stylesheet" href="/themes/theme-light-cyber.css">
+    <script type="importmap">
+    {
+      "imports": {
+        "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0"
+      }
+    }
+    </script>
+</head>
+<body>
+    <script type="module">
+        import { initPageShell } from '../services/layoutService.js';
+        import * as auralModule from '../modules/aural/aural.js';
+
+        async function init() {
+            // Aural mode needs full bleed to show the visualizer properly
+            await initPageShell({ fullBleed: true });
+            const pageContent = document.getElementById('page-content');
+            
+            const html = await fetch('../modules/aural/aural.html').then(res => res.text());
+            const css = await fetch('../modules/aural/aural.css').then(res => res.text());
+            
+            const style = document.createElement('style');
+            style.textContent = css;
+            document.head.appendChild(style);
+            
+            pageContent.innerHTML = html;
+            auralModule.init();
+        }
+        init();
+    </script>
+    <script src="/global/global.js"></script>
+</body>
+</html>

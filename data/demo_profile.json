@@ -1,155 +1,17 @@
-
 {
   "gamification": {
-    "level": 21,
-    "xp": 24500,
-    "currentStreak": 21,
-    "totalQuizzesCompleted": 120,
-    "totalPerfectQuizzes": 45,
-    "questionsSaved": 32,
-    "fastAnswersCount": 450,
-    "nightOwlSessions": 12,
-    "totalAuralMinutes": 60
+    "level": 1,
+    "xp": 0,
+    "currentStreak": 0,
+    "totalQuizzesCompleted": 0,
+    "totalPerfectQuizzes": 0,
+    "questionsSaved": 0,
+    "fastAnswersCount": 0,
+    "nightOwlSessions": 0,
+    "totalAuralMinutes": 0
   },
-  "journeys": [
-    {
-      "id": "journey_admin_1",
-      "goal": "Cybersecurity: Red Teaming",
-      "description": "Advanced simulation. Penetration testing and red team operations.",
-      "currentLevel": 21,
-      "totalLevels": 50,
-      "styleClass": "topic-space"
-    },
-    {
-      "id": "journey_admin_4",
-      "goal": "Spanish Language Mastery",
-      "description": "Fluency in Español. Grammar, vocabulary, and conversation skills.",
-      "currentLevel": 5,
-      "totalLevels": 100,
-      "styleClass": "topic-arts"
-    },
-    {
-      "id": "journey_admin_2",
-      "goal": "Generative AI (LLMs)",
-      "description": "Mastering Transformer architecture and Prompt Engineering.",
-      "currentLevel": 8,
-      "totalLevels": 40,
-      "styleClass": "topic-robotics"
-    },
-    {
-      "id": "journey_admin_3",
-      "goal": "Python Mastery",
-      "description": "Advanced scripting, automation, and data analysis.",
-      "currentLevel": 3,
-      "totalLevels": 30,
-      "styleClass": "topic-programming"
-    }
-  ],
-  "history": [
-    {
-      "type": "quiz",
-      "topic": "Spanish Language Mastery - Level 4",
-      "score": 5,
-      "totalQuestions": 5,
-      "xpGained": 100,
-      "dayOffset": 0
-    },
-    {
-      "type": "quiz",
-      "topic": "Cybersecurity: Red Teaming - Level 20",
-      "score": 5,
-      "totalQuestions": 5,
-      "xpGained": 100,
-      "dayOffset": 0
-    },
-    {
-      "type": "aural",
-      "topic": "Neural Network Fundamentals",
-      "duration": 340,
-      "xpGained": 50,
-      "transcript": [
-        { "sender": "user", "text": "Can you explain how backpropagation works in simple terms?" },
-        { "sender": "model", "text": "Think of it like tuning a radio. You turn the knob, hear static, and turn it back. Backpropagation measures the 'static' (error) at the output and goes backward through the network, tweaking the knobs (weights) slightly to get a clearer signal next time." },
-        { "sender": "user", "text": "That makes sense. What about the learning rate?" },
-        { "sender": "model", "text": "The learning rate is how much you turn the knob at once. Too high, and you skip the station. Too low, and it takes forever to find it." }
-      ],
-      "dayOffset": 0
-    },
-    {
-      "type": "quiz",
-      "topic": "Generative AI (LLMs) - Level 7",
-      "score": 4,
-      "totalQuestions": 5,
-      "xpGained": 80,
-      "dayOffset": 1
-    },
-    {
-      "type": "aural",
-      "topic": "Python Debugging Assistance",
-      "duration": 120,
-      "xpGained": 25,
-      "transcript": [
-        { "sender": "user", "text": "Why am I getting an IndexError in my list loop?" },
-        { "sender": "model", "text": "You are likely trying to access an index that doesn't exist. Remember, Python lists are 0-indexed. If a list has 5 items, the last index is 4, not 5." },
-        { "sender": "user", "text": "Ah, I was using the length as the index. Thanks." }
-      ],
-      "dayOffset": 1
-    },
-    {
-      "type": "quiz",
-      "topic": "Python Mastery - Level 2",
-      "score": 5,
-      "totalQuestions": 5,
-      "xpGained": 100,
-      "dayOffset": 2
-    },
-    {
-      "type": "quiz",
-      "topic": "Cybersecurity: Red Teaming - Level 19",
-      "score": 3,
-      "totalQuestions": 5,
-      "xpGained": 30,
-      "dayOffset": 3
-    }
-  ],
-  "library": [
-    {
-      "id": "q_lib_admin_1",
-      "question": "In Red Teaming, what distinguishes a 'Golden Ticket' attack?",
-      "options": ["It grants persistence indefinitely", "It cracks passwords", "It bypasses firewalls", "It mines crypto"],
-      "correctAnswerIndex": 0,
-      "explanation": "A Golden Ticket forges a Kerberos TGT, granting Domain Admin access for up to 10 years."
-    },
-    {
-      "id": "q_lib_admin_2",
-      "question": "Explain the 'Vanishing Gradient' problem in Deep Learning.",
-      "options": ["Weights become too large", "Gradients approach zero during backprop", "Data is missing", "GPU overheats"],
-      "correctAnswerIndex": 1,
-      "explanation": "In deep networks, gradients can shrink exponentially as they propagate back, stopping earlier layers from learning."
-    },
-    {
-      "id": "q_lib_admin_3",
-      "question": "What is the time complexity of searching a Hash Map?",
-      "options": ["O(n)", "O(log n)", "O(1)", "O(n^2)"],
-      "correctAnswerIndex": 2,
-      "explanation": "Hash Maps provide constant time O(1) average case lookup efficiency."
-    },
-    {
-      "id": "q_lib_admin_4",
-      "question": "In React, what triggers a re-render?",
-      "options": ["Changing a variable", "State or Props change", "User hover", "Console log"],
-      "correctAnswerIndex": 1,
-      "explanation": "React components only re-render when their internal state or passed props are updated."
-    }
-  ],
-  "level_cache": {
-    "Cybersecurity: Red Teaming-21": {
-      "lesson": "### 🛡️ Post-Exploitation Fundamentals\n\n**Status:** Access Achieved.\n\nYou have successfully breached the perimeter. Now the real work begins: **Enumeration**.\n\n*   **Objective:** Map out the internal network.\n*   **Tools:** `net user`, `whoami /priv`, `arp -a`.\n*   **Goal:** Identify high-value targets and paths to Domain Admin.",
-      "questions": [
-        { "question": "Which command displays your current user privileges?", "options": ["whoami /all", "net user", "ipconfig", "systeminfo"], "correctAnswerIndex": 0, "explanation": "`whoami /all` or `/priv` lists security identifiers and privileges." },
-        { "question": "What is 'Lateral Movement'?", "options": ["Moving files", "Moving deeper into the network from a compromised host", "Exfiltrating data", "Deleting logs"], "correctAnswerIndex": 1, "explanation": "Using compromised credentials to access other machines in the network." },
-        { "question": "Why check the ARP table (`arp -a`)?", "options": ["To hack wifi", "To see other devices the current machine has talked to", "To check internet speed", "To find passwords"], "correctAnswerIndex": 1, "explanation": "The ARP cache reveals local IP addresses of recently contacted devices." }
-      ]
-    }
-  }
+  "journeys": [],
+  "history": [],
+  "library": [],
+  "level_cache": {}
 }

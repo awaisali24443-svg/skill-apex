@@ -1,6 +1,4 @@
-
 import * as firebaseService from '../../services/firebaseService.js';
-import { populateGuestData } from '../../services/firebaseService.js'; // Import centralized loader
 import { showToast } from '../../services/toastService.js';
 import { LOCAL_STORAGE_KEYS } from '../../constants.js';
 
@@ -12,7 +10,7 @@ function toggleMode() {
     elements.title.textContent = isLoginMode ? 'System Login' : 'New Registration';
     elements.subtitle.textContent = isLoginMode ? 'Identify yourself to access the neural network.' : 'Create a new profile to begin your journey.';
     elements.submitBtnText.textContent = isLoginMode ? 'Connect' : 'Register';
-    elements.toggleText.textContent = isLoginMode ? 'New user?' : 'Already have an account?';
+    elements.toggleText.textContent = isLoginMode ? 'Don\'t have an account?' : 'Already have an account?';
     elements.toggleBtn.textContent = isLoginMode ? 'Initialize New Account' : 'Login with Existing ID';
     elements.error.style.display = 'none';
     if (elements.forgotBtn) elements.forgotBtn.style.display = isLoginMode ? 'block' : 'none';
@@ -118,8 +116,8 @@ async function handleGoogleLogin() {
     try { 
         await showFakeGooglePopup();
         
-        // Use the centralized loader from firebaseService
-        await populateGuestData(true); 
+        // Ensure local slate is clean for the new authenticated session
+        await firebaseService.populateGuestData(true); 
 
         await firebaseService.loginWithGoogle(); 
         await firebaseService.syncLocalToCloud();
@@ -139,8 +137,8 @@ async function handleGuestLogin() {
     btn.disabled = true;
 
     try {
-        // Use the centralized loader
-        await populateGuestData(true); 
+        // Initialize clean slate for guest
+        await firebaseService.populateGuestData(true); 
         await firebaseService.loginAsGuest();
         
         // Delay to allow local storage write to complete before nav
@@ -167,16 +165,12 @@ function handleError(error) {
 
 export function init() {
     const container = document.getElementById('auth-container');
+    if (!container) return;
+
     fetch('./modules/auth/auth.html')
         .then(res => res.text())
         .then(html => {
             container.innerHTML = html;
-            if (!document.querySelector('link[href="./modules/auth/auth.css"]')) {
-                const link = document.createElement('link');
-                link.rel = 'stylesheet';
-                link.href = './modules/auth/auth.css';
-                document.head.appendChild(link);
-            }
             
             elements = {
                 form: document.getElementById('auth-form'),

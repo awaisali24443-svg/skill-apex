@@ -1,0 +1,37 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skill Apex | Library</title>
+    <link rel="stylesheet" href="/global/global.css">
+    <link id="theme-stylesheet" rel="stylesheet" href="/themes/theme-light-cyber.css">
+    <script type="importmap">
+    { "imports": { "dompurify": "https://aistudiocdn.com/dompurify@^3.3.0" } }
+    </script>
+</head>
+<body>
+    <script type="module">
+        import { initPageShell } from '../services/layoutService.js';
+        import * as libraryModule from '../modules/library/library.js';
+
+        async function init() {
+            await initPageShell();
+            const pageContent = document.getElementById('page-content');
+            
+            const html = await fetch('../modules/library/library.html').then(res => res.text());
+            const css = await fetch('../modules/library/library.css').then(res => res.text());
+            
+            const style = document.createElement('style');
+            style.textContent = css;
+            document.head.appendChild(style);
+            
+            pageContent.innerHTML = html;
+            libraryModule.init();
+        }
+        init();
+    </script>
+    <script src="/global/global.js"></script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skill Apex | Analytics</title>
+    <link rel="stylesheet" href="/global/global.css">
+    <link id="theme-stylesheet" rel="stylesheet" href="/themes/theme-light-cyber.css">
+</head>
+<body>
+    <script type="module">
+        import { initPageShell } from '../services/layoutService.js';
+        import * as reportModule from '../modules/report/report.js';
+
+        async function init() {
+            await initPageShell();
+            const pageContent = document.getElementById('page-content');
+            
+            const html = await fetch('../modules/report/report.html').then(res => res.text());
+            const css = await fetch('../modules/report/report.css').then(res => res.text());
+            
+            const style = document.createElement('style');
+            style.textContent = css;
+            document.head.appendChild(style);
+            
+            pageContent.innerHTML = html;
+            reportModule.init();
+        }
+        init();
+    </script>
+    <script src="/global/global.js"></script>
+</body>
+</html>
