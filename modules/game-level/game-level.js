@@ -37,7 +37,11 @@ function renderQuestion() {
         const btn = document.createElement('button');
         btn.className = 'option-btn';
         btn.textContent = opt;
-        btn.onclick = () => handleAnswer(i);
+        // FAST INTERACTION: Use pointerdown to skip 300ms mobile delay
+        btn.addEventListener('pointerdown', (e) => {
+            e.preventDefault(); // Prevent ghost clicks
+            handleAnswer(i);
+        });
         container.appendChild(btn);
     });
 
@@ -63,9 +67,10 @@ function handleAnswer(index) {
     }
 
     if (++currentQuestionIndex < currentQuestions.length) {
-        renderQuestion();
+        // Small delay to let the sound play and button state show
+        setTimeout(renderQuestion, 200);
     } else {
-        finishLevel();
+        setTimeout(finishLevel, 200);
     }
 }
 

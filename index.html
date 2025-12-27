@@ -7,6 +7,14 @@
     <title>Skill Apex | Dashboard</title>
     <link rel="stylesheet" href="/global/global.css">
     <link id="theme-stylesheet" rel="stylesheet" href="/themes/theme-light-cyber.css">
+    
+    <!-- PERFORMANCE: Preload Critical Services to Avoid Waterfall -->
+    <link rel="modulepreload" href="./services/firebaseService.js">
+    <link rel="modulepreload" href="./services/layoutService.js">
+    <link rel="modulepreload" href="./services/configService.js">
+    <link rel="modulepreload" href="./services/themeService.js">
+    <link rel="modulepreload" href="./modules/home/home.js">
+
     <script type="importmap">
 {
   "imports": {
@@ -33,7 +41,7 @@
             const pageContent = document.getElementById('page-content');
             
             if (user) {
-                // Load Home Content
+                // Load Home Content - prefetch should make this nearly instant
                 const html = await fetch('./modules/home/home.html').then(res => res.text());
                 const css = await fetch('./modules/home/home.css').then(res => res.text());
                 

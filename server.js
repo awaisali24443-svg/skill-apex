@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const API_KEY = (process.env.API_KEY || "").trim();
-const HF_API_KEY = (process.env.HF_API_KEY || "").trim(); // Assuming user added this to env
+const HF_API_KEY = (process.env.HF_API_KEY || "").trim(); 
 const PORT = process.env.PORT || 3000;
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
@@ -19,7 +19,7 @@ const ai = new GoogleGenAI({ apiKey: API_KEY });
 const BASE_SYSTEM_INSTRUCTION = `You are the Skill Apex Neural Core, a world-class technical mentor. 
 Your goal is to forge elite engineers. Your tone is professional, futuristic, and encouraging. 
 Ensure technical accuracy is 100%. If a topic is complex, break it down using first-principles thinking.
-IMPORTANT: Your response must be strictly valid JSON according to the requested schema. No conversational filler.`;
+IMPORTANT: Your response must be strictly valid JSON according to the requested schema. Do not include markdown formatting like \`\`\`json.`;
 
 const QUIZ_SCHEMA = { 
     type: Type.OBJECT, 
@@ -41,13 +41,28 @@ const QUIZ_SCHEMA = {
 };
 
 /**
+ * HELPER: Cleans AI output to ensure valid JSON.
+ * Removes markdown code blocks and whitespace.
+ */
+function cleanAIOutput(text) {
+    if (!text) return "{}";
+    // Remove ```json and ``` wrapping
+    let clean = text.replace(/```json/g, "").replace(/```/g, "").trim();
+    // Locate first '{' and last '}' to strip any preamble text
+    const firstOpen = clean.indexOf('{');
+    const lastClose = clean.lastIndexOf('}');
+    if (firstOpen !== -1 && lastClose !== -1) {
+        clean = clean.substring(firstOpen, lastClose + 1);
+    }
+    return clean;
+}
+
+/**
  * FALLBACK ENGINE: Hugging Face Inference
- * Used when Gemini is unavailable.
  */
 async function callHuggingFace(prompt, schemaDescription) {
     if (!HF_API_KEY) throw new Error("Hugging Face API Key missing.");
     
-    // Using a powerful instruction-following model
     const model = "meta-llama/Llama-3-8B-Instruct";
     const hfUrl = `https://api-inference.huggingface.co/models/${model}`;
     
@@ -61,7 +76,7 @@ async function callHuggingFace(prompt, schemaDescription) {
         },
         body: JSON.stringify({
             inputs: fullPrompt,
-            parameters: { max_new_tokens: 1000, return_full_text: false }
+            parameters: { max_new_tokens: 2000, return_full_text: false }
         })
     });
 
@@ -69,10 +84,7 @@ async function callHuggingFace(prompt, schemaDescription) {
     
     const result = await response.json();
     let text = result[0]?.generated_text || "";
-    
-    // Clean up possible markdown artifacts from HF models
-    text = text.replace(/```json/g, "").replace(/```/g, "").trim();
-    return JSON.parse(text);
+    return JSON.parse(cleanAIOutput(text));
 }
 
 /**
@@ -90,7 +102,11 @@ async function generateAIContent({ model, prompt, schema, schemaDescription }) {
                 responseSchema: schema
             }
         });
-        return JSON.parse(response.text);
+        
+        // Sanitize output even from Gemini to be safe
+        const text = response.text;
+        return JSON.parse(cleanAIOutput(text));
+
     } catch (geminiError) {
         console.warn("Gemini Engine Offline or Throttled. Activating Hugging Face Fallback...", geminiError.message);
         try {

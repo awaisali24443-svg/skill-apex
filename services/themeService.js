@@ -1,3 +1,4 @@
+
 const THEMES = {
     'light-cyber': {
         path: '/themes/theme-light-cyber.css',
@@ -42,8 +43,23 @@ export function applyTheme(themeName = 'dark-cyber') {
 
     document.getElementById('theme-stylesheet')?.setAttribute('href', theme.path);
     document.getElementById('theme-color-meta')?.setAttribute('content', theme.color);
+    
+    optimizeForHardware();
 }
 
+/**
+ * Detects low-spec devices and disables expensive CSS filters (blur/shadows)
+ * to maintain 60 FPS.
+ */
+function optimizeForHardware() {
+    // If logical processors < 4, it's likely a budget device or battery saver mode
+    if (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4) {
+        document.body.classList.add('low-perf');
+        console.log("Performance Mode: Low (Backdrop filters disabled)");
+    } else {
+        document.body.classList.remove('low-perf');
+    }
+}
 
 /**
  * Applies the animation intensity setting by adding a class to the body.
